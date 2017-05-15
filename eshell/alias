@@ -1,0 +1,4 @@
+alias AssertionError:  $*
+alias emacs find-file $1
+alias ll ls -l $*
+alias lsa ls -a $*

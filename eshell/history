@@ -1,0 +1,128 @@
+npm run mocha
+npm run mocha
+at Parser.pp.parseSubscripts (/Users/adambobrow/source/local_environment/web-api/node_modules/babel/node_modules/babel-core/node_modules/babylon/lib/parser/expression.js:270:29)
+at Parser.pp.parseSubscripts (/Users/adambobrow/source/local_environment/web-api/node_modules/babel/node_modules/babel-core/node_modules/babylon/lib/parser/expression.js:270:29)
+npm run mocha
+at Dashboards (/Users/adambobrow/source/local_environment/web-api/test/unit/logic/dashboards.service.spec.js:14:71)
+at Dashboards (/Users/adambobrow/source/local_environment/web-api/test/unit/logic/dashboards.service.spec.js:14:71)
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm ERR! Failed at the bp-web-api@4.4.8 mocha script 'mocha --recursive test/ --reporter spec --compilers js:babel/register'.
+npm run mocha
+npm ERR! Exit status 1
+npm ERR! Exit status 1
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+at Parser.pp.parseFunctionBody (/Users/adambobrow/source/local_environment/web-api/node_modules/babel/node_modules/babel-core/node_modules/babylon/lib/parser/expression.js:747:22)
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run test
+npm run mocha
+at Request._callback (/Users/adambobrow/source/backend-common/node_modules/bluebird/js/release/nodeback.js:45:21)
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm test
+at PromiseArray._iterate (/Users/adambobrow/source/backend-common/node_modules/bluebird/js/release/promise_array.js:113:31)
+npm test
+npm install bigpandaio/bp-api-common/#feature/dashboards
+npm install bigpandaio/backend-common.git#feature/dashboards
+npm link --help
+npm unlink bp-api-common
+npm install bigpandaio/backend-common.git#feature/dashboards
+npm run test
+npm run test
+npm run test
+npm run test
+npm test
+npm test
+p
+npm test
+npm test
+npm test
+npm test
+npm test
+npm test
+npm test
+npm test
+npm test
+npm test
+cd ..
+ls
+cd ~
+cd -
+cd =web
+cd =enrich
+cd =web
+cd =
+cd =27
+cd -29
+cd -12
+$+
++
+cd +
+cd $+
+echo $+
+$?
+$
+$+
+$?
+$?
+$$
+ls
+nodmon web-api.js
+nodemon web-api.js
+nodemon web-api.js --test
+cd =web
+cd =web-api
+cd -
+cd ~
+cd source/local_environment/
+cd web-api/
+ls
+nodemon web-api.js --test
+npm run test
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm install git+ssh://git@github.com:bigpandaio/backend-common.git#feature/dashboards
+ls
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+npm run mocha
+ls
+ll
+exit
+ls
+npm run mocha
+ls
+pwd
+ls
+ls
+nodemon web-api.js
+node web-api.js
+cd ../../
+ls
+nodemon web-api.js 

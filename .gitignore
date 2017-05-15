@@ -1,0 +1,14 @@
+/ac-comphist.dat
+auto-save-list/
+backups/
+bookmarks/
+bookmarks
+/custom.el
+*~
+elpa/
+/history
+/ido.last
+/projectile-bookmarks.eld
+/projectile.cache
+/recentf
+url/
