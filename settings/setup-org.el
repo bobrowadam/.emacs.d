@@ -11,6 +11,7 @@
 (defadvice kill-whole-line (after fix-cookies activate)
   (myorg-update-parent-cookie))
 
+(org-bullets-mode t )
 (setq org-directory "~/Dropbox/org")
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 (setq org-default-todo-file (concat org-directory "/todo.org"))
@@ -27,12 +28,5 @@
 (define-key global-map (kbd "C-c o n") 'org-go-to-notes)
 (define-key global-map (kbd "C-c o a") 'org-agenda)
 (define-key global-map (kbd "C-c o t") 'org-go-to-todos)
-
-;;Code highlight:
-;; (require 'color)
-;; (set-face-attribute 'org-block nil :background
-;;                     (color-darken-name
-;;                      (face-attribute 'default :background) 3))
-
 
 (provide 'setup-org)
