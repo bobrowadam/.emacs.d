@@ -32,7 +32,6 @@
   (when (file-regular-p file)
     (load file)))
 
-(load "key-bindings")
 
 ;; Lets start with a attering of sanity
 (require 'sane-defaults)
@@ -62,8 +61,6 @@
 
 ;; C-w kill line on point
 (whole-line-or-region-mode 1)
-
-
 
 ;; smartpren
 (smartparens-global-mode)
@@ -158,40 +155,44 @@
 (eval-after-load 'magit '(require 'setup-magit))
 (eval-after-load 'grep '(require 'setup-rgrep))
 (eval-after-load 'shell '(require 'setup-shell))
+(load "key-bindings")
 
 ;; visual regexp
 ;; (require 'visual-regexp)
 ;; (define-key global-map (kbd "m-%") 'vr/query-replace)
 ;; (define-key global-map (kbd "m-/") 'vr/replace)
 
-;; tramp set-up
- '(tramp-password-
+;; Tramp
+(custom-set-variables
+ '(tramp-password-prompt-regexp
    (concat
     "^.*"
     (regexp-opt
-     '("passphrase" "passphrase"
-       ;; english
-       "password" "verification code" "Verification code"
-       ;; deutsch
-       "passwort" "passwort"
-       ;; français
-       "mot de passe" "mot de passe")
+     '("passphrase" "Passphrase"
+       ;; English
+       "password" "Verification code"
+       ;; Deutsch
+       "passwort" "Passwort"
+       ;; Français
+       "mot de passe" "Mot de passe")
      t)
     ".*:\0? *")
-   nil (tramp))
+   nil (tramp)))
+
+
 ;;;; to connect via shadow:
 ;;;; /sshx:shadow|ssh:ubuntu@od-orenhazan|sudo:root@od-orenhazan:/
 (add-to-list 'tramp-default-proxies-alist
              '("od-orenhazan" "\\`ubuntu\\'" "/sshx:shadow:")
              '("prod-einstein-1" "\\`ubuntu\\'" "/sshx:shadow:"))
 (add-to-list 'tramp-restricted-shell-hosts-alist
-             "\\`shadow\\'")
+             "\\shadow\\'")
 
 ;;;; Disable projectile mode line project naming for better performance:
-(add-hook 'find-file-hook
-          (lambda ()
-            (when (file-remote-p default-directory)
-              (setq-local projectile-mode-line "Projectile"))))
+;; (add-hook 'find-file-hook
+;;           (lambda ()
+;;             (when (file-remote-p default-directory)
+;;               (setq-local projectile-mode-line "Projectile"))))
 
 ;; pdf - tools:
 (pdf-tools-install)
@@ -229,7 +230,6 @@
 (global-set-key (kbd "M-p") 'ace-window )
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 (setq aw-dispatch-always t)
-
 
 
 (provide 'init)

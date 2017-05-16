@@ -1,3 +1,4 @@
+(require 'org-bullets)
 (defun myorg-update-parent-cookie ()
   (when (equal major-mode 'org-mode)
     (save-excursion
@@ -11,7 +12,7 @@
 (defadvice kill-whole-line (after fix-cookies activate)
   (myorg-update-parent-cookie))
 
-(org-bullets-mode t )
+(add-hook 'org-mode-hook org-bullets-mode)
 (setq org-directory "~/Dropbox/org")
 (setq org-default-notes-file (concat org-directory "/notes.org"))
 (setq org-default-todo-file (concat org-directory "/todo.org"))

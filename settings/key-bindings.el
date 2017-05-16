@@ -100,6 +100,13 @@
 (global-unset-key (kbd "C-\\"))
 (global-set-key (kbd "C-\\") 'shell-pop)
 
+
+;; Org
+(define-key global-map (kbd "C-c o c") 'org-capture)
+(define-key global-map (kbd "C-c o n") 'org-go-to-notes)
+(define-key global-map (kbd "C-c o a") 'org-agenda)
+(define-key global-map (kbd "C-c o t") 'org-go-to-todos)
+
 (provide 'key-bindings)
 ;;; key-bindings.el ends here
 
