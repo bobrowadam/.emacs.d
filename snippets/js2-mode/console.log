@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
 # name: console.log
-# key: log
+# key: clog
 # --
-console.log("---------------------------------\n${1:enumerate}: ", {$1} );
+console.log("---------------------------------\n${1:enumerate}: ", $1 );
