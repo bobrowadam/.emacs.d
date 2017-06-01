@@ -15,6 +15,7 @@
 (sml/setup)
 
 ;; Font:
+;; (set-face-attribute 'default nil :font "Hack 18")
 (set-face-attribute 'default nil :font "Monaco 18")
 
 (provide 'appearance)

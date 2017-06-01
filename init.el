@@ -207,6 +207,15 @@
 (require 'change-inner)
 (require 'multifiles)
 (require 'smex)
+(require 'flex-isearch)
+
+
+;; Flex search mode
+(global-flex-isearch-mode t)
+(global-set-key (kbd "M-C-s") 'flex-isearch-forward)
+(global-set-key (kbd "M-C-r") 'flex-isearch-backward)
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "C-r") 'isearch-backward-regexp)
 
 ;; ace jump config:
 (autoload
@@ -227,7 +236,7 @@
 
 ;; windows with ace-window
 (require 'ace-window)
-(global-set-key (kbd "M-p") 'ace-window )
+(global-set-key (kbd "C-x o") 'ace-window )
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 (setq aw-dispatch-always t)
 

@@ -9,7 +9,6 @@
 ;; (global-set-key (kbd "C-H") 'help)
 
 ;; command as meta
- 
 (when (eq system-type 'darwin)
   (setq mac-right-option-modifier 'meta)
   (setq mac-command-modifier 'meta))
@@ -17,10 +16,7 @@
 ;; you need to realy want to quit:
 (global-unset-key (kbd "C-x C-c"))
 (global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
-
-
-;; Neo Tree:
-(global-set-key (kbd "C-c n") 'neotree)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
 
 ;; editing lines:
 (global-set-key (kbd "C-c C-p") 'open-line-above)
@@ -36,8 +32,8 @@
 ;; (global-set-key (kbd "C-c C-r") 'ivy-resume)
 ;; (global-set-key (kbd "M-x") 'counsel-M-x)
 ;; (global-set-key (kbd "C-x f") 'counsel-find-file)
-;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+;; (global-set-key (kbd "C-h f") 'counsel-describe-function)
+;; (global-set-key (kbd "C-h v") 'counsel-describe-variable)
 ;; (global-set-key (kbd "<f1> l") 'counsel-load-library)
 ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
 ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
@@ -47,6 +43,8 @@
 (global-set-key (kbd "C-c c k") 'counsel-ag)
 (global-set-key (kbd "C-c c l") 'counsel-locate)
 (global-set-key (kbd "M-y") 'counsel-yank-pop)
+(global-set-key (kbd "C-h f") 'electric-describe-function)
+(global-set-key (kbd "C-h v") 'electric-describe-variable)
 
 ;; smartparens keybindings:
 (global-set-key (kbd "C-\)") 'sp-unwrap-sexp)
@@ -59,7 +57,7 @@
 (global-set-key (kbd "C-c C->") 'mc/mark-next-like-this-word)
 
 ;; helm
-(global-set-key (kbd "C-x C-b") 'helm-buffers-list)
+;; (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x f") 'helm-find-files)
 (global-set-key (kbd "M-s ag") 'helm-do-grep-ag)
 (global-set-key (kbd "C-x C-d") 'ag-dired-regexp)

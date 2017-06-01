@@ -17,7 +17,7 @@
 
 ;; word jumping:
 (global-subword-mode nil)
-(global-superword-mode t)
+(global-superword-mode -1)
 
 
 ;; Allow pasting selection outside of Emacs
