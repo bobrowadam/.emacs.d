@@ -155,6 +155,8 @@
 (eval-after-load 'magit '(require 'setup-magit))
 (eval-after-load 'grep '(require 'setup-rgrep))
 (eval-after-load 'shell '(require 'setup-shell))
+(eval-after-load 'prodigy '(require 'setup-pipeline))
+
 (load "key-bindings")
 
 ;; visual regexp
