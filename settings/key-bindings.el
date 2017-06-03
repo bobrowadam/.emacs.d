@@ -43,8 +43,8 @@
 (global-set-key (kbd "C-c c k") 'counsel-ag)
 (global-set-key (kbd "C-c c l") 'counsel-locate)
 (global-set-key (kbd "M-y") 'counsel-yank-pop)
-(global-set-key (kbd "C-h f") 'electric-describe-function)
-(global-set-key (kbd "C-h v") 'electric-describe-variable)
+(global-set-key (kbd "C-h f") 'describe-function)
+(global-set-key (kbd "C-h v") 'describe-variable)
 
 ;; smartparens keybindings:
 (global-set-key (kbd "C-\)") 'sp-unwrap-sexp)
