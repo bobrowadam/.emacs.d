@@ -56,6 +56,9 @@
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 (global-set-key (kbd "C-c C->") 'mc/mark-next-like-this-word)
 
+;; expand region:
+(global-set-key (kbd "C-M-S-SPC") 'er/expand-region)
+
 ;; helm
 ;; (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "C-x f") 'helm-find-files)
