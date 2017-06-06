@@ -142,12 +142,15 @@
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
-;; guide-key
-(require 'guide-key)
-(setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-x v" "C-x 8" "C-x +" "C-x" "C-c o" "C-c c" "C-z"))
-(guide-key-mode 1)
-(setq guide-key/recursive-key-sequence-flag t)
-(setq guide-key/popup-window-position 'bottom)
+;; ;; guide-key
+;; (require 'guide-key)
+;; (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-x v" "C-x 8" "C-x +" "C-x" "C-c o" "C-c c" "C-z"))
+;; (guide-key-mode +1)
+;; (setq guide-key/recursive-key-sequence-flag t)
+;; (setq guide-key/popup-window-position 'bottom)
+
+(require 'which-key)
+(which-key-mode +1)
 
 (eval-after-load 'ido '(require 'setup-ido))
 (eval-after-load 'org '(require 'setup-org))
@@ -209,10 +212,11 @@
 (require 'change-inner)
 (require 'multifiles)
 (require 'smex)
-(require 'flex-isearch)
 
 
 ;; Flex search mode
+(require 'flex-isearch)
+
 (global-flex-isearch-mode t)
 (global-set-key (kbd "M-C-s") 'flex-isearch-forward)
 (global-set-key (kbd "M-C-r") 'flex-isearch-backward)
@@ -227,6 +231,13 @@
   t)
 (eval-after-load "ace-jump-mode"
   '(ace-jump-mode-enable-mark-sync))
+
+;; Line numbers
+;; highlight the current line number
+(hlinum-activate)
+(setq linum-format " %3d ")
+;; turn on line numbers in prog-mode
+(add-hook 'prog-mode-hook 'linum-mode)
 
 ;; flyspell
 (require 'flyspell-correct-ido)
@@ -245,4 +256,3 @@
 
 (provide 'init)
 ;;; init.el ends here
-
