@@ -21,6 +21,5 @@
 (global-set-key (kbd "C-x 8 8") (λ (insert "∞")))
 (global-set-key (kbd "C-x 8 ( c )") (λ (insert "©")))
 (global-set-key (kbd "C-x 8 v") (λ (insert "✓")))
-(global-set-key (kbd "C-^") (λ (delete-indentation '-)))
 
 (provide 'my-misc)

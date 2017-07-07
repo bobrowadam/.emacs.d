@@ -5,6 +5,10 @@
 ;;; Code:
 (package-initialize)
 
+;;emacs Custom-settings in separate file
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(load custom-file)
+
 (setq initial-scratch-message "Greetings master Bob, welcome back.\nWhat shell we do today sir?")
 
 ;; add elpa and melpa repos
@@ -39,9 +43,7 @@
 ;; appearance
 (require 'appearance)
 
-;;emacs Custom-settings in separate file
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)
+
 
 ;; Make backups of files, even when they're in version control
 (setq vc-make-backup-files t)
@@ -62,8 +64,7 @@
 ;; C-w kill line on point
 (whole-line-or-region-mode 1)
 
-;; smartpren
-(smartparens-global-mode)
+
 
 ;; helm
 (require 'helm-config)
@@ -104,7 +105,7 @@
 
 
 ;; use local eslint from node_modules before global
-;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
+;;;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
 (defun my/use-eslint-from-node-modules ()
   (let* ((root (locate-dominating-file
                 (or (buffer-file-name) default-directory)
@@ -135,6 +136,15 @@
 (magithub-feature-autoinject t)
 (setq magithub-clone-default-directory "~/source/")
 
+;; slime
+(load "setup-common-lisp")
+
+;; paredit
+(load "setup-paredit")
+
+;; smartparens
+(load "setup-smartparens")
+(load "setup-org")
 
 ;; projectile:
 (projectile-mode)
@@ -142,23 +152,18 @@
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
-;; ;; guide-key
-;; (require 'guide-key)
-;; (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-x v" "C-x 8" "C-x +" "C-x" "C-c o" "C-c c" "C-z"))
-;; (guide-key-mode +1)
-;; (setq guide-key/recursive-key-sequence-flag t)
-;; (setq guide-key/popup-window-position 'bottom)
-
 (require 'which-key)
 (which-key-mode +1)
 
 (eval-after-load 'ido '(require 'setup-ido))
-(eval-after-load 'org '(require 'setup-org))
 (eval-after-load 'dired '(require 'setup-dired))
 (eval-after-load 'magit '(require 'setup-magit))
 (eval-after-load 'grep '(require 'setup-rgrep))
-(eval-after-load 'shell '(require 'setup-shell))
+(eval-after-load 'eshell '(require 'setup-eshell))
 (eval-after-load 'prodigy '(require 'setup-pipeline))
+
+
+
 
 (load "key-bindings")
 
@@ -193,11 +198,11 @@
 (add-to-list 'tramp-restricted-shell-hosts-alist
              "\\shadow\\'")
 
-;;;; Disable projectile mode line project naming for better performance:
-;; (add-hook 'find-file-hook
-;;           (lambda ()
-;;             (when (file-remote-p default-directory)
-;;               (setq-local projectile-mode-line "Projectile"))))
+;;Disable projectile mode line project naming for better performance:
+(add-hook 'find-file-hook
+          (lambda ()
+            (when (file-remote-p default-directory)
+              (setq-local projectile-mode-line "Projectile"))))
 
 ;; pdf - tools:
 (pdf-tools-install)
@@ -253,6 +258,18 @@
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 (setq aw-dispatch-always t)
 
+(use-package pretty-mode
+  :ensure t
+  :config (add-hook 'js2-mode-hook 'turn-on-pretty-mode))
+
+(use-package mode-icons
+  :ensure t
+  :config (mode-icons-mode))
+
+(use-package slime
+  :ensure t
+  :config (setq inferior-lisp-program "/usr/local/bin/clisp"))
 
 (provide 'init)
 ;;; init.el ends here
+(put 'narrow-to-region 'disabled nil)
