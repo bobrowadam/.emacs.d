@@ -21,8 +21,14 @@
 
 (add-hook 'js2-mode-hook (lambda () (flycheck-mode 1)))
 
+(use-package color-identifiers-mode
+  :ensure t
+  :config
+  (add-hook 'js2-mode-hook 'color-identifiers-mode))
+
 (require 'js2-imenu-extras)
 (js2-imenu-extras-setup)
+
 
 ;; Set up wrapping of pairs, with the possiblity of semicolons thrown into the mix
 
