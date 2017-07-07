@@ -1,33 +1,62 @@
-(require 'org-bullets)
-(defun myorg-update-parent-cookie ()
-  (when (equal major-mode 'org-mode)
-    (save-excursion
-      (ignore-errors
-        (org-back-to-heading)
-        (org-update-parent-todo-statistics)))))
+;;;; package --- Summary
+;;; Commentary:
+;; customo key bindings
+;;
+;;; code:
 
-(defadvice org-kill-line (after fix-cookies activate)
-  (myorg-update-parent-cookie))
+(use-package org-bullets
+  :ensure t
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
-(defadvice kill-whole-line (after fix-cookies activate)
-  (myorg-update-parent-cookie))
+;; Setup org files and directories
+(setq org-directory "~/Dropbox (BigPanda)/org")
+(setq org-inbox-file (concat org-directory "/inbox.org"))
+(setq org-someday-file (concat org-directory "/someday.org"))
+(setq org-gtd-file (concat org-directory "/gtd.org"))
+(setq org-tickler-file (concat org-directory "/tickler.org"))
 
-(add-hook 'org-mode-hook org-bullets-mode)
-(setq org-directory "~/Dropbox/org")
-(setq org-default-notes-file (concat org-directory "/notes.org"))
-(setq org-default-todo-file (concat org-directory "/todo.org"))
+;;;; Refile files:
+(setq org-refile-targets '((org-gtd-file :maxlevel . 3)
+                           (org-someday-file :level . 1)
+                           (org-tickler-file :maxlevel . 2)))
 
-(defun org-go-to-notes()
+;;;; Agenda config:
+;; I'm setting org-agenda-files with org-agenda-file-to-front
+;; untill finding a better way of doing so.
+
+(setq org-agenda-span 'week)
+(setq org-agenda-start-on-weekday nil)
+
+;; Org Capture config:
+(setq org-capture-templates '(("t" "Todo [inbox]" entry
+                               (file+headline org-inbox-file "Tasks")
+                               "* TODO %i%?")
+                              ("T" "Tickler" entry
+                               (file+headline org-tickler-file "Tickler")
+                               "* %i%? \n %U")))
+
+
+;; my-org-functions
+(defun my-org-go-to-inbox()
   (interactive)
-  (find-file org-default-notes-file))
+  (find-file org-inbox-file))
 
-(defun org-go-to-todos()
+(defun my-org-go-to-todos()
   (interactive)
-  (find-file org-default-todo-file))
+  (find-file org-gtd-file))
 
-(define-key global-map (kbd "C-c o c") 'org-capture)
-(define-key global-map (kbd "C-c o n") 'org-go-to-notes)
-(define-key global-map (kbd "C-c o a") 'org-agenda)
-(define-key global-map (kbd "C-c o t") 'org-go-to-todos)
+(defun my-org-go-to-tickler()
+  (interactive)
+  (find-file org-tickler-file))
+
+;; Keybindings
+(define-key global-map (kbd "C-c c") 'org-capture)
+(define-key global-map (kbd "C-c a") 'org-agenda)
+(define-key global-map (kbd "C-c o l") 'org-agenda-list)
+(define-key global-map (kbd "C-c o i") 'my-org-go-to-inbox)
+(define-key global-map (kbd "C-c o t") 'my-org-go-to-todos)
+(define-key global-map (kbd "C-c o T") 'my-org-go-to-tickler)
 
 (provide 'setup-org)
+;;; setup-org.el ends here
