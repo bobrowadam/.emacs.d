@@ -10,7 +10,7 @@
   :cwd "~/source/local_environment/web-api"
   :args '("web-api.js")
   :port 3000
-  :tags '(pipeline node mandatory))
+  :tags '(pipeline javascript mandatory))
 
 (prodigy-define-service
   :name "data-api"
@@ -18,7 +18,7 @@
   :cwd "~/source/local_environment/data-api"
   :args '("data-api.js")
   :port 1337
-  :tags '(pipeline node mandatory))
+  :tags '(pipeline javascript mandatory))
 
 (prodigy-define-service
   :name "enrichment"
@@ -26,7 +26,7 @@
   :cwd "~/source/local_environment/enrichment"
   :args '("enrichment.js")
   :port 3070
-  :tags '(pipeline node mandatory))
+  :tags '(pipeline javascript mandatory))
 
 (prodigy-define-service
   :name "public-api"
@@ -42,7 +42,7 @@
   :cwd "~/source/local_environment/frontier"
   ;; :args '("grunt")
   :port 8000
-  :tags '(pipeline node))
+  :tags '(pipeline js mandatory))
 
 (prodigy-define-service
   :name "correlation"
@@ -65,7 +65,7 @@
 (prodigy-define-service
   :name "snooze-api"
   :command "nodemon"
-  :cwd "~/source/local_environment/snooze"
+  :cwd "~/source/local_environment/snooze-api"
   :args '("snooze-api.js")
   :port 3053
   :tags '(pipeline node))
@@ -89,11 +89,38 @@
 (prodigy-define-service
   :name "beagle"
   :command "sbt"
-  :cwd "~/source/local_environment/"
+  :cwd "~/source/local_environment/beagle"
   :args '("run")
   :stop-signal 'sigint
   :port 3042
   :tags '(pipeline scala))
+
+(prodigy-define-service
+  :name "shaggy"
+  :command "npm"
+  :cwd "~/source/local_environment/shaggy"
+  :args '("run" "dev")
+  :stop-signal 'sigint
+  :port 8080
+  :tags '(js mandatory))
+
+(prodigy-define-service
+  :name "metadata-api"
+  :command "node"
+  :cwd "~/source/local_environment/metadata-api"
+  :args '("metadata-api.js")
+  :stop-signal 'sigint
+  :port 1338
+  :tags '(node pipeline ))
+
+(prodigy-define-service
+  :name "metadata-api"
+  :command "sbt"
+  :cwd "~/source/local_environment/atlas"
+  :args '("run")
+  :stop-signal 'sigint
+  :port
+  :tags '(node pipeline ))
 
 (provide 'setup-pipeline)
 ;;; setup-pipeline.el ends here
