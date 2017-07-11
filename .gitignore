@@ -14,3 +14,5 @@ elpa/
 url/
 *~
 /.mc-lists.el
+/diary
+/.DS_Store
