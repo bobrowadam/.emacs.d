@@ -40,6 +40,7 @@
 (add-hook 'cider-repl-mode-hook (lambda () (use-paredit-not-sp)))
 (add-hook 'emacs-lisp-mode-hook (lambda () (use-paredit-not-sp)))
 (add-hook 'lisp-mode-hook (lambda () (use-paredit-not-sp)))
+(add-hook 'slime-repl-mode-hook (lambda () (use-paredit-not-sp)))
 
 (define-key paredit-mode-map (kbd "M-(") 'paredit-wrap-round)
 (define-key paredit-mode-map (kbd "M-)") 'paredit-wrap-round-from-behind)
