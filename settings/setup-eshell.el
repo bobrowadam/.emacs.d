@@ -2,8 +2,10 @@
   (autoload 'epe-theme-lambda "eshell-prompt-extras")
   (setq eshell-highlight-prompt nil
         eshell-prompt-function 'epe-theme-lambda))
-(defalias 'openo 'find-file-other-window)
 
+(defalias 'emacso 'find-file-other-window)
+
+(add-hook 'eshell-mode-hook (lambda () (smartparens-mode t)))
 ;; Tramp integration:
 ;; (add-to-list 'eshell-modules-list 'eshell-tramp)
 
