@@ -28,6 +28,10 @@
 (setq org-agenda-span 'week)
 (setq org-agenda-start-on-weekday nil)
 
+;; Set up coordinates for org-agenda-sunrise-sunset
+(setq calendar-longitude 34)
+(setq calendar-latitude 31)
+
 ;; Org Capture config:
 (setq org-capture-templates '(("t" "Todo [inbox]" entry
                                (file+headline org-inbox-file "Tasks")
@@ -36,6 +40,11 @@
                                (file+headline org-tickler-file "Tickler")
                                "* %i%? \n %U")))
 
+;; Org Pomodoro
+(use-package org-pomodoro
+  :ensure t
+  :init
+  (global-set-key (kbd "C-c o p") 'org-pomodoro))
 
 ;; my-org-functions
 (defun my-org-go-to-inbox()
