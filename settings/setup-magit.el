@@ -6,8 +6,11 @@
   (unless prefix
     (delete-other-windows)))
 
-;; don't prompt me
+;; Add --follow-tags to magit push pop-up
+(magit-define-popup-switch 'magit-push-popup
+  ?t "Follow tags" "--follow-tags")
 
+;; don't prompt me
 (set-default 'magit-push-always-verify t)
 (set-default 'magit-revert-buffers 'silent)
 ;; (set-default 'magit-no-confirm '(stage-all-changes unstage-all-changes))
