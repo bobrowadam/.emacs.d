@@ -43,7 +43,11 @@
 ;; appearance
 (require 'appearance)
 
-
+;; Eyebrowse - "A simple-minded way of managing window configs in emacs"
+(use-package eyebrowse
+  :ensure t
+  :config
+  (eyebrowse-mode t))
 
 ;; Make backups of files, even when they're in version control
 (setq vc-make-backup-files t)
