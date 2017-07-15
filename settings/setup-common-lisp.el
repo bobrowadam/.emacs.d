@@ -3,3 +3,5 @@
   :config
   (setq inferior-lisp-program "/usr/local/bin/clisp")
   (setq slime-contribs '(slime-fancy)))
+
+(provide 'setup-common-lisp)

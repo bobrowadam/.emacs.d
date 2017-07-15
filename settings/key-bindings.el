@@ -12,7 +12,7 @@
 ;; You need to realy want to quit:
 (global-unset-key (kbd "C-x C-c"))
 (global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+
 
 ;; Editing lines:
 (global-set-key (kbd "C-c C-p") 'open-line-above)

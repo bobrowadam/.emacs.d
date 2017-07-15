@@ -43,12 +43,6 @@
 ;; appearance
 (require 'appearance)
 
-;; Eyebrowse - "A simple-minded way of managing window configs in emacs"
-(use-package eyebrowse
-  :ensure t
-  :config
-  (eyebrowse-mode t))
-
 ;; Make backups of files, even when they're in version control
 (setq vc-make-backup-files t)
 
@@ -79,10 +73,6 @@
 ;; flycheck
 (require 'flycheck)
 
-;; javascript configuration:
-;;;; js2 mode config:
-(eval-after-load 'js2-mode
-  '(add-hook 'js2-mode-hook #'add-node-modules-path 'ac-js2-mode))
 (add-hook 'js2-mode-hook 'highlight-indent-guides-mode)
 (add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
 
@@ -95,118 +85,98 @@
      (require 'tern-auto-complete)
      (tern-ac-setup)))
 
-;; (setq ac-js2-evaluate-calls t)
 ;; (require 'auto-complete)
 (setq js-indent-level 2)
 (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
-;;;; customize flycheck temp file prefix
+;; customize flycheck temp file prefix
 (setq-default flycheck-temp-prefix ".flycheck")
 
 ;; this hopefully sets up path and other vars better
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
-
-;; use local eslint from node_modules before global
-;;;; http://emacs.stackexchange.com/questions/21205/flycheck-with-file-relative-eslint-executable
-(defun my/use-eslint-from-node-modules ()
-  (let* ((root (locate-dominating-file
-                (or (buffer-file-name) default-directory)
-                "node_modules"))
-         (eslint (and root
-                      (expand-file-name "node_modules/eslint/bin/eslint.js"
-                                        root))))
-    (when (and eslint (file-executable-p eslint))
-      (setq-local flycheck-javascript-eslint-executable eslint))))
-
-(add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
-
 ;; eslint configuration:
 (add-hook 'after-init-hook #'global-flycheck-mode)
-
-;; disable jshint:
-(setq-default flycheck-disabled-checkers
-  (append flycheck-disabled-checkers
-    '(javascript-jshint)))
-
 (setenv "path" (concat (getenv "path") ":/usr/local/bin"))
 (setq exec-path (append exec-path '("/usr/local/bin")))
 
 ;; magit configuratinon
 (global-set-key (kbd "C-x g") 'magit-status)
-;;;; magithub config:
-(require 'magithub)
-(magithub-feature-autoinject t)
-(setq magithub-clone-default-directory "~/source/")
+(use-package magithub
+  :ensure t
+  :config
+  (magithub-feature-autoinject t)
+  (setq magithub-clone-default-directory "~/source/"))
 
-;; slime
-(load "setup-common-lisp")
+;; Lisp
+(require 'setup-common-lisp)
 
-;; paredit
+;; Paredit
 (load "setup-paredit")
 
-;; smartparens
+;; Smartparens
 (load "setup-smartparens")
 (load "setup-org")
 
 ;; projectile:
 (projectile-mode)
-
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
+;; Shows available keys
 (require 'which-key)
 (which-key-mode +1)
 
+;; Load setup files:
 (eval-after-load 'ido '(require 'setup-ido))
 (eval-after-load 'dired '(require 'setup-dired))
 (eval-after-load 'magit '(require 'setup-magit))
 (eval-after-load 'grep '(require 'setup-rgrep))
 (eval-after-load 'eshell '(require 'setup-eshell))
 (eval-after-load 'prodigy '(require 'setup-pipeline))
-
-
-
+(eval-after-load 'tramp '(require 'setup-tramp))
 
 (load "key-bindings")
 
-;; visual regexp
-;; (require 'visual-regexp)
-;; (define-key global-map (kbd "m-%") 'vr/query-replace)
-;; (define-key global-map (kbd "m-/") 'vr/replace)
+;; Visual regexp
+(use-package visual-regexp
+  :ensure t
+  :config
+  (define-key global-map (kbd "M-%") 'vr/query-replace)
+  (define-key global-map (kbd "M-/") 'vr/replace))
 
 ;; Tramp
-(custom-set-variables
- '(tramp-password-prompt-regexp
-   (concat
-    "^.*"
-    (regexp-opt
-     '("passphrase" "Passphrase"
-       ;; English
-       "password" "Verification code"
-       ;; Deutsch
-       "passwort" "Passwort"
-       ;; Français
-       "mot de passe" "Mot de passe")
-     t)
-    ".*:\0? *")
-   nil (tramp)))
+;; (custom-set-variables
+;;  '(tramp-password-prompt-regexp
+;;    (concat
+;;     "^.*"
+;;     (regexp-opt
+;;      '("passphrase" "Passphrase"
+;;        ;; English
+;;        "password" "Verification code"
+;;        ;; Deutsch
+;;        "passwort" "Passwort"
+;;        ;; Français
+;;        "mot de passe" "Mot de passe")
+;;      t)
+;;     ".*:\0? *")
+;;    nil (tramp)))
 
 
-;;;; to connect via shadow:
-;;;; /sshx:shadow|ssh:ubuntu@od-orenhazan|sudo:root@od-orenhazan:/
-(add-to-list 'tramp-default-proxies-alist
-             '("od-orenhazan" "\\`ubuntu\\'" "/sshx:shadow:")
-             '("prod-einstein-1" "\\`ubuntu\\'" "/sshx:shadow:"))
-(add-to-list 'tramp-restricted-shell-hosts-alist
-             "\\shadow\\'")
+;; ;;;; to connect via shadow:
+;; ;;;; /sshx:shadow|ssh:ubuntu@od-orenhazan|sudo:root@od-orenhazan:/
+;; (add-to-list 'tramp-default-proxies-alist
+;;              '("od-orenhazan" "\\`ubuntu\\'" "/sshx:shadow:")
+;;              '("prod-einstein-1" "\\`ubuntu\\'" "/sshx:shadow:"))
+;; (add-to-list 'tramp-restricted-shell-hosts-alist
+;;              "\\shadow\\'")
 
-;;Disable projectile mode line project naming for better performance:
-(add-hook 'find-file-hook
-          (lambda ()
-            (when (file-remote-p default-directory)
-              (setq-local projectile-mode-line "Projectile"))))
+;; ;;Disable projectile mode line project naming for better performance:
+;; (add-hook 'find-file-hook
+;;           (lambda ()
+;;             (when (file-remote-p default-directory)
+;;               (setq-local projectile-mode-line "Projectile"))))
 
 ;; pdf - tools:
 (pdf-tools-install)
@@ -227,10 +197,10 @@
 (require 'flex-isearch)
 
 (global-flex-isearch-mode t)
-(global-set-key (kbd "M-C-s") 'flex-isearch-forward)
-(global-set-key (kbd "M-C-r") 'flex-isearch-backward)
-(global-set-key (kbd "C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "C-s") 'flex-isearch-forward)
+(global-set-key (kbd "C-r") 'flex-isearch-backward)
+(global-set-key (kbd "M-C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "M-C-r") 'isearch-backward-regexp)
 
 ;; ace jump config:
 (autoload
@@ -273,6 +243,27 @@
 (use-package slime
   :ensure t
   :config (setq inferior-lisp-program "/usr/local/bin/clisp"))
+
+(use-package ibuffer-vc
+  :ensure t
+  :init
+  (global-set-key (kbd "C-x C-b") 'ibuffer)
+  :config
+  (add-hook 'ibuffer-hook
+            (lambda ()
+              (ibuffer-vc-set-filter-groups-by-vc-root)
+              (unless (eq ibuffer-sorting-mode 'recency)
+                (ibuffer-do-sort-by-recency)))))
+
+(use-package add-node-modules-path
+  :ensure t
+  :config
+  (eval-after-load 'js2-mode
+    '(add-hook 'js2-mode-hook #'add-node-modules-path)))
+
+;;Speed typing tutor:
+(use-package speed-type
+  :ensure t)
 
 (provide 'init)
 ;;; init.el ends here

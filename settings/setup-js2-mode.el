@@ -20,6 +20,8 @@
 (setq-default js2-strict-trailing-comma-warning nil) ;; jshint does not warn about this now for some reason
 
 (add-hook 'js2-mode-hook (lambda () (flycheck-mode 1)))
+(add-hook 'js2-mode-hook 'highlight-indent-guides-mode)
+(add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
 
 (use-package color-identifiers-mode
   :ensure t
@@ -107,6 +109,8 @@
    ((js2-call-node-p (js2-node-at-point)) (js2r--comma-unless ")"))
    ((js2r--does-not-need-semi) "")
    (:else ";")))
+
+
 
 (js2r--setup-wrapping-pair "(" ")")
 (js2r--setup-wrapping-pair "{" "}")
@@ -271,8 +275,17 @@
       (indent-line-to offset))))
 
 ;; setup xref-js2:
-(define-key js2-mode-map (kbd "M-.") nil)
-(add-hook 'js2-mode-hook (lambda ()
-                           (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
+;; (define-key js2-mode-map (kbd "M-.") nil)
+;; (add-hook 'js2-mode-hook (lambda ()
+;;                            (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
+
+;; tern
+(autoload 'tern-mode "tern.el" nil t)
+(ac-config-default)
+(add-hook 'js-mode-hook (lambda () (tern-mode t)))
+(eval-after-load 'tern
+  '(progn
+     (require 'tern-auto-complete)
+     (tern-ac-setup)))
 
 (provide 'setup-js2-mode)
