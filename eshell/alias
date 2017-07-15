@@ -2,3 +2,5 @@ alias AssertionError:  $*
 alias emacs find-file $1
 alias ll ls -l $*
 alias lsa ls -a $*
+alias s magit-status
+alias docstart docker start ${docker ps -a -q}
