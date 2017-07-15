@@ -25,7 +25,7 @@
 (setq sml/theme 'dark)
 
 ;;;; loading:
-(setq themes-wanted '(abyss lush manoj-dark cyberpunk purple-haze ample tronesque plan9 railscasts-reloaded planet zweilight))
+(setq themes-wanted '(abyss lush manoj-dark cyberpunk purple-haze ample tronesque plan9 railscasts-reloaded planet zweilight afternoon))
 
 (defun load-random-theme-with-sml ()
   "Call load-random-theme with sml/setup."

@@ -185,6 +185,6 @@ Both PATTERN and CONTENTS are matched as regular expressions."
 (defun show-current-theme()
   "show the current enabled theme"
   (interactive)
-  (message "current enabled theme is %s" custom-enabled-themes))
+  (message "current enabled theme is %s" (cdr custom-enabled-themes)))
 
 (defmacro comment (&rest ignore))
