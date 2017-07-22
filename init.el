@@ -144,6 +144,7 @@
   :ensure t
   :config
   (define-key global-map (kbd "M-%") 'vr/query-replace)
+  (define-key global-map (kbd "C-M-%") 'vr/replace))
 
 ;; pdf - tools:
 (pdf-tools-install)
