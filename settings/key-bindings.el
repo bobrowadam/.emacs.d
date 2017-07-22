@@ -17,8 +17,7 @@
 ;; Editing lines:
 (global-set-key (kbd "C-c C-p") 'open-line-above)
 (global-set-key (kbd "C-c C-n") 'open-line-below)
-(global-set-key (kbd "C-c C-j") 'open-line-and-indent)
-(global-set-key (kbd "C-c C-w") 'kill-and-retry-line)
+(global-set-key (kbd "C-c C-k") 'kill-and-retry-line)
 (global-set-key (kbd "C-^") (λ (delete-indentation '-)))
 
 ;; Counsel
