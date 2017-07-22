@@ -38,9 +38,9 @@
 
 (prodigy-define-service
   :name "frontier"
-  :command "grunt"
+  :command "npm"
   :cwd "~/source/local_environment/frontier"
-  ;; :args '("grunt")
+  :args '("run dev")
   :port 8000
   :tags '(pipeline js mandatory))
 
