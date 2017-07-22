@@ -232,6 +232,13 @@
 (use-package speed-type
   :ensure t)
 
+;; increment numbers:
+(use-package shift-number
+  :ensure t
+  :config
+  ((global-set-key (kbd "M-C-+") 'shift-number-up)
+    (global-set-key (kbd "M-C-_") 'shift-number-down)))
 (provide 'init)
+
 ;;; init.el ends here
 (put 'narrow-to-region 'disabled nil)
