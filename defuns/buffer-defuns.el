@@ -1,6 +1,8 @@
 ;; Buffer-related defuns
 
 (require 'imenu)
+(use-package s
+  :ensure t)
 
 (defvar buffer-local-mode nil)
 (make-variable-buffer-local 'buffer-local-mode)
@@ -152,7 +154,7 @@ Including indent-buffer, which should not be called automatically on save."
   (concat (cadr (reverse (split-string file-name "/"))) "/"
           (file-name-nondirectory file-name)))
 
-(require 's)
+;; (require 's)
 
 (defvar user-home-directory (concat (expand-file-name "~") "/"))
 

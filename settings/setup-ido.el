@@ -11,17 +11,22 @@
       ido-max-prospects 10)
 
 ;; Try out flx-ido for better flex matching between words
-(require 'flx-ido)
-(flx-ido-mode 1)
+;; (use-package flx-ido
+;;   :ensure t
+;;   :config
+;;   (flx-ido-mode 1))
+
 ;; disable ido faces to see flx highlights.
 (setq ido-use-faces nil)
 
 ;; flx-ido looks better with ido-vertical-mode
-(require 'ido-vertical-mode)
-(ido-vertical-mode)
-
-;; C-n/p is more intuitive in vertical layout
-(setq ido-vertical-define-keys 'C-n-C-p-up-down-left-right)
+(use-package  ido-vertical-mode
+  :ensure t
+  :init
+  ;; C-n/p is more intuitive in vertical layout
+  (setq ido-vertical-define-keys 'C-n-C-p-up-down-left-right)
+  :config
+  (ido-vertical-mode))
 
 (require 'dash)
 
@@ -54,22 +59,23 @@
 (add-to-list 'ido-ignore-directories "node_modules")
 
 ;; Ido at point (C-,)
-(require 'ido-at-point)
-(ido-at-point-mode)
+(use-package ido-at-point
+  :ensure t
+  :config (ido-at-point-mode))
 
 ;; Use ido everywhere
-(require 'ido-ubiquitous)
+(require 'ido-completing-read+)
 (ido-ubiquitous-mode 1)
 
-;; fix ido-ubiquitous for newer packages
-(defmacro ido-ubiquitous-use-new-completing-read (cmd package)
-  `(eval-after-load ,package
-     '(defadvice ,cmd (around ido-ubiquitous-new activate)
-        (let ((ido-ubiquitous-enable-compatibility nil))
-          ad-do-it))))
+;; ;; fix ido-ubiquitous for newer packages
+;; (defmacro ido-ubiquitous-use-new-completing-read (cmd package)
+;;   `(eval-after-load ,package
+;;      '(defadvice ,cmd (around ido-ubiquitous-new activate)
+;;         (let ((ido-ubiquitous-enable-compatibility nil))
+;;           ad-do-it))))
 
-(ido-ubiquitous-use-new-completing-read webjump 'webjump)
-(ido-ubiquitous-use-new-completing-read yas-expand 'yasnippet)
-(ido-ubiquitous-use-new-completing-read yas-visit-snippet-file 'yasnippet)
+;; (ido-ubiquitous-use-new-completing-read webjump 'webjump)
+;; (ido-ubiquitous-use-new-completing-read yas-expand 'yasnippet)
+;; (ido-ubiquitous-use-new-completing-read yas-visit-snippet-file 'yasnippet)
 
 (provide 'setup-ido)

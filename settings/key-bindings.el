@@ -13,7 +13,6 @@
 (global-unset-key (kbd "C-x C-c"))
 (global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
 
-
 ;; Editing lines:
 (global-set-key (kbd "C-c C-p") 'open-line-above)
 (global-set-key (kbd "C-c C-n") 'open-line-below)
@@ -22,6 +21,7 @@
 
 ;; Counsel
 (global-set-key (kbd "M-y") 'counsel-yank-pop)
+
 (global-set-key (kbd "C-h f") 'describe-function)
 (global-set-key (kbd "C-h v") 'describe-variable)
 
@@ -29,8 +29,7 @@
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-c C->") 'mc/mark-all-like-this)
 
-;; Expand region:
-(global-set-key (kbd "C-M-S-SPC") 'er/expand-region)
+
 
 ;; Helm
 (global-set-key (kbd "C-x f") 'helm-find-files)
@@ -38,9 +37,11 @@
 (global-set-key (kbd "C-x C-d") 'ag-dired-regexp)
 
 ;; Smex:
-(global-set-key (kbd "M-x") 'smex)
-(global-set-key (kbd "M-X") 'smex-major-mode-commands)
-(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
+(use-package smex
+  :ensure t
+  :bind (( "M-x" . smex)
+         ("M-X" . smex-major-mode-commands)
+         ("C-c C-c M-x" . execute-extended-command)))
 
 ;; Windows
 (global-set-key (kbd "M-o") 'other-window)

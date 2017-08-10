@@ -10,6 +10,16 @@
 (setq display-time-default-load-average nil)
 (setq display-time-24hr-format 't)
 
+;; Line numbers
+;; highlight the current line number
+(use-package hlinum
+  :ensure t
+  :config
+  (hlinum-activate))
+
+(setq linum-format " %3d ")
+;; turn on line numbers in prog-mode
+(add-hook 'prog-mode-hook 'linum-mode)
 
 ;;;; Mode line:
 (use-package rich-minority
@@ -20,25 +30,50 @@
   :config
   (rich-minority-mode 1 ))
 
-(setq sml/theme 'automatic)
-(setq sml/theme 'automatic)
-(setq sml/theme 'dark)
 
 ;;;; loading:
+(setq themes-to-install '(abyss-theme lush-theme cyberpunk-theme purple-haze-theme ample-theme tronesque-theme plan9-theme railscasts-reloaded-theme planet-theme zweilight-theme afternoon-theme))
+
+(defun install-themes (themes-list)
+  (let ( (theme (car themes-list))
+         (next-themes (cdr themes-list)))
+    (unless (package-installed-p theme)
+      (package-install theme))
+    (when next-themes (install-themes next-themes))))
+
 (setq themes-wanted '(abyss lush manoj-dark cyberpunk purple-haze ample tronesque plan9 railscasts-reloaded planet zweilight afternoon))
 
-(defun load-random-theme-with-sml ()
-  "Call load-random-theme with sml/setup."
-  (interactive)
-  (load-random-favorite-theme themes-wanted '(sml/setup))
-  (show-current-theme))
+(install-themes themes-to-install)
 
-(load-random-theme-with-sml)
-(global-set-key (kbd "C-c l r") 'load-random-theme-with-sml)
+(use-package smart-mode-line
+  :ensure t
+  :init
+  (defun load-random-favorite-theme(themes-wanted &optional function)
+    (mapc #'disable-theme custom-enabled-themes)
+    (load-theme (nth (random (length themes-wanted)) themes-wanted) t nil )
+    (when function
+      (eval function)))
+  
+  (defun show-current-theme()
+    "show the current enabled theme"
+    (interactive)
+    (message "current enabled theme is %s" (cdr custom-enabled-themes)))
+  
+  :config
+  (setq sml/theme 'dark)
+  (setq sml/no-confirm-load-theme t)
+  (load-random-favorite-theme themes-wanted '(sml/setup))
+  (show-current-theme)
+    (global-set-key (kbd "C-c l r") 'load-random-theme-with-sml))
+
 
 ;; Font:
-;; (set-face-attribute 'default nil :font "Hack 18")
-(set-face-attribute 'default nil :font "Monaco 18")
+(set-face-attribute 'default nil :font "Hack 18")
+;; (set-face-attribute 'default nil :font "Monaco 18")
+
+(use-package rainbow-delimiters
+  :ensure t
+  :config (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 
 (provide 'appearance)
 ;;; appearance.el ends here

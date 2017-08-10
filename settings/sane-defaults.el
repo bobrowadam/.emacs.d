@@ -93,7 +93,9 @@
 (set-default 'indicate-empty-lines t)
 
 ;; Keep cursor away from edges when scrolling up/down
-(require 'smooth-scrolling)
+(use-package smooth-scrolling
+ :ensure t
+ :config (smooth-scrolling-mode t))
 
 ;; Allow recursive minibuffers
 (setq enable-recursive-minibuffers t)
@@ -149,6 +151,12 @@
       (make-directory parent-directory t))))
 
 (add-to-list 'find-file-not-found-functions 'my-create-non-existent-directory)
+
+;;Show match numbers when searching
+(use-package anzu
+  :ensure t
+  :config
+  (global-anzu-mode +1))
 
 (provide 'sane-defaults)
 ;;; sane-defaults ends here

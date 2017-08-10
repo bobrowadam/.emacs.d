@@ -17,8 +17,22 @@
 	("melpa" . "http://melpa.org/packages/")
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
-;;Show match numbers when searching
-(global-anzu-mode +1)
+(unless (package-installed-p 'use-package)
+  (progn 
+    (package-refresh-contents
+    (package-install 'use-package))))
+
+(unless (package-installed-p 'req-package)
+  (progn 
+    (package-refresh-contents
+     (package-install 'req-package))))
+
+;; Set shell path 
+(when (memq window-system '(mac ns))
+  (use-package exec-path-from-shell
+    :ensure t
+    :config
+    (exec-path-from-shell-initialize)))
 
 ;; Set path to dependencies
 (setq settings-dir
@@ -30,12 +44,15 @@
 (add-to-list 'load-path settings-dir)
 (add-to-list 'load-path site-lisp-dir)
 
+;; Smartparens
+(load "setup-smartparens")
+(load "setup-org")
+
 ;; Functions (load all files in defuns-dir)
 (setq defuns-dir (expand-file-name "defuns" user-emacs-directory))
 (dolist (file (directory-files defuns-dir t "\\w+"))
   (when (file-regular-p file)
     (load file)))
-
 
 ;; Lets start with a attering of sanity
 (require 'sane-defaults)
@@ -60,41 +77,40 @@
 (global-set-key (kbd "M-_") 'negative-argument)
 
 ;; C-w kill line on point
-(whole-line-or-region-mode 1)
-
-
+(use-package whole-line-or-region
+  :ensure t
+  :config
+  (whole-line-or-region-mode 1))
 
 ;; helm
-(require 'helm-config)
+;; (require 'helm-config)
 
 ;; imenu lets you jump around for jumping to points of interest in a buffer
 (global-set-key (kbd "M-i") 'imenu)
 
 ;; flycheck
-(require 'flycheck)
+(load "setup-flycheck")
 
 (add-hook 'js2-mode-hook 'highlight-indent-guides-mode)
 (add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
 
-;; tern
-(autoload 'tern-mode "tern.el" nil t)
-(ac-config-default)
-(add-hook 'js-mode-hook (lambda () (tern-mode t)))
-(eval-after-load 'tern
-  '(progn
-     (require 'tern-auto-complete)
-     (tern-ac-setup)))
+;; js2
+(load "setup-js2-mode")
 
-;; (require 'auto-complete)
-(setq js-indent-level 2)
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+;; ;; tern
+;; (autoload 'tern-mode "tern.el" nil t)
 
-;; customize flycheck temp file prefix
-(setq-default flycheck-temp-prefix ".flycheck")
+;; (add-hook 'js-mode-hook (lambda () (tern-mode t)))
+;; (eval-after-load 'tern
+;;   '(progn
+;;      (require 'tern-auto-complete)
+;;      (tern-ac-setup)))
+
+;; ;; (require 'auto-complete)
+;; (setq js-indent-level 2)
+;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
 ;; this hopefully sets up path and other vars better
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))
 
 ;; eslint configuration:
 (add-hook 'after-init-hook #'global-flycheck-mode)
@@ -107,7 +123,7 @@
   :ensure t
   :config
   (magithub-feature-autoinject t)
-  (setq magithub-clone-default-directory "~/source/"))
+  (setq magithub-clone-default-directory (expand-file-name "source" user-home-directory )))
 
 ;; Lisp
 (require 'setup-common-lisp)
@@ -115,18 +131,20 @@
 ;; Paredit
 (load "setup-paredit")
 
-;; Smartparens
-(load "setup-smartparens")
-(load "setup-org")
-
 ;; projectile:
-(projectile-mode)
+(use-package projectile
+  :ensure t
+  :config
+  (projectile-mode))
+
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
 ;; Shows available keys
-(require 'which-key)
-(which-key-mode +1)
+(use-package which-key
+  :ensure t
+  :config
+  (which-key-mode +1))
 
 ;; Load setup files:
 (eval-after-load 'ido '(require 'setup-ido))
@@ -147,58 +165,48 @@
   (define-key global-map (kbd "C-M-%") 'vr/replace))
 
 ;; pdf - tools:
-(pdf-tools-install)
+(use-package pdf-tools
+  :ensure t
+  :config (pdf-tools-install))
 
-;; (require 'expand-region)
-(require 'multiple-cursors)
-(require 'delsel)
-(require 'jump-char)
-(require 'eproject)
-(require 'wgrep)
-(require 'smart-forward)
-(require 'change-inner)
-(require 'multifiles)
-(require 'smex)
+(use-package expand-region
+  :ensure t
+  :bind ("C-M-S-SPC" . er/expand-region))
 
+(use-package multiple-cursors :ensure t)
 
-;; Flex search mode
-(require 'flex-isearch)
+;; (require 'delsel)
+;; (require 'wgrep)
 
-(global-flex-isearch-mode t)
-(global-set-key (kbd "C-s") 'flex-isearch-forward)
-(global-set-key (kbd "C-r") 'flex-isearch-backward)
-(global-set-key (kbd "M-C-s") 'isearch-forward-regexp)
-(global-set-key (kbd "M-C-r") 'isearch-backward-regexp)
+;; Search
+(use-package flex-isearch
+  :ensure t
+  :bind
+  (("C-c s" . flex-isearch-forward)
+   ("C-c r" . flex-isearch-backward))
+  :config (global-flex-isearch-mode))
 
-;; ace jump config:
-(autoload
-  'ace-jump-mode-pop-mark
-  "ace-jump-mode"
-  "ace jump back:-)"
-  t)
-(eval-after-load "ace-jump-mode"
-  '(ace-jump-mode-enable-mark-sync))
-
-;; Line numbers
-;; highlight the current line number
-(hlinum-activate)
-(setq linum-format " %3d ")
-;; turn on line numbers in prog-mode
-(add-hook 'prog-mode-hook 'linum-mode)
+(global-set-key (kbd "C-s") 'isearch-forward-use-region)
+(global-set-key (kbd "C-r") 'isearch-forward-use-region)
 
 ;; flyspell
-(require 'flyspell-correct-ido)
-(define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic)
-(global-set-key (kbd "C-;") 'flyspell-correct-word-generic)
+(use-package flyspell-correct-helm
+  :ensure t
+  :config
+  (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic)
+  (global-set-key (kbd "C-;") 'flyspell-correct-word-generic))
+
 
 ;; worksapces setup:
 (require 'setup-perspective)
 
 ;; windows with ace-window
-(require 'ace-window)
-(global-set-key (kbd "C-x o") 'ace-window )
-(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-(setq aw-dispatch-always t)
+(use-package ace-window
+  :ensure t
+  :config
+  (global-set-key (kbd "C-x o") 'ace-window )
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (setq aw-dispatch-always t))
 
 (use-package pretty-mode
   :ensure t
@@ -223,11 +231,7 @@
               (unless (eq ibuffer-sorting-mode 'recency)
                 (ibuffer-do-sort-by-recency)))))
 
-(use-package add-node-modules-path
-  :ensure t
-  :config
-  (eval-after-load 'js2-mode
-    '(add-hook 'js2-mode-hook #'add-node-modules-path)))
+
 
 ;;Speed typing tutor:
 (use-package speed-type
@@ -237,8 +241,9 @@
 (use-package shift-number
   :ensure t
   :config
-  ((global-set-key (kbd "M-C-+") 'shift-number-up)
-    (global-set-key (kbd "M-C-_") 'shift-number-down)))
+  (global-set-key (kbd "M-C-+") 'shift-number-up)
+  (global-set-key (kbd "M-C-_") 'shift-number-down))
+
 (provide 'init)
 
 ;;; init.el ends here

@@ -1,5 +1,14 @@
-(require 'flycheck)
-(require 'flycheck-pos-tip)
+(use-package flycheck
+  :ensure t
+  :config
+  ;; customize flycheck temp file prefix
+  (setq-default flycheck-temp-prefix ".flycheck"))
+
+(use-package flycheck-pos-tip
+  :ensure t
+  :config
+  (with-eval-after-load 'flycheck
+    (flycheck-pos-tip-mode)))
 
 (defun magnars/adjust-flycheck-automatic-syntax-eagerness ()
   "Adjust how often we check for errors based on if there are any.
@@ -36,5 +45,7 @@ threaded system and the forced deferred makes errors never show
 up before you execute another command."
   (flycheck-clear-idle-change-timer)
   (flycheck-buffer-automatically 'idle-change))
+
+
 
 (provide 'setup-flycheck)

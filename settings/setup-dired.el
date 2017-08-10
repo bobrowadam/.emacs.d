@@ -2,9 +2,14 @@
 (require 'dash)
 
 ;; Make dired less verbose
-(require 'dired-details+)
-(setq-default dired-details-hidden-string "--- ")
-(dired-details-install)
+(use-package dired+
+  :ensure t
+  :config ())
+
+(use-package dired-details+
+  :ensure t
+  :init (setq-default dired-details-hidden-string "|--- ")
+  :config (dired-details-install))
 
 ;; Move files between split panes
 (setq dired-dwim-target t)
@@ -31,8 +36,8 @@
   (beginning-of-buffer)
   (dired-next-line 4))
 
-(define-key dired-mode-map (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
-(define-key dired-mode-map (vector 'remap 'smart-up) 'dired-back-to-top)
+;; (define-key dired-mode-map (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
+;; (define-key dired-mode-map (vector 'remap 'smart-up) 'dired-back-to-top)
 
 ;; M-down is nicer in dired if it moves to the last file
 (defun dired-jump-to-bottom ()
@@ -40,16 +45,16 @@
   (end-of-buffer)
   (dired-next-line -1))
 
-(define-key dired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
-(define-key dired-mode-map (vector 'remap 'smart-down) 'dired-jump-to-bottom)
+;; (define-key dired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
+;; (define-key dired-mode-map (vector 'remap 'smart-down) 'dired-jump-to-bottom)
 
 ;; Delete with C-x C-k to match file buffers and magit
-(define-key dired-mode-map (kbd "C-x C-k") 'dired-do-delete)
+;; (define-key dired-mode-map (kbd "C-x C-k") 'dired-do-delete)
 
-(eval-after-load "wdired"
-  '(progn
-     (define-key wdired-mode-map (kbd "C-a") 'dired-back-to-start-of-files)
-     (define-key wdired-mode-map (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
-     (define-key wdired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)))
+;; (eval-after-load "wdired"
+;;   '(progn
+;;      (define-key wdired-mode-map (kbd "C-a") 'dired-back-to-start-of-files)
+;;      (define-key wdired-mode-map (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
+;;      (define-key wdired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)))
 
 (provide 'setup-dired)

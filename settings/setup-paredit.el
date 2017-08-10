@@ -4,9 +4,11 @@
 ;;;
 ;;; code:
 
-(require 'paredit)
-(require 'dash)
-(require 's)
+(use-package paredit
+  :ensure t)
+
+;; (require 'dash)
+;; (require 's)
 
 (defun paredit-wrap-round-from-behind ()
   (interactive)
