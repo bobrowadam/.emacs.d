@@ -3,4 +3,5 @@
 # key: jlog
 # --
 console.log("-------------------------------------\n${1:enumarate}: ",
-JSON.stringify($1));
+JSON.stringify($1),
+"\n-------------------------------------");

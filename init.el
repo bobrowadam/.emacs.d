@@ -188,10 +188,6 @@
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (setq aw-dispatch-always t))
 
-(use-package pretty-mode
-  :ensure t
-  :config (add-hook 'js2-mode-hook 'turn-on-pretty-mode))
-
 (use-package mode-icons
   :ensure t
   :config (mode-icons-mode))
