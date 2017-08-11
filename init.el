@@ -129,8 +129,8 @@
 (use-package setup-ido)
 (use-package setup-dired)
 (use-package setup-magit)
+(use-package setup-eshell)
 (eval-after-load 'grep '(use-package setup-rgrep))
-(eval-after-load 'eshell '(use-package setup-eshell))
 (eval-after-load 'prodigy '(use-package setup-pipeline))
 (eval-after-load 'tramp '(use-package setup-tramp))
 
