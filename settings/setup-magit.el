@@ -39,6 +39,7 @@
   
   ;; Magithub
   (use-package magithub
+    :disabled
     :ensure t
     :config
     (magithub-feature-autoinject t)
