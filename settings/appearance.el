@@ -21,7 +21,7 @@
 ;; turn on line numbers in prog-mode
 (add-hook 'prog-mode-hook 'linum-mode)
 
-;;;; Mode line:
+;;;; Mode line show only whitelisted symbols and not the whole minor modes:
 (use-package rich-minority
   :ensure t
   :init
@@ -30,8 +30,8 @@
   :config
   (rich-minority-mode 1 ))
 
-
 ;;;; loading:
+;; installing all themes:
 (setq themes-to-install '(abyss-theme lush-theme cyberpunk-theme purple-haze-theme ample-theme tronesque-theme plan9-theme railscasts-reloaded-theme planet-theme zweilight-theme afternoon-theme))
 
 (defun install-themes (themes-list)
@@ -41,19 +41,11 @@
       (package-install theme))
     (when next-themes (install-themes next-themes))))
 
-(setq themes-wanted '(abyss lush manoj-dark cyberpunk purple-haze ample tronesque plan9 railscasts-reloaded planet zweilight afternoon))
-
 (install-themes themes-to-install)
 
 (use-package smart-mode-line
   :ensure t
   :init
-  (defun load-random-favorite-theme(themes-wanted &optional function)
-    (mapc #'disable-theme custom-enabled-themes)
-    (load-theme (nth (random (length themes-wanted)) themes-wanted) t nil )
-    (when function
-      (eval function)))
-  
   (defun show-current-theme()
     "show the current enabled theme"
     (interactive)
@@ -62,12 +54,27 @@
   :config
   (setq sml/theme 'dark)
   (setq sml/no-confirm-load-theme t)
-  (load-random-favorite-theme themes-wanted '(sml/setup))
-  (show-current-theme)
-    (global-set-key (kbd "C-c l r") 'load-random-theme-with-sml))
+  (load-theme 'wombat)
+  (sml/setup)
+  (show-current-theme))
 
+;; Random theme:
 
-;; Font:
+(setq themes-wanted '(abyss lush manoj-dark cyberpunk purple-haze ample tronesque plan9 railscasts-reloaded planet zweilight afternoon))
+
+(defun load-random-favorite-theme(themes-wanted &optional function)
+  (mapc #'disable-theme custom-enabled-themes)
+  (load-theme (nth (random (length themes-wanted)) themes-wanted) t nil )
+  (when function
+    (eval function)))
+
+(defun load-random-theme-with-sml ()
+  (interactive)
+  (load-random-favorite-theme themes-wanted '(sml/setup)))
+
+(global-set-key (kbd "C-c l r") 'load-random-theme-with-sml)
+
+;; Fonts:
 (set-face-attribute 'default nil :font "Hack 18")
 ;; (set-face-attribute 'default nil :font "Monaco 18")
 
@@ -76,4 +83,5 @@
   :config (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 
 (provide 'appearance)
+
 ;;; appearance.el ends here

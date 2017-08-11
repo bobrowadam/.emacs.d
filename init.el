@@ -16,11 +16,12 @@
   :ensure t
   :init
   (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
+  ;; (setq dashboard-startup-banner "~/Pictures/never-go-full-retard-tee_design_small.png")
   (setq dashboard-startup-banner 'logo)
   (setq dashboard-items '((recents  . 5)
-                          (bookmarks . 5)
+                          (agenda . 5)
                           (projects . 5)
-                          (agenda . 5)))
+                          ))
   :config
   (dashboard-setup-startup-hook))
 
