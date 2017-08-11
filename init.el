@@ -125,10 +125,9 @@
   (which-key-mode +1))
 
 ;; Load setup files:
-(eval-after-load 'ido '(use-package setup-ido))
+(use-package setup-ido)
 (eval-after-load 'dired '(use-package setup-dired))
 (use-package setup-magit)
-;; (eval-after-load 'magit '(use-package setup-magit))
 (eval-after-load 'grep '(use-package setup-rgrep))
 (eval-after-load 'eshell '(use-package setup-eshell))
 (eval-after-load 'prodigy '(use-package setup-pipeline))
