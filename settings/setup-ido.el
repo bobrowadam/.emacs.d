@@ -1,4 +1,8 @@
-;; Interactively Do Things
+;;; package --- Summary
+;;;; Ido setup
+;;; Commentary:
+;;;
+;;; Code:
 
 (use-package ido
   :ensure t
@@ -64,9 +68,8 @@
 
   ;; Use ido everywhere
   (use-package ido-completing-read+
-    :ensure t
     :config
-    (ido-ubiquitous-mode 1))
-  )
+    (ido-ubiquitous-mode 1)))
 
 (provide 'setup-ido)
+;;; setup-ido.el ends here
