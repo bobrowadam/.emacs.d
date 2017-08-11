@@ -27,6 +27,7 @@
 
 
 (use-package s)
+(use-package dash)
 
 ;; Set shell path 
 (use-package exec-path-from-shell
@@ -126,7 +127,7 @@
 
 ;; Load setup files:
 (use-package setup-ido)
-(eval-after-load 'dired '(use-package setup-dired))
+(use-package setup-dired)
 (use-package setup-magit)
 (eval-after-load 'grep '(use-package setup-rgrep))
 (eval-after-load 'eshell '(use-package setup-eshell))
