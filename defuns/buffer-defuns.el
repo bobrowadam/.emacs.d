@@ -1,6 +1,6 @@
 ;; Buffer-related defuns
 
-(require 'imenu)
+(use-package imenu)
 (use-package s
   :ensure t)
 

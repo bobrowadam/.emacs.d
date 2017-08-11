@@ -201,7 +201,7 @@
 ;;                        " *, *" t))
 ;;                 ))))
 
-(require 'json)
+(use-package json)
 
 ;; ;;(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
 ;; (eval-after-load 'auto-complete

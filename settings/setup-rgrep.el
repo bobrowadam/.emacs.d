@@ -1,4 +1,4 @@
-(require 's)
+
 
 (defun rgrep-fullscreen (regexp &optional files dir confirm)
   "Open grep in full screen, saving windows."
@@ -79,7 +79,7 @@
 
 ;; Command to add cursor to all matches in wgrep
 
-(require 'dash)
+
 
 (defvar grep-match-positions nil)
 (make-variable-buffer-local 'grep-match-positions)

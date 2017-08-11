@@ -8,7 +8,7 @@
 ;;;
 ;;; Code:
 
-(require 'diminish)
+(use-package diminish)
 
 ;; Out of the box, Every single major and minor mode gets put onto the modeline
 ;; which clutters it up terribly. Using diminish we can hide or abbreviate modes

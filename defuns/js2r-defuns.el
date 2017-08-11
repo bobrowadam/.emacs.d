@@ -1,6 +1,6 @@
-(require 'cl)
-(require 's)
-(require 'dash)
+(use-package cl)
+
+
 
 (defvar js2r-path-to-tests "/test/"
   "Path to tests from a root shared with sources")

@@ -94,7 +94,7 @@ region-end is used."
 
 ;; automatically indenting yanked text if in programming-modes
 
-(require 'dash)
+
 
 (defvar yank-indent-modes '(prog-mode
                             sgml-mode
@@ -228,7 +228,7 @@ region-end is used."
                     (goto-char (point-max))
                     (line-number-at-pos)))))
 
-(require 's)
+
 
 (defun incs (s &optional num)
   (let* ((inc (or num 1))

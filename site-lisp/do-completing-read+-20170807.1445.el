@@ -87,7 +87,7 @@ not be updated until you restart Emacs.")
 (require 'ido)
 (require 'cl-lib)
 (require 'cus-edit)
-(require 's)
+
 
 ;;; Debug messages
 

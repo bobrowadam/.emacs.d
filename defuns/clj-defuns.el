@@ -1,4 +1,4 @@
-(require 's)
+
 
 (defun clj--src-file-name-from-test (name)
   (s-with name

@@ -176,7 +176,6 @@
   (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic)
   (global-set-key (kbd "C-;") 'flyspell-correct-word-generic))
 
-
 ;; worksapces setup:
 (use-package setup-perspective)
 

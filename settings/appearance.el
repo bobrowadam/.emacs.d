@@ -54,7 +54,7 @@
   :config
   (setq sml/theme 'dark)
   (setq sml/no-confirm-load-theme t)
-  (load-theme 'wombat)
+  (load-theme 'lush)
   (sml/setup)
   (show-current-theme))
 
