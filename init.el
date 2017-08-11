@@ -136,9 +136,9 @@
   :config
   (use-package setup-pipeline))
 
-(eval-after-load 'tramp '(use-package setup-tramp))
+(use-package setup-tramp)
 
-(load "key-bindings")
+(use-package key-bindings)
 
 ;; Visual regexp
 (use-package visual-regexp
