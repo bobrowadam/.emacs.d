@@ -16,7 +16,9 @@
   :ensure t
   :pin melpa-stable
   :interpreter
-  ("scala" . scala-mode))
+  ("scala" . scala-mode)
+  :init
+  (add-hook 'scala-mode-hook '(lambda () (flyspell-prog-mode))))
 
 (provide 'setup-scala)
 ;;; key-bindings.el ends here
