@@ -130,8 +130,12 @@
 (use-package setup-dired)
 (use-package setup-magit)
 (use-package setup-eshell)
-(eval-after-load 'grep '(use-package setup-rgrep))
-(eval-after-load 'prodigy '(use-package setup-pipeline))
+(use-package setup-rgrep)
+(use-package prodigy
+  :ensure t
+  :config
+  (use-package setup-pipeline))
+
 (eval-after-load 'tramp '(use-package setup-tramp))
 
 (load "key-bindings")

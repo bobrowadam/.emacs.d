@@ -40,7 +40,7 @@
   :name "frontier"
   :command "npm"
   :cwd "~/source/local_environment/frontier"
-  :args '("run dev")
+  :args '("run" "dev")
   :port 8000
   :tags '(pipeline js mandatory))
 
@@ -114,7 +114,7 @@
   :tags '(node pipeline ))
 
 (prodigy-define-service
-  :name "metadata-api"
+  :name "atlas"
   :command "sbt"
   :cwd "~/source/local_environment/atlas"
   :args '("run")
