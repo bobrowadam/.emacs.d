@@ -106,6 +106,7 @@
 (use-package setup-flycheck)
 (use-package setup-js2-mode)
 (use-package setup-common-lisp)
+(use-package setup-scala)
 (use-package setup-paredit)
 
 (use-package projectile
