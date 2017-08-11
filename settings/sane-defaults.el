@@ -11,6 +11,9 @@
 ;; no tool bar:
 (tool-bar-mode -1)
 
+;; blinking cursor:
+(blink-cursor-mode -1)
+
 ;; no blips and blops
 (setq ring-bell-function 'ignore
       visible-bell nil)
@@ -23,8 +26,11 @@
 (setq select-enable-clipboard t)
 
 ;; show line numbers where they should:
-(require 'linum-off)
-(global-linum-mode 1)
+(use-package linum-off
+  :config
+  (global-linum-mode 1))
+
+
 
 ;; show parens
 (show-smartparens-global-mode t)
@@ -125,8 +131,9 @@
 (set-default 'fill-column 80)
 
 ;; Add parts of each file's directory to the buffer name if not unique
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'forward)
+(use-package uniquify
+  :init
+  (setq uniquify-buffer-name-style 'forward))
 
 ;; A saner ediff
 (setq ediff-diff-options "-w")

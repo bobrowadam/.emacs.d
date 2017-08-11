@@ -2,4 +2,5 @@
 # name: JSON.console.log
 # key: jlog
 # --
-console.log("-------------------------------------\n${1:enumarate}: ", JSON.stringify($1));
+console.log("-------------------------------------\n${1:enumarate}: ",
+JSON.stringify($1));

@@ -15,17 +15,16 @@
   (setq-default js2-include-gears-externs nil)
   (setq-default js2-concat-multiline-strings 'eol)
   (setq-default js2-rebind-eol-bol-keys nil)
-  ;; (js2-mode-hide-warnings-and-errors)
-
-  ;; Let flycheck handle parse errors
-
   
   (setq-default js2-show-parse-errors nil)
   (setq-default js2-strict-missing-semi-warning nil)
   (setq-default js2-strict-trailing-comma-warning nil)
-
-  (add-hook 'js2-mode-hook (lambda () (flycheck-mode 1)))
-  (add-hook 'js2-mode-hook 'highlight-indent-guides-mode)
+  (add-to-list 'auto-mode-alist (cons (rx ".js" eos) 'js2-mode))
+  ;; (add-hook 'js2-mode-hook (lambda () (flycheck-mode 1)))
+  (use-package highlight-indent-guides
+    :ensure t
+    :config (add-hook 'js2-mode-hook 'highlight-indent-guides-mode))
+  
   (add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
   :config
   (js2-imenu-extras-mode))
@@ -285,7 +284,7 @@
   :config
   (ac-config-default))
 
-(add-hook 'js-mode-hook (lambda () (tern-mode t)))
+(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
 
 (use-package tern
   :ensure t
@@ -301,5 +300,18 @@
   :config
   (eval-after-load 'js2-mode
     '(add-hook 'js2-mode-hook #'add-node-modules-path)))
+
+
+
+
+;; disable json-jsonlist checking for json files
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(json-jsonlist)))
+
+;; disable jshint since we prefer eslint checking
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(javascript-jshint)))
 
 (provide 'setup-js2-mode)

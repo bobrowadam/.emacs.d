@@ -14,6 +14,8 @@
                               "http://www.urbandictionary.com/define.php?term="
                               ""])))
 
+(global-set-key (kbd "C-c w j") 'webjump)
+
 ;; More neat bindings for C-x 8
 (global-set-key (kbd "C-x 8 t m") (λ (insert "™")))
 (global-set-key (kbd "C-x 8 ( c )") (λ (insert "©")))

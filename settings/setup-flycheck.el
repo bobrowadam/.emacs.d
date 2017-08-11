@@ -1,14 +1,15 @@
+;;;; Flycheck setup:
+
 (use-package flycheck
   :ensure t
   :config
   ;; customize flycheck temp file prefix
-  (setq-default flycheck-temp-prefix ".flycheck"))
+  (setq-default flycheck-temp-prefix ".flycheck")
+  ;; turn on flychecking globally
+  (add-hook 'after-init-hook #'global-flycheck-mode))
 
-(use-package flycheck-pos-tip
-  :ensure t
-  :config
-  (with-eval-after-load 'flycheck
-    (flycheck-pos-tip-mode)))
+;; (setenv "path" (concat (getenv "path") ":/usr/local/bin"))
+;; (setq exec-path (append exec-path '("/usr/local/bin")))
 
 (defun magnars/adjust-flycheck-automatic-syntax-eagerness ()
   "Adjust how often we check for errors based on if there are any.
@@ -31,9 +32,9 @@ clean buffer we're an order of magnitude laxer about checking."
                                             idle-change
                                             mode-enabled))
 
-(eval-after-load 'flycheck
-  '(custom-set-variables
-    '(flycheck-display-errors-function #'flycheck-pos-tip-error-messages)))
+;; (eval-after-load 'flycheck
+;;   '(custom-set-variables
+;;     '(flycheck-display-errors-function #'flycheck-pos-tip-error-messages)))
 
 (defun flycheck-handle-idle-change ()
   "Handle an expired idle time since the last change.
@@ -45,7 +46,5 @@ threaded system and the forced deferred makes errors never show
 up before you execute another command."
   (flycheck-clear-idle-change-timer)
   (flycheck-buffer-automatically 'idle-change))
-
-
 
 (provide 'setup-flycheck)

@@ -5,9 +5,44 @@
 ;;; Code:
 (package-initialize)
 
+;; add elpa and melpa repos
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+	("melpa" . "http://melpa.org/packages/")
+        ("melpa-stable" . "https://stable.melpa.org/packages/")))
+
+(unless (package-installed-p 'use-package)
+  (progn 
+    (package-refresh-contents
+     (package-install 'use-package))))
+
+(unless (package-installed-p 'req-package)
+  (progn 
+    (package-refresh-contents
+     (package-install 'req-package))))
+
 ;;emacs Custom-settings in separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
+
+
+(use-package s)
+
+;; Set shell path 
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
+
+;; Set path to dependencies
+(setq settings-dir
+      (expand-file-name "settings" user-emacs-directory))
+(setq site-lisp-dir
+      (expand-file-name "site-lisp" user-emacs-directory))
+
+;; Set up load path
+(add-to-list 'load-path settings-dir)
+(add-to-list 'load-path site-lisp-dir)
 
 (setq initial-scratch-message "Greetings master Bob, welcome back.\nWhat shell we do today sir?")
 
@@ -20,48 +55,12 @@
   (setq dashboard-startup-banner 'logo)
   (setq dashboard-items '((recents  . 5)
                           (agenda . 5)
-                          (projects . 5)
-                          ))
+                          (projects . 5)))
   :config
   (dashboard-setup-startup-hook))
 
-;; add elpa and melpa repos
-(setq package-archives
-      '(("gnu" . "http://elpa.gnu.org/packages/")
-	("melpa" . "http://melpa.org/packages/")
-        ("melpa-stable" . "https://stable.melpa.org/packages/")))
-
-(unless (package-installed-p 'use-package)
-  (progn 
-    (package-refresh-contents
-    (package-install 'use-package))))
-
-(unless (package-installed-p 'req-package)
-  (progn 
-    (package-refresh-contents
-     (package-install 'req-package))))
-
-;; Set shell path 
-(when (memq window-system '(mac ns))
-  (use-package exec-path-from-shell
-    :ensure t
-    :config
-    (exec-path-from-shell-initialize)))
-
-;; Set path to dependencies
-(setq settings-dir
-      (expand-file-name "settings" user-emacs-directory))
-(setq site-lisp-dir
-      (expand-file-name "site-lisp" user-emacs-directory))
-
-;; Set up load path
-(add-to-list 'load-path settings-dir)
-(add-to-list 'load-path site-lisp-dir)
-
-;; Smartparens
 (use-package setup-smartparens)
 (use-package setup-org)
-
 (use-package setup-yas)
 
 ;; Functions (load all files in defuns-dir)
@@ -71,10 +70,10 @@
     (load file)))
 
 ;; Lets start with a attering of sanity
-(require 'sane-defaults)
+(use-package sane-defaults)
 
 ;; appearance
-(require 'appearance)
+(use-package appearance)
 
 ;; Make backups of files, even when they're in version control
 (setq vc-make-backup-files t)
@@ -85,7 +84,7 @@
                  (concat user-emacs-directory "backups")))))
 
 ;; Save point position between sessions
-(require 'saveplace)
+(use-package saveplace)
 (setq-default save-place t)
 (setq save-place-file (expand-file-name ".places" user-emacs-directory))
 
@@ -98,43 +97,23 @@
   :config
   (whole-line-or-region-mode 1))
 
-
 ;; imenu lets you jump around for jumping to points of interest in a buffer
 (global-set-key (kbd "M-i") 'imenu)
 
 ;; flycheck
-(load "setup-flycheck")
+(use-package setup-flycheck)
+(use-package setup-js2-mode)
+(use-package setup-common-lisp)
+(use-package setup-paredit)
 
-(add-hook 'js2-mode-hook 'highlight-indent-guides-mode)
-(add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
-
-;; js2
-(load "setup-js2-mode")
-
-;; eslint configuration:
-(add-hook 'after-init-hook #'global-flycheck-mode)
-(setenv "path" (concat (getenv "path") ":/usr/local/bin"))
-(setq exec-path (append exec-path '("/usr/local/bin")))
-
-;; magit configuratinon
-(global-set-key (kbd "C-x g") 'magit-status)
-(use-package magithub
-  :ensure t
-  :config
-  (magithub-feature-autoinject t)
-  (setq magithub-clone-default-directory (expand-file-name "source" user-home-directory )))
-
-;; Lisp
-(require 'setup-common-lisp)
-
-;; Paredit
-(load "setup-paredit")
-
-;; projectile:
 (use-package projectile
   :ensure t
   :config
   (projectile-mode))
+
+;; Install  Ag.el in order for projectile ag to work:
+(use-package ag
+  :ensure t)
 
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
@@ -146,13 +125,14 @@
   (which-key-mode +1))
 
 ;; Load setup files:
-(eval-after-load 'ido '(require 'setup-ido))
-(eval-after-load 'dired '(require 'setup-dired))
-(eval-after-load 'magit '(require 'setup-magit))
-(eval-after-load 'grep '(require 'setup-rgrep))
-(eval-after-load 'eshell '(require 'setup-eshell))
-(eval-after-load 'prodigy '(require 'setup-pipeline))
-(eval-after-load 'tramp '(require 'setup-tramp))
+(eval-after-load 'ido '(use-package setup-ido))
+(eval-after-load 'dired '(use-package setup-dired))
+(use-package setup-magit)
+;; (eval-after-load 'magit '(use-package setup-magit))
+(eval-after-load 'grep '(use-package setup-rgrep))
+(eval-after-load 'eshell '(use-package setup-eshell))
+(eval-after-load 'prodigy '(use-package setup-pipeline))
+(eval-after-load 'tramp '(use-package setup-tramp))
 
 (load "key-bindings")
 
@@ -174,9 +154,6 @@
 
 (use-package multiple-cursors :ensure t)
 
-;; (require 'delsel)
-;; (require 'wgrep)
-
 ;; Search
 (use-package flex-isearch
   :ensure t
@@ -197,7 +174,7 @@
 
 
 ;; worksapces setup:
-(require 'setup-perspective)
+(use-package setup-perspective)
 
 ;; windows with ace-window
 (use-package ace-window
