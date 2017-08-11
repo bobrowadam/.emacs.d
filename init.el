@@ -59,8 +59,10 @@
 (add-to-list 'load-path site-lisp-dir)
 
 ;; Smartparens
-(load "setup-smartparens")
-(load "setup-org")
+(use-package setup-smartparens)
+(use-package setup-org)
+
+(use-package setup-yas)
 
 ;; Functions (load all files in defuns-dir)
 (setq defuns-dir (expand-file-name "defuns" user-emacs-directory))
@@ -96,8 +98,6 @@
   :config
   (whole-line-or-region-mode 1))
 
-;; helm
-;; (require 'helm-config)
 
 ;; imenu lets you jump around for jumping to points of interest in a buffer
 (global-set-key (kbd "M-i") 'imenu)
@@ -242,6 +242,7 @@
   :config
   (global-set-key (kbd "M-C-+") 'shift-number-up)
   (global-set-key (kbd "M-C-_") 'shift-number-down))
+
 
 (provide 'init)
 
