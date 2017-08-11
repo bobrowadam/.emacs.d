@@ -1,3 +1,8 @@
+;;; package --- Summary
+;;;; Eshell config
+;;; Commentary:
+;;; Code:
+
 (use-package eshell
   :init
   (defalias 'emacso 'find-file-other-window)
@@ -14,15 +19,20 @@
       (autoload 'epe-theme-lambda "eshell-prompt-extras")
       (setq eshell-highlight-prompt nil
             eshell-prompt-function 'epe-theme-lambda)))
+  (use-package shell-pop
+    :ensure t
+    :config
+    (global-unset-key (kbd "C-\\"))
+    (global-set-key (kbd "C-\\") 'shell-pop))
 
-  (add-hook 'eshell-mode-hook (lambda () (smartparens-mode t)))
+  (add-hook 'eshell-mode-hook (lambda ()
+                                (smartparens-mode t)))
   ;; Tramp integration:
   (add-to-list 'eshell-modules-list 'eshell-tramp)
 
   ;; Key bindings: (Maybe use :bind later)
   (global-set-key [remap dabbrev-expand] 'hippie-expand)
-  (global-unset-key (kbd "C-\\"))
-  (global-set-key (kbd "C-\\") 'shell-pop)
   (global-set-key (kbd "C-c e") 'eshell))
 
 (provide 'setup-eshell)
+;;; setup-eshell ends here
