@@ -25,9 +25,10 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
 
-
 (use-package s)
 (use-package dash)
+
+(server-start)
 
 ;; Set shell path 
 (use-package exec-path-from-shell
