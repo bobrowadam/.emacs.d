@@ -11,15 +11,15 @@
 	("melpa" . "http://melpa.org/packages/")
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
+;; Bootstrap `use-package'
 (unless (package-installed-p 'use-package)
-  (progn 
-    (package-refresh-contents
-     (package-install 'use-package))))
+  (package-refresh-contents)
+  (package-install 'use-package))
 
+;; Bootstrap `req-package'
 (unless (package-installed-p 'req-package)
-  (progn 
-    (package-refresh-contents
-     (package-install 'req-package))))
+  (package-refresh-contents)
+  (package-install 'req-package))
 
 ;;emacs Custom-settings in separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
