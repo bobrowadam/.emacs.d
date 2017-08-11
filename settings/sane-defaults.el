@@ -19,7 +19,6 @@
 (global-subword-mode nil)
 (global-superword-mode -1)
 
-
 ;; Allow pasting selection outside of Emacs
 (setq select-enable-clipboard t)
 
@@ -52,6 +51,16 @@
 ;; Answering just 'y' or 'n' will do
 (defalias 'yes-or-no-p 'y-or-n-p)
 
+;; Smex:
+(use-package smex
+  :ensure t
+  :bind (( "M-x" . smex)
+         ("M-X" . smex-major-mode-commands)
+         ("C-c C-c M-x" . execute-extended-command)))
+
+;; Kill ring browsing
+(global-set-key (kbd "M-y") 'helm-show-kill-ring)
+
 ;; UTF-8 please
 (setq locale-coding-system 'utf-8) ; pretty
 (set-terminal-coding-system 'utf-8) ; pretty
@@ -67,9 +76,6 @@
 
 ;; Remove text in active region if inserting text
 (delete-selection-mode 1)
-
-;; Don't highlight matches with jump-char - it's distracting
-;; (setq jump-char-lazy-highlight-face nil)
 
 ;; Always display line and column numbers
 (setq line-number-mode t)
@@ -107,9 +113,10 @@
 (setq org-src-fontify-natively t)
 
 ;; Represent undo-history as an actual tree (visualize with C-x u)
-;; (setq undo-tree-mode-lighter "")
-;; (require 'undo-tree)
-;; (global-undo-tree-mode)
+(use-package undo-tree
+  :ensure t
+  :init (setq undo-tree-mode-lighter "")
+  :config (global-undo-tree-mode))
 
 ;; Sentences do not need double spaces to end. Period.
 (set-default 'sentence-end-double-space nil)
