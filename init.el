@@ -11,6 +11,19 @@
 
 (setq initial-scratch-message "Greetings master Bob, welcome back.\nWhat shell we do today sir?")
 
+;; Setup Start Dashboard:
+(use-package dashboard
+  :ensure t
+  :init
+  (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-items '((recents  . 5)
+                          (bookmarks . 5)
+                          (projects . 5)
+                          (agenda . 5)))
+  :config
+  (dashboard-setup-startup-hook))
+
 ;; add elpa and melpa repos
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -96,21 +109,6 @@
 
 ;; js2
 (load "setup-js2-mode")
-
-;; ;; tern
-;; (autoload 'tern-mode "tern.el" nil t)
-
-;; (add-hook 'js-mode-hook (lambda () (tern-mode t)))
-;; (eval-after-load 'tern
-;;   '(progn
-;;      (require 'tern-auto-complete)
-;;      (tern-ac-setup)))
-
-;; ;; (require 'auto-complete)
-;; (setq js-indent-level 2)
-;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-
-;; this hopefully sets up path and other vars better
 
 ;; eslint configuration:
 (add-hook 'after-init-hook #'global-flycheck-mode)
