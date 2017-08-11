@@ -10,11 +10,11 @@
       ido-use-filename-at-point nil
       ido-max-prospects 10)
 
-;; Try out flx-ido for better flex matching between words
-;; (use-package flx-ido
-;;   :ensure t
-;;   :config
-;;   (flx-ido-mode 1))
+;;Better flex matching between words
+(use-package flx-ido
+  :ensure t
+  :config
+  (flx-ido-mode 1))
 
 ;; disable ido faces to see flx highlights.
 (setq ido-use-faces nil)
