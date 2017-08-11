@@ -192,10 +192,6 @@
   :ensure t
   :config (mode-icons-mode))
 
-(use-package slime
-  :ensure t
-  :config (setq inferior-lisp-program "/usr/local/bin/clisp"))
-
 (use-package ibuffer-vc
   :ensure t
   :init
