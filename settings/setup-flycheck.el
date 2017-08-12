@@ -8,9 +8,6 @@
   ;; turn on flychecking globally
   (add-hook 'after-init-hook #'global-flycheck-mode))
 
-;; (setenv "path" (concat (getenv "path") ":/usr/local/bin"))
-;; (setq exec-path (append exec-path '("/usr/local/bin")))
-
 (defun magnars/adjust-flycheck-automatic-syntax-eagerness ()
   "Adjust how often we check for errors based on if there are any.
 

@@ -21,6 +21,10 @@
   (package-refresh-contents)
   (package-install 'req-package))
 
+(use-package benchmark-init
+  ;; :disabled t
+  :ensure t)
+
 ;;emacs Custom-settings in separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file)
@@ -33,6 +37,8 @@
 ;; Set shell path 
 (use-package exec-path-from-shell
   :ensure t
+  :init
+  (setq exec-path-from-shell-debug nil)
   :config
   (exec-path-from-shell-initialize))
 
@@ -50,6 +56,7 @@
 
 ;; Setup Start Dashboard:
 (use-package dashboard
+  :disabled t
   :ensure t
   :init
   (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
@@ -148,9 +155,9 @@
   (define-key global-map (kbd "C-M-%") 'vr/replace))
 
 ;; pdf - tools:
-(use-package pdf-tools
-  :ensure t
-  :config (pdf-tools-install))
+;; (use-package pdf-tools
+;;   :ensure t
+;;   :config (pdf-tools-install))
 
 (use-package expand-region
   :ensure t
