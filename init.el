@@ -174,26 +174,27 @@
 ;; flyspell
 (use-package flyspell-correct-helm
   :ensure t
+  :init
+  (setq flyspell-highlight-flag t)
+  (setq flyspell-issue-message-flag nil)
+  (add-hook 'text-mode-hook (lambda () (flyspell-mode 1)))
   :config
-  (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic)
-  (global-set-key (kbd "C-;") 'flyspell-correct-word-generic))
+  (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic))
 
 ;; worksapces setup:
 (use-package setup-perspective)
-
 ;; windows with ace-window and avy
 (use-package ace-window
   :ensure t
   :init
   (setq avy-background t)
-  :bind
-  ("M-g w" . avy-goto-word-1)
-  ("M-g g" . avy-goto-line)
-  :config
-  (global-set-key (kbd "M-o") 'ace-window )
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-  (setq aw-dispatch-always nil))
-
+  (setq aw-dispatch-always nil)
+  :bind
+  ("M-o" . ace-window)
+  ("M-g w" . avy-goto-word-1)
+  ("M-g g" . avy-goto-line))
+  
 (use-package mode-icons
   :ensure t
   :config (mode-icons-mode))
