@@ -197,14 +197,15 @@
   :ensure t
   :init
   (global-set-key (kbd "C-x C-b") 'ibuffer)
+  (setq ibuffer-expert t)
+  (setq ibuffer-show-empty-filter-groups nil)
   :config
   (add-hook 'ibuffer-hook
             (lambda ()
               (ibuffer-vc-set-filter-groups-by-vc-root)
+              (ibuffer-auto-mode 1)
               (unless (eq ibuffer-sorting-mode 'recency)
                 (ibuffer-do-sort-by-recency)))))
-
-
 
 ;;Speed typing tutor:
 (use-package speed-type
