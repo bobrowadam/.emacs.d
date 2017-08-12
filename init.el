@@ -181,9 +181,14 @@
 ;; worksapces setup:
 (use-package setup-perspective)
 
-;; windows with ace-window
+;; windows with ace-window and avy
 (use-package ace-window
   :ensure t
+  :init
+  (setq avy-background t)
+  :bind
+  ("M-g w" . avy-goto-word-1)
+  ("M-g g" . avy-goto-line)
   :config
   (global-set-key (kbd "M-o") 'ace-window )
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
