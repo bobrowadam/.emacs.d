@@ -140,8 +140,6 @@
 
 (use-package setup-tramp)
 
-(use-package key-bindings)
-
 ;; Visual regexp
 (use-package visual-regexp
   :ensure t
@@ -158,7 +156,11 @@
   :ensure t
   :bind ("C-M-S-SPC" . er/expand-region))
 
-(use-package multiple-cursors :ensure t)
+(use-package multiple-cursors
+  :ensure t
+  :bind
+  ("C->" . mc/mark-next-like-this)
+  ("C-c C->" . mc/mark-all-like-this))
 
 ;; Search
 (use-package flex-isearch
@@ -170,6 +172,10 @@
 
 (global-set-key (kbd "C-s") 'isearch-forward-use-region)
 (global-set-key (kbd "C-r") 'isearch-forward-use-region)
+(global-set-key (kbd "C-c M-s g") 'helm-do-grep-ag)
+(global-set-key (kbd "C-c M-s f") 'ag-files)
+(global-set-key (kbd "C-x C-d") 'ag-dired-regexp)
+(global-set-key (kbd "C-c M-f") 'ffap)
 
 ;; flyspell
 (use-package flyspell-correct-helm
@@ -179,6 +185,7 @@
   (setq flyspell-issue-message-flag nil)
   (add-hook 'text-mode-hook (lambda () (flyspell-mode 1)))
   :config
+  (define-key flyspell-mode-map (kbd "C-c $") nil)
   (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic))
 
 ;; worksapces setup:

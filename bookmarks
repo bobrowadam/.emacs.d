@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("appearance.el"
+(("org-refile-last-stored"
+ (filename . "~/Dropbox (BigPanda)/org/gtd.org")
+ (front-context-string . "** NEXT Encrypt ")
+ (rear-context-string . "2017-08-09 Wed>\n")
+ (position . 1346))
+("appearance.el"
  (filename . "~/.emacs.d/settings/appearance.el")
  (front-context-string . ";;; package --- ")
  (rear-context-string)
