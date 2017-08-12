@@ -185,9 +185,9 @@
 (use-package ace-window
   :ensure t
   :config
-  (global-set-key (kbd "C-x o") 'ace-window )
+  (global-set-key (kbd "M-o") 'ace-window )
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-  (setq aw-dispatch-always t))
+  (setq aw-dispatch-always nil))
 
 (use-package mode-icons
   :ensure t

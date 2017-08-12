@@ -31,7 +31,7 @@
 (global-set-key (kbd "C-x C-d") 'ag-dired-regexp)
 
 ;; Windows
-(global-set-key (kbd "M-o") 'other-window)
+;; (global-set-key (kbd "M-o") 'other-window)
 (global-set-key (kbd "C-x C-]") 'delete-other-windows)
 (global-set-key (kbd "C-}") 'enlarge-window-horizontally)
 (global-set-key (kbd "C-{") 'shrink-window-horizontally)
