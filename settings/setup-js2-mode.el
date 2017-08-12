@@ -21,7 +21,8 @@
   (setq-default js2-strict-missing-semi-warning nil)
   (setq-default js2-strict-trailing-comma-warning nil)
   (add-to-list 'auto-mode-alist (cons (rx ".js" eos) 'js2-mode))
-  ;; (add-hook 'js2-mode-hook (lambda () (flycheck-mode 1)))
+  (add-hook 'js2-mode-hook '(lambda () (flyspell-prog-mode)))
+                              
   (use-package highlight-indent-guides
     :ensure t
     :config (add-hook 'js2-mode-hook 'highlight-indent-guides-mode))
