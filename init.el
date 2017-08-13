@@ -239,6 +239,10 @@
   (global-set-key (kbd "M-C-_") 'shift-number-down))
 
 
+;; Rest Client:
+(use-package restclient
+  :ensure t)
+
 (provide 'init)
 
 ;;; init.el ends here
