@@ -73,9 +73,6 @@
          ("M-X" . smex-major-mode-commands)
          ("C-c C-c M-x" . execute-extended-command)))
 
-;; Kill ring browsing
-(global-set-key (kbd "M-y") 'helm-show-kill-ring)
-
 ;; UTF-8 please
 (setq locale-coding-system 'utf-8) ; pretty
 (set-terminal-coding-system 'utf-8) ; pretty
