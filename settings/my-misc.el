@@ -7,14 +7,20 @@
       whitespace-line-column 100)
 
 ;; Add Urban Dictionary to webjump (C-x g)
-(eval-after-load "webjump"
-  '(add-to-list 'webjump-sites '("Urban Dictionary" .
-                             [simple-query
-                              "www.urbandictionary.com"
-                              "http://www.urbandictionary.com/define.php?term="
-                              ""])))
+(use-package webjump
+  :ensure t
+  :bind
+  ("C-c w j" . webjump)
+  :config
+  (add-to-list
+   'webjump-sites
+               '("Urban Dictionary" .
+                 [simple-query
+                  "www.urbandictionary.com"
+                  "http://www.urbandictionary.com/define.php?term="
+                  ""])))
 
-(global-set-key (kbd "C-c w j") 'webjump)
+
 
 ;; More neat bindings for C-x 8
 (global-set-key (kbd "C-x 8 t m") (λ (insert "™")))
