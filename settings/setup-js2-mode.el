@@ -3,8 +3,6 @@
   :ensure t
   :init
   (setq-default js2-allow-rhino-new-expr-initializer nil)
-  (setq-default indent-tabs-mode nil)
-  (setq-default tab-width 2)
   (setq-default js-indent-level 2)
   (setq-default js2-basic-offset 2)
   (setq-default js2-auto-indent-p nil)

@@ -106,6 +106,10 @@
 
 ;; Never insert tabs
 (set-default 'indent-tabs-mode nil)
+(setq-default tab-width 2)
+
+;; Cleanup whitespaces
+(global-set-key (kbd "C-x j")'whitespace-cleanup)
 
 ;; Show me empty lines after buffer end
 (set-default 'indicate-empty-lines t)
