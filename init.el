@@ -243,6 +243,9 @@
 (use-package restclient
   :ensure t)
 
+;; Mongo
+(use-package inf-mongo
+  :ensure t)
 (provide 'init)
 
 ;;; init.el ends here
