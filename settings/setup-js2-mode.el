@@ -3,6 +3,9 @@
   :ensure t
   :init
   (setq-default js2-allow-rhino-new-expr-initializer nil)
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 2)
+  (setq-default js-indent-level 2)
   (setq-default js2-basic-offset 2)
   (setq-default js2-auto-indent-p nil)
   (setq-default js2-enter-indents-newline nil)
@@ -47,15 +50,15 @@
   (add-hook 'js2-mode-hook 'color-identifiers-mode))
 
 ;; js2-mode steals TAB, let's steal it back for yasnippet
-(defun js2-tab-properly ()
-  (interactive)
-  (let ((yas-fallback-behavior 'return-nil))
-    (unless (yas-expand)
-      (indent-for-tab-command)
-      (if (looking-back "^\s*")
-          (back-to-indentation)))))
+;; (defun js2-tab-properly ()
+;;   (interactive)
+;;   (let ((yas-fallback-behavior 'return-nil))
+;;     (unless (yas-expand)
+;;       (indent-for-tab-command)
+;;       (if (looking-back "^\s*")
+;;           (back-to-indentation)))))
 
-(define-key js2-mode-map (kbd "TAB") 'js2-tab-properly)
+;; (define-key js2-mode-map (kbd "TAB") 'js2-tab-properly)
 
 (use-package json)
 

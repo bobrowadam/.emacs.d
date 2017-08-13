@@ -190,8 +190,8 @@
   :init
   (setq flyspell-highlight-flag t)
   (setq flyspell-issue-message-flag nil)
-  (add-hook 'text-mode-hook (lambda () (flyspell-mode 1)))
   :config
+  (add-hook 'text-mode-hook (lambda () (flyspell-mode 1)))
   (define-key flyspell-mode-map (kbd "C-c $") nil)
   (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic))
 
