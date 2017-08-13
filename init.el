@@ -192,6 +192,7 @@
   (setq flyspell-issue-message-flag nil)
   :config
   (add-hook 'text-mode-hook (lambda () (flyspell-mode 1)))
+  (add-hook 'emacs-lisp-mode-hook (lambda () (flyspell-prog-mode)))
   (define-key flyspell-mode-map (kbd "C-c $") nil)
   (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic))
 
