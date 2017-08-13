@@ -75,8 +75,11 @@
 (global-set-key (kbd "C-c l r") 'load-random-theme-with-sml)
 
 ;; Fonts:
-(set-face-attribute 'default nil :font "Hack 18")
+;; (set-face-attribute 'default nil :font "Hack 18")
 ;; (set-face-attribute 'default nil :font "Monaco 18")
+(set-face-attribute 'default nil
+                    :font "SauceCodePro Nerd Font 18"
+                    :weight 'light)
 
 (use-package rainbow-delimiters
   :ensure t
