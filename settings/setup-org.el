@@ -10,7 +10,7 @@
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 ;; Setup org files and directories
-(setq org-directory "~/Dropbox (BigPanda)/org")
+(setq org-directory (concat (expand-file-name "~")  "/Dropbox (BigPanda)/org"))
 (setq org-inbox-file (concat org-directory "/inbox.org"))
 (setq org-someday-file (concat org-directory "/someday.org"))
 (setq org-gtd-file (concat org-directory "/gtd.org"))
