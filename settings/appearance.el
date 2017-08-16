@@ -25,8 +25,7 @@
 (use-package rich-minority
   :ensure t
   :init
-  (progn
-    (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|"))))
+  (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|")))
   :config
   (rich-minority-mode 1 ))
 

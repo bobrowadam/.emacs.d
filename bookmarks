@@ -5,18 +5,18 @@
 (("org-capture-last-stored"
  (filename . "~/Dropbox (BigPanda)/org/inbox.org")
  (front-context-string)
- (rear-context-string . "NDS(e)\n\n* Tasks\n")
- (position . 132))
+ (rear-context-string . "ith-use-package\n")
+ (position . 390))
 ("org-capture-last-stored-marker"
  (filename . "~/Dropbox (BigPanda)/org/gtd.org")
- (front-context-string . "**** TODO Check ")
- (rear-context-string . "2017-08-10 Thu>\n")
- (position . 506))
+ (front-context-string . "** TODO Add snoo")
+ (rear-context-string . "2017-08-09 Wed>\n")
+ (position . 1498))
 ("org-refile-last-stored"
- (filename . "~/Dropbox (BigPanda)/org/gtd.org")
- (front-context-string . "**** TODO Check ")
- (rear-context-string . "2017-08-10 Thu>\n")
- (position . 506))
+ (filename . "~/Dropbox (BigPanda)/org/someday.org")
+ (front-context-string . "** Write data-ap")
+ (rear-context-string . "Indium to emacs\n")
+ (position . 272))
 ("appearance.el"
  (filename . "~/.emacs.d/settings/appearance.el")
  (front-context-string . ";;; package --- ")
