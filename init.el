@@ -8,7 +8,7 @@
 ;; add elpa and melpa repos
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
-	("melpa" . "http://melpa.org/packages/")
+  ("melpa" . "http://melpa.org/packages/")
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 ;; Bootstrap `use-package'
@@ -34,7 +34,7 @@
 
 (server-start)
 
-;; Set shell path 
+;; Set shell path
 (use-package exec-path-from-shell
   :ensure t
   :init
@@ -209,7 +209,7 @@
   ("M-o" . ace-window)
   ("M-g w" . avy-goto-word-1)
   ("M-g g" . avy-goto-line))
-  
+
 (use-package mode-icons
   :ensure t
   :config (mode-icons-mode))
@@ -217,10 +217,16 @@
 (use-package ibuffer-vc
   :ensure t
   :init
+  (defadvice ibuffer (around ibuffer-point-to-most-recent) ()
+             "Open ibuffer with cursor pointed to most recent buffer name"
+             (let ((recent-buffer-name (buffer-name)))
+               ad-do-it
+               (ibuffer-jump-to-buffer recent-buffer-name)))
   (global-set-key (kbd "C-x C-b") 'ibuffer)
   (setq ibuffer-expert t)
   (setq ibuffer-show-empty-filter-groups nil)
   :config
+  (ad-activate 'ibuffer)
   (add-hook 'ibuffer-hook
             (lambda ()
               (ibuffer-vc-set-filter-groups-by-vc-root)
