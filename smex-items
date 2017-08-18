@@ -1,0 +1,28 @@
+
+;; ----- smex-history -----
+(
+ package-list-packages
+ global-linum-mode
+ markdown-mode
+ package-install
+ package-refresh-contents
+ restclient-mode
+ toggle-read-only
+)
+
+;; ----- smex-data -----
+(
+ (eval-buffer . 1)
+ (show-current-theme . 1)
+ (load-theme . 1)
+ (disable-theme . 2)
+ (sml/setup . 1)
+ (package-list-packages . 2)
+ (helm-toggle-resplit-and-swap-windows . 1)
+ (toggle-read-only . 3)
+ (restclient-mode . 1)
+ (package-install . 3)
+ (package-refresh-contents . 1)
+ (markdown-mode . 1)
+ (global-linum-mode . 1)
+)
