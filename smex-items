@@ -1,13 +1,13 @@
 
 ;; ----- smex-history -----
 (
+ embrace-commander
+ js2-mode
  package-list-packages
- global-linum-mode
- markdown-mode
- package-install
- package-refresh-contents
- restclient-mode
- toggle-read-only
+ json-pretty-print
+ emacs-lisp-mode
+ eshell
+ kill-buffer-and-window
 )
 
 ;; ----- smex-data -----
@@ -17,7 +17,7 @@
  (load-theme . 1)
  (disable-theme . 2)
  (sml/setup . 1)
- (package-list-packages . 2)
+ (package-list-packages . 3)
  (helm-toggle-resplit-and-swap-windows . 1)
  (toggle-read-only . 3)
  (restclient-mode . 1)
@@ -25,4 +25,10 @@
  (package-refresh-contents . 1)
  (markdown-mode . 1)
  (global-linum-mode . 1)
+ (kill-buffer-and-window . 1)
+ (js2-mode . 3)
+ (eshell . 1)
+ (emacs-lisp-mode . 1)
+ (json-pretty-print . 1)
+ (embrace-commander . 1)
 )

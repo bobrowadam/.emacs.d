@@ -194,6 +194,8 @@
   (add-hook 'text-mode-hook (lambda () (flyspell-mode 1)))
   (add-hook 'emacs-lisp-mode-hook (lambda () (flyspell-prog-mode)))
   (define-key flyspell-mode-map (kbd "C-c $") nil)
+  ;; Remove C-, in flyspell in order to let embrace use it:
+  (define-key flyspell-mode-map (kbd "C-,") nil)
   (define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-previous-word-generic))
 
 ;; worksapces setup:
@@ -253,7 +255,12 @@
 ;; Mongo
 (use-package inf-mongo
   :ensure t)
-(provide 'init)
 
+(use-package embrace
+  :ensure t
+  :init
+  (global-set-key (kbd "C-,") 'embrace-commander))
+
+(provide 'init)
 ;;; init.el ends here
 (put 'narrow-to-region 'disabled nil)
