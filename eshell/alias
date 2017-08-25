@@ -1,6 +1,7 @@
-alias AssertionError:  $*
-alias emacs find-file $1
-alias ll ls -l $*
-alias lsa ls -a $*
-alias s magit-status
+alias nvm nvm $*
 alias docstart docker start ${docker ps -a -q}
+alias s magit-status
+alias lsa ls -a $*
+alias ll ls -l $*
+alias emacs find-file $1
+alias AssertionError: $*
