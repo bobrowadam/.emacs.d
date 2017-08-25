@@ -261,6 +261,9 @@
   :init
   (global-set-key (kbd "C-,") 'embrace-commander))
 
+(use-package nodejs-repl
+  :ensure t)
+
 (provide 'init)
 ;;; init.el ends here
 (put 'narrow-to-region 'disabled nil)

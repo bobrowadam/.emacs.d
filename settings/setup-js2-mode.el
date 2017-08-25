@@ -17,17 +17,17 @@
   (setq-default js2-include-gears-externs nil)
   (setq-default js2-concat-multiline-strings 'eol)
   (setq-default js2-rebind-eol-bol-keys nil)
-  
+
   (setq-default js2-show-parse-errors nil)
   (setq-default js2-strict-missing-semi-warning nil)
   (setq-default js2-strict-trailing-comma-warning nil)
   (add-to-list 'auto-mode-alist (cons (rx ".js" eos) 'js2-mode))
   (add-hook 'js2-mode-hook '(lambda () (flyspell-prog-mode)))
-                              
+
   (use-package highlight-indent-guides
     :ensure t
     :config (add-hook 'js2-mode-hook 'highlight-indent-guides-mode))
-  
+
   (add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
   :config
   ;; Its nice but other people hate it so I disabled it for now:
@@ -35,7 +35,7 @@
     :disabled
     :ensure t
     :config (add-hook 'js2-mode-hook 'turn-on-pretty-mode))
-  
+
   (js2-imenu-extras-mode))
 
 ;; Tern.JS
@@ -77,6 +77,9 @@
     :ensure t
     :config
     (tern-ac-setup)))
+
+(use-package nvm
+  :ensure t)
 
 (use-package add-node-modules-path
   :ensure t
