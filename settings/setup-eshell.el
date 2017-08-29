@@ -21,6 +21,8 @@
             eshell-prompt-function 'epe-theme-lambda)))
   (use-package shell-pop
     :ensure t
+    :init
+    (setq shell-pop-window-size 45)
     :config
     (global-unset-key (kbd "C-\\"))
     (global-set-key (kbd "C-\\") 'shell-pop))
