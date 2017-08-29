@@ -250,7 +250,9 @@
 
 ;; Rest Client:
 (use-package restclient
-  :ensure t)
+  :ensure t
+  :init
+  (add-to-list 'auto-mode-alist '("\\.client\\'" . restclient-mode)))
 
 ;; Mongo
 (use-package inf-mongo
@@ -269,6 +271,9 @@
   :config
   (global-set-key [remap scroll-down-command] 'golden-ratio-scroll-screen-down)
   (global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up))
+
+(use-package golden-ratio
+  :ensure t)
 
 
 (provide 'init)

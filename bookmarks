@@ -2,11 +2,16 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-capture-last-stored"
- (filename . "~/Dropbox (BigPanda)/org/inbox.org")
- (front-context-string)
- (rear-context-string . "ith-use-package\n")
- (position . 390))
+(("rest-clients"
+ (filename . "~/source/rest-clients/")
+ (front-context-string . "rest.api.client\n")
+ (rear-context-string . "29 Aug 28 18:50 ")
+ (position . 235))
+("org-capture-last-stored"
+ (filename . "~/Dropbox (BigPanda)/org/tickler.org")
+ (front-context-string . "** Stop travis f")
+ (rear-context-string . "2017-08-26 Sat>\n")
+ (position . 538))
 ("org-capture-last-stored-marker"
  (filename . "~/Dropbox (BigPanda)/org/gtd.org")
  (front-context-string . "** TODO Fix loca")

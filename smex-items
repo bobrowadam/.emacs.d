@@ -1,13 +1,13 @@
 
 ;; ----- smex-history -----
 (
- slime-eval-last-expression
- eval-last-sexp
- slime
- delete-current-buffer-file
- eshell
- rename-current-buffer-file
- package-install
+ fundamental-mode
+ restclient-mode
+ emacs-lisp-mode
+ restclient-jump-next
+ tramp-cleanup-all-buffers
+ inf-mongo
+ recursive-edit
 )
 
 ;; ----- smex-data -----
@@ -17,10 +17,10 @@
  (load-theme . 1)
  (disable-theme . 2)
  (sml/setup . 1)
- (package-list-packages . 5)
+ (package-list-packages . 7)
  (helm-toggle-resplit-and-swap-windows . 1)
  (toggle-read-only . 3)
- (restclient-mode . 8)
+ (restclient-mode . 14)
  (package-install . 4)
  (package-refresh-contents . 1)
  (markdown-mode . 1)
@@ -28,7 +28,7 @@
  (kill-buffer-and-window . 1)
  (js2-mode . 11)
  (eshell . 4)
- (emacs-lisp-mode . 3)
+ (emacs-lisp-mode . 4)
  (json-pretty-print . 8)
  (embrace-commander . 1)
  (nodejs-repl . 10)
@@ -39,8 +39,8 @@
  (ediff-buffers . 2)
  (magit-ediff-compare . 9)
  (magit-blame . 8)
- (tramp-cleanup-all-buffers . 4)
- (inf-mongo . 7)
+ (tramp-cleanup-all-buffers . 6)
+ (inf-mongo . 10)
  (tramp-cleanup-all-connections . 2)
  (delete-current-buffer-file . 2)
  (inferior-lisp . 1)
@@ -52,14 +52,28 @@
  (org-toggle-checkbox . 2)
  (flush-lines . 6)
  (org-mode . 1)
- (fundamental-mode . 2)
+ (fundamental-mode . 3)
  (recover-this-file . 1)
  (text-mode . 1)
  (sp-forward-barf-sexp . 1)
  (sp-backward-barf-sexp . 1)
  (tramp-cleanup-this-connection . 1)
- (rename-current-buffer-file . 1)
+ (rename-current-buffer-file . 2)
  (slime . 2)
  (eval-last-sexp . 1)
  (slime-eval-last-expression . 1)
+ (create-scratch-buffer . 1)
+ (golden-ratio-toggle-widescreen . 2)
+ (golden-ratio . 1)
+ (golden-ratio-adjust . 1)
+ (golden-ratio-scroll-screen-up . 1)
+ (balance-windows . 1)
+ (golden-ratio-mode . 1)
+ (ace-window . 1)
+ (avy-goto-char . 1)
+ (scala-mode . 1)
+ (ensime . 1)
+ (browse-url . 1)
+ (recursive-edit . 1)
+ (restclient-jump-next . 1)
 )
