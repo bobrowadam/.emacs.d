@@ -187,4 +187,13 @@ Both PATTERN and CONTENTS are matched as regular expressions."
   (interactive)
   (message "current enabled theme is %s" (cdr custom-enabled-themes)))
 
+(defun random-alnum ()
+  (let* ((alnum "abcdefghijklmnopqrstuvwxyz0123456789")
+         (i (% (abs (random))
+               (length alnum))))
+    (substring alnum i (1+ i))))
+
+(defun random-n-letter-string (n)
+  (mapconcat 'identity (cl-loop for x to n collect (random-alnum)) ""))
+
 (defmacro comment (&rest ignore))
