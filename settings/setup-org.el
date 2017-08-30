@@ -59,6 +59,10 @@
   (interactive)
   (find-file org-tickler-file))
 
+(defun my-org-go-to-someday()
+  (interactive)
+  (find-file org-someday-file))
+
 ;; Keybindings
 (define-key global-map (kbd "C-c c") 'org-capture)
 (define-key global-map (kbd "C-c a") 'org-agenda)
@@ -66,6 +70,7 @@
 (define-key global-map (kbd "C-c o i") 'my-org-go-to-inbox)
 (define-key global-map (kbd "C-c o t") 'my-org-go-to-todos)
 (define-key global-map (kbd "C-c o T") 'my-org-go-to-tickler)
+(define-key global-map (kbd "C-c o s") 'my-org-go-to-someday)
 
 (provide 'setup-org)
 ;;; setup-org.el ends here
