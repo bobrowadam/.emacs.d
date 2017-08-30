@@ -38,11 +38,12 @@
     ?t "Follow tags" "--follow-tags")
   
   ;; Magithub
+  ;;;; use: gpg --generate-key and only then add the auth gpg file
   (use-package magithub
-    :disabled
     :ensure t
     :config
     (magithub-feature-autoinject t)
+    (setq epa-pinentry-mode 'loopback)
     (setq magithub-clone-default-directory (expand-file-name "source" user-home-directory )))
   
   (add-hook 'git-commit-mode-hook 'my/magit-cursor-fix)
