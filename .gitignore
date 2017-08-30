@@ -10,7 +10,7 @@ elpa/
 /projectile.cache
 /recentf
 url/
-*~
 /.mc-lists.el
 /diary
 /.DS_Store
+magithub/cache
