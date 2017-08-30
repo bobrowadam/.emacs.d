@@ -274,8 +274,10 @@
   (global-set-key [remap scroll-up-command] 'golden-ratio-scroll-screen-up))
 
 (use-package golden-ratio
-  :ensure t)
-
+  :ensure t
+  :bind
+  ("C-c g" . golden-ratio)
+  ("C-c C-g" . balance-windows))
 
 (provide 'init)
 ;;; init.el ends here

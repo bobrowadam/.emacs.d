@@ -193,7 +193,7 @@
 (global-set-key (kbd "C-x C-]") 'delete-other-windows)
 (global-set-key (kbd "C-}") 'enlarge-window-horizontally)
 (global-set-key (kbd "C-{") 'shrink-window-horizontally)
-(global-set-key (kbd "C-c g") 'golden-ratio)
+
 (global-set-key (kbd "C-x 3") 'split-window-right-and-move-there-dammit)
 (global-set-key (kbd "C-x k") 'kill-buffer-and-window)
 
