@@ -1,4 +1,3 @@
-alias nvm nvm $*
 alias docstart docker start ${docker ps -a -q}
 alias s magit-status
 alias lsa ls -a $*

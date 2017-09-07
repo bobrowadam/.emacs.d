@@ -19,9 +19,9 @@
  (position . 1964))
 ("org-refile-last-stored"
  (filename . "~/Dropbox (BigPanda)/org/someday.org")
- (front-context-string . "** TODO Add snoo")
- (rear-context-string . "data-api client\n")
- (position . 297))
+ (front-context-string . "** TODO Go over ")
+ (rear-context-string . "ion-to-ido-mode\n")
+ (position . 195))
 ("appearance.el"
  (filename . "~/.emacs.d/settings/appearance.el")
  (front-context-string . ";;; package --- ")

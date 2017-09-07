@@ -5,10 +5,10 @@
 ;;; Code:
 
 ;; Show time:
-(display-time)
 (setq display-time-day-and-date 't)
 (setq display-time-default-load-average nil)
 (setq display-time-24hr-format 't)
+(display-time)
 
 ;; Line numbers
 ;; highlight the current line number
