@@ -32,4 +32,7 @@
               (when (file-remote-p default-directory)
                 (setq-local projectile-mode-line "Projectile")))))
 
+(defun my-find-over-shadow (server-name)
+  (find-file (concat "/sshx:shadow|ssh:ubuntu@" server-name "|sudo:root@" server-name ":/")))
+
 (provide 'setup-tramp)
