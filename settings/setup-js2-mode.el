@@ -21,6 +21,7 @@
   (setq-default js2-show-parse-errors nil)
   (setq-default js2-strict-missing-semi-warning nil)
   (setq-default js2-strict-trailing-comma-warning nil)
+  (setq-default js2-bounce-indent-p nil)
   (add-to-list 'auto-mode-alist (cons (rx ".js" eos) 'js2-mode))
   (add-hook 'js2-mode-hook '(lambda () (flyspell-prog-mode)))
 
@@ -29,6 +30,9 @@
     :config (add-hook 'js2-mode-hook 'highlight-indent-guides-mode))
 
   (add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
+  ;; :bind
+  ;; (:map js2-mode-map
+  ;;       ("C-c TAB" . js2-indent-bounce))
   :config
   ;; Its nice but other people hate it so I disabled it for now:
   (use-package pretty-mode
@@ -47,18 +51,8 @@
   :config
   (add-hook 'js2-mode-hook 'color-identifiers-mode))
 
-;; js2-mode steals TAB, let's steal it back for yasnippet
-;; (defun js2-tab-properly ()
-;;   (interactive)
-;;   (let ((yas-fallback-behavior 'return-nil))
-;;     (unless (yas-expand)
-;;       (indent-for-tab-command)
-;;       (if (looking-back "^\s*")
-;;           (back-to-indentation)))))
-
-;; (define-key js2-mode-map (kbd "TAB") 'js2-tab-properly)
-
-(use-package json)
+(use-package json-mode
+  :ensure t)
 
 ;; Tern
 (autoload 'tern-mode "tern.el" nil t)
