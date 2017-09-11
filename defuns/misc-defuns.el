@@ -196,4 +196,13 @@ Both PATTERN and CONTENTS are matched as regular expressions."
 (defun random-n-letter-string (n)
   (mapconcat 'identity (cl-loop for x to n collect (random-alnum)) ""))
 
+;; Time functions:
+(defun my-current-unix-time-int ()
+  (round (float-time (date-to-time (current-time-string)))))
+
+(defun my-unix-time-minus-n-minuts (n-minutes)
+  (let ((min-to-seconds (round (* 60 n-minutes)))
+        (current-time (my-current-unix-time-string)))
+    (- current-time min-to-seconds)))
+
 (defmacro comment (&rest ignore))
