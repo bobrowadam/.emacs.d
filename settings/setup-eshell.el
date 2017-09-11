@@ -27,6 +27,19 @@
     (global-unset-key (kbd "C-\\"))
     (global-set-key (kbd "C-\\") 'shell-pop))
 
+  (use-package xterm-color
+    ;; This might make npm install weird symbols disappear in eshell
+    ;; Check it out when you'll have time.
+    :disabled
+    :ensure t
+    :init
+    (add-hook 'eshell-mode-hook
+              (lambda ()
+                (setq xterm-color-preserve-properties t)))
+    :config
+    (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
+    (setq eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions)))
+
   (add-hook 'eshell-mode-hook (lambda ()
                                 (smartparens-mode t)))
   ;; Tramp integration:
