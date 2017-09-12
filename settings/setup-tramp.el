@@ -32,7 +32,10 @@
               (when (file-remote-p default-directory)
                 (setq-local projectile-mode-line "Projectile")))))
 
-(defun my-find-over-shadow (server-name)
-  (find-file (concat "/sshx:shadow|ssh:ubuntu@" server-name "|sudo:root@" server-name ":/")))
+(defun my-find-over-proxy (proxy server-name)
+  "find file over SERVER-NAME through a proxy server"
+  (interactive "sEnter proxy:
+sEnter server name: ")
+  (find-file (format "/sshx:%s|ssh:ubuntu@%s|sudo:root@%s:/" proxy server-name server-name)))
 
 (provide 'setup-tramp)
