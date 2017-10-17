@@ -52,7 +52,7 @@
 (add-to-list 'load-path settings-dir)
 (add-to-list 'load-path site-lisp-dir)
 
-(setq initial-scratch-message "Greetings master Bob, welcome back.\nWhat shell we do today sir?")
+(setq initial-scratch-message "Good day!")
 
 ;; Setup Start Dashboard:
 (use-package dashboard

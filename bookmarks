@@ -18,10 +18,10 @@
  (rear-context-string . "data-api client\n")
  (position . 870))
 ("org-refile-last-stored"
- (filename . "~/Dropbox (BigPanda)/org/gtd.org")
- (front-context-string . "** TODO Buy גומי")
- (rear-context-string . "data-api client\n")
- (position . 870))
+ (filename . "~/Dropbox (BigPanda)/org/someday.org")
+ (front-context-string . "** TODO Add yout")
+ (rear-context-string . "ode-js skeleton\n")
+ (position . 339))
 ("appearance.el"
  (filename . "~/.emacs.d/settings/appearance.el")
  (front-context-string . ";;; package --- ")
