@@ -2,14 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("rest-clients"
+(("brave-clojure"
+ (filename . "~/source/brave-clojure/")
+ (front-context-string)
+ (rear-context-string . "08 Oct 19 22:44 ")
+ (position . 235))
+("rest-clients"
  (filename . "~/source/rest-clients/")
  (front-context-string . "rest.api.client\n")
  (rear-context-string . "29 Aug 28 18:50 ")
  (position . 235))
 ("org-capture-last-stored"
  (filename . "~/Dropbox (BigPanda)/org/inbox.org")
- (front-context-string)
+ (front-context-string . "** TODO Create a")
  (rear-context-string . "NDS(e)\n\n* Tasks\n")
  (position . 132))
 ("org-capture-last-stored-marker"

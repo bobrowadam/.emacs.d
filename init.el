@@ -178,8 +178,8 @@
    ("C-c r" . flex-isearch-backward))
   :config (global-flex-isearch-mode))
 
-(global-set-key (kbd "C-s") 'isearch-forward-use-region)
-(global-set-key (kbd "C-r") 'isearch-forward-use-region)
+;; (global-set-key (kbd "C-s") 'isearch-forward-use-region)
+;; (global-set-key (kbd "C-r") 'isearch-forward-use-region)
 (global-set-key (kbd "C-c M-s g") 'helm-do-grep-ag)
 (global-set-key (kbd "C-c M-s f") 'ag-files)
 (global-set-key (kbd "C-x C-d") 'ag-dired-regexp)

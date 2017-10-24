@@ -38,4 +38,6 @@
 sEnter server name: ")
   (find-file (format "/sshx:%s|ssh:ubuntu@%s|sudo:root@%s:/" proxy server-name server-name)))
 
+(global-set-key (kbd "C-c C-x C-f") 'my-find-over-proxy)
+
 (provide 'setup-tramp)

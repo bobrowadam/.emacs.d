@@ -99,35 +99,35 @@
 ;;                               line)
 ;;                       'face 'linum)))
 
-(defun isearch-yank-selection ()
-  "Put selection from buffer into search string."
-  (interactive)
-  (when (region-active-p)
-    (deactivate-mark))
-  (isearch-yank-internal (lambda () (mark))))
+;; (defun isearch-yank-selection ()
+;;   "Put selection from buffer into search string."
+;;   (interactive)
+;;   (when (region-active-p)
+;;     (deactivate-mark))
+;;   (isearch-yank-internal (lambda () (mark))))
 
-(defun region-as-string ()
-  (buffer-substring (region-beginning)
-                    (region-end)))
+;; (defun region-as-string ()
+;;   (buffer-substring (region-beginning)
+;;                     (region-end)))
 
-(defun isearch-forward-use-region ()
-  (interactive)
-  (when (region-active-p)
-    (add-to-history 'search-ring (region-as-string))
-    (deactivate-mark))
-  (call-interactively 'isearch-forward))
+;; (defun isearch-forward-use-region ()
+;;   (interactive)
+;;   (when (region-active-p)
+;;     (add-to-history 'search-ring (region-as-string))
+;;     (deactivate-mark))
+;;   (call-interactively 'isearch-forward))
 
-(defun isearch-backward-use-region ()
-  (interactive)
-  (when (region-active-p)
-    (add-to-history 'search-ring (region-as-string))
-    (deactivate-mark))
-  (call-interactively 'isearch-backward))
+;; (defun isearch-backward-use-region ()
+;;   (interactive)
+;;   (when (region-active-p)
+;;     (add-to-history 'search-ring (region-as-string))
+;;     (deactivate-mark))
+;;   (call-interactively 'isearch-backward))
 
-(eval-after-load "multiple-cursors"
-  '(progn
-     (unsupported-cmd isearch-forward-use-region ".")
-     (unsupported-cmd isearch-backward-use-region ".")))
+;; (eval-after-load "multiple-cursors"
+;;   '(progn
+;;      (unsupported-cmd isearch-forward-use-region ".")
+;;      (unsupported-cmd isearch-backward-use-region ".")))
 
 (defun view-url ()
   "Open a new buffer containing the contents of URL."
