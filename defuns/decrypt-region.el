@@ -6,7 +6,7 @@
 (defun decrypt-regions-string (p1 p2)
  "Decrypt string in selected region P1 - P2.
 The decryption is being made with a node script and the secret key is hard coded
-so you mat change it if needed."
+so you should change it if needed."
   (interactive "r")
   (let ((scriptName " /Users/adambobrow/.nvm/versions/node/v4.2.4/bin/node /Users/adambobrow/source/crypto-utils/decryptor.js"))
     (save-excursion

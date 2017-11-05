@@ -54,9 +54,20 @@
 
 (setq initial-scratch-message "Good day!")
 
+(use-package auto-complete
+  :disabled t
+  :ensure t
+  :config
+  (ac-config-default)
+  (global-auto-complete-mode t))
+
+(use-package company
+  :ensure t
+  :config ())
+
 ;; Setup Start Dashboard:
 (use-package dashboard
-  :disabled t
+  :disabled
   :ensure t
   :init
   (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")

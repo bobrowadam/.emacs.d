@@ -56,18 +56,21 @@
 
 ;; Tern
 (autoload 'tern-mode "tern.el" nil t)
-(use-package auto-complete
-  :ensure t
-  :config
-  (ac-config-default))
-
-(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
+(add-hook 'js2-mode-hook (lambda () (tern-mode t)
+                           (company-mode)))
 
 (use-package tern
   :ensure t
   :config
 
+  (use-package company-tern
+    :ensure t
+    :config
+    ()
+    )
+  
   (use-package tern-auto-complete
+    :disabled
     :ensure t
     :config
     (tern-ac-setup)))
