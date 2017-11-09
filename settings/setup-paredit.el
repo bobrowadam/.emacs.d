@@ -40,7 +40,8 @@
 
 (add-hook 'clojure-mode-hook (lambda () (use-paredit-not-sp) ))
 (add-hook 'cider-repl-mode-hook (lambda () (use-paredit-not-sp)))
-(add-hook 'emacs-lisp-mode-hook (lambda () (use-paredit-not-sp)))
+(add-hook 'emacs-lisp-mode-hook (lambda () (use-paredit-not-sp)
+                                  (company-mode)))
 (add-hook 'lisp-mode-hook (lambda () (use-paredit-not-sp)))
 (add-hook 'slime-repl-mode-hook (lambda () (use-paredit-not-sp)))
 

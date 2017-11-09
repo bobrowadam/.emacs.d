@@ -52,7 +52,7 @@
 (add-to-list 'load-path settings-dir)
 (add-to-list 'load-path site-lisp-dir)
 
-(setq initial-scratch-message "Good day!")
+;; (setq initial-scratch-message "Good day!")
 
 (use-package auto-complete
   :disabled t

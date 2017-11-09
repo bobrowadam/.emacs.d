@@ -12,7 +12,8 @@
 ;; Command as meta
 (when (eq system-type 'darwin)
   (setq mac-right-option-modifier 'meta)
-  (setq mac-command-modifier 'meta))
+  ;; (setq mac-command-modifier 'meta)
+  )
 
 ;; no startup message:
 (setq inhibit-startup-message t)

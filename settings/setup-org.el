@@ -35,7 +35,7 @@
 ;; Org Capture config:
 (setq org-capture-templates '(("t" "Todo [inbox]" entry
                                (file+headline org-inbox-file "Tasks")
-                               "* TODO %i%?")
+                               "* TODO %?\n  %i\n  %a")
                               ("T" "Tickler" entry
                                (file+headline org-tickler-file "Tickler")
                                "* %i%? \n %U")))

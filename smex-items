@@ -1,13 +1,13 @@
 
 ;; ----- smex-history -----
 (
+ emacs-lisp-mode
+ package-reinstall
  company-mode
  global-auto-complete-mode
  package-list-packages
  customize-group
  customize-face
- customize
- ac-complete
 )
 
 ;; ----- smex-data -----
@@ -28,7 +28,7 @@
  (kill-buffer-and-window . 1)
  (js2-mode . 29)
  (eshell . 10)
- (emacs-lisp-mode . 11)
+ (emacs-lisp-mode . 13)
  (json-pretty-print . 15)
  (embrace-commander . 1)
  (nodejs-repl . 65)
@@ -165,4 +165,5 @@
  (customize-face . 1)
  (customize-group . 1)
  (company-mode . 3)
+ (package-reinstall . 1)
 )
