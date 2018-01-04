@@ -9,11 +9,19 @@
 (global-unset-key (kbd "C-x C-c"))
 (global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
 
+;; Delete with C-h and M-h instead of backspace
+   ;; (global-set-key (kbd "s-h") 'help-command)
+   ;; (global-set-key (kbd "C-M-?") 'mark-paragraph)
+   ;; (global-set-key (kbd "C-h") 'delete-backward-char)
+   ;; (global-set-key (kbd "M-h") 'backward-kill-word)
+
+(global-set-key (kbd "M-h") 'backward-kill-word)
+
 ;; Command as meta
 (when (eq system-type 'darwin)
   (setq mac-right-option-modifier 'meta)
-  ;; (setq mac-command-modifier 'meta)
-  )
+  (setq mac-option-modifier 'meta)
+  (setq mac-command-modifier 'control))
 
 ;; no startup message:
 (setq inhibit-startup-message t)
@@ -137,6 +145,7 @@
 
 ;; Represent undo-history as an actual tree (visualize with C-x u)
 (use-package undo-tree
+  :disabled
   :ensure t
   :init (setq undo-tree-mode-lighter "")
   :config (global-undo-tree-mode))
@@ -203,6 +212,7 @@
 
 (global-set-key (kbd "C-x 3") 'split-window-right-and-move-there-dammit)
 (global-set-key (kbd "C-x k") 'kill-buffer-and-window)
+
 
 (provide 'sane-defaults)
 ;;; sane-defaults ends here

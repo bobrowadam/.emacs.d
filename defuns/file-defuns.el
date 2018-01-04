@@ -65,4 +65,17 @@
   (backward-delete-char 1)
   (save-buffer))
 
+(defun get-file-content (filename)
+  "Get file content as string"
+  (interactive)
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (buffer-string)))
+
+(defun get-string-from-etc-hosts ()
+  "Return filePath's file content."
+  (with-temp-buffer
+    (insert-file-contents "/sshx:shadow:/etc/hosts")
+    (buffer-string)))
+
 (provide 'file-defuns)

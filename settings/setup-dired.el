@@ -6,13 +6,13 @@
   ;; C-a is nicer in dired if it moves back to start of files
   (defun dired-back-to-start-of-files ()
     (interactive)
-    (backward-char (- (current-column) 2)))
+    (backward-char (- (current-column) 1)))
 
   ;; M-up is nicer in dired if it moves to the fourth line - the first file
   (defun dired-back-to-top ()
     (interactive)
     (beginning-of-buffer)
-    (dired-next-line 4))
+    (diredp-next-line 2))
 
   ;; M-down is nicer in dired if it moves to the last file
   (defun dired-jump-to-bottom ()
@@ -46,7 +46,9 @@
   (define-key dired-mode-map (vector 'remap 'smart-up) 'dired-back-to-top)
 
   (define-key dired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
-  (define-key dired-mode-map (vector 'remap 'smart-down) 'dired-jump-to-bottom))
+  (define-key dired-mode-map (vector 'remap 'smart-down) 'dired-jump-to-bottom)
+  (diredp-toggle-find-file-reuse-dir 1))
+
 
 ;; Delete with C-x C-k to match file buffers and magit
 ;; (define-key dired-mode-map (kbd "C-x C-k") 'dired-do-delete)

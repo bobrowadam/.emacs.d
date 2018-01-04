@@ -47,7 +47,7 @@
      (interactive)
      ,@body))
 
-(global-set-key (kbd "s-l") (λ (insert "\u03bb")))
+(global-set-key (kbd "C-x 8 l") (λ (insert "\u03bb")))
 
 ;; command to help set up magit-gh-pulls
 (defun magit-gh-pulls-setup (repoid)

@@ -24,6 +24,9 @@
   (setq-default js2-bounce-indent-p nil)
   (add-to-list 'auto-mode-alist (cons (rx ".js" eos) 'js2-mode))
   (add-hook 'js2-mode-hook '(lambda () (flyspell-prog-mode)))
+  (add-hook 'js2-mode-hook '(lambda ()
+                              (define-key js2-mode-map (kbd "C-<tab>") 'js2-indent-bounce )))
+  (add-hook 'js2-mode-hook 'prettify-symbols-mode)
 
   (use-package highlight-indent-guides
     :ensure t
@@ -34,7 +37,6 @@
   ;; (:map js2-mode-map
   ;;       ("C-c TAB" . js2-indent-bounce))
   :config
-  ;; Its nice but other people hate it so I disabled it for now:
   (use-package pretty-mode
     :disabled
     :ensure t
@@ -47,6 +49,7 @@
 ;; (autoload 'tern-mode "tern.el" nil t)
 
 (use-package color-identifiers-mode
+  :disabled
   :ensure t
   :config
   (add-hook 'js2-mode-hook 'color-identifiers-mode))
@@ -93,5 +96,8 @@
 (setq-default flycheck-disabled-checkers
               (append flycheck-disabled-checkers
                       '(javascript-jshint)))
+
+(use-package indium
+  :ensure t)
 
 (provide 'setup-js2-mode)
