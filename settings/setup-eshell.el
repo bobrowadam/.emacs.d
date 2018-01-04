@@ -9,7 +9,18 @@
   (defalias 'emacs 'find-file)
   (defalias 'docstart "docker start ${docker ps -a -q")
   (defalias 'status 'magit-status)
+  (add-hook 'eshell-mode-hook
+            (lambda ()
+              (local-set-key (kbd "M-r")
+                             (lambda ()
+                               (interactive)
+                               (insert
+                                (ido-completing-read "Eshell history: "
+                                                     (delete-dups
+                                                      (ring-elements eshell-history-ring))))))
+              (local-set-key (kbd "C-c C-h") 'eshell-list-history)))
   
+
   :config
   (use-package eshell-prompt-extras
     :ensure t

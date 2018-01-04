@@ -1,6 +1,7 @@
-alias docstart docker start ${docker ps -a -q}
-alias s magit-status
-alias lsa ls -a $*
-alias ll ls -l $*
+alias nodemon-4 '/Users/adambobrow/.nvm/versions/node/v4.2.4/bin/nodemon' $1
+alias node-4 '/Users/adambobrow/.nvm/versions/node/v4.2.4/bin/node' $1
 alias emacs find-file $1
-alias AssertionError: $*
+alias ll ls -l $*
+alias lsa ls -a $*
+alias s magit-status
+alias docstart docker start ${docker ps -a -q}
