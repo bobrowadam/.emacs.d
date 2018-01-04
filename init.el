@@ -31,8 +31,9 @@
 
 (use-package s)
 (use-package dash)
+;; (unless (server-running-p)
+  ;; (server-start))
 
-(server-start)
 
 ;; Set shell path
 (use-package exec-path-from-shell
@@ -83,6 +84,9 @@
 (use-package setup-org)
 (use-package setup-yas)
 (use-package setup-clojure)
+(use-package misc-defuns
+  :config
+  (use-package my-misc))
 
 ;; Functions (load all files in defuns-dir)
 (setq defuns-dir (expand-file-name "defuns" user-emacs-directory))
@@ -183,15 +187,24 @@
 
 ;; Search
 (use-package flex-isearch
+  :disabled t
   :ensure t
   :bind
   (("C-c s" . flex-isearch-forward)
    ("C-c r" . flex-isearch-backward))
   :config (global-flex-isearch-mode))
 
+(use-package counsel
+  :ensure t
+  :bind
+  (("C-c s" . swiper)
+   ("C-c M-s a g" . counsel-ag)))
+
 ;; (global-set-key (kbd "C-s") 'isearch-forward-use-region)
 ;; (global-set-key (kbd "C-r") 'isearch-forward-use-region)
+
 (global-set-key (kbd "C-c M-s g") 'helm-do-grep-ag)
+;; (global-set-key (kbd "C-c M-s a g") 'counsel-ag)
 (global-set-key (kbd "C-c M-s f") 'ag-files)
 (global-set-key (kbd "C-x C-d") 'ag-dired-regexp)
 (global-set-key (kbd "C-c M-f") 'ffap)
@@ -222,7 +235,8 @@
   :bind
   ("M-o" . ace-window)
   ("M-g w" . avy-goto-word-1)
-  ("M-g g" . avy-goto-line))
+  ("M-g g" . avy-goto-line)
+  ("M-g M-s" . avy-goto-char-in-line))
 
 (use-package mode-icons
   :ensure t
@@ -290,6 +304,29 @@
   ("C-c g" . golden-ratio)
   ("C-c C-g" . balance-windows))
 
+(use-package fancy-narrow
+  :ensure t)
+
+(use-package google-this
+  :ensure t
+  :bind
+  ("C-c t" . google-this))
+
+(use-package back-button
+  :ensure t
+  :bind
+  ("M-]" . back-button-local-forward)
+  ("M-[" . back-button-local-backward)
+  ("C-M-{" . back-button-global-backward)
+  ("C-M-}" . back-button-global-forward)
+  :config
+  (back-button-mode 1))
+
+(use-package string-inflection
+  :ensure t
+  :bind
+  ("C-c M-c" . string-inflection-lower-camelcase)
+  ("C-c M-u" . string-inflection-underscore))
+
 (provide 'init)
 ;;; init.el ends here
-(put 'narrow-to-region 'disabled nil)

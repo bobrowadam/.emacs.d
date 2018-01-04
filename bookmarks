@@ -2,8 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("brave-clojure"
- (filename . "~/source/brave-clojure/")
+(("prod-mongos-11"
+ (filename . "/sshx:shadow|ssh:ubuntu@prod-mongos-11:/")
+ (front-context-string . "bin\n  drwxr-xr-x")
+ (rear-context-string . "96 Apr 17  2016 ")
+ (position . 200))
+("clojure-workspace"
+ (filename . "~/source/clojure-workspace/")
  (front-context-string)
  (rear-context-string . "08 Oct 19 22:44 ")
  (position . 235))
@@ -24,9 +29,9 @@
  (position . 870))
 ("org-refile-last-stored"
  (filename . "~/Dropbox (BigPanda)/org/someday.org")
- (front-context-string . "** TODO Add yout")
- (rear-context-string . "ode-js skeleton\n")
- (position . 339))
+ (front-context-string . "** TODO delete c")
+ (rear-context-string . "/rg3/youtube-dl\n")
+ (position . 397))
 ("appearance.el"
  (filename . "~/.emacs.d/settings/appearance.el")
  (front-context-string . ";;; package --- ")

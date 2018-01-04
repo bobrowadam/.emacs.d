@@ -51,37 +51,38 @@
   (defun show-current-theme()
     "show the current enabled theme"
     (interactive)
-    (message "current enabled theme is %s" (cdr custom-enabled-themes)))
+    (message "current enabled theme is %s" custom-enabled-themes))
   
   :config
   (setq sml/theme 'dark)
   (setq sml/no-confirm-load-theme t)
-  (load-theme 'lush)
+  (load-theme 'gruber-darker)
   (sml/setup)
   (show-current-theme))
 
 ;; Random theme:
 
-(setq themes-wanted '(abyss lush manoj-dark cyberpunk purple-haze ample tronesque plan9 railscasts-reloaded planet zweilight afternoon))
+(defvar favorite-themes '(abyss lush manoj-dark cyberpunk purple-haze ample tronesque plan9 railscasts-reloaded planet zweilight afternoon whit wheatgrass gruber-darker))
 
-(defun load-random-favorite-theme(themes-wanted &optional function)
+(defun load-random-favorite-theme(favorite-themes &optional function)
   (mapc #'disable-theme custom-enabled-themes)
-  (load-theme (nth (random (length themes-wanted)) themes-wanted) t nil )
+  (load-theme (nth (random (length favorite-themes)) favorite-themes) t nil )
   (when function
     (eval function)))
 
 (defun load-random-theme-with-sml ()
+  "Load a random theme."
   (interactive)
-  (load-random-favorite-theme themes-wanted '(sml/setup)))
+  (load-random-favorite-theme favorite-themes '(sml/setup)))
 
 (global-set-key (kbd "C-c l r") 'load-random-theme-with-sml)
 
 ;; Fonts:
-;; (set-face-attribute 'default nil :font "Hack 18")
-;; (set-face-attribute 'default nil :font "Monaco 18")
-(set-face-attribute 'default nil
-                    :font "SauceCodePro Nerd Font 18"
-                    :weight 'light)
+(set-face-attribute 'default nil :font "Hack 16")
+;; (set-face-attribute 'default nil :font "Monaco 16")
+;; (set-face-attribute 'default nil
+;;                     :font "SauceCodePro Nerd Font 16"
+;;                     :weight 'light)
 
 (use-package rainbow-delimiters
   :ensure t
