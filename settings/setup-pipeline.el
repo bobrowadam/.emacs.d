@@ -4,12 +4,16 @@
 ;;
 ;;; code:
 
+(defvar node-8-verssion "8.9.1")
+
 (prodigy-define-service
   :name "web-api"
   :command "nodemon"
   :cwd "~/source/local_environment/web-api"
   :args '("web-api.js")
   :port 3000
+  :init-async (lambda (done)
+                (nvm-use node-8-verssion done))
   :tags '(pipeline javascript mandatory))
 
 (prodigy-define-service
@@ -18,6 +22,8 @@
   :cwd "~/source/local_environment/data-api"
   :args '("data-api.js")
   :port 1337
+  :init-async (lambda (done)
+                (nvm-use node-8-verssion done))
   :tags '(pipeline javascript mandatory))
 
 (prodigy-define-service
@@ -26,6 +32,8 @@
   :cwd "~/source/local_environment/enrichment"
   :args '("enrichment.js")
   :port 3070
+  :init-async (lambda (done)
+                (nvm-use node-8-verssion done))
   :tags '(pipeline javascript mandatory))
 
 (prodigy-define-service
@@ -76,6 +84,8 @@
   :cwd "~/source/local_environment/consumer"
   :args '("consumer.js")
   :port 1339
+  :init-async (lambda (done)
+                (nvm-use node-8-verssion done))
   :tags '(pipeline node))
 
 (prodigy-define-service
@@ -100,17 +110,35 @@
   :command "npm"
   :cwd "~/source/local_environment/shaggy"
   :args '("run" "dev")
-  :stop-signal 'sigint
+  :stop-signal 'sigkill
   :port 8080
+  :init-async (lambda (done)
+                (nvm-use node-8-verssion done))
   :tags '(js mandatory))
 
 (prodigy-define-service
   :name "metadata-api"
-  :command "node"
+  :command "nodemon"
   :cwd "~/source/local_environment/metadata-api"
   :args '("metadata-api.js")
   :stop-signal 'sigint
   :port 1338
+  :tags '(node pipeline ))
+
+(prodigy-define-service
+  :name "incident-log"
+  :command "nodemon"
+  :cwd "~/source/incident-log"
+  :args '("incident-log.js")
+  :stop-signal 'sigint
+  :tags '(node pipeline ))
+
+(prodigy-define-service
+  :name "notif"
+  :command "nodemon"
+  :cwd "~/source/local_environment/notif"
+  :args '("notif.js")
+  :stop-signal 'sigint
   :tags '(node pipeline ))
 
 (prodigy-define-service
