@@ -13,6 +13,7 @@ url/
 /.mc-lists.el
 /diary
 /.DS_Store
-magithub/cache
+magithub/
 speed-type
 /settings/npm-debug.log
+var
