@@ -234,8 +234,9 @@
   (setq aw-dispatch-always nil)
   :bind
   ("M-o" . ace-window)
-  ("M-g w" . avy-goto-word-1)
+  ("M-g M-w" . avy-goto-word-1)
   ("M-g g" . avy-goto-line)
+  ("M-g M-c" . avy-goto-char)
   ("M-g M-s" . avy-goto-char-in-line))
 
 (use-package mode-icons
