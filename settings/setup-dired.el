@@ -26,11 +26,9 @@
     :ensure t
     :config ())
 
-  (use-package dired-details+
-    :ensure t
-    :init (setq-default dired-details-hidden-string "|--- ")
-    :config (dired-details-install))
-
+  (use-package find-dired+
+    :ensure t)
+  
   ;; Reload dired after making changes
   (--each '(dired-do-rename
             dired-do-copy
