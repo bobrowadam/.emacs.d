@@ -1,13 +1,13 @@
 
 ;; ----- smex-history -----
 (
+ list-processes
+ prodigy
+ mongo-over-proxy
  inf-mongo
- copy-current-file-path
- package-list-packages
- package-reinstall
- package-delete
- revert-buffer
- org-mode
+ avy-goto-line-above
+ avy-isearch
+ avy-goto-char
 )
 
 ;; ----- smex-data -----
@@ -39,9 +39,9 @@
  (ediff-buffers . 15)
  (magit-ediff-compare . 28)
  (magit-blame . 40)
- (tramp-cleanup-all-buffers . 19)
- (inf-mongo . 127)
- (tramp-cleanup-all-connections . 13)
+ (tramp-cleanup-all-buffers . 21)
+ (inf-mongo . 132)
+ (tramp-cleanup-all-connections . 15)
  (delete-current-buffer-file . 10)
  (inferior-lisp . 1)
  (rename-buffer . 8)
@@ -70,7 +70,7 @@
  (balance-windows . 1)
  (golden-ratio-mode . 1)
  (ace-window . 1)
- (avy-goto-char . 3)
+ (avy-goto-char . 5)
  (scala-mode . 3)
  (ensime . 6)
  (browse-url . 8)
@@ -86,7 +86,7 @@
  (url-view-url . 1)
  (org-tags-view . 2)
  (copy-current-file-path . 27)
- (prodigy . 80)
+ (prodigy . 81)
  (shell . 12)
  (yas-insert-snippet . 7)
  (yas-load-directory . 2)
@@ -123,7 +123,7 @@
  (python-mode . 1)
  (cursor-sensor-mode . 2)
  (cursor-intangible-mode . 4)
- (avy-goto-char-2 . 3)
+ (avy-goto-char-2 . 7)
  (js2-mode-show-all . 1)
  (js2-mode-hide-warnings-and-errors . 1)
  (prodigy-browse . 2)
@@ -173,7 +173,7 @@
  (bookmark-rename . 1)
  (delete-directory . 1)
  (blink-cursor-mode . 2)
- (list-processes . 14)
+ (list-processes . 15)
  (server-force-delete . 1)
  (mark-paragraph . 1)
  (toggle-frame-fullscreen . 1)
@@ -335,4 +335,9 @@
  (process-menu-mode . 1)
  (viper-mode . 3)
  (magit-browse-pull-request . 1)
+ (mongo-over-proxy . 19)
+ (regexp-builder . 2)
+ (mongo-send-last-sexp-and-go . 1)
+ (avy-isearch . 3)
+ (avy-goto-line-above . 1)
 )
