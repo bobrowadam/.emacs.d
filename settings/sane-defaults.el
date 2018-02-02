@@ -12,16 +12,16 @@
 ;; Delete with C-h and M-h instead of backspace
    ;; (global-set-key (kbd "s-h") 'help-command)
    ;; (global-set-key (kbd "C-M-?") 'mark-paragraph)
-   ;; (global-set-key (kbd "C-h") 'delete-backward-char)
-   ;; (global-set-key (kbd "M-h") 'backward-kill-word)
-
-(global-set-key (kbd "M-h") 'backward-kill-word)
+(define-key key-translation-map [?\C-h] [?\C-?])
+(global-set-key (kbd "M-C-h") 'backward-kill-word)
+;; (global-unset-key (kbd "DEL"))
+;; (global-set-key (kbd "M-h") 'delete-backward-char)
 
 ;; Command as meta
-(when (eq system-type 'darwin)
-  (setq mac-right-option-modifier 'meta)
-  (setq mac-option-modifier 'meta)
-  (setq mac-command-modifier 'control))
+;; (when (eq system-type 'darwin)
+;;   (setq mac-right-option-modifier 'meta)
+;;   (setq mac-option-modifier 'meta)
+;;   (setq mac-command-modifier 'control))
 
 ;; no startup message:
 (setq inhibit-startup-message t)

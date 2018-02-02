@@ -51,7 +51,9 @@
 (define-key paredit-mode-map (kbd "M-s-9") 'paredit-wrap-square-from-behind)
 (define-key paredit-mode-map (kbd "M-s-(") 'paredit-wrap-curly)
 (define-key paredit-mode-map (kbd "M-s-)") 'paredit-wrap-curly-from-behind)
-
+;; (define-key paredit-mode-map (kbd "M-h") 'paredit-backward-delete)
+(define-key paredit-mode-map (kbd "M-C-h") 'paredit-backward-kill-word)
+;; (define-key paredit-mode-map [delete] nil) ;; We don't want to use delete
 ;; (define-key paredit-mode-map (kbd "C-w") 'paredit-kill-region-or-backward-word)
 ;; (define-key paredit-mode-map (kbd "M-C-<backspace>") 'backward-kill-sexp)
 
@@ -84,6 +86,5 @@
     sp-forward-symbol
     sp-backward-symbol))
 
-()
 (provide 'setup-paredit)
 ;;; setup-paredit ends here

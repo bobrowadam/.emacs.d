@@ -177,7 +177,8 @@
 
 (use-package expand-region
   :ensure t
-  :bind ("C-M-S-SPC" . er/expand-region))
+  :bind ("C-#" . er/expand-region)
+  :bind ("M-#" . er/expand-region))
 
 (use-package multiple-cursors
   :ensure t
