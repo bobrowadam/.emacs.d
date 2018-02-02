@@ -23,9 +23,6 @@
   :config
   ;; to connect via proxy:
   ;; /sshx:<proxy-server-name>|ssh:ubuntu@<server name>|sudo:root@<server-name>:/
-  (add-to-list 'tramp-default-proxies-alist
-               '("od-orenhazan" "\\`ubuntu\\'" "/sshx:shadow:")
-               '("prod-einstein-1" "\\`ubuntu\\'" "/sshx:shadow:"))
   (add-to-list 'tramp-restricted-shell-hosts-alist
                "\\shadow\\'")
 
