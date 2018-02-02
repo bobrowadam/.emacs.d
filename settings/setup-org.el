@@ -63,6 +63,10 @@
   (interactive)
   (find-file org-someday-file))
 
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((sh . t)))
+
 ;; Keybindings
 (define-key global-map (kbd "C-c c") 'org-capture)
 (define-key global-map (kbd "C-c a") 'org-agenda)

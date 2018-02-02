@@ -241,6 +241,7 @@
   ("M-g M-s" . avy-goto-char-in-line))
 
 (use-package mode-icons
+  :disabled t
   :ensure t
   :config (mode-icons-mode))
 

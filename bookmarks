@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("prod-mongos-11"
+(("defuns"
+ (filename . "~/.emacs.d/defuns/")
+ (front-context-string . "buffer-defuns.el")
+ (rear-context-string . "76 Aug 12 23:55 ")
+ (position . 259))
+("prod-mongos-11"
  (filename . "/sshx:shadow|ssh:ubuntu@prod-mongos-11:/")
  (front-context-string . "bin\n  drwxr-xr-x")
  (rear-context-string . "96 Apr 17  2016 ")
