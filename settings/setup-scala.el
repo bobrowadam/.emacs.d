@@ -20,5 +20,12 @@
   :init
   (add-hook 'scala-mode-hook '(lambda () (flyspell-prog-mode))))
 
+(use-package dash-at-point
+  :ensure t
+  :config
+  (add-hook 'scala-mode-hook (lambda ()
+                               (setq dash-at-point-docset "Scala")))
+  (add-to-list 'dash-at-point-mode-alist '(scala-mode . "Scala")))
+
 (provide 'setup-scala)
 ;;; key-bindings.el ends here

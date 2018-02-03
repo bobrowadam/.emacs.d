@@ -28,6 +28,8 @@
                               (define-key js2-mode-map (kbd "C-<tab>") 'js2-indent-bounce )))
   (add-hook 'js2-mode-hook 'prettify-symbols-mode)
   (add-hook 'js2-mode-hook 'diff-hl-mode)
+  (add-hook 'js2-mode-hook (lambda ()
+                             (setq dash-at-point-docset "JavaScript,Chai,Express,MomentsJS,Mongoose,NodeJs,Sinon")))
 
   (use-package highlight-indent-guides
     :ensure t
@@ -102,9 +104,11 @@
   :ensure t)
 
 (use-package dash-at-point
-  :disabled t
   :ensure t
+  :hook
+  (js2-mode-hook . (lambda ()
+                     (setq-local dash-at-point-docset js2-mode)))
   :config
-  (add-to-list 'dash-at-point-mode-alist '(js2-mode . "javascript")))
+  (add-to-list 'dash-at-point-mode-alist '(js2-mode . "JavaScript,Chai,Express,MomentsJS,Mongoose,NodeJs,Sinon")))
 
 (provide 'setup-js2-mode)
