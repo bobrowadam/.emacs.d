@@ -27,6 +27,7 @@
   (add-hook 'js2-mode-hook '(lambda ()
                               (define-key js2-mode-map (kbd "C-<tab>") 'js2-indent-bounce )))
   (add-hook 'js2-mode-hook 'prettify-symbols-mode)
+  (add-hook 'js2-mode-hook 'diff-hl-mode)
 
   (use-package highlight-indent-guides
     :ensure t
@@ -99,5 +100,11 @@
 
 (use-package indium
   :ensure t)
+
+(use-package dash-at-point
+  :disabled t
+  :ensure t
+  :config
+  (add-to-list 'dash-at-point-mode-alist '(js2-mode . "javascript")))
 
 (provide 'setup-js2-mode)

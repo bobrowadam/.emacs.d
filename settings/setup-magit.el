@@ -59,4 +59,9 @@
 
        (define-key vc-annotate-mode-map (kbd "q") 'vc-annotate-quit))))
 
+(use-package diff-hl
+  :ensure t
+  :init
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+
 (provide 'setup-magit)
