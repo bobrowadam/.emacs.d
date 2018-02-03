@@ -31,16 +31,14 @@
 
 (use-package s)
 (use-package dash)
-;; (unless (server-running-p)
-  ;; (server-start))
-
+(server-start)
 
 ;; Set shell path
 (use-package exec-path-from-shell
   :ensure t
   :init
-  (setq exec-path-from-shell-check-startup-files nil)
-  (setq exec-path-from-shell-debug nil)
+  (defvar exec-path-from-shell-check-startup-files nil)
+  (defvar exec-path-from-shell-debug nil)
   :config
   (exec-path-from-shell-initialize))
 
