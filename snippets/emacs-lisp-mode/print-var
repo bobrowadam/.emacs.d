@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: print
+# key: print
+# --
+(print (format "${1:enumerate}---------------------------------\n:%s " $1))
