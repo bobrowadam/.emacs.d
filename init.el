@@ -209,6 +209,15 @@
 (global-set-key (kbd "C-c M-f") 'ffap)
 
 ;; flyspell
+(defface flyspell-incorrect
+  '((((supports :underline (:style wave)))
+     :underline (:color "dark cyan" :style wave))
+    (t
+     :underline t :inherit error))
+  "Flyspell face for misspelled words."
+  :version "24.4"
+  :group 'flyspell)
+
 (use-package flyspell-correct-helm
   :ensure t
   :init

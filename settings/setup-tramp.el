@@ -25,7 +25,7 @@
   ;; /sshx:<proxy-server-name>|ssh:ubuntu@<server name>|sudo:root@<server-name>:/
   (add-to-list 'tramp-restricted-shell-hosts-alist
                "\\shadow\\'")
-
+  (setq tramp-default-method "ssh")
   ;;Disable projectile mode line project naming for better performance:
   (add-hook 'find-file-hook
             (lambda ()
