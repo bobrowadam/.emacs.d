@@ -84,9 +84,6 @@
 (use-package setup-org)
 (use-package setup-yas)
 (use-package setup-clojure)
-(use-package misc-defuns
-  :config
-  (use-package my-misc))
 
 ;; Functions (load all files in defuns-dir)
 (setq defuns-dir (expand-file-name "defuns" user-emacs-directory))

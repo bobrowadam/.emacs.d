@@ -13,6 +13,7 @@
    ;; (global-set-key (kbd "s-h") 'help-command)
    ;; (global-set-key (kbd "C-M-?") 'mark-paragraph)
 (define-key key-translation-map [?\C-h] [?\C-?])
+(define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
 (global-set-key (kbd "M-C-h") 'backward-kill-word)
 ;; (global-unset-key (kbd "DEL"))
 ;; (global-set-key (kbd "M-h") 'delete-backward-char)
