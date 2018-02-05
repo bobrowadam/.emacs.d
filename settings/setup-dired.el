@@ -23,10 +23,12 @@
   :config
   ;; Make dired less verbose
   (use-package dired+
+    :disabled t
     :ensure t
     :config ())
 
   (use-package find-dired+
+    :disabled t
     :ensure t)
   
   ;; Reload dired after making changes
@@ -45,7 +47,8 @@
 
   (define-key dired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
   (define-key dired-mode-map (vector 'remap 'smart-down) 'dired-jump-to-bottom)
-  (diredp-toggle-find-file-reuse-dir 1))
+  (diredp-toggle-find-file-reuse-dir 1)
+  )
 
 
 ;; Delete with C-x C-k to match file buffers and magit
