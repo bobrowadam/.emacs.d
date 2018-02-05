@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("defuns"
+(("create-alerts.sc"
+ (filename . "~/source/scala-scripts/create-alerts.sc")
+ (front-context-string . "import $ivy.`io.")
+ (rear-context-string)
+ (position . 1))
+("defuns"
  (filename . "~/.emacs.d/defuns/")
  (front-context-string . "buffer-defuns.el")
  (rear-context-string . "76 Aug 12 23:55 ")

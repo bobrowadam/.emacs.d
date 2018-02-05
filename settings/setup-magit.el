@@ -1,9 +1,9 @@
 ;;;; Magit Configuratinon
 ;;
+
 (use-package magit
   :ensure t
   :init
-  
   ;; Full screen magit-status
   (defun magit-status-fullscreen (prefix)
     (interactive "P")
@@ -38,7 +38,7 @@
     ?t "Follow tags" "--follow-tags")
   
   ;; Magithub
-  ;;;; use: gpg --generate-key and only then add the auth gpg file
+  ;; use: gpg --generate-key and only then add the auth gpg file
   (use-package magithub
     :ensure t
     :after magit
@@ -63,5 +63,12 @@
   :ensure t
   :init
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+
+(use-package counsel
+  :ensure t
+  :init
+  :bind
+  ("C-c C-x g" . counsel-git)
+  ("C-c M-s g" . counsel-git-grep))
 
 (provide 'setup-magit)

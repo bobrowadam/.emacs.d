@@ -17,6 +17,10 @@
   :config
   (hlinum-activate))
 
+;; (use-package feebleline
+;;   :disabled t
+;;   :ensure t)
+
 (setq linum-format " %3d ")
 ;; turn on line numbers in prog-mode
 (add-hook 'prog-mode-hook 'linum-mode)
@@ -37,7 +41,8 @@
 (setq themes-to-install '(abyss-theme lush-theme cyberpunk-theme purple-haze-theme ample-theme tronesque-theme plan9-theme railscasts-reloaded-theme planet-theme zweilight-theme afternoon-theme))
 
 (defun install-themes (themes-list)
-  (let ( (theme (car themes-list))
+  "Install themes from THEMES-LIST."
+  (let ((theme (car themes-list))
          (next-themes (cdr themes-list)))
     (unless (package-installed-p theme)
       (package-install theme))

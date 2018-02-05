@@ -131,6 +131,8 @@
 
 (use-package projectile
   :ensure t
+  :init
+  (setq projectile-completion-system 'ivy)
   :config
   (projectile-mode))
 
@@ -196,13 +198,15 @@
   :ensure t
   :bind
   (("C-c s" . swiper)
-   ("C-c M-s a g" . counsel-ag)))
+   ("C-c M-s a g" . counsel-ag)
+   (""))
+  :config
+  ())
 
 ;; (global-set-key (kbd "C-s") 'isearch-forward-use-region)
 ;; (global-set-key (kbd "C-r") 'isearch-forward-use-region)
 
-(global-set-key (kbd "C-c M-s g") 'helm-do-grep-ag)
-;; (global-set-key (kbd "C-c M-s a g") 'counsel-ag)
+;; (global-set-key (kbd "C-c M-s g") 'helm-do-grep-ag)
 (global-set-key (kbd "C-c M-s f") 'ag-files)
 (global-set-key (kbd "C-x C-d") 'ag-dired-regexp)
 (global-set-key (kbd "C-c M-f") 'ffap)
@@ -237,6 +241,7 @@
   :ensure t
   :init
   (setq avy-background t)
+  (setq avy-case-fold-search nil)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (setq aw-dispatch-always nil)
   :bind

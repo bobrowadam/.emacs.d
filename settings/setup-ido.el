@@ -5,8 +5,8 @@
 ;;; Code:
 
 (use-package ido
+  :disabled t
   :ensure t
-
   :init
   (setq ido-enable-prefix nil
         ido-enable-flex-matching t
@@ -38,7 +38,7 @@
 
     (define-key ido-file-dir-completion-map (kbd "C-w") 'ido-delete-backward-updir)
     (define-key ido-file-dir-completion-map (kbd "C-x C-w") 'ido-copy-current-file-name))
-  
+
   :config
   (ido-mode t)
   ;;Better flex matching between words
@@ -55,6 +55,7 @@
     (setq ido-vertical-define-keys 'C-n-C-p-up-down-left-right)
     :config
     (ido-vertical-mode))
+
   (add-hook 'ido-setup-hook 'my/setup-ido)
   ;; Always rescan buffer for imenu
   (set-default 'imenu-auto-rescan t)

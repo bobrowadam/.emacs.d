@@ -78,10 +78,24 @@
 
 ;; Smex:
 (use-package smex
+  :disabled t
   :ensure t
-  :bind (( "M-x" . smex)
-         ("M-X" . smex-major-mode-commands)
-         ("C-c C-c M-x" . execute-extended-command)))
+  :bind
+  (( "M-x" . smex)
+   ("M-X" . smex-major-mode-commands)
+   ("C-c C-c M-x" . execute-extended-command)))
+
+(use-package ivy
+  :ensure t
+  :init
+  (setq ivy-re-builders-alist
+        '((t . ivy--regex-fuzzy)))
+  :bind (( "M-x" . counsel-M-x)
+         ( "C-x C-f" . counsel-find-file)
+         ("C-h f" . counsel-describe-function)
+         ("C-h v" . counsel-describe-variable))
+  :config
+  (ivy-mode 1))
 
 ;; UTF-8 please
 (setq locale-coding-system 'utf-8) ; pretty
