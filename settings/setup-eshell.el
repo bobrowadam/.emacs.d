@@ -21,21 +21,23 @@
                                                      (delete-dups
                                                       (ring-elements eshell-history-ring))))))
               (local-set-key (kbd "C-c C-h") 'eshell-list-history)))
-  
 
   :config
   (use-package eshell-prompt-extras
     :ensure t
-    
     :config
     (with-eval-after-load "esh-opt"
       (autoload 'epe-theme-lambda "eshell-prompt-extras")
       (setq eshell-highlight-prompt nil
             eshell-prompt-function 'epe-theme-lambda)))
+
   (use-package shell-pop
     :ensure t
     :init
     (setq shell-pop-window-size 45)
+    (setq shell-pop-shell-type '("eshell" "*ehell*"
+                                (lambda nil
+                                  (eshell))))
     :config
     (global-unset-key (kbd "C-\\"))
     (global-set-key (kbd "C-\\") 'shell-pop))
