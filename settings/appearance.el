@@ -38,7 +38,7 @@
 
 ;;;; loading:
 ;; installing all themes:
-(setq themes-to-install '(abyss-theme lush-theme cyberpunk-theme purple-haze-theme ample-theme tronesque-theme plan9-theme railscasts-reloaded-theme planet-theme zweilight-theme afternoon-theme))
+(setq themes-to-install '(abyss-theme lush-theme cyberpunk-theme purple-haze-theme ample-theme plan9-theme railscasts-reloaded-theme planet-theme zweilight-theme afternoon-theme))
 
 (defun install-themes (themes-list)
   "Install themes from THEMES-LIST."
