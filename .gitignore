@@ -1,5 +1,6 @@
 *~
-eshell/
+eshell/history
+eshell/lastdir
 /tramp
 /ac-comphist.dat
 /auto-save-list

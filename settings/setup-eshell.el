@@ -9,7 +9,6 @@
   (defalias 'emo 'find-file-other-window)
   (defalias 'emacs 'find-file)
   (defalias 'em 'find-file)
-  (defalias 'docstart "docker start ${docker ps -a -q")
   (defalias 'status 'magit-status)
   (add-hook 'eshell-mode-hook
             (lambda ()

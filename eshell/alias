@@ -1,0 +1,1 @@
+alias dockstart docker start ${docker ps -a -q}
