@@ -133,6 +133,7 @@
   :ensure t
   :init
   (setq projectile-completion-system 'ivy)
+  (setq projectile-switch-project-action 'projectile-dired)
   :config
   (projectile-mode))
 
@@ -196,6 +197,8 @@
 
 (use-package counsel
   :ensure t
+  :init
+  (setq ivy-initial-inputs-alist nil)
   :bind
   (("C-c s" . swiper)
    ("C-c M-s a g" . counsel-ag)

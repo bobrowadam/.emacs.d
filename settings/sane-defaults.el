@@ -86,8 +86,10 @@
    ("C-c C-c M-x" . execute-extended-command)))
 
 (use-package ivy
+  ;; :disabled t
   :ensure t
   :init
+  (setq ivy-initial-inputs-alist nil)
   (setq ivy-re-builders-alist
         '((t . ivy--regex-fuzzy)))
   :bind (( "M-x" . counsel-M-x)

@@ -61,7 +61,8 @@
   :config
   (setq sml/theme 'dark)
   (setq sml/no-confirm-load-theme t)
-  (load-theme 'gruber-darker)
+  ;; (load-theme 'gruber-darker)
+  (load-theme 'avk-darkblue-white)
   (sml/setup)
   (show-current-theme))
 

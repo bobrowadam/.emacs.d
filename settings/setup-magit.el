@@ -29,6 +29,8 @@
     (kill-buffer)
     (jump-to-register :vc-annotate-fullscreen))
   
+  (setq magit-completing-read-function 'ivy-completing-read)
+  
   :bind
   ("C-x g" . magit-status)
   
