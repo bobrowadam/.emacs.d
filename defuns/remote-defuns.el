@@ -87,5 +87,24 @@ Can use USER, PROXY and SUDO as Boolean."
       (balance-windows)
       (sit-for 0.5))))
 
+
+(defun my-find-over-proxy (proxy server-name)
+  "Find file through PROXY on SERVER-NAME."
+  (interactive "sEnter proxy:\s
+sEnter server name: ")
+  (find-file (format "/sshx:%s|ssh:ubuntu@%s|sudo:root@%s:/" proxy server-name server-name)))
+
+(global-set-key (kbd "C-c C-x C-f") 'my-find-over-proxy)
+
+(defun mongo-over-proxy (proxy server-name)
+  "Open inf-mongo on through PROXY on  SERVER-NAME."
+  (interactive "sEnter proxy:\s
+sEnter server name: ")
+  (pop-to-buffer "*mongo*")
+  (setq default-directory (format "/sshx:%s|ssh:ubuntu@%s:/" proxy server-name))
+  (inf-mongo "/usr/bin/mongo 127.0.0.1:27017"))
+
+
+
 (provide 'remote-defuns)
 ;;; remote-defuns.el ends here
