@@ -21,3 +21,5 @@ var
 request/
 smex-items
 custom.el
+.python-environments/
+anaconda-mode/
