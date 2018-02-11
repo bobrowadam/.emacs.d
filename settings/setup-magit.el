@@ -64,7 +64,8 @@
 (use-package diff-hl
   :ensure t
   :init
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+  (add-hook 'emacs-lisp-mode-hook 'diff-hl-mode))
 
 (use-package counsel
   :ensure t
@@ -72,5 +73,7 @@
   :bind
   ("C-c C-x g" . counsel-git)
   ("C-c M-s g" . counsel-git-grep))
+
+(use-package git-timemachine :ensure t)
 
 (provide 'setup-magit)
