@@ -41,7 +41,7 @@ You can also pass USER PROXY and SUDO as Boolean."
 You can also pass USER PROXY and SUDO as Boolean."
   (if (or sudo proxy user)
       (cond ((and sudo proxy user)
-             (format "/ssh:%s|ssh:%s@%s|sudo:%s@%s:/" proxy user server-name user server-name))
+             (format "/ssh:%s|ssh:%s@%s|sudo:root@%s:/" proxy user server-name server-name))
             ((and proxy user)
              (format "/ssh:%s|ssh:%s@%s:/" proxy user server-name))
             ((and sudo proxy)
@@ -92,7 +92,7 @@ Can use USER, PROXY and SUDO as Boolean."
   "Find file through PROXY on SERVER-NAME."
   (interactive "sEnter proxy:\s
 sEnter server name: ")
-  (find-file (format "/sshx:%s|ssh:ubuntu@%s|sudo:root@%s:/" proxy server-name server-name)))
+  (find-file (format-default-dir server-name "ubuntu" proxy 't)))
 
 (global-set-key (kbd "C-c C-x C-f") 'my-find-over-proxy)
 
