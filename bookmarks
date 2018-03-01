@@ -39,9 +39,9 @@
  (position . 870))
 ("org-refile-last-stored"
  (filename . "~/Dropbox (BigPanda)/org/someday.org")
- (front-context-string . "** TODO delete c")
- (rear-context-string . "/rg3/youtube-dl\n")
- (position . 397))
+ (front-context-string . "** WAITING Clust")
+ (rear-context-string . "nction to C-s-h\n")
+ (position . 451))
 ("appearance.el"
  (filename . "~/.emacs.d/settings/appearance.el")
  (front-context-string . ";;; package --- ")

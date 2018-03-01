@@ -7,6 +7,7 @@
   :ensure t
   :init
   (setq jedi:complete-on-dot t)
+  (setq python-shell-interpreter "/usr/bin/python2.7")
   :hook
   (python-mode-hook . jedi:setup))
 

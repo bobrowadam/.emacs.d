@@ -9,14 +9,16 @@
 (global-unset-key (kbd "C-x C-c"))
 (global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
 
-;; Delete with C-h and M-h instead of backspace
-   ;; (global-set-key (kbd "s-h") 'help-command)
-   ;; (global-set-key (kbd "C-M-?") 'mark-paragraph)
 (define-key key-translation-map [?\C-h] [?\C-?])
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
+(use-package helpful
+  ;; Make help better
+  :ensure t
+  :bind (("C-h f" . #'helpful-callable)
+         ("C-h v" . #'helpful-variable)
+         ("C-h k" . #'helpful-key)))
+
 (global-set-key (kbd "M-C-h") 'backward-kill-word)
-;; (global-unset-key (kbd "DEL"))
-;; (global-set-key (kbd "M-h") 'delete-backward-char)
 
 ;; Command as meta
 ;; (when (eq system-type 'darwin)
@@ -162,9 +164,10 @@
 
 ;; Represent undo-history as an actual tree (visualize with C-x u)
 (use-package undo-tree
-  :disabled
   :ensure t
-  :init (setq undo-tree-mode-lighter "")
+  :init
+  (setq undo-tree-mode-lighter "")
+  (setq undo-tree-enable-undo-in-region nil)
   :config (global-undo-tree-mode))
 
 ;; Sentences do not need double spaces to end. Period.
@@ -230,6 +233,12 @@
 (global-set-key (kbd "C-x 3") 'split-window-right-and-move-there-dammit)
 (global-set-key (kbd "C-x k") 'kill-buffer-and-window)
 
+(use-package zoom-window
+  :ensure t
+  :init
+  (custom-set-variables
+   '(zoom-window-mode-line-color "DarkGreen"))
+  :bind ("C-x C-z" . zoom-window-zoom))
 
 (provide 'sane-defaults)
 ;;; sane-defaults ends here

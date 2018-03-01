@@ -5,4 +5,5 @@
 (use-package $1
   :ensure t
   :init
+  :bind
   :config)

@@ -40,6 +40,7 @@
              (revert-buffer))))
 
   (define-key dired-mode-map (kbd "C-a") 'dired-back-to-start-of-files)
+  (define-key dired-mode-map (kbd "C-j") 'dired-subtree-toggle)
   (define-key dired-mode-map (kbd "k") 'dired-do-delete)
 
   (define-key dired-mode-map (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
