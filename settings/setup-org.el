@@ -15,6 +15,7 @@
 (setq org-someday-file (concat org-directory "/someday.org"))
 (setq org-gtd-file (concat org-directory "/gtd.org"))
 (setq org-tickler-file (concat org-directory "/tickler.org"))
+(setq org-archive-location (concat org-directory "/archive/%s_archive::"))
 
 ;;;; Refile files:
 (setq org-refile-targets '((org-gtd-file :maxlevel . 3)

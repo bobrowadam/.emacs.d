@@ -30,16 +30,14 @@
   (add-hook 'js2-mode-hook 'diff-hl-mode)
   (add-hook 'js2-mode-hook (lambda ()
                              (setq dash-at-point-docset "JavaScript,Chai,Express,MomentsJS,Mongoose,NodeJs,Sinon")))
-
-  (use-package highlight-indent-guides
-    :ensure t
-    :config (add-hook 'js2-mode-hook 'highlight-indent-guides-mode))
-
   (add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
   ;; :bind
   ;; (:map js2-mode-map
   ;;       ("C-c TAB" . js2-indent-bounce))
   :config
+  (use-package highlight-indent-guides
+    :ensure t
+    :config (add-hook 'js2-mode-hook 'highlight-indent-guides-mode))
   (use-package pretty-mode
     :disabled
     :ensure t
@@ -110,5 +108,11 @@
                      (setq-local dash-at-point-docset js2-mode)))
   :config
   (add-to-list 'dash-at-point-mode-alist '(js2-mode . "JavaScript,Chai,Express,MomentsJS,Mongoose,NodeJs,Sinon")))
+
+(use-package js2-refactor
+  :ensure t
+  :config
+  (js2r-add-keybindings-with-prefix "C-c m")
+  (add-hook 'js2-mode-hook #'js2-refactor-mode))
 
 (provide 'setup-js2-mode)

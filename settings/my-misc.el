@@ -30,4 +30,6 @@
 (global-set-key (kbd "C-x 8 ( c )") (λ (insert "©")))
 (global-set-key (kbd "C-x 8 v") (λ (insert "✓")))
 
+;; create a quip scratch buffer:
+(global-set-key (kbd "C-c C-b") 'create-scratch-buffer)
 (provide 'my-misc)

@@ -14,8 +14,8 @@
   ;; don't prompt me
   (set-default 'magit-push-always-verify t)
   (set-default 'magit-revert-buffers 'silent)
-  (set-default 'magit-no-confirm '(stage-all-changes unstage-all-changes))
-
+  ;; (set-default 'magit-no-confirm '(stage-all-changes unstage-all-changes))
+  ;; (set-default 'magit-dwim-selection '(stage-all-changes unstage-all-changes))
   ;; move cursor into position when entering commit message
   (defun my/magit-cursor-fix ()
     (beginning-of-buffer)
@@ -38,9 +38,16 @@
   ;; Add --follow-tags to magit push pop-up
   (magit-define-popup-switch 'magit-push-popup
     ?t "Follow tags" "--follow-tags")
+  (define-key magit-mode-map [remap previous-line] 'magit-previous-line)
+  (define-key magit-mode-map [remap next-line] 'magit-next-line)
+  
   
   ;; Magithub
   ;; use: gpg --generate-key and only then add the auth gpg file
+  ;; gitconfig should only contain: (no [user] settings)
+  ;;;;  [github]
+  ;;;; 	user = bobrowadam
+
   (use-package magithub
     :ensure t
     :after magit

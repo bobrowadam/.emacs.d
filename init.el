@@ -16,6 +16,8 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
+(setq use-package-compute-statistics t)
+
 ;; Bootstrap `req-package'
 (unless (package-installed-p 'req-package)
   (package-refresh-contents)
@@ -117,7 +119,7 @@
 (use-package whole-line-or-region
   :ensure t
   :config
-  (whole-line-or-region-mode 1))
+  (whole-line-or-region-global-mode 1))
 
 ;; imenu lets you jump around for jumping to points of interest in a buffer
 (global-set-key (kbd "M-i") 'imenu)
@@ -344,6 +346,9 @@
   :bind
   ("C-c M-c" . string-inflection-lower-camelcase)
   ("C-c M-u" . string-inflection-underscore))
+
+(use-package itail
+  :ensure t)
 
 (provide 'init)
 ;;; init.el ends here

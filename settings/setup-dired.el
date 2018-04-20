@@ -22,6 +22,7 @@
   
   :config
   ;; Make dired less verbose
+  (setq dired-listing-switches "-alh")
   (use-package dired+
     :disabled t
     :ensure t
