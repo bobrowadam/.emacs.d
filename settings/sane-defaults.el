@@ -92,6 +92,8 @@
   ;; :disabled t
   :ensure t
   :init
+  (use-package flx
+    :ensure t)
   (setq ivy-initial-inputs-alist nil)
   (setq ivy-re-builders-alist
         '((t . ivy--regex-fuzzy)))

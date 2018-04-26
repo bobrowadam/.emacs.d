@@ -1,4 +1,3 @@
-
 ;; Added by Package.el.  This must come before configurations of
 ;; installed packages.  Don't delete this line.  If you don't want it,
 ;; just comment it out by adding a semicolon to the start of the line.
@@ -11,6 +10,8 @@
 (setq user-init-file (or load-file-name (buffer-file-name)))
 (setq user-emacs-directory (file-name-directory user-init-file))
 (defalias 'yes-or-no-p 'y-or-n-p)
+
+(require 'green-is-the-new-black-theme)
 
 (setq display-time-day-and-date 't)
 (setq display-time-default-load-average nil)
@@ -80,7 +81,7 @@ You can also pass USER PROXY and SUDO as boolean."
   (let ((default-directory (format-default-dir server-name user proxy sudo))
         (shell-file-name "/bin/bash"))
     (shell (generate-buffer-name-for-server server-name))))
-
+(setq dired-listing-switches "-alh")
 (defun remote-shell-command-to-string (command server-name &optional user proxy sudo)
   "Run shell COMMAND on remote SERVER-NAME.
 You can also pass USER PROXY and SUDO as Boolean."
@@ -166,3 +167,8 @@ sEnter server name: ")
   (pop-to-buffer "*mongo*")
   (setq default-directory (format "/sshx:%s|ssh:ubuntu@%s:/" proxy server-name))
   (inf-mongo "/usr/bin/mongo 127.0.0.1:27017"))
+
+(defun zsh-shell ()
+  (interactive)
+  (let (( shell-file-name "/bin/zsh"))
+    (shell)))
