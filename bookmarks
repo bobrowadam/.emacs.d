@@ -2,59 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("create-alerts.sc"
- (filename . "~/source/scala-scripts/create-alerts.sc")
- (front-context-string . "import $ivy.`io.")
- (rear-context-string)
- (position . 1))
-("defuns"
- (filename . "~/.emacs.d/defuns/")
- (front-context-string . "buffer-defuns.el")
- (rear-context-string . "76 Aug 12 23:55 ")
- (position . 259))
-("prod-mongos-11"
- (filename . "/sshx:shadow|ssh:ubuntu@prod-mongos-11:/")
- (front-context-string . "bin\n  drwxr-xr-x")
- (rear-context-string . "96 Apr 17  2016 ")
- (position . 200))
-("clojure-workspace"
- (filename . "~/source/clojure-workspace/")
+(("source"
+ (filename . "~/source/")
+ (front-context-string . "clojure-workspac")
+ (rear-context-string . "0K May  1 20:59 ")
+ (position . 202))
+(".gitignore_global"
+ (filename . "~/.gitignore_global")
  (front-context-string)
- (rear-context-string . "08 Oct 19 22:44 ")
- (position . 235))
-("rest-clients"
- (filename . "~/source/rest-clients/")
- (front-context-string . "rest.api.client\n")
- (rear-context-string . "29 Aug 28 18:50 ")
- (position . 235))
-("org-capture-last-stored"
- (filename . "~/Dropbox (BigPanda)/org/inbox.org")
- (front-context-string . "** TODO Create a")
- (rear-context-string . "NDS(e)\n\n* Tasks\n")
- (position . 132))
-("org-capture-last-stored-marker"
- (filename . "~/Dropbox (BigPanda)/org/gtd.org")
- (front-context-string . "** TODO Buy גומי")
- (rear-context-string . "data-api client\n")
- (position . 870))
-("org-refile-last-stored"
- (filename . "~/Dropbox (BigPanda)/org/someday.org")
- (front-context-string . "** WAITING Clust")
- (rear-context-string . "nction to C-s-h\n")
- (position . 451))
-("appearance.el"
- (filename . "~/.emacs.d/settings/appearance.el")
- (front-context-string . ";;; package --- ")
- (rear-context-string)
- (position . 1))
-("settings"
- (filename . "~/.emacs.d/settings/")
- (front-context-string . "appearance.el\n  ")
- (rear-context-string . "40 Aug 11 18:16 ")
- (position . 261))
+ (rear-context-string . "rg\n.tern-port\n*~")
+ (position . 37))
 ("init.el"
  (filename . "~/.emacs.d/init.el")
- (front-context-string . ";;; package --- ")
- (rear-context-string)
- (position . 1))
+ (front-context-string . "  (blink-cursor-")
+ (rear-context-string . "ooltip-mode -1)\n")
+ (position . 479))
 )

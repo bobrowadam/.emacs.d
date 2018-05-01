@@ -104,7 +104,5 @@ sEnter server name: ")
   (setq default-directory (format "/sshx:%s|ssh:ubuntu@%s:/" proxy server-name))
   (inf-mongo "/usr/bin/mongo 127.0.0.1:27017"))
 
-
-
 (provide 'remote-defuns)
 ;;; remote-defuns.el ends here

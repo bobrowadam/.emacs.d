@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: bug log
-# key: blog
-# --
-console.log('--------------------- $1 ---------------------');

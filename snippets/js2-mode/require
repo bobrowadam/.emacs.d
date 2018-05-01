@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: require.js
-# key: require
-# --
-const ${1:enumerate} = require('$0$1');
