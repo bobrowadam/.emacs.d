@@ -83,7 +83,10 @@
 
 (use-package smartparens
   :ensure t
-  :hook (js2-mode . smartparens-mode)
+  :hook ((js2-mode . smartparens-mode)
+         (nodejs-repl-mode . smartparens-mode)
+         (fundamental-mode . smartparens-mode)
+         (text-mode . smartparens-mode))
   :config
   (show-smartparens-global-mode t))
 
@@ -107,9 +110,13 @@
   (use-package flx
     :ensure t)
   (setq ivy-re-builders-alist
-      '((t . ivy--regex-fuzzy)))
+        '((t . ivy--regex-fuzzy)))
+  (setq ivy-initial-inputs-alist nil)
   (ivy-mode 1))
 
+(use-package counsel
+  :ensure t
+  :bind (("M-x" . counsel-M-x)))
 
 (use-package whole-line-or-region
   :ensure t
@@ -247,3 +254,6 @@
   :config
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
+
+(use-package nodejs-repl
+  :ensure t)
