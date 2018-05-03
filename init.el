@@ -14,7 +14,7 @@
   (tooltip-mode -1)
   (blink-cursor-mode -1)
   (display-time-mode 1))
-
+(setq use-package-debug t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore
       visible-bell nil)
@@ -50,6 +50,13 @@
 (set-selection-coding-system 'utf-8) ; please
 (prefer-coding-system 'utf-8) ; with sugar on top
 
+(load-theme 'tango-dark)
+(set-default-font "hack 14")
+
+(use-package misc-funcs)
+(use-package remote-defuns)
+(global-set-key (kbd "C-x j") 'whitespace-cleanup)
+
 ;; custom file path
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (unless (not (file-exists-p custom-file))
@@ -70,14 +77,14 @@
   (global-linum-mode 1))
 
 (use-package paredit
-  :after cider
   :ensure t
   :hook
   ((emacs-lisp-mode cider-repl-mode cider-mode) . paredit-mode))
 
 (use-package smartparens
   :ensure t
-  :hook (js2-mode))
+  :config
+  (show-smartparens-global-mode t))
 
 (use-package company
   :ensure t
@@ -85,6 +92,7 @@
   (global-company-mode t))
 
 (use-package arjen-grey-theme
+  :disabled
   :ensure t
   :config
   (set-default-font "Latin Modern Mono 16")
@@ -110,9 +118,11 @@
 
 (use-package js2-mode
   :ensure t
-  :hook (tern-mode)
+  :hook (tern-mode js2-imenu-extras-mode js2-mode-hide-warnings-and-errors smartparens-mode flycheck-mode)
   :config
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode)))
+  (add-to-list 'auto-mode-alist '("\\.js" . js2-mode))
+  (setq-default js2-auto-indent-p nil)
+  (setq-default js2-indent-on-enter-key nil))
 
 (use-package tern
   :ensure t)
@@ -122,7 +132,6 @@
   :ensure t
   :config
   (add-to-list 'company-backends 'company-tern))
-
 
 (use-package magit
   :ensure t
@@ -205,4 +214,15 @@
   (which-key-mode 1))
 
 (use-package projectile
-  :ensure t)
+  :ensure t
+  :config
+  (setq projectile-completion-system 'ivy)
+  (setq projectile-switch-project-action #'projectile-dired)
+  (projectile-mode t))
+
+
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
