@@ -50,8 +50,8 @@
 (set-selection-coding-system 'utf-8) ; please
 (prefer-coding-system 'utf-8) ; with sugar on top
 
-(load-theme 'tango-dark)
-(set-default-font "hack 14")
+;; (load-theme 'tango-dark)
+;; (set-default-font "hack 14")
 
 (use-package misc-funcs)
 (use-package remote-defuns)
@@ -83,6 +83,7 @@
 
 (use-package smartparens
   :ensure t
+  :hook (js2-mode . smartparens-mode)
   :config
   (show-smartparens-global-mode t))
 
@@ -92,7 +93,6 @@
   (global-company-mode t))
 
 (use-package arjen-grey-theme
-  :disabled
   :ensure t
   :config
   (set-default-font "Latin Modern Mono 16")
@@ -118,14 +118,35 @@
 
 (use-package js2-mode
   :ensure t
-  :hook (tern-mode js2-imenu-extras-mode js2-mode-hide-warnings-and-errors smartparens-mode flycheck-mode)
+  :init
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+  (defun my/use-eslint-from-node-modules ()
+    (let* ((root (locate-dominating-file
+                  (or (buffer-file-name) default-directory)
+                  "node_modules"))
+           (eslint (and root
+                        (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                          root))))
+      (when (and eslint (file-executable-p eslint))
+        (setq-local flycheck-javascript-eslint-executable eslint))))
+  (defun unset-electric-indent ()
+    (electric-indent-mode nil))
+  :hook ((js2-mode . js2-imenu-extras-mode)
+         (js2-mode . js2-mode-hide-warnings-and-errors)
+         (js2-mode . electric-indent-mode))
+  :bind (:map js2-mode-map ("C-<tab>" . js2-indent-bounce))
   :config
-  (add-to-list 'auto-mode-alist '("\\.js" . js2-mode))
   (setq-default js2-auto-indent-p nil)
-  (setq-default js2-indent-on-enter-key nil))
+  (setq-default unset-electric-indent)
+  (setq-default js-indent-level 2))
+
+(use-package highlight-indent-guides
+  :ensure t
+  :hook (js2-mode . highlight-indent-guides-mode))
 
 (use-package tern
-  :ensure t)
+  :ensure t
+  :hook (js2-mode . tern-mode))
 
 (use-package company-tern
   :after tern
@@ -202,8 +223,8 @@
 
 (use-package flycheck
   :ensure t
-  :hook
-  (js2-mode))
+  :hook ((js2-mode . flycheck-mode)
+         (flycheck-mode . my/use-eslint-from-node-modules)))
 
 (use-package cider
   :ensure t)
