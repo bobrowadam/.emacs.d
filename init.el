@@ -243,7 +243,19 @@
 
 (use-package projectile
   :ensure t
+  :init
+  (defadvice projectile-on (around exlude-tramp activate)
+    "This should disable projectile when visiting a remote file"
+    (unless  (--any? (and it (file-remote-p it))
+                     (list
+                      (buffer-file-name)
+                      list-buffers-directory
+                      default-directory
+                      dired-directory))
+      ad-do-it))
+  :ensure t
   :config
+  (setq projectile-mode-line "Projectile")
   (setq projectile-completion-system 'ivy)
   (setq projectile-switch-project-action #'projectile-dired)
   (projectile-mode t))
