@@ -57,6 +57,7 @@
 (use-package remote-defuns)
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
 
 ;; custom file path
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
