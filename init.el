@@ -56,6 +56,7 @@
 (use-package misc-funcs)
 (use-package remote-defuns)
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
+(global-set-key (kbd "M-i") 'imenu)
 
 ;; custom file path
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -71,23 +72,29 @@
 (unless (server-running-p)
   (server-start))
 
+(defun unset-electric-indent ()
+    (electric-indent-mode -1))
+
 (use-package linum-off
   :ensure
   :config
   (global-linum-mode 1))
 
 (use-package paredit
+  :init
+  (defun use-paredit-not-sp ()
+    "Use paredit and stop using Smartparens."
+    (paredit-mode 1)
+    (turn-off-smartparens-mode))
   :ensure t
   :hook
-  ((emacs-lisp-mode cider-repl-mode cider-mode) . paredit-mode))
+  ((emacs-lisp-mode cider-repl-mode cider-mode) . use-paredit-not-sp))
 
 (use-package smartparens
   :ensure t
-  :hook ((js2-mode . smartparens-mode)
-         (nodejs-repl-mode . smartparens-mode)
-         (fundamental-mode . smartparens-mode)
-         (text-mode . smartparens-mode))
+  :bind ("C-)" . sp-unwrap-sexp)
   :config
+  (smartparens-global-mode)
   (show-smartparens-global-mode t))
 
 (use-package company
@@ -136,8 +143,6 @@
                                           root))))
       (when (and eslint (file-executable-p eslint))
         (setq-local flycheck-javascript-eslint-executable eslint))))
-  (defun unset-electric-indent ()
-    (electric-indent-mode nil))
   :hook ((js2-mode . js2-imenu-extras-mode)
          (js2-mode . js2-mode-hide-warnings-and-errors)
          (js2-mode . electric-indent-mode))
@@ -269,3 +274,16 @@
 
 (use-package nodejs-repl
   :ensure t)
+
+(use-package ensime
+  :pin melpa
+  :hook (scala-mode . unset-electric-indent)
+  :ensure t)
+
+(use-package sbt-mode
+  :pin melpa)
+
+(use-package scala-mode
+  :pin melpa
+  :config
+  (add-to-list 'auto-mode-alist '("\\.amm$" . scala-mode)))
