@@ -202,7 +202,9 @@
 
 (use-package dired
   :config
-  (setq dired-listing-switches "-alh"))
+  (setq dired-listing-switches "-alh")
+  (use-package dired-x
+    :hook (dired-mode . dired-omit-mode)))
 
 (use-package tramp
   :init
