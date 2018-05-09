@@ -50,8 +50,14 @@
 (set-selection-coding-system 'utf-8) ; please
 (prefer-coding-system 'utf-8) ; with sugar on top
 
-;; (load-theme 'tango-dark)
-;; (set-default-font "hack 14")
+;; Theme and font
+(setq custom-safe-themes t)
+(if (memq window-system '(mac ns x))
+    (progn (set-default-font "Sauce Code Powerline 16")
+           (load-theme 'gruber-darker))
+  (progn (set-default-font "Latin Modern Mono 16")
+         (load-theme 'arjen-grey)))
+(sml/setup)
 
 (use-package misc-funcs)
 (use-package remote-defuns)
@@ -102,12 +108,6 @@
   :ensure t
   :config
   (global-company-mode t))
-
-(use-package arjen-grey-theme
-  :ensure t
-  :config
-  (set-default-font "Latin Modern Mono 16")
-  (load-theme 'tango-dark))
 
 (use-package smex
   :ensure t)
@@ -229,7 +229,7 @@
   (add-to-list 'tramp-restricted-shell-hosts-alist
                "\\shadow\\'")
   (setq tramp-default-method "ssh")
-  ;;Disable projectile mode line project naming for better performance:
+  ;; Disable projectile mode line project naming for better performance:
     ;; (add-hook 'find-file-hook
     ;;           (lambda ()
     ;;             (when (file-remote-p default-directory)
@@ -268,7 +268,6 @@
   (setq projectile-switch-project-action #'projectile-dired)
   (projectile-mode t))
 
-
 (use-package exec-path-from-shell
   :ensure t
   :config
@@ -289,4 +288,8 @@
 (use-package scala-mode
   :pin melpa
   :config
-  (add-to-list 'auto-mode-alist '("\\.amm$" . scala-mode)))
+  (add-to-list 'auto-mode-alist '("\\.sc$" . scala-mode)))
+
+(use-package org-mode
+  :bind ("C-c a" . org-agenda)
+  :hook (org-mode . org-bullets-mode))
