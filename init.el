@@ -146,7 +146,8 @@
         (setq-local flycheck-javascript-eslint-executable eslint))))
   :hook ((js2-mode . js2-imenu-extras-mode)
          (js2-mode . js2-mode-hide-warnings-and-errors)
-         (js2-mode . electric-indent-mode))
+         (js2-mode . electric-indent-mode)
+         (js2-mode . yas-minor-mode))
   :bind (:map js2-mode-map ("C-<tab>" . js2-indent-bounce))
   :config
   (setq-default js2-auto-indent-p nil)
@@ -293,3 +294,7 @@
 (use-package org-mode
   :bind ("C-c a" . org-agenda)
   :hook (org-mode . org-bullets-mode))
+
+(use-package yasnippet
+  :ensure t
+  :bind ("C-c TAB" . yas-expand))
