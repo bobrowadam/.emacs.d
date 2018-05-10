@@ -51,13 +51,21 @@
 (prefer-coding-system 'utf-8) ; with sugar on top
 
 ;; Theme and font
-(setq custom-safe-themes t)
-(if (memq window-system '(mac ns x))
-    (progn (set-default-font "Sauce Code Powerline 16")
-           (load-theme 'gruber-darker))
-  (progn (set-default-font "Latin Modern Mono 16")
-         (load-theme 'arjen-grey)))
-(sml/setup)
+(use-package gruber-darker-theme
+  :ensure t
+  :init (setq custom-safe-themes t)
+  :config
+  (if (memq window-system '(mac ns))
+      (set-default-font "Sauce Code Powerline 16")
+    (set-default-font "Latin Modern Mono 16"))
+  (load-theme 'gruber-darker))
+
+
+
+(use-package smart-mode-line
+  :ensure t
+  :config
+  (sml/setup))
 
 (use-package misc-funcs)
 (use-package remote-defuns)
