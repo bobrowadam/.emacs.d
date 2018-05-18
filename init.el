@@ -69,6 +69,8 @@
 
 (use-package misc-funcs)
 (use-package remote-defuns)
+(use-package edit-funcs)
+
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
 (global-set-key (kbd "C-x C-b") 'ibuffer)
