@@ -6,6 +6,8 @@
 ;; just comment it out by adding a semicolon to the start of the line.
 ;; You may delete these explanatory comments.
 (package-initialize)
+(setq display-time-day-and-date t)
+(setq display-time-default-load-average nil)
 
 (when window-system
   (menu-bar-mode -1)
@@ -13,9 +15,8 @@
   (scroll-bar-mode -1)
   (tooltip-mode -1)
   (blink-cursor-mode -1)
-  (display-time-mode 1))
-(setq display-time-day-and-date t)
-(setq display-time-default-load-average nil)
+  (display-time))
+
 (setq use-package-debug t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore
