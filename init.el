@@ -14,6 +14,8 @@
   (tooltip-mode -1)
   (blink-cursor-mode -1)
   (display-time-mode 1))
+(setq display-time-day-and-date t)
+(setq display-time-default-load-average nil)
 (setq use-package-debug t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore

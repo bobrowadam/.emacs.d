@@ -92,7 +92,7 @@ Can use USER, PROXY and SUDO as Boolean."
   "Find file through PROXY on SERVER-NAME."
   (interactive "sEnter proxy:\s
 sEnter server name: ")
-  (find-file (format-default-dir server-name "ubuntu" proxy 't)))
+  (find-file (format-default-dir server-name "ubuntu" proxy nil)))
 
 (global-set-key (kbd "C-c C-x C-f") 'my-find-over-proxy)
 

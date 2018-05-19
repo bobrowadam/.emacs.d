@@ -14,6 +14,8 @@
   (tooltip-mode -1)
   (blink-cursor-mode -1)
   (display-time-mode 1))
+(setq display-time-day-and-date t)
+(setq display-time-default-load-average nil)
 (setq use-package-debug t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore
@@ -202,12 +204,12 @@
                           vc-ignore-dir-regexp
                           tramp-file-name-regexp))
   
-  (setq remote-file-name-inhibit-cache nil)
-  (setq tramp-use-ssh-controlmaster-options t)
-  (setq tramp-ssh-controlmaster-options
-        (concat
-         "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
-         "-o ControlMaster=auto -o ControlPersist=no"))
+  ;; (setq remote-file-name-inhibit-cache nil)
+  ;; (setq tramp-use-ssh-controlmaster-options t)
+  ;; (setq tramp-ssh-controlmaster-options
+  ;;       (concat
+  ;;        "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
+  ;;        "-o ControlMaster=auto -o ControlPersist=no"))
   )
 
 (use-package inf-mongo
