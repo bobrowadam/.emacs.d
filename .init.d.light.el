@@ -50,17 +50,11 @@
 (set-selection-coding-system 'utf-8) ; please
 (prefer-coding-system 'utf-8) ; with sugar on top
 
-;; Theme and font
-(use-package gruber-darker-theme
-  :ensure t
-  :init (setq custom-safe-themes t)
-  :config
-  (if (memq window-system '(mac ns))
+(setq custom-safe-themes t)
+(if (memq window-system '(mac ns))
       (set-default-font "Sauce Code Powerline 16")
     (set-default-font "Latin Modern Mono 16"))
-  (load-theme 'gruber-darker))
-
-
+  (load-theme 'manoj-dark)
 
 (use-package smart-mode-line
   :ensure t
@@ -69,8 +63,6 @@
 
 (use-package misc-funcs)
 (use-package remote-defuns)
-(use-package edit-funcs)
-
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
 (global-set-key (kbd "C-x C-b") 'ibuffer)
@@ -84,10 +76,6 @@
 (define-key key-translation-map [?\C-h] [?\C-?])
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
 (global-set-key (kbd "M-C-h") 'backward-kill-word)
-
-(require 'server)
-(unless (server-running-p)
-  (server-start))
 
 (defun unset-electric-indent ()
     (electric-indent-mode -1))
@@ -113,14 +101,6 @@
   :config
   (smartparens-global-mode)
   (show-smartparens-global-mode t))
-
-(use-package company
-  :ensure t
-  :config
-  (global-company-mode t))
-
-(use-package smex
-  :ensure t)
 
 (use-package ivy
   :ensure t
@@ -169,31 +149,6 @@
   :ensure t
   :hook (js2-mode . highlight-indent-guides-mode))
 
-(use-package tern
-  :ensure t
-  :hook (js2-mode . tern-mode))
-
-(use-package company-tern
-  :after tern
-  :ensure t
-  :config
-  (add-to-list 'company-backends 'company-tern))
-
-(use-package magit
-  :ensure t
-  :bind ("C-x g" . magit-status)
-  :config
-  (setq magit-completing-read-function 'ivy-completing-read)
-  (magit-define-popup-switch 'magit-push-popup
-    ?t "Follow tags" "--follow-tags"))
-
-(use-package magithub
-  :ensure t
-  :after magit
-  :config
-  (magithub-feature-autoinject t)
-  (setq epa-pinentry-mode 'loopback))
-
 (use-package anzu
   :ensure t
   :config
@@ -241,86 +196,19 @@
   (add-to-list 'tramp-restricted-shell-hosts-alist
                "\\shadow\\'")
   (setq tramp-default-method "ssh")
-  ;; (eval-after-load 'tramp '(setenv "SHELL" "/bin/bash"))
-  ;; Disable projectile mode line project naming for better performance:
-  ;; (add-hook 'find-file-hook
-  ;;           (lambda ()
-  ;;             (when (file-remote-p default-directory)
-  ;;               (setq-local projectile-mode-line "Projectile"))))
-  ;; (setq vc-ignore-dir-regexp
-  ;;                 (format "\\(%s\\)\\|\\(%s\\)"
-  ;;                         vc-ignore-dir-regexp
-  ;;                         tramp-file-name-regexp))
+  (eval-after-load 'tramp '(setenv "SHELL" "/bin/bash"))
+  (setq vc-ignore-dir-regexp
+                  (format "\\(%s\\)\\|\\(%s\\)"
+                          vc-ignore-dir-regexp
+                          tramp-file-name-regexp))
   
-  ;; (setq remote-file-name-inhibit-cache nil)
-  ;; (setq tramp-use-ssh-controlmaster-options t)
-  ;; (setq tramp-ssh-controlmaster-options
-  ;;                 (concat
-  ;;                   "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
-  ;;                   "-o ControlMaster=auto -o ControlPersist=no"))
+  (setq remote-file-name-inhibit-cache nil)
+  (setq tramp-use-ssh-controlmaster-options t)
+  (setq tramp-ssh-controlmaster-options
+        (concat
+         "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
+         "-o ControlMaster=auto -o ControlPersist=no"))
   )
-
-(use-package flycheck
-  :ensure t
-  :hook ((js2-mode . flycheck-mode)
-         (flycheck-mode . my/use-eslint-from-node-modules)))
-
-(use-package cider
-  :ensure t)
-
-(use-package which-key
-  :ensure t
-  :config
-  (which-key-mode 1))
-
-(use-package projectile
-  :ensure t
-  :init
-  (defadvice projectile-on (around exlude-tramp activate)
-    "This should disable projectile when visiting a remote file"
-    (unless  (--any? (and it (file-remote-p it))
-                     (list
-                      (buffer-file-name)
-                      list-buffers-directory
-                      default-directory
-                      dired-directory))
-      ad-do-it))
-  :ensure t
-  :config
-  (setq projectile-mode-line "Projectile")
-  (setq projectile-completion-system 'ivy)
-  (setq projectile-switch-project-action #'projectile-dired)
-  (projectile-mode t))
-
-(use-package exec-path-from-shell
-  :ensure t
-  :config
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
-
-(use-package nodejs-repl
-  :ensure t)
-
-(use-package ensime
-  :pin melpa
-  :hook (scala-mode . unset-electric-indent)
-  :ensure t)
-
-(use-package sbt-mode
-  :pin melpa)
-
-(use-package scala-mode
-  :pin melpa
-  :config
-  (add-to-list 'auto-mode-alist '("\\.sc$" . scala-mode)))
-
-(use-package org-mode
-  :bind ("C-c a" . org-agenda)
-  :hook (org-mode . org-bullets-mode))
-
-(use-package yasnippet
-  :ensure t
-  :bind ("C-c TAB" . yas-expand))
 
 (use-package inf-mongo
   :ensure t)
