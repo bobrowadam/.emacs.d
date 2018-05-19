@@ -215,3 +215,12 @@
 
 (use-package inf-mongo
   :ensure t)
+
+(defmacro csetq (variable value)
+  `(funcall (or (get ',variable 'custom-set)
+                'set-default)
+            ',variable ,value))
+(csetq ediff-window-setup-function 'ediff-setup-windows-plain)
+(csetq ediff-split-window-function 'split-window-horizontally)
+(csetq ediff-diff-options "-w")
+
