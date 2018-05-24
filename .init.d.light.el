@@ -118,7 +118,8 @@
 (use-package counsel
   :ensure t
   :bind (("M-x" . counsel-M-x)
-         ("C-x C-f" . counsel-find-file)))
+         ("C-x C-f" . counsel-find-file)
+         ("C-x ")))
 
 (use-package whole-line-or-region
   :ensure t
@@ -224,3 +225,9 @@
 (csetq ediff-split-window-function 'split-window-horizontally)
 (csetq ediff-diff-options "-w")
 
+(use-package counsel-tramp
+  :ensure t
+  :bind ("C-c s" . counsel-tramp)
+  :config
+  (setq make-backup-files nil)
+  (setq create-lockfiles nil))

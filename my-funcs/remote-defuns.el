@@ -101,7 +101,7 @@ sEnter server name: ")
   (interactive "sEnter proxy:\s
 sEnter server name: ")
   (pop-to-buffer "*mongo*")
-  (setq default-directory (format "/sshx:%s|ssh:ubuntu@%s:/" proxy server-name))
+  (setq default-directory (format "/ssh:%s|ssh:ubuntu@%s:/" proxy server-name))
   (inf-mongo "/usr/bin/mongo 127.0.0.1:27017"))
 
 (provide 'remote-defuns)

@@ -139,7 +139,8 @@
 (use-package counsel
   :ensure t
   :bind (("M-x" . counsel-M-x)
-         ("C-x C-f" . counsel-find-file)))
+         ("C-x C-f" . counsel-find-file)
+         ("C-x C-m" . counsel-mark-ring)))
 
 (use-package whole-line-or-region
   :ensure t
@@ -240,6 +241,7 @@
       ".*:\0? *")
      nil (tramp)))
   :config
+  (require 'docker-tramp-compat)
   ;; to connect via proxy:
   ;; /sshx:<proxy-server-name>|ssh:ubuntu@<server name>|sudo:root@<server-name>:/
   (add-to-list 'tramp-restricted-shell-hosts-alist
