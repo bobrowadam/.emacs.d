@@ -2,4 +2,4 @@
 # name: clog
 # key: clog
 # --
-console.log('${1:enumerate}:\n', $1);
+console.log('#-------------------------------------#\n${1:enumerate}:\n', $1);

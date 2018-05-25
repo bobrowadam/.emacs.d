@@ -1,12 +1,6 @@
 ;;; Begin initialization
-;; Turn off mouse interface early in startup to avoid momentary display
 
-;; Added by Package.el.  This must come before configurations of
-;; installed packages.  Don't delete this line.  If you don't want it,
-;; just comment it out by adding a semicolon to the start of the line.
-;; You may delete these explanatory comments.
 (package-initialize)
-
 (setq display-time-day-and-date t)
 (setq display-time-default-load-average nil)
 (when (window-system)
@@ -36,8 +30,8 @@
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
-  ("melpa" . "http://melpa.org/packages/")
-  ("melpa-stable" . "https://stable.melpa.org/packages/")))
+        ("melpa" . "http://melpa.org/packages/")
+        ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 (add-to-list 'load-path "~/.emacs.d/my-funcs")
 
@@ -152,6 +146,8 @@
 (use-package js2-mode
   :ensure t
   :init
+  (defun my-load-js2-snippets ()
+    (yas-load-directory (concat user-emacs-directory "snippets")))
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   (defun my/use-eslint-from-node-modules ()
     (let* ((root (locate-dominating-file
@@ -165,7 +161,8 @@
   :hook ((js2-mode . js2-imenu-extras-mode)
          (js2-mode . js2-mode-hide-warnings-and-errors)
          (js2-mode . electric-indent-mode)
-         (js2-mode . yas-minor-mode))
+         (js2-mode . yas-minor-mode)
+         (js2-mode . my-load-js2-snippets))
   :bind (:map js2-mode-map ("C-<tab>" . js2-indent-bounce))
   :config
   (setq-default js2-auto-indent-p nil)
@@ -197,9 +194,11 @@
 (use-package magithub
   :ensure t
   :after magit
+  :pin melpa
   :config
-  (magithub-feature-autoinject t)
-  (setq epa-pinentry-mode 'loopback))
+  (setq epa-pinentry-mode 'loopback)
+  (setq magithub-debug-mode t)
+  (magithub-feature-autoinject t))
 
 (use-package anzu
   :ensure t

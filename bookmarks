@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-((".init.d.light.el"
+(("devushka"
+ (filename . "~/source/devushka/")
+ (front-context-string . ".git\n  -rw-r--r-")
+ (rear-context-string . "4B May 25 00:57 ")
+ (position . 153))
+(".init.d.light.el"
  (filename . "~/.emacs.d/.init.d.light.el")
  (front-context-string . ";;; Begin initia")
  (rear-context-string)
