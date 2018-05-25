@@ -1,8 +1,13 @@
-;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*- 
+;;;; Emacs Bookmark Format Version 1 ;;;;
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("rest-clients"
+((".init.d.light.el"
+ (filename . "~/.emacs.d/.init.d.light.el")
+ (front-context-string . ";;; Begin initia")
+ (rear-context-string)
+ (position . 1))
+("rest-clients"
  (filename . "~/source/rest-clients/")
  (front-context-string . "elasticsearch\n  ")
  (rear-context-string . "0B May  7 19:12 ")

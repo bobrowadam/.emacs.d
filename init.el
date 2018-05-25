@@ -9,6 +9,8 @@
 
 (setq display-time-day-and-date t)
 (setq display-time-default-load-average nil)
+(when (window-system)
+  (setq confirm-kill-emacs 'yes-or-no-p))
 
 (when window-system
   (menu-bar-mode -1)
@@ -340,3 +342,9 @@
 (csetq ediff-split-window-function 'split-window-horizontally)
 (csetq ediff-diff-options "-w")
 
+(use-package lastpass
+  :ensure t
+  :config
+  (setq lastpass-user "adam@bigpanda.io")
+  (setq lastpass-multifactor-use-passcode t)
+  (lastpass-auth-source-enable))
