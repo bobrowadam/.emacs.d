@@ -199,6 +199,7 @@
   :config
   (setq epa-pinentry-mode 'loopback)
   (setq magithub-debug-mode t)
+  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))
   (magithub-feature-autoinject t))
 
 (use-package anzu
@@ -336,7 +337,6 @@ if in project use `projectile-run-eshell"
 (use-package lastpass
   :ensure t
   :config
-  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))  
   (setq lastpass-user "adam@bigpanda.io")
   (setq lastpass-multifactor-use-passcode t)
   (lastpass-auth-source-enable))
