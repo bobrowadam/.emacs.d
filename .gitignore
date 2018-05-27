@@ -8,3 +8,4 @@ elpa/*
 /projectile-bookmarks.eld
 /smex-items
 /session.*
+/projectile.cache

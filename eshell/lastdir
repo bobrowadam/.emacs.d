@@ -1,6 +1,3 @@
-/ssh:shadow|ssh:ubuntu@perf-monitoring-11|sudo:root@perf-monitoring-11:
-/ssh:shadow|ssh:ubuntu@perf-monitoring-11|sudo:root@perf-monitoring-11:/etc/nagios3/objects
-/Users/adambobrow/source/reporter
 /Users/adambobrow/source/richy/src
 /Users/adambobrow/source/richy
 /Users/adambobrow/source/reporter
@@ -12,13 +9,10 @@
 /Users/adambobrow/source/reporter
 /Users/adambobrow/source/reporter
 /Users/adambobrow/source/local_environment/data-api
-/Users/adambobrow/source
 /Users/adambobrow/source/local_environment/web-api
-/Users/adambobrow/source
 /Users/adambobrow/source/reporter
 /Users/adambobrow/source/tags/src/logic
 /Users/adambobrow/source/tags/src
-/Users/adambobrow
 /Users/adambobrow/source/kubedev
 /Users/adambobrow/source/reporter/src/logic
 /Users/adambobrow/source/reporter/src
@@ -31,3 +25,9 @@
 /Users/adambobrow/source/local_environment
 /Users/adambobrow/source/local_environment/snooze-api
 /Users/adambobrow/source/devushka
+/Users/adambobrow/source/incident-log/test/unit
+/Users/adambobrow
+/Users/adambobrow/source
+/Users/adambobrow/source/web-api
+/Users/adambobrow/source/scala-self-learning/learning
+/Users/adambobrow/source/incident-log

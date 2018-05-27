@@ -5,7 +5,7 @@
 (("devushka"
  (filename . "~/source/devushka/")
  (front-context-string . ".git\n  -rw-r--r-")
- (rear-context-string . "4B May 25 00:57 ")
+ (rear-context-string . "4B May 25 21:10 ")
  (position . 153))
 (".init.d.light.el"
  (filename . "~/.emacs.d/.init.d.light.el")
@@ -19,9 +19,9 @@
  (position . 156))
 ("source"
  (filename . "~/source/")
- (front-context-string . "clojure-workspac")
- (rear-context-string . "0K May  1 20:59 ")
- (position . 202))
+ (front-context-string . "metadata-api\n  -")
+ (rear-context-string . "2B Nov  5  2017 ")
+ (position . 3803))
 (".gitignore_global"
  (filename . "~/.gitignore_global")
  (front-context-string)

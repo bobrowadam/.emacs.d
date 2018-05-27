@@ -60,8 +60,6 @@
     (set-default-font "Latin Modern Mono 16"))
   (load-theme 'gruber-darker))
 
-
-
 (use-package smart-mode-line
   :ensure t
   :config
@@ -134,10 +132,13 @@
 
 (use-package counsel
   :ensure t
+  :init
+  (setq counsel-rg-base-command
+      "rg -i -M 120 --no-heading --line-number --color never %s .")
   :bind (("M-x" . counsel-M-x)
          ("C-x C-f" . counsel-find-file)
-         ("C-x C-m" . counsel-mark-ring)))
-
+         ("C-x C-m" . counsel-mark-ring)
+         ("C-c C-s r g" . counsel-rg)))
 (use-package whole-line-or-region
   :ensure t
   :config
@@ -193,7 +194,7 @@
 
 (use-package magithub
   :ensure t
-  :after magit
+  :after (magit lastpass)
   :pin melpa
   :config
   (setq epa-pinentry-mode 'loopback)
@@ -242,7 +243,6 @@
       ".*:\0? *")
      nil (tramp)))
   :config
-  (require 'docker-tramp-compat)
   ;; to connect via proxy:
   ;; /sshx:<proxy-server-name>|ssh:ubuntu@<server name>|sudo:root@<server-name>:/
   (add-to-list 'tramp-restricted-shell-hosts-alist
@@ -267,6 +267,12 @@
   ;;                   "-o ControlMaster=auto -o ControlPersist=no"))
   )
 
+(use-package docker-tramp
+  :after tramp
+  :ensure t
+  :config
+  (require 'docker-tramp-compat))
+
 (use-package flycheck
   :ensure t
   :hook ((js2-mode . flycheck-mode)
@@ -283,21 +289,19 @@
 (use-package projectile
   :ensure t
   :init
-  (defadvice projectile-on (around exlude-tramp activate)
-    "This should disable projectile when visiting a remote file"
-    (unless  (--any? (and it (file-remote-p it))
-                     (list
-                      (buffer-file-name)
-                      list-buffers-directory
-                      default-directory
-                      dired-directory))
-      ad-do-it))
-  :ensure t
+  (defun my-run-eshell (&optional arg)
+    "Create an interactive Eshell buffer.
+if in project use `projectile-run-eshell"
+    (interactive "P")
+    (if (projectile-project-p)
+        (projectile-run-eshell)
+      (eshell arg)))
+  :bind
+  ("C-c e" . my-run-eshell)
   :config
-  (setq projectile-mode-line "Projectile")
   (setq projectile-completion-system 'ivy)
   (setq projectile-switch-project-action #'projectile-dired)
-  (projectile-mode t))
+  (projectile-global-mode t))
 
 (use-package exec-path-from-shell
   :ensure t
@@ -327,7 +331,14 @@
 
 (use-package yasnippet
   :ensure t
+  :diminish yas-minor-mode
+  :commands yas-minor-mode
   :bind ("C-c TAB" . yas-expand))
+
+(use-package restclient
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode)))
 
 (use-package inf-mongo
   :ensure t)
@@ -344,6 +355,23 @@
 (use-package lastpass
   :ensure t
   :config
+  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))  
   (setq lastpass-user "adam@bigpanda.io")
   (setq lastpass-multifactor-use-passcode t)
   (lastpass-auth-source-enable))
+
+(use-package goto-chg
+  :ensure t
+  :commands goto-last-change
+  ;; complementary to
+  ;; C-x r m / C-x r l
+  ;; and C-<space> C-<space> / C-u C-<space>
+  :bind (("C-." . goto-last-change)
+         ("C-," . goto-last-change-reverse)))
+
+(use-package ag
+  :ensure t)
+(use-package ripgrep
+  :ensure t)
+(use-package wgrep-ag
+  :ensure t)
