@@ -247,25 +247,7 @@
   ;; /sshx:<proxy-server-name>|ssh:ubuntu@<server name>|sudo:root@<server-name>:/
   (add-to-list 'tramp-restricted-shell-hosts-alist
                "\\shadow\\'")
-  (setq tramp-default-method "ssh")
-  ;; (eval-after-load 'tramp '(setenv "SHELL" "/bin/bash"))
-  ;; Disable projectile mode line project naming for better performance:
-  ;; (add-hook 'find-file-hook
-  ;;           (lambda ()
-  ;;             (when (file-remote-p default-directory)
-  ;;               (setq-local projectile-mode-line "Projectile"))))
-  ;; (setq vc-ignore-dir-regexp
-  ;;                 (format "\\(%s\\)\\|\\(%s\\)"
-  ;;                         vc-ignore-dir-regexp
-  ;;                         tramp-file-name-regexp))
-  
-  ;; (setq remote-file-name-inhibit-cache nil)
-  ;; (setq tramp-use-ssh-controlmaster-options t)
-  ;; (setq tramp-ssh-controlmaster-options
-  ;;                 (concat
-  ;;                   "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
-  ;;                   "-o ControlMaster=auto -o ControlPersist=no"))
-  )
+  (setq tramp-default-method "ssh"))
 
 (use-package docker-tramp
   :after tramp
@@ -296,12 +278,11 @@ if in project use `projectile-run-eshell"
     (if (projectile-project-p)
         (projectile-run-eshell)
       (eshell arg)))
-  :bind
-  ("C-c e" . my-run-eshell)
   :config
   (setq projectile-completion-system 'ivy)
   (setq projectile-switch-project-action #'projectile-dired)
-  (projectile-global-mode t))
+  (projectile-mode t)
+  (bind-key "C-c e" 'my-run-eshell))
 
 (use-package exec-path-from-shell
   :ensure t
