@@ -127,6 +127,7 @@
     :ensure t)
   (setq ivy-re-builders-alist
         '((t . ivy--regex-fuzzy)))
+  (setq ivy-use-selectable-prompt t)
   (setq ivy-initial-inputs-alist nil)
   (ivy-mode 1))
 
@@ -315,7 +316,8 @@ if in project use `projectile-run-eshell"
   :ensure t
   :diminish yas-minor-mode
   :commands yas-minor-mode
-  :bind ("C-c TAB" . yas-expand))
+  :bind ("C-c TAB" . yas-expand)
+  :config (yas-global-mode))
 
 (use-package restclient
   :ensure t
@@ -356,3 +358,13 @@ if in project use `projectile-run-eshell"
   :ensure t)
 (use-package wgrep-ag
   :ensure t)
+
+(use-package yaml-mode
+  :ensure t)
+
+(use-package eshell-prompt-extras
+  :ensure t
+  :config
+  (autoload 'epe-theme-lambda "eshell-prompt-extras")
+  (setq eshell-highlight-prompt nil
+        eshell-prompt-function 'epe-theme-lambda))
