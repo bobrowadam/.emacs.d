@@ -14,6 +14,8 @@
   (blink-cursor-mode -1)
   (display-time))
 
+(global-subword-mode t)
+(global-superword-mode -1)
 (setq use-package-debug t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore
@@ -288,9 +290,10 @@ if in project use `projectile-run-eshell"
 
 (use-package exec-path-from-shell
   :ensure t
+  :if (memq window-system '(mac ns))
+  ;; :init (setq exec-path-from-shell-arguments '("-l"))
   :config
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
+  (exec-path-from-shell-initialize))
 
 (use-package nodejs-repl
   :ensure t)
@@ -362,7 +365,27 @@ if in project use `projectile-run-eshell"
 (use-package yaml-mode
   :ensure t)
 
+(use-package eshell
+  :init
+  (defalias 'ffo 'find-file-other-window)
+  (defalias 'ff 'find-file)
+  (defalias 'status 'magit-status)
+  ;; :bind (:map eshell-mode-map ("<tab>" . completion-at-point))
+  :config
+  (add-hook 'eshell-mode-hook
+            (lambda ()
+              (local-set-key (kbd "M-r")
+                             (lambda ()
+                               (interactive)
+                               (insert
+                                (ivy-read "Eshell history: "
+                                                     (delete-dups
+                                                      (ring-elements eshell-history-ring))))))
+              (define-key eshell-mode-map (kbd "<tab>") 'completion-at-point)
+              (local-set-key (kbd "C-c C-h") 'eshell-list-history))))
+
 (use-package eshell-prompt-extras
+  :after eshell
   :ensure t
   :config
   (autoload 'epe-theme-lambda "eshell-prompt-extras")
