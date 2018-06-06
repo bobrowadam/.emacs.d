@@ -312,8 +312,16 @@ if in project use `projectile-run-eshell"
   (add-to-list 'auto-mode-alist '("\\.sc$" . scala-mode)))
 
 (use-package org-mode
-  :bind ("C-c a" . org-agenda)
-  :hook (org-mode . org-bullets-mode))
+  :bind ("C-c a" . org-agenda))
+
+(use-package org-projectile
+  :after (projectile org-mode)
+  :ensure t)
+
+(use-package org-bullets
+  :ensure t
+  :init (defun my/org-bullets-mode(org-bullets-mode 1))
+  :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 (use-package yasnippet
   :ensure t
@@ -391,3 +399,7 @@ if in project use `projectile-run-eshell"
   (autoload 'epe-theme-lambda "eshell-prompt-extras")
   (setq eshell-highlight-prompt nil
         eshell-prompt-function 'epe-theme-lambda))
+
+(use-package expand-region
+  :ensure t
+  :bind ("M-#" . er/expand-region))
