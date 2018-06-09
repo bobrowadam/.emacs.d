@@ -54,15 +54,15 @@
 
 ;; Theme and font
 (use-package gruber-darker-theme
+  :if (window-system)
   :ensure t
   :init (setq custom-safe-themes t)
   :config
-  (if (memq window-system '(mac ns))
-      (set-default-font "Sauce Code Powerline 16")
-    (set-default-font "Latin Modern Mono 16"))
+  (set-default-font "Latin Modern Mono 16")
   (load-theme 'gruber-darker))
 
 (use-package smart-mode-line
+  :if (window-system)
   :ensure t
   :config
   (sml/setup))
@@ -85,19 +85,22 @@
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
 (global-set-key (kbd "M-C-h") 'backward-kill-word)
 
-(require 'server)
-(unless (server-running-p)
-  (server-start))
+(if window-system
+ (progn (require 'server)
+  (unless (server-running-p)
+    (server-start))))
 
 (defun unset-electric-indent ()
     (electric-indent-mode -1))
 
 (use-package linum-off
+  :if (memq window-system '(mac ns))
   :ensure
   :config
   (global-linum-mode 1))
 
 (use-package paredit
+  :if (window-system)
   :init
   (defun use-paredit-not-sp ()
     "Use paredit and stop using Smartparens."
@@ -108,6 +111,7 @@
   ((emacs-lisp-mode cider-repl-mode cider-mode) . use-paredit-not-sp))
 
 (use-package smartparens
+  :if (window-system)
   :ensure t
   :bind ("C-)" . sp-unwrap-sexp)
   :config
@@ -115,14 +119,17 @@
   (show-smartparens-global-mode t))
 
 (use-package company
+  :if (window-system)
   :ensure t
   :config
   (global-company-mode t))
 
 (use-package smex
+  :if (window-system)
   :ensure t)
 
 (use-package ivy
+  :if (window-system)
   :ensure t
   :config
   (use-package flx
@@ -134,6 +141,7 @@
   (ivy-mode 1))
 
 (use-package counsel
+  :if (window-system)
   :ensure t
   :init
   (setq counsel-rg-base-command
@@ -178,16 +186,19 @@
   :hook (js2-mode . highlight-indent-guides-mode))
 
 (use-package tern
+  :if (window-system)
   :ensure t
   :hook (js2-mode . tern-mode))
 
 (use-package company-tern
+  :if (window-system)
   :after tern
   :ensure t
   :config
   (add-to-list 'company-backends 'company-tern))
 
 (use-package magit
+  :if (window-system)
   :ensure t
   :bind ("C-x g" . magit-status)
   :config
@@ -196,6 +207,7 @@
     ?t "Follow tags" "--follow-tags"))
 
 (use-package magithub
+  :if (window-system)
   :ensure t
   :after (magit lastpass)
   :pin melpa
@@ -206,6 +218,7 @@
   (magithub-feature-autoinject t))
 
 (use-package anzu
+  :if (window-system)
   :ensure t
   :config
   (global-anzu-mode +1))
@@ -217,6 +230,7 @@
 (global-set-key (kbd "C-{") 'shrink-window-horizontally)
 
 (use-package zoom-window
+  :if (window-system)
   :ensure t
   :init
   (custom-set-variables
@@ -224,12 +238,14 @@
   :bind ("C-x C-z" . zoom-window-zoom))
 
 (use-package dired
+  :if (window-system)
   :config
   (setq dired-listing-switches "-alh")
   (use-package dired-x
     :hook (dired-mode . dired-omit-mode)))
 
 (use-package tramp
+  :if (window-system)
   :init
   (custom-set-variables
    '(tramp-password-prompt-regexp
@@ -254,25 +270,30 @@
   (setq tramp-default-method "ssh"))
 
 (use-package docker-tramp
+  :if (window-system)
   :after tramp
   :ensure t
   :config
   (require 'docker-tramp-compat))
 
 (use-package flycheck
+  :if (window-system)
   :ensure t
   :hook ((js2-mode . flycheck-mode)
          (flycheck-mode . my/use-eslint-from-node-modules)))
 
 (use-package cider
+  :if (window-system)
   :ensure t)
 
 (use-package which-key
+  :if (window-system)
   :ensure t
   :config
   (which-key-mode 1))
 
 (use-package projectile
+  :if (window-system)
   :ensure t
   :init
   (defun my-run-eshell (&optional arg)
@@ -296,14 +317,17 @@ if in project use `projectile-run-eshell"
   (exec-path-from-shell-initialize))
 
 (use-package nodejs-repl
+  :if (memq window-system '(mac ns))
   :ensure t)
 
 (use-package ensime
+  :if (window-system)
   :pin melpa
   :hook (scala-mode . unset-electric-indent)
   :ensure t)
 
 (use-package sbt-mode
+  :if (window-system)
   :pin melpa)
 
 (use-package scala-mode
@@ -312,18 +336,21 @@ if in project use `projectile-run-eshell"
   (add-to-list 'auto-mode-alist '("\\.sc$" . scala-mode)))
 
 (use-package org-mode
+  :if (window-system)
   :bind ("C-c a" . org-agenda))
 
 (use-package org-projectile
+  :if (window-system)
   :after (projectile org-mode)
   :ensure t)
 
 (use-package org-bullets
+  :if (window-system)
   :ensure t
-  :init (defun my/org-bullets-mode(org-bullets-mode 1))
   :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 (use-package yasnippet
+  :if (window-system)
   :ensure t
   :diminish yas-minor-mode
   :commands yas-minor-mode
@@ -331,11 +358,13 @@ if in project use `projectile-run-eshell"
   :config (yas-global-mode))
 
 (use-package restclient
+  :if (window-system)
   :ensure t
   :config
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode)))
 
 (use-package inf-mongo
+  :if (window-system)
   :ensure t)
 
 ;; Ediff setup
@@ -348,6 +377,7 @@ if in project use `projectile-run-eshell"
 (csetq ediff-diff-options "-w")
 
 (use-package lastpass
+  :if (window-system)
   :ensure t
   :config
   (setq lastpass-user "adam@bigpanda.io")
@@ -364,16 +394,20 @@ if in project use `projectile-run-eshell"
          ("C-," . goto-last-change-reverse)))
 
 (use-package ag
+  :if (window-system)
   :ensure t)
 (use-package ripgrep
+  :if (window-system)
   :ensure t)
 (use-package wgrep-ag
+  :if (window-system)
   :ensure t)
 
 (use-package yaml-mode
   :ensure t)
 
 (use-package eshell
+  :if (window-system)
   :init
   (defalias 'ffo 'find-file-other-window)
   (defalias 'ff 'find-file)
@@ -393,6 +427,7 @@ if in project use `projectile-run-eshell"
               (local-set-key (kbd "C-c C-h") 'eshell-list-history))))
 
 (use-package eshell-prompt-extras
+  :if (window-system)
   :after eshell
   :ensure t
   :config
