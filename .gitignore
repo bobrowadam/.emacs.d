@@ -9,3 +9,4 @@ elpa/*
 /smex-items
 /session.*
 /projectile.cache
+/eshell/lastdir
