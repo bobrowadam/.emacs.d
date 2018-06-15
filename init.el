@@ -21,8 +21,15 @@
 (setq ring-bell-function 'ignore
       visible-bell nil)
 
+;; Lets you use minibuffer while in minibuffer:
+(setq enable-recursive-minibuffers t)
+
 ;; Lines should be 80 characters wide, not 72
 (setq fill-column 80)
+
+;; Push mark before exprestion jumping
+;; (advice-add 'forward-sexp :before (lambda (&rest args) (push-mark)))
+;; (advice-add 'backward-sexp :before (lambda (&rest args) (push-mark)))
 
 (delete-selection-mode 1)
 (set-default 'indent-tabs-mode nil)
@@ -58,7 +65,7 @@
   :ensure t
   :init (setq custom-safe-themes t)
   :config
-  (set-default-font "Latin Modern Mono 16")
+  (set-default-font "Latin Modern Mono 18")
   (load-theme 'gruber-darker))
 
 (use-package smart-mode-line
