@@ -449,3 +449,10 @@ if in project use `projectile-run-eshell"
   :ensure t
   :hook (ibuffer . ibuffer-projectile-set-filter-groups)
   :bind ("C-x C-b" . ibuffer))
+
+(use-package flyspell-correct
+  :ensure t)
+
+(use-package flyspell-correct-ivy
+  :ensure t
+  :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-previous-word-generic)))
