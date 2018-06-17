@@ -21,8 +21,8 @@ Content-Type: application/json
 {
   "app_key": :app-key,
   "status": "critical",
-  "host": "moogsoft-is-crap-1",
-  "check": "far on you general direction 1"
+  "host": "moogsoft-is-crap-112",
+  "check": "far on you general direction 112"
 }
 
 # Send random alert

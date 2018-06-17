@@ -1,0 +1,27 @@
+:org-name= momo
+:envy-route= http://localhost:5555
+:correlation-route= http://localhost:4211
+
+
+
+# ENVY:
+## state
+GET :envy-route/cluster/state
+## pause
+POST :envy-route/org/:org-name/state/pause
+## reset
+POST :envy-route/org/:org-name/state/reset
+## start
+POST :envy-route/org/:org-name/state/start
+## rescan orgs
+POST :envy-route/cluster/rescan-organizations
+
+
+
+# CORRELATION:
+## state
+GET :correlation-route/cluster/shards
+## pause
+PUT :correlation-route/org/:org-name/state/pause
+## start
+PUT :correlation-route/org/:org-name/state/start
