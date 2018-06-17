@@ -10,3 +10,4 @@ elpa/*
 /session.*
 /projectile.cache
 /eshell/lastdir
+/url/cookies
