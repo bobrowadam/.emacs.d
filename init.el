@@ -80,7 +80,6 @@
 
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
-(global-set-key (kbd "C-x C-b") 'ibuffer)
 
 ;; custom file path
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -445,3 +444,8 @@ if in project use `projectile-run-eshell"
 (use-package expand-region
   :ensure t
   :bind ("M-#" . er/expand-region))
+
+(use-package ibuffer-projectile
+  :ensure t
+  :hook (ibuffer . ibuffer-projectile-set-filter-groups)
+  :bind ("C-x C-b" . ibuffer))
