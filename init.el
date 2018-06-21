@@ -53,11 +53,13 @@
 (setq use-package-verbose t)
 (setq use-package-compute-statistics t)
 
+;; General settings:
 (setq locale-coding-system 'utf-8) ; pretty
 (set-terminal-coding-system 'utf-8) ; pretty
 (set-keyboard-coding-system 'utf-8) ; pretty
 (set-selection-coding-system 'utf-8) ; please
 (prefer-coding-system 'utf-8) ; with sugar on top
+(global-set-key (kbd "C-c o") 'other-frame)
 
 ;; Theme and font
 (use-package gruber-darker-theme
@@ -66,6 +68,8 @@
   :init (setq custom-safe-themes t)
   :config
   (set-default-font "Latin Modern Mono 18")
+  (add-to-list 'default-frame-alist
+               '(font . "Latin Modern Mono 18"))
   (load-theme 'gruber-darker))
 
 (use-package smart-mode-line
@@ -164,9 +168,12 @@
 (use-package js2-mode
   :ensure t
   :init
+
   (defun my-load-js2-snippets ()
+    (yas-minor-mode 1)
     (yas-load-directory (concat user-emacs-directory "snippets")))
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+  
   (defun my/use-eslint-from-node-modules ()
     (let* ((root (locate-dominating-file
                   (or (buffer-file-name) default-directory)
@@ -229,11 +236,7 @@
   :config
   (global-anzu-mode +1))
 
-(global-set-key (kbd "C-c C-p") 'open-line-above)
-(global-set-key (kbd "C-c C-n") 'open-line-below)
 (global-set-key (kbd "C-c C-k") 'kill-and-retry-line)
-(global-set-key (kbd "C-}") 'enlarge-window-horizontally)
-(global-set-key (kbd "C-{") 'shrink-window-horizontally)
 
 (use-package zoom-window
   :if (window-system)
@@ -456,3 +459,11 @@ if in project use `projectile-run-eshell"
 (use-package flyspell-correct-ivy
   :ensure t
   :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-previous-word-generic)))
+
+(use-package dante
+  :ensure t
+  :after haskell-mode
+  :commands dante-mode
+  :init
+  (add-hook 'haskell-mode-hook 'dante-mode)
+  (add-hook 'haskell-mode-hook 'flycheck-mode))
