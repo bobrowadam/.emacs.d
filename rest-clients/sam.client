@@ -1,0 +1,24 @@
+# localhost:
+# Content-Type: application/json
+:sam = http://localhost:31513
+:env_id =environment_id
+:incident_id =incident_id
+
+#### split
+POST :sam/environments/:env_id/incidents/:incident_id/split
+Content-Type: application/json
+{
+  "entity_ids": ["1","2"],
+  "user": "momo",
+  "anotation": "split it"
+}
+
+#### merge
+POST :sam/environments/:env_id/incidents/:incident_id/merge
+Content-Type: application/json
+{
+  "entity_ids": ["1","2"],
+  "user": "momo",
+  "anotation": "merging is nice"
+}
+
