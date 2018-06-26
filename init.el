@@ -460,14 +460,6 @@ if in project use `projectile-run-eshell"
   :ensure t
   :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-previous-word-generic)))
 
-(use-package dante
-  :ensure t
-  :after haskell-mode
-  :commands dante-mode
-  :init
-  (add-hook 'haskell-mode-hook 'dante-mode)
-  (add-hook 'haskell-mode-hook 'flycheck-mode))
-
 (use-package ace-window
   :ensure t
   :bind ( "C-x o" . ace-window)
