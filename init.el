@@ -467,3 +467,10 @@ if in project use `projectile-run-eshell"
   :init
   (add-hook 'haskell-mode-hook 'dante-mode)
   (add-hook 'haskell-mode-hook 'flycheck-mode))
+
+(use-package ace-window
+  :ensure t
+  :bind ( "C-x o" . ace-window)
+  :config
+  (setq aw-scope 'frame)
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
