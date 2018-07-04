@@ -187,7 +187,8 @@
          (js2-mode . js2-mode-hide-warnings-and-errors)
          (js2-mode . electric-indent-mode)
          (js2-mode . yas-minor-mode)
-         (js2-mode . my-load-js2-snippets))
+         (js2-mode . my-load-js2-snippets)
+         (js2-mode . rainbow-delimiters-mode))
   :bind (:map js2-mode-map ("C-<tab>" . js2-indent-bounce))
   :config
   (setq-default js2-auto-indent-p nil)
@@ -293,7 +294,8 @@
 
 (use-package cider
   :if (window-system)
-  :ensure t)
+  :ensure t
+  :hook (cider-mode . rainbow-delimiters-mode))
 
 (use-package which-key
   :if (window-system)
@@ -466,3 +468,9 @@ if in project use `projectile-run-eshell"
   :config
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+(use-package rainbow-delimiters
+  :ensure t)
+
+;; File functions bindings:
+(global-set-key (kbd "C-c f r") 'rename-file)
