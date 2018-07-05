@@ -474,3 +474,10 @@ if in project use `projectile-run-eshell"
 
 ;; File functions bindings:
 (global-set-key (kbd "C-c f r") 'rename-file)
+
+(use-package rich-minority
+  :ensure t
+  :init
+  (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|")))
+  :config
+  (rich-minority-mode 1 ))
