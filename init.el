@@ -159,7 +159,8 @@
   :bind (("M-x" . counsel-M-x)
          ("C-x C-f" . counsel-find-file)
          ("C-x C-m" . counsel-mark-ring)
-         ("C-c C-s r g" . counsel-rg)))
+         ("C-c C-s C-r" . counsel-rg)
+         ("C-c C-s C-s" . swiper)))
 (use-package whole-line-or-region
   :ensure t
   :config
@@ -189,7 +190,9 @@
          (js2-mode . yas-minor-mode)
          (js2-mode . my-load-js2-snippets)
          (js2-mode . rainbow-delimiters-mode))
-  :bind (:map js2-mode-map ("C-<tab>" . js2-indent-bounce))
+  :bind (:map js2-mode-map
+              ("C-<tab>" . js2-indent-bounce)
+              ("C-c C-s" . nil))
   :config
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
