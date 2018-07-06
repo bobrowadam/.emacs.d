@@ -93,6 +93,7 @@
 ;; delete char and delte word with "C-h" "C-M-h"
 (define-key key-translation-map [?\C-h] [?\C-?])
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
+(define-key key-translation-map (kbd "<f9>") (kbd "C-h"))
 (global-set-key (kbd "M-C-h") 'backward-kill-word)
 
 (if window-system
