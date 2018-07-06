@@ -1,0 +1,19 @@
+# localhost:
+# Content-Type: application/json
+:troly = http://localhost:30205
+:env_id =environment_id
+:incident_id =incident_id
+
+#### split
+GET :troly/
+Content-Type: application/json
+
+
+#### split
+POST :troly/
+Content-Type: application/json
+{
+  "entity_ids": ["1","2"],
+  "user": "momo",
+  "anotation": "split it"
+}
