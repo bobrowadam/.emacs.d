@@ -300,6 +300,17 @@
   :ensure t
   :hook (cider-mode . rainbow-delimiters-mode))
 
+(use-package clj-refactor
+  :ensure t
+  :after cider
+  :init
+  (defun my-clojure-mode-hook ()
+    (clj-refactor-mode 1)
+    (yas-minor-mode 1) ; for adding require/use/import statements
+    ;; This choice of keybinding leaves cider-macroexpand-1 unbound
+    (cljr-add-keybindings-with-prefix "C-c C-m"))
+  :hook (cider-mode . my-clojure-mode-hook))
+
 (use-package which-key
   :if (window-system)
   :ensure t
