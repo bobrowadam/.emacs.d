@@ -11,3 +11,4 @@ elpa/*
 /projectile.cache
 /eshell/lastdir
 /url/cookies
+/secrets.el

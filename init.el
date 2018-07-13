@@ -81,6 +81,7 @@
 (use-package misc-funcs)
 (use-package remote-defuns)
 (use-package edit-funcs)
+(use-package secrets)
 
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
@@ -93,7 +94,7 @@
 ;; delete char and delte word with "C-h" "C-M-h"
 (define-key key-translation-map [?\C-h] [?\C-?])
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
-(define-key key-translation-map (kbd "<f9>") (kbd "C-h"))
+;; (define-key key-translation-map (kbd "<f9>") (kbd "C-s-h"))
 (global-set-key (kbd "M-C-h") 'backward-kill-word)
 
 (if window-system
