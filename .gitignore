@@ -12,3 +12,5 @@ elpa/*
 /eshell/lastdir
 /url/cookies
 /secrets.el
+/my-funcs/my-secrets.el
+url/

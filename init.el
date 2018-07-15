@@ -43,6 +43,7 @@
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 (add-to-list 'load-path "~/.emacs.d/my-funcs")
+;; (add-to-list 'load-path "~/.emacs.d/my-secrets.el")
 
 ;; Use package setup
 (unless (package-installed-p 'use-package)
@@ -81,7 +82,8 @@
 (use-package misc-funcs)
 (use-package remote-defuns)
 (use-package edit-funcs)
-(use-package secrets)
+;; (load-file "./my-secrets.el")
+(use-package my-secrets)
 
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
@@ -255,6 +257,7 @@
 (use-package dired
   :if (window-system)
   :config
+  (put 'dired-find-alternate-file 'disabled nil)
   (setq dired-listing-switches "-alh")
   (use-package dired-x
     :hook (dired-mode . dired-omit-mode)))
@@ -364,7 +367,11 @@ if in project use `projectile-run-eshell"
 
 (use-package org-mode
   :if (window-system)
-  :bind ("C-c a" . org-agenda))
+  :bind
+  ("C-c a" . org-agenda)
+  (:map org-mode-map
+        ("M-p" . org-metaup)
+        ("M-n" . org-metadown)))
 
 (use-package org-projectile
   :if (window-system)
@@ -497,3 +504,28 @@ if in project use `projectile-run-eshell"
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|")))
   :config
   (rich-minority-mode 1 ))
+
+(use-package org-brain
+  :ensure t
+  :init
+  (setq org-brain-path (format "%s/source/org-brain/" (expand-file-name "~/")))
+  :config
+  (setq org-id-track-globally t)
+  (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
+  ;; (push '("b" "Brain" plain (function org-brain-goto-end)
+  ;;         "* %i%?" :empty-lines 1)
+  ;;       org-capture-templates)
+  (setq org-brain-visualize-default-choices 'all)
+  (setq org-brain-title-max-length 12))
+
+(use-package anzu
+  :ensure t
+  :config
+  (global-anzu-mode +1))
+
+(use-package ansible-vault :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("/vault$" . yaml-mode))
+  (add-hook 'yaml-mode-hook
+  (lambda ()
+    (and (string= (file-name-base) "vault") (ansible-vault-mode 1)))))
