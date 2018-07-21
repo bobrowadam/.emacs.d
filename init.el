@@ -20,6 +20,7 @@
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore
       visible-bell nil)
+(setq-default indent-tabs-mode nil)
 
 ;; Lets you use minibuffer while in minibuffer:
 (setq enable-recursive-minibuffers t)
