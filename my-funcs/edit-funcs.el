@@ -31,7 +31,6 @@
 ;;; Code:
 (require 's)
 (require 'dash)
-(require 'cl)
 
 (defun duplicate-current-line-or-region (arg)
   "Duplicates the current line or region ARG times.
@@ -93,7 +92,7 @@ If not return \"\""
   (-flatten (if (car separators)
        (mapcar (lambda (s)
                  (apply 'split-multi-sep (cons s (cdr separators))))
-               (split-string str (car separators)))
+               (split-string str (car separators) t))
      str)))
 (provide 'edit-funcs)
 ;;; edit-funcs.el ends here
