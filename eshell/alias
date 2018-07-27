@@ -1,2 +1,3 @@
 alias ff find-file $1
 alias ll ls -lh
+alias ddir delete-directory $1 $2

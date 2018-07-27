@@ -96,5 +96,6 @@ If not return \"\""
      str)))
 (provide 'edit-funcs)
 ;;; edit-funcs.el ends here
-
+(split-multi-sep "/ssh:ubuntu@prod-sam-11|sudo:root@prod-sam-11:/var/log/bigpanda/" "@" "/" "sudo")
 ;;; name.el ends here
+(split-multi-sep "/ssh:perf-reporter-11:/" "/" "@" "|" ":")
