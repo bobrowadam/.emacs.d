@@ -31,6 +31,7 @@
 ;;; Code:
 (require 's)
 (require 'dash)
+(require 'cl)
 
 (defun duplicate-current-line-or-region (arg)
   "Duplicates the current line or region ARG times.
@@ -67,6 +68,14 @@ However, if there's a region, all lines that region covers will be duplicated."
                    :from-end t)))
     (my/gen-buffer-name-from-string-list s-str prefix)))
 
+(defun get-meanigfull-name (meaningfull?)
+  "Check if MEANINGFULL? is meaningfull and return it if so.
+If not return \"\""
+  (cond ((s-contains? "prod" meaningfull?) meaningfull?)
+        ((s-contains? "perf" meaningfull?) meaningfull?)
+        ((s-contains? "od-" meaningfull?) meaningfull?)
+        ((s-contains? "log" meaningfull?) meaningfull?)))
+
 (defun my/gen-buffer-name-from-string-list (str-list new-name)
   "Get last non empty string from STR-LIST.
 Concat meaningful names into the new buffer name recursivly.
@@ -78,14 +87,6 @@ Use NEW-NAME as the new name prefix."
       new-name)))
 
 (my/get-buffer-name "/ssh:ubuntu@prod-sam-11|sudo:root@prod-sam-11:/var/log/bigpanda/" "eshell/")
-
-(defun get-meanigfull-name (meaningfull?)
-  "Check if MEANINGFULL? is meaningfull and return it if so.
-If not return \"\""
-  (cond ((s-contains? "prod" meaningfull?) meaningfull?)
-        ((s-contains? "perf" meaningfull?) meaningfull?)
-        ((s-contains? "od-" meaningfull?) meaningfull?)
-        ((s-contains? "log" meaningfull?) meaningfull?)))
 
 (defun split-multi-sep (str &rest separators)
   "Split STR with SEPARATORS."
