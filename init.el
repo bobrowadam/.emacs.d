@@ -517,3 +517,8 @@ if in project use `projectile-run-eshell"
   (add-hook 'yaml-mode-hook
   (lambda ()
     (and (string= (file-name-base) "vault") (ansible-vault-mode 1)))))
+
+(use-package diff-hl
+  :ensure t
+  :config
+  (global-diff-hl-mode))
