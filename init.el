@@ -223,6 +223,7 @@
   :if (window-system)
   :ensure t
   :bind ("C-x g" . magit-status)
+  :hook (magit-post-refresh-hook . diff-hl-magit-post-refresh)
   :config
   (setq magit-completing-read-function 'ivy-completing-read)
   (magit-define-popup-switch 'magit-push-popup
@@ -334,6 +335,9 @@ if in project use `projectile-run-eshell"
     (if (projectile-project-p)
         (projectile-run-eshell)
       (eshell arg)))
+  :bind
+  (:map projectile-mode-map
+        ("C-c p" . projectile-command-map))
   :config
   (setq projectile-completion-system 'ivy)
   (setq projectile-switch-project-action #'projectile-dired)
