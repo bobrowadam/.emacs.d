@@ -347,24 +347,13 @@
   (which-key-mode 1))
 
 (use-package projectile
-  :if (window-system)
-  :ensure t
   :init
-  (defun my-run-eshell (&optional arg)
-    "Create an interactive Eshell buffer.
-if in project use `projectile-run-eshell"
-    (interactive "P")
-    (if (projectile-project-p)
-        (projectile-run-eshell)
-      (eshell arg)))
-  :bind
-  (:map projectile-mode-map
-        ("C-c p" . projectile-command-map))
-  :config
+  (setq projectile-keymap-prefix (kbd "C-c p"))
   (setq projectile-completion-system 'ivy)
   (setq projectile-switch-project-action #'projectile-dired)
-  (projectile-mode t)
-  (bind-key "C-c e" 'my-run-eshell))
+  :config
+  (projectile-mode +1))
+
 (defun my-run-eshell (&optional arg)
   "Create an interactive Eshell buffer.
  if in project use `projectile-run-eshell"
