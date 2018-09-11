@@ -128,9 +128,16 @@
 (use-package smartparens
   :if (window-system)
   :ensure t
-  :bind ("C-)" . sp-unwrap-sexp)
+  :bind (:map smartparens-mode-map
+              ("M-(" . sp-wrap-round)
+              ("M-s" . sp-unwrap-sexp)
+              ("C-)" . sp-forward-slurp-sexp)
+              ("C-}" . sp-forward-barf-sexp)
+              ("C-{" . sp-backward-barf-sexp)
+              ("C-(" . sp-backward-slurp-sexp)
+              ("C-'" . sp-rewrap-sexp))
   :config
-  (smartparens-global-mode)
+  (smartparens-global-mode t)
   (show-smartparens-global-mode t))
 
 (use-package company
