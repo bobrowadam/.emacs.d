@@ -387,7 +387,12 @@ if in project use `projectile-run-eshell"
 (use-package ensime
   :if (window-system)
   :pin melpa
-  :hook (scala-mode . unset-electric-indent)
+  :hook ((scala-mode . unset-electric-indent))
+  :bind
+  (:map sbt-mode-map
+        ("C-c C-c" . ensime-sbt-send-eol))
+  :config
+  (setq ensime-sbt-perform-on-save "compile")
   :ensure t)
 
 (use-package sbt-mode
