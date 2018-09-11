@@ -64,14 +64,14 @@
 
 ;; Theme and font
 (use-package gruber-darker-theme
-  :if (window-system)
   :ensure t
   :init (setq custom-safe-themes t)
   :config
-  (set-default-font "Latin Modern Mono 18")
+  (set-default-font "Latin Modern Mono 21")
   (add-to-list 'default-frame-alist
-               '(font . "Latin Modern Mono 18"))
-  (load-theme 'gruber-darker))
+               '(font . "Latin Modern Mono 21"))
+  ;; (load-theme 'gruber-darker)
+  (load-theme 'ayu))
 
 (use-package smart-mode-line
   :if (window-system)
