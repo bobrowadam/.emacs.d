@@ -402,9 +402,18 @@
         ("M-n" . org-metadown)))
 
 (use-package org-projectile
-  :if (window-system)
-  :after (projectile org-mode)
-  :ensure t)
+  :ensure t
+  :bind (("C-c n p" . org-projectile-project-todo-completing-read)
+         ("C-c n t" . org-projectile-goto-location-for-project)
+         ("C-c c" . org-capture))
+  :config
+  (progn
+    (org-projectile-per-project)
+    (setq org-projectile-projects-file
+          "TODOS.org")
+    (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+    (push (org-projectile-project-todo-entry) org-capture-templates)))
+
 
 (use-package org-bullets
   :if (window-system)
