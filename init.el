@@ -44,7 +44,6 @@
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 (add-to-list 'load-path "~/.emacs.d/my-funcs")
-;; (add-to-list 'load-path "~/.emacs.d/my-secrets.el")
 
 ;; Use package setup
 (unless (package-installed-p 'use-package)
@@ -83,7 +82,8 @@
 (use-package misc-funcs)
 (use-package remote-defuns)
 (use-package edit-funcs)
-;; (load-file "./my-secrets.el")
+
+;; Secrets
 (use-package my-secrets)
 
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
