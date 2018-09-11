@@ -558,3 +558,6 @@
   :ensure t
   :config
   (global-diff-hl-mode))
+
+(setq find-function-C-source-directory "~/source/emacs-26.1/src/")
+
