@@ -283,7 +283,8 @@
   (put 'dired-find-alternate-file 'disabled nil)
   (setq dired-listing-switches "-alh")
   (use-package dired-x
-    :hook (dired-mode . dired-omit-mode)))
+    ;; :hook (dired-mode . dired-omit-mode)
+    ))
 
 (use-package tramp
   :if (window-system)
