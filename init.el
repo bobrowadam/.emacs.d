@@ -382,7 +382,6 @@ if in project use `projectile-run-eshell"
   (exec-path-from-shell-initialize))
 
 (use-package nodejs-repl
-  :if (memq window-system '(mac ns))
   :ensure t)
 
 (use-package ensime
