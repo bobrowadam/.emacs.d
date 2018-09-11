@@ -580,3 +580,5 @@
            (golden-ratio))))
   :bind ("C-x -" . my/gloden-ratio))
 
+(use-package itail
+  :ensure t)
