@@ -141,7 +141,6 @@
   (show-smartparens-global-mode t))
 
 (use-package company
-  :if (window-system)
   :ensure t
   :config
   (global-company-mode t))
@@ -178,6 +177,7 @@
   :config
   (whole-line-or-region-global-mode t))
 
+;; Javascript
 (use-package js2-mode
   :ensure t
   :init
@@ -214,17 +214,31 @@
   :ensure t
   :hook (js2-mode . highlight-indent-guides-mode))
 
-(use-package tern
-  :if (window-system)
-  :ensure t
-  :hook (js2-mode . tern-mode))
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
 
-(use-package company-tern
-  :if (window-system)
-  :after tern
+(use-package tide
   :ensure t
+  :after (js2-mode)
+  :hook (js2-mode . setup-tide-mode)
+  :bind (:map tide-mode-map ("C-c C-t C-r" . tide-rename-symbol))
   :config
-  (add-to-list 'company-backends 'company-tern))
+  (setq company-tooltip-align-annotations t)
+  (setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))
+  (setq tide-tsserver-process-environment nil)
+  
+  (setq tide-format-options
+        '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
+
+(use-package indium
+  :config
+  (setq indium-client-debug t)
+  :ensure t)
 
 (use-package magit
   :if (window-system)
