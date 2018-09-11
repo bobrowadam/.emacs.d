@@ -365,6 +365,14 @@ if in project use `projectile-run-eshell"
   (setq projectile-switch-project-action #'projectile-dired)
   (projectile-mode t)
   (bind-key "C-c e" 'my-run-eshell))
+(defun my-run-eshell (&optional arg)
+  "Create an interactive Eshell buffer.
+ if in project use `projectile-run-eshell"
+  (interactive "P")
+  (if (projectile-project-p)
+      (projectile-run-eshell)
+    (eshell arg)))
+(global-set-key (kbd "C-c e") 'my-run-eshell)
 
 (use-package exec-path-from-shell
   :ensure t
