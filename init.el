@@ -561,3 +561,10 @@
 
 (setq find-function-C-source-directory "~/source/emacs-26.1/src/")
 
+(defun animate-scratch-buffer ()
+  (run-with-timer 0.5 nil
+                  #'animate-string "Happy hacking!" 3 1))
+
+(add-hook 'after-init-hook
+          #'animate-scratch-buffer)
+
