@@ -79,6 +79,7 @@
   :config
   (sml/setup))
 
+;; My functions
 (use-package misc-funcs)
 (use-package remote-defuns)
 (use-package edit-funcs)
@@ -240,6 +241,7 @@
   (setq indium-client-debug t)
   :ensure t)
 
+;; Magit
 (use-package magit
   :if (window-system)
   :ensure t
@@ -544,6 +546,9 @@
 
 (use-package anzu
   :ensure t
+  :bind (("C-M-%" . anzu-query-replace-regexp)
+         ("M-%" . anzu-query-replace)
+         ("C-c M-%" . anzu-repl))
   :config
   (global-anzu-mode +1))
 
