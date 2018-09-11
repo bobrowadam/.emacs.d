@@ -568,3 +568,15 @@
 (add-hook 'after-init-hook
           #'animate-scratch-buffer)
 
+(use-package golden-ratio
+  :ensure t
+  :init (defun my/gloden-ratio ()
+  "Toggle golden ratio"
+  (interactive)
+  (if golden-ratio-mode
+      (progn (golden-ratio-mode -1)
+             (balance-windows))
+    (progn (golden-ratio-mode)
+           (golden-ratio))))
+  :bind ("C-x -" . my/gloden-ratio))
+
