@@ -583,7 +583,8 @@
              (balance-windows))
     (progn (golden-ratio-mode)
            (golden-ratio))))
-  :bind ("C-x -" . my/gloden-ratio))
+  :bind ("C-x -" . my/gloden-ratio)
+  :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
 (use-package itail
   :ensure t)
