@@ -588,3 +588,5 @@
 
 (use-package itail
   :ensure t)
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
