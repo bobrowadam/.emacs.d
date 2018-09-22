@@ -123,9 +123,11 @@
   :init
   (defun use-paredit-not-sp ()
     "Use paredit and stop using Smartparens."
-    (paredit-mode 1)
-    (turn-off-smartparens-mode))
+    (turn-off-smartparens-mode)
+    (paredit-mode 1))
   :ensure t
+  :bind (:map paredit-mode-map
+              ("M-W" . paredit-copy-as-kill))
   :hook
   ((emacs-lisp-mode cider-repl-mode cider-mode) . use-paredit-not-sp))
 
@@ -139,7 +141,10 @@
               ("C-}" . sp-forward-barf-sexp)
               ("C-{" . sp-backward-barf-sexp)
               ("C-(" . sp-backward-slurp-sexp)
-              ("C-'" . sp-rewrap-sexp))
+              ("C-'" . sp-rewrap-sexp)
+              ("M-S" . sp-split-sexp)
+              ("M-J" . sp-join-sexp)
+              ("M-W" . sp-copy-sexp))
   :config
   (smartparens-global-mode t)
   (show-smartparens-global-mode t))
