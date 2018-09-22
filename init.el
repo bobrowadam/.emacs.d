@@ -598,3 +598,9 @@
   :ensure t)
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
+
+(use-package multiple-cursors
+  :ensure t
+  :bind
+  (("C->" . 'mc/mark-next-like-this)
+   ("C-<" . 'mc/mark-previous-like-this)))
