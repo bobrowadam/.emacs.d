@@ -555,7 +555,7 @@
 (use-package anzu
   :ensure t
   :bind (("C-M-%" . anzu-query-replace-regexp)
-         ("M-%" . anzu-query-replace)
+         ("M-%" . query-replace)
          ("C-c M-%" . anzu-repl))
   :config
   (global-anzu-mode +1))
