@@ -96,7 +96,12 @@ Use NEW-NAME as the new name prefix."
                (split-string str (car separators) t))
      str)))
 (provide 'edit-funcs)
+
+(defun my/kill-to-start-of-line ()
+  "Delete to start of line."
+  (interactive)
+  (let ((start-p (point)))
+   (move-beginning-of-line nil)
+   (kill-region start-p (point))))
+
 ;;; edit-funcs.el ends here
-(split-multi-sep "/ssh:ubuntu@prod-sam-11|sudo:root@prod-sam-11:/var/log/bigpanda/" "@" "/" "sudo")
-;;; name.el ends here
-(split-multi-sep "/ssh:perf-reporter-11:/" "/" "@" "|" ":")

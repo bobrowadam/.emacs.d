@@ -277,7 +277,7 @@
   :config
   (global-anzu-mode +1))
 
-(global-set-key (kbd "C-c C-k") 'kill-and-retry-line)
+(global-set-key (kbd "C-c C-k") 'my/kill-to-start-of-line)
 
 (use-package zoom-window
   :if (window-system)
