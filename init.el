@@ -61,6 +61,9 @@
 (set-selection-coding-system 'utf-8) ; please
 (prefer-coding-system 'utf-8) ; with sugar on top
 (global-set-key (kbd "C-c o") 'other-frame)
+(ffap-bindings) ; This for find-file to act as ffap when cursor is on file path
+(global-set-key (kbd "C-x C-d") 'dired)
+(global-set-key (kbd "C-x d") 'find-name-dired)
 
 ;; Theme and font
 (use-package gruber-darker-theme
