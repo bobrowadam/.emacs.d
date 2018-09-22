@@ -70,11 +70,11 @@
   :ensure t
   :init (setq custom-safe-themes t)
   :config
-  (set-default-font "Latin Modern Mono 21")
+  (set-default-font "Latin Modern Mono 19")
   (add-to-list 'default-frame-alist
-               '(font . "Latin Modern Mono 21"))
-  ;; (load-theme 'gruber-darker)
-  (load-theme 'ayu))
+               '(font . "Latin Modern Mono 19"))
+  ;; (load-theme 'ayu)
+  (load-theme 'gruber-darker))
 
 (use-package smart-mode-line
   :if (window-system)
