@@ -1,6 +1,13 @@
 ;;; Begin initialization
 
 (package-initialize)
+;; Load My functions first
+(add-to-list 'load-path "~/.emacs.d/my-funcs")
+(use-package misc-funcs)
+(use-package remote-defuns)
+(use-package edit-funcs)
+
+;; Sane defaults
 (setq display-time-day-and-date t)
 (setq display-time-default-load-average nil)
 (when (window-system)
@@ -25,12 +32,24 @@
 ;; Lets you use minibuffer while in minibuffer:
 (setq enable-recursive-minibuffers t)
 
-;; Lines should be 80 characters wide, not 72
+;; Lines should be 80 characters widh, not 72
 (setq fill-column 80)
 
-;; Push mark before exprestion jumping
-;; (advice-add 'forward-sexp :before (lambda (&rest args) (push-mark)))
-;; (advice-add 'backward-sexp :before (lambda (&rest args) (push-mark)))
+(setq
+ backup-by-copying t      ; don't clobber symlinks
+ backup-directory-alist
+ '(("." . "~/.saves"))    ; don't litter my fs tree
+ delete-old-versions t
+ kept-new-versions 6
+ kept-old-versions 2
+ version-control t)      ; use versioned backups
+
+;;;;;;  Mark commands ;;;;;; (WIP
+;;; Push mark before exprestion jumping
+;; (advice-add 'forward-sexp :before (lambda (&rest args) (push-mark (point) t nil)))
+;; (advice-add 'backward-sexp :before (lambda (&rest args) (push-mark (point) t nil)))
+(global-set-key (kbd "C-`") 'unpop-to-mark-command)
+(global-set-key (kbd "M-`") 'jump-to-mark)
 
 (delete-selection-mode 1)
 (set-default 'indent-tabs-mode nil)
@@ -42,8 +61,6 @@
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
-
-(add-to-list 'load-path "~/.emacs.d/my-funcs")
 
 ;; Use package setup
 (unless (package-installed-p 'use-package)
@@ -61,6 +78,7 @@
 (set-selection-coding-system 'utf-8) ; please
 (prefer-coding-system 'utf-8) ; with sugar on top
 (global-set-key (kbd "C-c o") 'other-frame)
+(global-set-key (kbd "C-x 8 l") 'insert-λ) ;;
 (ffap-bindings) ; This for find-file to act as ffap when cursor is on file path
 (global-set-key (kbd "C-x C-d") 'dired)
 (global-set-key (kbd "C-x d") 'find-name-dired)
@@ -81,11 +99,6 @@
   :ensure t
   :config
   (sml/setup))
-
-;; My functions
-(use-package misc-funcs)
-(use-package remote-defuns)
-(use-package edit-funcs)
 
 ;; Secrets
 (use-package my-secrets)
@@ -112,6 +125,9 @@
 (defun unset-electric-indent ()
     (electric-indent-mode -1))
 
+(use-package rainbow-delimiters
+  :ensure t)
+
 (use-package linum-off
   :if (memq window-system '(mac ns))
   :ensure
@@ -129,7 +145,7 @@
   :bind (:map paredit-mode-map
               ("M-W" . paredit-copy-as-kill))
   :hook
-  ((emacs-lisp-mode cider-repl-mode cider-mode) . use-paredit-not-sp))
+  ((emacs-lisp-mode cider-repl-mode cider-mode lisp-mode slime-repl-mode) . use-paredit-not-sp))
 
 (use-package smartparens
   :if (window-system)
@@ -502,8 +518,8 @@
                                (interactive)
                                (insert
                                 (ivy-read "Eshell history: "
-                                                     (delete-dups
-                                                      (ring-elements eshell-history-ring))))))
+                                          (delete-dups
+                                           (ring-elements eshell-history-ring))))))
               (define-key eshell-mode-map (kbd "<tab>") 'completion-at-point)
               (local-set-key (kbd "C-c C-h") 'eshell-list-history))))
 
@@ -523,7 +539,24 @@
 (use-package ibuffer-projectile
   :ensure t
   :hook (ibuffer . ibuffer-projectile-set-filter-groups)
-  :bind ("C-x C-b" . ibuffer))
+  :bind ("C-x C-b" . ibuffer)
+  :config
+  (define-ibuffer-column size-h
+    (:name "Size" :inline t)
+    (cond
+     ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
+     ((> (buffer-size) 100000) (format "%7.0fk" (/ (buffer-size) 1000.0)))
+     ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
+     (t (format "%8d" (buffer-size)))))
+  (setq ibuffer-formats
+	'((mark modified read-only " "
+		(name 18 18 :left :elide)
+		" "
+		(size-h 9 -1 :right)
+		" "
+		(mode 16 16 :left :elide)
+		" "
+		filename-and-process))))
 
 (use-package flyspell-correct
   :ensure t)
@@ -538,6 +571,12 @@
   :config
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+(use-package ace-jump-mode
+  :ensure t
+  :bind
+  ("C-c j" . 'ace-jump-mode )
+  ("C-c k" . 'ace-jump-mode-pop-mark))
 
 (use-package rainbow-delimiters
   :ensure t)
@@ -604,3 +643,15 @@
   :bind
   (("C->" . 'mc/mark-next-like-this)
    ("C-<" . 'mc/mark-previous-like-this)))
+(put 'upcase-region 'disabled nil)
+
+(use-package slime
+  :ensure t
+  :config
+  (setq inferior-lisp-program "/usr/local/Cellar/sbcl/1.4.11/bin/sbcl")
+  (setq slime-contribs '(slime-fancy))
+  (load (expand-file-name "~/quicklisp/slime-helper.el")))
+
+(use-package slime-company
+  :ensure t
+  :after slime)
