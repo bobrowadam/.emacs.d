@@ -58,10 +58,12 @@
 (load-theme 'manoj-dark)
 
 (use-package misc-funcs)
-(use-package remote-defuns)
+;; (use-package remote-defuns)
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
 (global-set-key (kbd "C-x C-b") 'ibuffer)
+(global-set-key (kbd "C-x ;") 'comment-line)
+
 
 ;; custom file path
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -81,9 +83,9 @@
   :config
   (whole-line-or-region-global-mode t))
 
-(use-package dired
-  :config
-  (setq dired-listing-switches "-alh"))
+;; (use-package dired
+;;   :config
+;;   (setq dired-listing-switches "-alh"))
 
 (use-package tramp
   :init
@@ -121,14 +123,3 @@
   ;;        "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
   ;;        "-o ControlMaster=auto -o ControlPersist=no"))
   )
-
-(use-package inf-mongo
-  :ensure t)
-
-(defmacro csetq (variable value)
-  `(funcall (or (get ',variable 'custom-set)
-                'set-default)
-            ',variable ,value))
-(csetq ediff-window-setup-function 'ediff-setup-windows-plain)
-(csetq ediff-split-window-function 'split-window-horizontally)
-(csetq ediff-diff-options "-w")

@@ -126,15 +126,18 @@
     (electric-indent-mode -1))
 
 (use-package rainbow-delimiters
+  :defer
   :ensure t)
 
 (use-package linum-off
+  :defer
   :if (memq window-system '(mac ns))
   :ensure
   :config
   (global-linum-mode 1))
 
 (use-package paredit
+  :defer
   :if (window-system)
   :init
   (defun use-paredit-not-sp ()
@@ -148,6 +151,7 @@
   ((emacs-lisp-mode cider-repl-mode cider-mode lisp-mode slime-repl-mode) . use-paredit-not-sp))
 
 (use-package smartparens
+  :defer
   :if (window-system)
   :ensure t
   :bind (:map smartparens-mode-map
@@ -166,6 +170,7 @@
   (show-smartparens-global-mode t))
 
 (use-package company
+  :defer
   :ensure t
   :config
   (global-company-mode t))
@@ -175,6 +180,7 @@
   :ensure t)
 
 (use-package ivy
+  :defer
   :if (window-system)
   :ensure t
   :config
@@ -187,6 +193,7 @@
   (ivy-mode 1))
 
 (use-package counsel
+  :defer
   :if (window-system)
   :ensure t
   :init
@@ -204,6 +211,7 @@
 
 ;; Javascript
 (use-package js2-mode
+  :defer
   :ensure t
   :init
 
@@ -236,6 +244,7 @@
   (setq-default js-indent-level 2))
 
 (use-package highlight-indent-guides
+  :defer
   :ensure t
   :hook (js2-mode . highlight-indent-guides-mode))
 
@@ -248,6 +257,7 @@
   (company-mode +1))
 
 (use-package tide
+  :defer
   :ensure t
   :after (js2-mode)
   :hook (js2-mode . setup-tide-mode)
@@ -261,6 +271,7 @@
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 
 (use-package indium
+  :disabled
   :config
   (setq indium-client-debug t)
   :ensure t)
@@ -279,7 +290,7 @@
 (use-package magithub
   :if (window-system)
   :ensure t
-  :after (magit lastpass)
+  :after (magit)
   :pin melpa
   :config
   (setq epa-pinentry-mode 'loopback)
@@ -288,6 +299,7 @@
   (magithub-feature-autoinject t))
 
 (use-package anzu
+  :defer
   :if (window-system)
   :ensure t
   :config
@@ -296,6 +308,7 @@
 (global-set-key (kbd "C-c C-k") 'my/kill-to-start-of-line)
 
 (use-package zoom-window
+  :defer
   :if (window-system)
   :ensure t
   :init
@@ -304,6 +317,7 @@
   :bind ("C-x C-z" . zoom-window-zoom))
 
 (use-package dired
+  :defer
   :if (window-system)
   :config
   (put 'dired-find-alternate-file 'disabled nil)
@@ -313,6 +327,7 @@
     ))
 
 (use-package tramp
+  :defer
   :if (window-system)
   :init
   (custom-set-variables
@@ -338,6 +353,7 @@
   (setq tramp-default-method "ssh"))
 
 (use-package docker-tramp
+  :defer
   :if (window-system)
   :after tramp
   :ensure t
@@ -345,17 +361,20 @@
   (require 'docker-tramp-compat))
 
 (use-package flycheck
+  :defer
   :if (window-system)
   :ensure t
   :hook ((js2-mode . flycheck-mode)
          (flycheck-mode . my/use-eslint-from-node-modules)))
 
 (use-package cider
+  :defer
   :if (window-system)
   :ensure t
   :hook (cider-mode . rainbow-delimiters-mode))
 
 (use-package clj-refactor
+  :defer
   :ensure t
   :after cider
   :init
@@ -367,12 +386,14 @@
   :hook (cider-mode . my-clojure-mode-hook))
 
 (use-package which-key
+  :defer
   :if (window-system)
   :ensure t
   :config
   (which-key-mode 1))
 
 (use-package projectile
+  :defer 1
   :init
   (setq projectile-keymap-prefix (kbd "C-c p"))
   (setq projectile-completion-system 'ivy)
@@ -397,9 +418,11 @@
   (exec-path-from-shell-initialize))
 
 (use-package nodejs-repl
+  :defer
   :ensure t)
 
 (use-package ensime
+  :defer
   :if (window-system)
   :pin melpa
   :hook ((scala-mode . unset-electric-indent))
@@ -411,15 +434,18 @@
   :ensure t)
 
 (use-package sbt-mode
+  :defer
   :if (window-system)
   :pin melpa)
 
 (use-package scala-mode
+  :defer
   :pin melpa
   :config
   (add-to-list 'auto-mode-alist '("\\.sc$" . scala-mode)))
 
 (use-package org-mode
+  :defer
   :if (window-system)
   :bind
   ("C-c a" . org-agenda)
@@ -428,6 +454,7 @@
         ("M-n" . org-metadown)))
 
 (use-package org-projectile
+  :defer
   :ensure t
   :bind (("C-c n p" . org-projectile-project-todo-completing-read)
          ("C-c n t" . org-projectile-goto-location-for-project)
@@ -442,11 +469,13 @@
 
 
 (use-package org-bullets
+  :defer
   :if (window-system)
   :ensure t
   :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 (use-package yasnippet
+  :defer
   :if (window-system)
   :ensure t
   :diminish yas-minor-mode
@@ -455,12 +484,14 @@
   :config (yas-global-mode))
 
 (use-package restclient
+  :defer
   :if (window-system)
   :ensure t
   :config
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode)))
 
 (use-package inf-mongo
+  :defer
   :if (window-system)
   :ensure t)
 
@@ -474,6 +505,7 @@
 (csetq ediff-diff-options "-w")
 
 (use-package lastpass
+  :defer
   :if (window-system)
   :ensure t
   :config
@@ -482,6 +514,7 @@
   (lastpass-auth-source-enable))
 
 (use-package goto-chg
+  :defer
   :ensure t
   :commands goto-last-change
   ;; complementary to
@@ -491,19 +524,24 @@
          ("C-," . goto-last-change-reverse)))
 
 (use-package ag
+  :defer
   :if (window-system)
   :ensure t)
 (use-package ripgrep
+  :defer
   :if (window-system)
   :ensure t)
 (use-package wgrep-ag
+  :defer
   :if (window-system)
   :ensure t)
 
 (use-package yaml-mode
+  :defer
   :ensure t)
 
 (use-package eshell
+  :defer
   :if (window-system)
   :init
   (defalias 'ffo 'find-file-other-window)
@@ -533,10 +571,12 @@
         eshell-prompt-function 'epe-theme-lambda))
 
 (use-package expand-region
+  :defer
   :ensure t
   :bind ("M-#" . er/expand-region))
 
 (use-package ibuffer-projectile
+  :defer
   :ensure t
   :hook (ibuffer . ibuffer-projectile-set-filter-groups)
   :bind ("C-x C-b" . ibuffer)
@@ -559,13 +599,17 @@
 		filename-and-process))))
 
 (use-package flyspell-correct
+  :defer
+  :bind ("C-M-$" . flyspell-correct-at-point)
   :ensure t)
 
 (use-package flyspell-correct-ivy
+  :defer
   :ensure t
   :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-previous-word-generic)))
 
 (use-package ace-window
+  :defer
   :ensure t
   :bind ( "C-x o" . ace-window)
   :config
@@ -573,18 +617,23 @@
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
 (use-package ace-jump-mode
+  :defer
   :ensure t
   :bind
   ("C-c j" . 'ace-jump-mode )
   ("C-c k" . 'ace-jump-mode-pop-mark))
 
 (use-package rainbow-delimiters
-  :ensure t)
+  :defer
+  :ensure t
+  :config
+  (rainbow-delimiters-mode))
 
 ;; File functions bindings:
 (global-set-key (kbd "C-c f r") 'rename-file)
 
 (use-package rich-minority
+  :defer
   :ensure t
   :init
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|")))
@@ -592,6 +641,7 @@
   (rich-minority-mode 1 ))
 
 (use-package anzu
+  :defer
   :ensure t
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . query-replace)
@@ -600,6 +650,7 @@
   (global-anzu-mode +1))
 
 (use-package ansible-vault :ensure t
+  :defer
   :config
   (add-to-list 'auto-mode-alist '("/vault$" . yaml-mode))
   (add-hook 'yaml-mode-hook
@@ -607,20 +658,22 @@
     (and (string= (file-name-base) "vault") (ansible-vault-mode 1)))))
 
 (use-package diff-hl
+  :defer
   :ensure t
   :config
   (global-diff-hl-mode))
 
 (setq find-function-C-source-directory "~/source/emacs-26.1/src/")
 
-(defun animate-scratch-buffer ()
-  (run-with-timer 0.5 nil
-                  #'animate-string "Happy hacking!" 3 1))
+;; (defun animate-scratch-buffer ()
+;;   (run-with-timer 0.5 nil
+;;                   #'animate-string "Happy hacking!" 3 1))
 
-(add-hook 'after-init-hook
-          #'animate-scratch-buffer)
+;; (add-hook 'after-init-hook
+;;           #'animate-scratch-buffer)
 
 (use-package golden-ratio
+  :defer
   :ensure t
   :init (defun my/gloden-ratio ()
   "Toggle golden ratio"
@@ -634,11 +687,13 @@
   :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
 (use-package itail
+  :defer
   :ensure t)
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 
 (use-package multiple-cursors
+  :defer
   :ensure t
   :bind
   (("C->" . 'mc/mark-next-like-this)
@@ -646,12 +701,29 @@
 (put 'upcase-region 'disabled nil)
 
 (use-package slime
+  :defer
   :ensure t
   :config
-  (setq inferior-lisp-program "/usr/local/Cellar/sbcl/1.4.11/bin/sbcl")
+  (setq inferior-lisp-program "sbcl")
   (setq slime-contribs '(slime-fancy))
   (load (expand-file-name "~/quicklisp/slime-helper.el")))
 
 (use-package slime-company
+  :defer
   :ensure t
   :after slime)
+
+(use-package cargo
+  :defer
+  :ensure t)
+
+(use-package rust-mode
+  :defer
+  :ensure t
+  :after cargo
+  :hook (rust-mode . cargo-minor-mode))
+(put 'magit-diff-edit-hunk-commit 'disabled nil)
+
+(use-package kubernetes-tramp
+  :defer
+  :ensure t)
