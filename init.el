@@ -3,7 +3,8 @@
 (package-initialize)
 ;; Load My functions first
 (add-to-list 'load-path "~/.emacs.d/my-funcs")
-(use-package misc-funcs)
+(use-package misc-funcs
+  :bind ("C-c s j" . bob/jump-to-eshell))
 (use-package remote-defuns)
 (use-package edit-funcs)
 
@@ -18,7 +19,7 @@
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (tooltip-mode -1)
-  (blink-cursor-mode -1)
+  ;; (blink-cursor-mode -1)
   (display-time))
 
 (global-subword-mode t)
@@ -86,19 +87,20 @@
 ;; Theme and font
 (use-package gruber-darker-theme
   :ensure t
+  :after smart-mode-line
   :init (setq custom-safe-themes t)
   :config
   (set-default-font "Latin Modern Mono 19")
   (add-to-list 'default-frame-alist
                '(font . "Latin Modern Mono 19"))
   ;; (load-theme 'ayu)
-  (load-theme 'gruber-darker))
+  ;; (load-theme 'gruber-darker)
+  (load-theme 'wheatgrass)
+  (sml/setup))
 
 (use-package smart-mode-line
   :if (window-system)
-  :ensure t
-  :config
-  (sml/setup))
+  :ensure t)
 
 ;; Secrets
 (use-package my-secrets)
@@ -130,7 +132,6 @@
   :ensure t)
 
 (use-package linum-off
-  :defer
   :if (memq window-system '(mac ns))
   :ensure
   :config
@@ -170,7 +171,6 @@
   (show-smartparens-global-mode t))
 
 (use-package company
-  :defer
   :ensure t
   :config
   (global-company-mode t))
@@ -180,7 +180,6 @@
   :ensure t)
 
 (use-package ivy
-  :defer
   :if (window-system)
   :ensure t
   :config
@@ -299,7 +298,6 @@
   (magithub-feature-autoinject t))
 
 (use-package anzu
-  :defer
   :if (window-system)
   :ensure t
   :config

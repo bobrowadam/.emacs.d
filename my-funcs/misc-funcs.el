@@ -52,4 +52,15 @@ You can escape '$' with '\\' as prefix.
          (string-with-% (replace-regexp-in-string "\\\\" "" (mapconcat (λ (progn _)) words-with-% " "))))
     `(format ,string-with-% ,@$-args)))
 
+(defun bob/jump-to-eshell ()
+  "Jump to a buffer shell"
+  (interactive)
+  (let* ((shell-buffers (seq-filter
+                         (lambda (b) (s-contains\? "*eshell" b  t))
+                         (mapcar (function buffer-name) (buffer-list))))
+         (shell-buffer (and shell-buffers (ivy-completing-read "Shell: " shell-buffers))))
+    (if shell-buffer
+        (switch-to-buffer shell-buffer)
+      (message "No Shell bufers exists"))))
+
 (provide 'misc-funcs)
