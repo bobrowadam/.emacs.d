@@ -3,8 +3,8 @@
 (package-initialize)
 ;; Load My functions first
 (add-to-list 'load-path "~/.emacs.d/my-funcs")
-(use-package misc-funcs
-  :bind ("C-c s j" . bob/jump-to-eshell))
+(use-package misc-funcs)
+(global-set-key (kbd "C-c s j") 'bob/jump-to-eshell)
 (use-package remote-defuns)
 (use-package edit-funcs)
 
@@ -270,7 +270,6 @@
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 
 (use-package indium
-  :disabled
   :config
   (setq indium-client-debug t)
   :ensure t)
@@ -369,7 +368,9 @@
   :defer
   :if (window-system)
   :ensure t
-  :hook (cider-mode . rainbow-delimiters-mode))
+  :hook (cider-mode . rainbow-delimiters-mode)
+  :config (setq cider-prompt-for-symbol nil))
+
 
 (use-package clj-refactor
   :defer
@@ -378,7 +379,7 @@
   :init
   (defun my-clojure-mode-hook ()
     (clj-refactor-mode 1)
-    (yas-minor-mode 1) ; for adding require/use/import statements
+    (yas-minor-mode 1)      ; for adding require/use/import statements
     ;; This choice of keybinding leaves cider-macroexpand-1 unbound
     (cljr-add-keybindings-with-prefix "C-c C-m"))
   :hook (cider-mode . my-clojure-mode-hook))
