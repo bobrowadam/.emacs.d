@@ -81,8 +81,7 @@
 (global-set-key (kbd "C-c o") 'other-frame)
 (global-set-key (kbd "C-x 8 l") 'insert-λ) ;;
 (ffap-bindings) ; This for find-file to act as ffap when cursor is on file path
-(global-set-key (kbd "C-x C-d") 'dired)
-(global-set-key (kbd "C-x d") 'find-name-dired)
+;; (global-set-key (kbd "C-x C-d") 'dired)
 
 ;; Theme and font
 (use-package gruber-darker-theme
@@ -249,11 +248,12 @@
 
 (defun setup-tide-mode ()
   (interactive)
-  (tide-setup)
+  (when (not (tramp-tramp-file-p (buffer-file-name (current-buffer))))
+    (tide-setup)
   (setq flycheck-check-syntax-automatically '(save mode-enabled))
   (eldoc-mode +1)
   (tide-hl-identifier-mode +1)
-  (company-mode +1))
+  (company-mode +1)))
 
 (use-package tide
   :defer
@@ -270,6 +270,7 @@
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 
 (use-package indium
+  :defer
   :config
   (setq indium-client-debug t)
   :ensure t)
@@ -410,6 +411,7 @@
 (global-set-key (kbd "C-c e") 'my-run-eshell)
 
 (use-package exec-path-from-shell
+  :defer 3
   :ensure t
   :if (memq window-system '(mac ns))
   ;; :init (setq exec-path-from-shell-arguments '("-l"))
@@ -726,3 +728,7 @@
 (use-package kubernetes-tramp
   :defer
   :ensure t)
+
+(use-package kubernetes
+  :ensure t
+  :commands (kubernetes-overview))
