@@ -722,7 +722,13 @@
   :defer
   :ensure t
   :after cargo
-  :hook (rust-mode . cargo-minor-mode))
+  :hook
+  (rust-mode . cargo-minor-mode)
+  (rust-mode . flycheck-rust-setup)
+  (rust-mode . flycheck-mode)
+  :config
+  (setq rust-format-on-save t))
+
 (put 'magit-diff-edit-hunk-commit 'disabled nil)
 
 (use-package kubernetes-tramp
