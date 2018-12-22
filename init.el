@@ -288,6 +288,7 @@
     ?t "Follow tags" "--follow-tags"))
 
 (use-package magithub
+  :disabled t
   :if (window-system)
   :ensure t
   :after (magit)
@@ -297,6 +298,12 @@
   (setq magithub-debug-mode t)
   (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))
   (magithub-feature-autoinject t))
+
+(use-package forge
+  :ensure t
+  :config
+  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))
+  (setq epa-pinentry-mode 'loopback))
 
 (use-package anzu
   :if (window-system)
