@@ -738,3 +738,6 @@
 (use-package kubernetes
   :ensure t
   :commands (kubernetes-overview))
+
+(use-package redis
+  :ensure t)
