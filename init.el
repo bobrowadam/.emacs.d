@@ -170,6 +170,7 @@
   (show-smartparens-global-mode t))
 
 (use-package company
+  :defer 3
   :ensure t
   :config
   (global-company-mode t))
