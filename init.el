@@ -87,7 +87,6 @@
 ;; (ffap-bindings) ; This for find-file to act as ffap when cursor is on file path
 ;; (global-set-key (kbd "C-x C-d") 'dired)
 
-
 ;; Theme and font
 (use-package gruber-darker-theme
   :ensure t
