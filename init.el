@@ -2,25 +2,30 @@
 
 (package-initialize)
 ;; Load My functions first
-(add-to-list 'load-path "~/.emacs.d/my-funcs")
-(use-package misc-funcs)
-(global-set-key (kbd "C-c s j") 'bob/jump-to-eshell)
-(use-package remote-defuns)
-(use-package edit-funcs)
+(when window-system
+  (add-to-list 'load-path "~/.emacs.d/my-funcs")
+  (use-package misc-funcs)
+  (global-set-key (kbd "C-c s j") 'bob/jump-to-eshell)
+  (use-package remote-defuns)
+  (use-package edit-funcs)
+  
+  ;; Secrets
+  (use-package my-secrets))
 
 ;; Sane defaults
+(setq scroll-conservatively 10
+	scroll-margin 2)
 (setq display-time-day-and-date t)
 (setq display-time-default-load-average nil)
+(display-time)
+(menu-bar-mode -1)
 (when (window-system)
   (setq confirm-kill-emacs 'yes-or-no-p))
 
 (when window-system
-  (menu-bar-mode -1)
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
-  (tooltip-mode -1)
-  ;; (blink-cursor-mode -1)
-  (display-time))
+  (tooltip-mode -1))
 
 (global-subword-mode t)
 (global-superword-mode -1)
@@ -38,8 +43,7 @@
 
 (setq
  backup-by-copying t      ; don't clobber symlinks
- backup-directory-alist
- '(("." . "~/.saves"))    ; don't litter my fs tree
+ backup-directory-alist '(("." . "~/.emacs.d/backups"))     ; don't litter my fs tree
  delete-old-versions t
  kept-new-versions 6
  kept-old-versions 2
@@ -80,8 +84,9 @@
 (prefer-coding-system 'utf-8) ; with sugar on top
 (global-set-key (kbd "C-c o") 'other-frame)
 (global-set-key (kbd "C-x 8 l") 'insert-λ) ;;
-(ffap-bindings) ; This for find-file to act as ffap when cursor is on file path
+;; (ffap-bindings) ; This for find-file to act as ffap when cursor is on file path
 ;; (global-set-key (kbd "C-x C-d") 'dired)
+
 
 ;; Theme and font
 (use-package gruber-darker-theme
@@ -95,14 +100,11 @@
   ;; (load-theme 'ayu)
   ;; (load-theme 'gruber-darker)
   (load-theme 'wheatgrass)
-  (sml/setup))
+  (sml/setup)
+  (display-battery-mode 1))
 
 (use-package smart-mode-line
-  :if (window-system)
   :ensure t)
-
-;; Secrets
-(use-package my-secrets)
 
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
@@ -180,7 +182,6 @@
   :ensure t)
 
 (use-package ivy
-  :if (window-system)
   :ensure t
   :config
   (use-package flx
@@ -257,6 +258,7 @@
   (company-mode +1)))
 
 (use-package tide
+  :if (window-system)
   :defer
   :ensure t
   :after (js2-mode)
@@ -271,6 +273,7 @@
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 
 (use-package indium
+  :if (window-system)
   :defer
   :config
   (setq indium-client-debug t)
@@ -300,16 +303,11 @@
   (magithub-feature-autoinject t))
 
 (use-package forge
+  :if (window-system)
   :ensure t
   :config
   (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))
   (setq epa-pinentry-mode 'loopback))
-
-(use-package anzu
-  :if (window-system)
-  :ensure t
-  :config
-  (global-anzu-mode +1))
 
 (global-set-key (kbd "C-c C-k") 'my/kill-to-start-of-line)
 
@@ -323,11 +321,11 @@
   :bind ("C-x C-z" . zoom-window-zoom))
 
 (use-package dired
-  :defer
   :if (window-system)
   :config
   (put 'dired-find-alternate-file 'disabled nil)
   (setq dired-listing-switches "-alh")
+  (setq insert-directory-program "gls" dired-use-ls-dired t)
   (use-package dired-x
     ;; :hook (dired-mode . dired-omit-mode)
     ))
@@ -359,6 +357,7 @@
   (setq tramp-default-method "ssh"))
 
 (use-package docker-tramp
+  :if (memq window-system '(mac ns))
   :defer
   :if (window-system)
   :after tramp
@@ -394,13 +393,14 @@
   :hook (cider-mode . my-clojure-mode-hook))
 
 (use-package which-key
-  :defer
+  :defer 2
   :if (window-system)
   :ensure t
   :config
   (which-key-mode 1))
 
 (use-package projectile
+  :if (memq window-system '(mac ns))
   :defer 1
   :init
   (setq projectile-keymap-prefix (kbd "C-c p"))
@@ -419,7 +419,8 @@
 (global-set-key (kbd "C-c e") 'my-run-eshell)
 
 (use-package exec-path-from-shell
-  :defer 3
+  :if (memq window-system '(mac ns))
+  :defer 2
   :ensure t
   :if (memq window-system '(mac ns))
   ;; :init (setq exec-path-from-shell-arguments '("-l"))
@@ -450,11 +451,12 @@
 (use-package scala-mode
   :defer
   :pin melpa
+  :hook (scala-mode . highlight-indent-guides-mode)
   :config
   (add-to-list 'auto-mode-alist '("\\.sc$" . scala-mode)))
 
 (use-package org-mode
-  :defer
+  :defer 2
   :if (window-system)
   :bind
   ("C-c a" . org-agenda)
@@ -463,6 +465,7 @@
         ("M-n" . org-metadown)))
 
 (use-package org-projectile
+  :if (memq window-system '(mac ns))
   :defer
   :ensure t
   :bind (("C-c n p" . org-projectile-project-todo-completing-read)
@@ -478,7 +481,8 @@
 
 
 (use-package org-bullets
-  :defer
+  :if (memq window-system '(mac ns))
+  :defer 5
   :if (window-system)
   :ensure t
   :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
@@ -537,6 +541,9 @@
   :if (window-system)
   :ensure t)
 (use-package ripgrep
+  :init
+  (setq ripgrep-arguments '("-A 2 -B 2" "--context-separator \" \"" "--heading"))
+  (setq ripgrep-highlight-search t)
   :defer
   :if (window-system)
   :ensure t)
@@ -650,6 +657,7 @@
   (rich-minority-mode 1 ))
 
 (use-package anzu
+  :if (window-system)
   :defer
   :ensure t
   :bind (("C-M-%" . anzu-query-replace-regexp)
@@ -667,7 +675,6 @@
     (and (string= (file-name-base) "vault") (ansible-vault-mode 1)))))
 
 (use-package diff-hl
-  :defer
   :ensure t
   :config
   (global-diff-hl-mode))
@@ -682,6 +689,7 @@
 ;;           #'animate-scratch-buffer)
 
 (use-package golden-ratio
+  :if (window-system)
   :defer
   :ensure t
   :init (defun my/gloden-ratio ()
@@ -696,12 +704,14 @@
   :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
 (use-package itail
+  :if (window-system)
   :defer
   :ensure t)
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 
 (use-package multiple-cursors
+  :if (window-system)
   :defer
   :ensure t
   :bind
@@ -710,6 +720,7 @@
 (put 'upcase-region 'disabled nil)
 
 (use-package slime
+  :if (window-system)
   :defer
   :ensure t
   :config
@@ -718,34 +729,52 @@
   (load (expand-file-name "~/quicklisp/slime-helper.el")))
 
 (use-package slime-company
-  :defer
+  :if (window-system)
   :ensure t
   :after slime)
 
 (use-package cargo
-  :defer
+  :if (window-system)
+  :defer 1
   :ensure t)
 
 (use-package rust-mode
-  :defer
+  :if (window-system)
   :ensure t
   :after cargo
   :hook
   (rust-mode . cargo-minor-mode)
   (rust-mode . flycheck-rust-setup)
   (rust-mode . flycheck-mode)
+  (rust-mode . highlight-indent-guides-mode)
+  (rust-mode . eldoc-mode)
+  (rust-mode . racer-mode)
+  :bind (:map rust-mode-map ("TAB" . #'company-indent-or-complete-common))
   :config
   (setq rust-format-on-save t))
+
+(use-package racer
+  :if (window-system)
+  :ensure t
+  :after rust-mode
+  :config (setq racer-rust-src-path "/Users/bob/.rustup/toolchains/stable-x86_64-apple-darwin/lib/rustlib/src/rust/src"))
 
 (put 'magit-diff-edit-hunk-commit 'disabled nil)
 
 (use-package kubernetes-tramp
+  :if (window-system)
   :defer
   :ensure t)
 
 (use-package kubernetes
+  :if (window-system)
   :ensure t
   :commands (kubernetes-overview))
 
 (use-package redis
+  :if (memq window-system '(mac ns))
   :ensure t)
+
+(use-package eww
+  :defer
+  :bind ("C-c b s" . eww-search-words))
