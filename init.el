@@ -1,5 +1,4 @@
 ;;; Begin initialization
-
 (package-initialize)
 ;; Load My functions first
 (when window-system
@@ -7,10 +6,10 @@
   (use-package misc-funcs)
   (global-set-key (kbd "C-c s j") 'bob/jump-to-eshell)
   (use-package remote-defuns)
-  (use-package edit-funcs)
-  
-  ;; Secrets
-  (use-package my-secrets))
+  (use-package edit-funcs))
+
+;; Secrets
+;; (use-package my-secrets)
 
 ;; Sane defaults
 (setq scroll-conservatively 10
@@ -49,10 +48,6 @@
  kept-old-versions 2
  version-control t)      ; use versioned backups
 
-;;;;;;  Mark commands ;;;;;; (WIP
-;;; Push mark before exprestion jumping
-;; (advice-add 'forward-sexp :before (lambda (&rest args) (push-mark (point) t nil)))
-;; (advice-add 'backward-sexp :before (lambda (&rest args) (push-mark (point) t nil)))
 (global-set-key (kbd "C-`") 'unpop-to-mark-command)
 (global-set-key (kbd "M-`") 'jump-to-mark)
 
@@ -89,8 +84,8 @@
 
 ;; Theme and font
 (use-package gruber-darker-theme
+  :if (window-system)
   :ensure t
-  :after smart-mode-line
   :init (setq custom-safe-themes t)
   :config
   (set-default-font "Latin Modern Mono 19")
@@ -99,10 +94,12 @@
   ;; (load-theme 'ayu)
   ;; (load-theme 'gruber-darker)
   (load-theme 'wheatgrass)
-  (sml/setup)
+  ;; (sml/setup)
   (display-battery-mode 1))
 
 (use-package smart-mode-line
+  :defer
+  :if (window-system)
   :ensure t)
 
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
@@ -171,7 +168,7 @@
   (show-smartparens-global-mode t))
 
 (use-package company
-  :defer 3
+  :defer
   :ensure t
   :config
   (global-company-mode t))
@@ -181,6 +178,7 @@
   :ensure t)
 
 (use-package ivy
+  :if (window-system)
   :ensure t
   :config
   (use-package flx
@@ -197,12 +195,13 @@
   :ensure t
   :init
   (setq counsel-rg-base-command
-      "rg -i -M 120 --no-heading --line-number --color never %s .")
+      "rg --heading --context-separator \" \" -i -M 120 --line-number --color never %s .")
   :bind (("M-x" . counsel-M-x)
          ("C-x C-f" . counsel-find-file)
          ("C-x C-m" . counsel-mark-ring)
          ("C-c C-s C-r" . counsel-rg)
          ("C-c C-s C-s" . swiper)))
+
 (use-package whole-line-or-region
   :ensure t
   :config
@@ -213,7 +212,6 @@
   :defer
   :ensure t
   :init
-
   (defun my-load-js2-snippets ()
     (yas-minor-mode 1)
     (yas-load-directory (concat user-emacs-directory "snippets")))
@@ -283,11 +281,15 @@
   :if (window-system)
   :ensure t
   :bind ("C-x g" . magit-status)
-  :hook (magit-post-refresh-hook . diff-hl-magit-post-refresh)
+  ;; :hook (magit-post-refresh-hook . diff-hl-magit-post-refresh)
   :config
   (setq magit-completing-read-function 'ivy-completing-read)
-  (magit-define-popup-switch 'magit-push-popup
-    ?t "Follow tags" "--follow-tags"))
+  (global-magit-file-mode 1)
+  ;; (magit-define-popup-switch 'magit-push-popup
+  ;;   ?t "Follow tags" "--follow-tags")
+  ;; (transient-append-suffix 'Arguments 'magit-push
+  ;;   '("t" "Follow tags" "--follow-tags"))
+  )
 
 (use-package magithub
   :disabled t
@@ -302,6 +304,7 @@
   (magithub-feature-autoinject t))
 
 (use-package forge
+  :defer
   :if (window-system)
   :ensure t
   :config
@@ -321,10 +324,11 @@
 
 (use-package dired
   :if (window-system)
+  :defer
   :config
   (put 'dired-find-alternate-file 'disabled nil)
   (setq dired-listing-switches "-alh")
-  (setq insert-directory-program "gls" dired-use-ls-dired t)
+  ;; (setq insert-directory-program "gls" dired-use-ls-dired t)
   (use-package dired-x
     ;; :hook (dired-mode . dired-omit-mode)
     ))
@@ -356,10 +360,8 @@
   (setq tramp-default-method "ssh"))
 
 (use-package docker-tramp
-  :if (memq window-system '(mac ns))
-  :defer
   :if (window-system)
-  :after tramp
+  :defer
   :ensure t
   :config
   (require 'docker-tramp-compat))
@@ -392,7 +394,6 @@
   :hook (cider-mode . my-clojure-mode-hook))
 
 (use-package which-key
-  :defer 2
   :if (window-system)
   :ensure t
   :config
@@ -400,7 +401,6 @@
 
 (use-package projectile
   :if (memq window-system '(mac ns))
-  :defer 1
   :init
   (setq projectile-keymap-prefix (kbd "C-c p"))
   (setq projectile-completion-system 'ivy)
@@ -419,10 +419,8 @@
 
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
-  :defer 2
   :ensure t
-  :if (memq window-system '(mac ns))
-  ;; :init (setq exec-path-from-shell-arguments '("-l"))
+  :init (setq exec-path-from-shell-arguments '("-l"))
   :config
   (exec-path-from-shell-initialize))
 
@@ -430,61 +428,123 @@
   :defer
   :ensure t)
 
-(use-package ensime
+;;;; SCALA
+
+(use-package lsp-mode
   :defer
   :if (window-system)
-  :pin melpa
-  :hook ((scala-mode . unset-electric-indent))
-  :bind
-  (:map sbt-mode-map
-        ("C-c C-c" . ensime-sbt-send-eol))
-  :config
-  (setq ensime-sbt-perform-on-save "compile")
-  :ensure t)
+  :init (setq lsp-prefer-flymake nil))
+
+(use-package lsp-ui
+  :if (window-system)
+  :ensure t
+  :hook (lsp-mode . lsp-ui-mode))
+
+(use-package lsp-scala
+  :if (window-system)
+  :ensure t
+  :after scala-mode
+  :demand t
+  :hook (scala-mode . lsp)
+  :init (setq lsp-scala-server-command "/usr/local/bin/metals-emacs"))
+
+(use-package company-lsp
+  :defer
+  :ensure)
 
 (use-package sbt-mode
-  :defer
   :if (window-system)
-  :pin melpa)
+  :defer
+  :ensure t
+  :commands sbt-start sbt-command)
 
 (use-package scala-mode
-  :defer
-  :pin melpa
+  :if (window-system)
+  :mode "\\.s\\(cala\\|bt\\)$"
   :hook (scala-mode . highlight-indent-guides-mode)
+  :init
+  (defun sbt-compile ()
+    (interactive)
+    (sbt-command "compile"))
+  (setq sbt-last-scala-buffer nil)
+  (defun my/sbt-switch-to-buffer ()
+    (interactive)
+    (if sbt-last-scala-buffer
+        (progn
+          (switch-to-buffer-other-window sbt-last-scala-buffer)
+          (setq sbt-last-scala-buffer nil))
+      (let* ((buffers (buffer-list))
+             (project-name (car (last (split-string (string-trim-right (projectile-project-root) "/") "/"))))
+             (pattern (format "*sbt*.+%s" project-name)))
+        (setq sbt-last-scala-buffer (buffer-name))
+        (switch-to-buffer-other-window (some (λ (if (string-match pattern (buffer-name _)) _ nil))
+                                             (buffer-list))))))
+  :bind
+  (:map scala-mode-map
+        ("C-c C-b C-c" . sbt-command)
+        ("C-c C-b C-b" . sbt-compile)
+        ("C-c C-b C-s". my/sbt-switch-to-buffer))
+  (:map sbt:mode-map
+             ("C-c C-b C-s". my/sbt-switch-to-buffer))  
   :config
-  (add-to-list 'auto-mode-alist '("\\.sc$" . scala-mode)))
+  (setq scala-indent:align-forms t
+        scala-indent:align-parameters t
+        scala-indent:indent-value-expression t
+        scala-indent:default-run-on-strategy
+        scala-indent:operator-strategy))
+
+;; (use-package ensime
+;;   :defer
+;;   :if (window-system)
+;;   :pin melpa
+;;   :hook ((scala-mode . unset-electric-indent))
+;;   :bind
+;;   (:map sbt-mode-map
+;;         ("C-c C-c" . ensime-sbt-send-eol))
+;;   :config
+;;   (setq ensime-sbt-perform-on-save "compile")
+;;   :ensure t)
 
 (use-package org-mode
-  :defer 2
   :if (window-system)
+  :defer
+  :init
+  (setq org-tree-slide-header nil)
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")))
+  (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
+  (setq org-capture-templates
+      `(("c" "context-entry" entry (file+headline ,(concat org-directory "/inbox.org") "Context Entries")
+         "* %?\n  %i %a")
+        ("i" "entry" entry (file+headline ,(concat org-directory "/inbox.org") "Entries")
+         "* %?\n  %i")))
+  (setq org-default-notes-file (concat org-directory "/notes.org"))
+  (setq org-refile-targets `((,(concat org-directory "/inbox.org") :maxlevel . 1)
+                             (,(concat org-directory "/gtd.org") :level . 1)
+                             (,(concat org-directory "/projects.org") :level . 1)))
+  (setq org-archive-location (concat org-directory "/done.org::"))
+  (setq org-projectile-projects-file
+        (concat org-directory "/projects.org"))
+  :hook (org-mode . (lambda () (org-bullets-mode 1)))
   :bind
   ("C-c a" . org-agenda)
-  (:map org-mode-map
-        ("M-p" . org-metaup)
-        ("M-n" . org-metadown)))
+  ("C-c c" . org-capture)
+  ("C-c n p" . org-projectile-project-todo-completing-read)
+  ("C-c n t" . org-projectile-goto-location-for-project)
+  :bind-keymap 
+  ("M-p" . org-metaup)
+  ("M-n" . org-metadown))
 
 (use-package org-projectile
   :if (memq window-system '(mac ns))
   :defer
-  :ensure t
-  :bind (("C-c n p" . org-projectile-project-todo-completing-read)
-         ("C-c n t" . org-projectile-goto-location-for-project)
-         ("C-c c" . org-capture))
-  :config
-  (progn
-    (org-projectile-per-project)
-    (setq org-projectile-projects-file
-          "TODOS.org")
-    (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-    (push (org-projectile-project-todo-entry) org-capture-templates)))
-
+  :after org-mode
+  :ensure t)
 
 (use-package org-bullets
-  :if (memq window-system '(mac ns))
-  :defer 5
+  :defer
   :if (window-system)
-  :ensure t
-  :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+  :ensure t)
 
 (use-package yasnippet
   :defer
@@ -541,7 +601,7 @@
   :ensure t)
 (use-package ripgrep
   :init
-  (setq ripgrep-arguments '("-A 2 -B 2" "--context-separator \" \"" "--heading"))
+  (setq ripgrep-arguments '("--context-separator \" \"" "--heading"))
   (setq ripgrep-highlight-search t)
   :defer
   :if (window-system)
@@ -591,6 +651,7 @@
   :bind ("M-#" . er/expand-region))
 
 (use-package ibuffer-projectile
+  :if (window-system)
   :defer
   :ensure t
   :hook (ibuffer . ibuffer-projectile-set-filter-groups)
@@ -614,11 +675,13 @@
 		filename-and-process))))
 
 (use-package flyspell-correct
+  :if (window-system)
   :defer
   :bind ("C-M-$" . flyspell-correct-at-point)
   :ensure t)
 
 (use-package flyspell-correct-ivy
+  :if (window-system)
   :defer
   :ensure t
   :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-previous-word-generic)))
@@ -648,7 +711,6 @@
 (global-set-key (kbd "C-c f r") 'rename-file)
 
 (use-package rich-minority
-  :defer
   :ensure t
   :init
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|")))
@@ -674,6 +736,7 @@
     (and (string= (file-name-base) "vault") (ansible-vault-mode 1)))))
 
 (use-package diff-hl
+  :defer
   :ensure t
   :config
   (global-diff-hl-mode))
@@ -734,7 +797,7 @@
 
 (use-package cargo
   :if (window-system)
-  :defer 1
+  :defer
   :ensure t)
 
 (use-package rust-mode
@@ -758,7 +821,7 @@
   :after rust-mode
   :config (setq racer-rust-src-path "/Users/bob/.rustup/toolchains/stable-x86_64-apple-darwin/lib/rustlib/src/rust/src"))
 
-(put 'magit-diff-edit-hunk-commit 'disabled nil)
+;; (put 'magit-diff-edit-hunk-commit 'disabled nil)
 
 (use-package kubernetes-tramp
   :if (window-system)
@@ -771,9 +834,11 @@
   :commands (kubernetes-overview))
 
 (use-package redis
-  :if (memq window-system '(mac ns))
+  :if (window-system)
+  :defer
   :ensure t)
 
 (use-package eww
+  :if (memq window-system '(mac ns))
   :defer
   :bind ("C-c b s" . eww-search-words))

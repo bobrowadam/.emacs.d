@@ -16,3 +16,10 @@ elpa/*
 url/
 /tutorial
 /abbrev_defs
+/.lsp-session-v1
+/.mc-lists.el
+/*.elc
+*.elc
+request/
+semanticdb/*
+transient/
