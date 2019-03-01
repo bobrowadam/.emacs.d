@@ -63,4 +63,20 @@ You can escape '$' with '\\' as prefix.
         (switch-to-buffer shell-buffer)
       (message "No Shell bufers exists"))))
 
+(defun write-file-with-timestamp (filename)
+  "Write FILENAME with timestamp sufix"
+  (interactive "sEnter file name:")
+  (write-file (format "%s-%s.org" filename (format-time-string "%b-%d-%Y"))))
+(format-time-string "")
+
+(defun sqrt (ai num n-seq)
+  "Newton-Raphson Square Roots"
+  (if n-seq
+      (let ((ai+1 (/ (+ ai (/ num ai)) 2)))
+        (sqrt ai+1 num (cdr n-seq)))
+    ai+1))
+
+(defun to-string (element)
+  (format "%s" element))
+
 (provide 'misc-funcs)
