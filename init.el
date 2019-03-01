@@ -466,26 +466,11 @@
   (defun sbt-compile ()
     (interactive)
     (sbt-command "compile"))
-  (setq sbt-last-scala-buffer nil)
-  (defun my/sbt-switch-to-buffer ()
-    (interactive)
-    (if sbt-last-scala-buffer
-        (progn
-          (switch-to-buffer-other-window sbt-last-scala-buffer)
-          (setq sbt-last-scala-buffer nil))
-      (let* ((buffers (buffer-list))
-             (project-name (car (last (split-string (string-trim-right (projectile-project-root) "/") "/"))))
-             (pattern (format "*sbt*.+%s" project-name)))
-        (setq sbt-last-scala-buffer (buffer-name))
-        (switch-to-buffer-other-window (some (λ (if (string-match pattern (buffer-name _)) _ nil))
-                                             (buffer-list))))))
   :bind
   (:map scala-mode-map
         ("C-c C-b C-c" . sbt-command)
         ("C-c C-b C-b" . sbt-compile)
-        ("C-c C-b C-s". my/sbt-switch-to-buffer))
-  (:map sbt:mode-map
-             ("C-c C-b C-s". my/sbt-switch-to-buffer))  
+        ("C-c C-b C-s". sbt-switch-to-active-sbt-buffer))
   :config
   (setq scala-indent:align-forms t
         scala-indent:align-parameters t
@@ -531,7 +516,6 @@
   ("C-c c" . org-capture)
   ("C-c n p" . org-projectile-project-todo-completing-read)
   ("C-c n t" . org-projectile-goto-location-for-project)
-  :bind-keymap 
   ("M-p" . org-metaup)
   ("M-n" . org-metadown))
 
