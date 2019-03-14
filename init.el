@@ -83,6 +83,7 @@
 ;; (global-set-key (kbd "C-x C-d") 'dired)
 
 ;; Theme and font
+;; (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
 (use-package gruber-darker-theme
   :if (window-system)
   :ensure t
@@ -94,6 +95,11 @@
   ;; (load-theme 'ayu)
   ;; (load-theme 'gruber-darker)
   (load-theme 'wheatgrass)
+  ;; (load-theme 'cyberpunk-2019)
+  ;; (load-theme 'nimbus)
+  ;; (set-face-attribute 'flycheck-error nil :underline '(:color "#FF4081"))
+  ;; (set-face-attribute 'flycheck-warning nil :underline '(:color "#FF9C00"))
+  ;; (set-face-attribute 'flycheck-info nil :underline '(:color "#9C00FF"))
   ;; (sml/setup)
   (display-battery-mode 1))
 
@@ -304,12 +310,12 @@
   (magithub-feature-autoinject t))
 
 (use-package forge
+  :init
+  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))
+  (setq epa-pinentry-mode 'loopback)
   :defer
   :if (window-system)
-  :ensure t
-  :config
-  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))
-  (setq epa-pinentry-mode 'loopback))
+  :ensure t)
 
 (global-set-key (kbd "C-c C-k") 'my/kill-to-start-of-line)
 
@@ -516,13 +522,19 @@
   ("C-c c" . org-capture)
   ("C-c n p" . org-projectile-project-todo-completing-read)
   ("C-c n t" . org-projectile-goto-location-for-project)
-  ("M-p" . org-metaup)
-  ("M-n" . org-metadown))
+  (:map org-mode-map
+   ("M-p" . org-metaup)
+   ("M-n" . org-metadown)
+   ("M-F" . org-shiftright)
+   ("M-B" . org-shiftleft)
+   :map org-read-date-minibuffer-local-map
+   ("C-b" . (lambda () (interactive) (org-eval-in-calendar '(calendar-backward-day 1))))
+   ("C-f" . (lambda () (interactive) (org-eval-in-calendar '(calendar-forward-day 1))))
+   ))
 
 (use-package org-projectile
   :if (memq window-system '(mac ns))
   :defer
-  :after org-mode
   :ensure t)
 
 (use-package org-bullets
@@ -703,7 +715,6 @@
 
 (use-package anzu
   :if (window-system)
-  :defer
   :ensure t
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . query-replace)
@@ -776,6 +787,7 @@
 
 (use-package slime-company
   :if (window-system)
+  :defer
   :ensure t
   :after slime)
 
@@ -785,6 +797,7 @@
   :ensure t)
 
 (use-package rust-mode
+  :defer
   :if (window-system)
   :ensure t
   :after cargo
@@ -801,6 +814,7 @@
 
 (use-package racer
   :if (window-system)
+  :defer
   :ensure t
   :after rust-mode
   :config (setq racer-rust-src-path "/Users/bob/.rustup/toolchains/stable-x86_64-apple-darwin/lib/rustlib/src/rust/src"))
@@ -814,6 +828,7 @@
 
 (use-package kubernetes
   :if (window-system)
+  :defer
   :ensure t
   :commands (kubernetes-overview))
 
@@ -823,6 +838,20 @@
   :ensure t)
 
 (use-package eww
+  :disabled
   :if (memq window-system '(mac ns))
   :defer
   :bind ("C-c b s" . eww-search-words))
+
+(use-package w3m
+  :defer
+  :bind
+  ("C-c b e" . w3m)
+  (:map w3m-mode-map ("F" . w3m-view-next-page))
+  :config
+  (autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t))
+
+(use-package undo-propose
+  :defer
+  :ensure t
+  :bind ("C-c C-/" . undo-propose))
