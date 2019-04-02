@@ -2,20 +2,18 @@
 (package-initialize)
 ;; Load My functions first
 (when window-system
-  (add-to-list 'load-path "~/.emacs.d/my-funcs")
-  (use-package misc-funcs)
-  (global-set-key (kbd "C-c s j") 'bob/jump-to-eshell)
-  (use-package remote-defuns)
-  (use-package edit-funcs))
+  (require 'f)
+  (add-to-list 'load-path "~/.emacs.d/my-funcs"))
 
 ;; Secrets
 ;; (use-package my-secrets)
 
 ;; Sane defaults
 (setq scroll-conservatively 10
-	scroll-margin 2)
+      scroll-margin 2)
 (setq display-time-day-and-date t)
 (setq display-time-default-load-average nil)
+(setq shift-select-mode nil)
 (display-time)
 (menu-bar-mode -1)
 (when (window-system)
@@ -28,7 +26,6 @@
 
 (global-subword-mode t)
 (global-superword-mode -1)
-(setq use-package-debug t)
 (setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore
       visible-bell nil)
@@ -50,7 +47,8 @@
 
 (global-set-key (kbd "C-`") 'unpop-to-mark-command)
 (global-set-key (kbd "M-`") 'jump-to-mark)
-
+(global-set-key (kbd "C-^") #'(lambda () (interactive
+                                          (delete-indentation -1))))
 (delete-selection-mode 1)
 (set-default 'indent-tabs-mode nil)
 (global-auto-revert-mode 1)
@@ -66,10 +64,15 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(eval-when-compile
-  (require 'use-package))
+(use-package misc-funcs)
+(setq use-package-debug t)
+(use-package edit-funcs)
 (setq use-package-verbose t)
 (setq use-package-compute-statistics t)
+;; (setq use-package-always-defer t)
+(setq use-package-always-ensure t)
+(eval-when-compile
+  (require 'use-package))
 
 ;; General settings:
 (setq locale-coding-system 'utf-8) ; pretty
@@ -83,7 +86,7 @@
 ;; (global-set-key (kbd "C-x C-d") 'dired)
 
 ;; Theme and font
-;; (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
 (use-package gruber-darker-theme
   :if (window-system)
   :ensure t
@@ -94,14 +97,17 @@
                '(font . "Latin Modern Mono 19"))
   ;; (load-theme 'ayu)
   ;; (load-theme 'gruber-darker)
-  (load-theme 'wheatgrass)
-  ;; (load-theme 'cyberpunk-2019)
+  ;; (load-theme 'wheatgrass)
+  (load-theme gruvbox-dark-hard)
   ;; (load-theme 'nimbus)
-  ;; (set-face-attribute 'flycheck-error nil :underline '(:color "#FF4081"))
-  ;; (set-face-attribute 'flycheck-warning nil :underline '(:color "#FF9C00"))
-  ;; (set-face-attribute 'flycheck-info nil :underline '(:color "#9C00FF"))
-  ;; (sml/setup)
+  (sml/setup)
   (display-battery-mode 1))
+
+;; Run refresh-google-calendar periodically
+(require 'midnight)
+(midnight-mode)
+(add-hook 'midnight-hook 'my/refresh-google-calendar)
+;; (midnight-delay-set 'midnight-delay "00:00")
 
 (use-package smart-mode-line
   :defer
@@ -128,7 +134,7 @@
     (server-start))))
 
 (defun unset-electric-indent ()
-    (electric-indent-mode -1))
+  (electric-indent-mode -1))
 
 (use-package rainbow-delimiters
   :defer
@@ -174,7 +180,6 @@
   (show-smartparens-global-mode t))
 
 (use-package company
-  :defer
   :ensure t
   :config
   (global-company-mode t))
@@ -196,7 +201,6 @@
   (ivy-mode 1))
 
 (use-package counsel
-  :defer
   :if (window-system)
   :ensure t
   :init
@@ -222,7 +226,7 @@
     (yas-minor-mode 1)
     (yas-load-directory (concat user-emacs-directory "snippets")))
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-  
+
   (defun my/use-eslint-from-node-modules ()
     (let* ((root (locate-dominating-file
                   (or (buffer-file-name) default-directory)
@@ -271,7 +275,6 @@
   (setq company-tooltip-align-annotations t)
   (setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))
   (setq tide-tsserver-process-environment nil)
-  
   (setq tide-format-options
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 
@@ -431,11 +434,9 @@
   (exec-path-from-shell-initialize))
 
 (use-package nodejs-repl
-  :defer
-  :ensure t)
+  :defer)
 
 ;;;; SCALA
-
 (use-package lsp-mode
   :defer
   :if (window-system)
@@ -451,7 +452,7 @@
   :ensure t
   :after scala-mode
   :demand t
-  :hook (scala-mode . lsp)
+  :hook ((scala-mode . lsp) (scala-mode . hs-minor-mode))
   :init (setq lsp-scala-server-command "/usr/local/bin/metals-emacs"))
 
 (use-package company-lsp
@@ -498,49 +499,66 @@
 
 (use-package org-mode
   :if (window-system)
-  :defer
   :init
   (setq org-tree-slide-header nil)
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")))
   (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
   (setq org-capture-templates
-      `(("c" "context-entry" entry (file+headline ,(concat org-directory "/inbox.org") "Context Entries")
-         "* %?\n  %i %a")
-        ("i" "entry" entry (file+headline ,(concat org-directory "/inbox.org") "Entries")
-         "* %?\n  %i")))
+        `(("l" "link-entry" entry (file+headline ,(concat org-directory "/inbox.org") "Entries")
+           "* %?\n  %i %a")
+          ("t" "entry" entry (file+headline ,(concat org-directory "/inbox.org") "Entries")
+           "* %?\n  %i")
+          ("T" "reminder" entry (file+headline ,(concat org-directory "/tickler.org") "Reminders")
+           "* %?\n  %i")))
+  (setq org-agenda-files `(,(concat org-directory "/tickler.org") ,(concat org-directory "/google-calendar.org") ,(concat org-directory "/inbox.org") ,(concat org-directory "/gtd.org")))
+  (setq org-agenda-start-on-weekday 0)
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-refile-targets `((,(concat org-directory "/inbox.org") :maxlevel . 1)
-                             (,(concat org-directory "/gtd.org") :level . 1)
-                             (,(concat org-directory "/projects.org") :level . 1)))
+                             (,(concat org-directory "/gtd.org") :maxlevel . 3)
+                             (,(concat org-directory "/tickler.org") :maxlevel . 1)))
   (setq org-archive-location (concat org-directory "/done.org::"))
-  (setq org-projectile-projects-file
-        (concat org-directory "/projects.org"))
+  (setq org-complete-tags-always-offer-all-agenda-tags t)
+
   :hook (org-mode . (lambda () (org-bullets-mode 1)))
   :bind
   ("C-c a" . org-agenda)
   ("C-c c" . org-capture)
-  ("C-c n p" . org-projectile-project-todo-completing-read)
-  ("C-c n t" . org-projectile-goto-location-for-project)
-  (:map org-mode-map
-   ("M-p" . org-metaup)
-   ("M-n" . org-metadown)
-   ("M-F" . org-shiftright)
-   ("M-B" . org-shiftleft)
-   :map org-read-date-minibuffer-local-map
-   ("C-b" . (lambda () (interactive) (org-eval-in-calendar '(calendar-backward-day 1))))
-   ("C-f" . (lambda () (interactive) (org-eval-in-calendar '(calendar-forward-day 1))))
-   ))
+  ("C-c s" . org-save-all-org-buffers))
 
-(use-package org-projectile
-  :if (memq window-system '(mac ns))
-  :defer
-  :ensure t)
+;; Couldn't bind this in 'use-package' form:
+(with-eval-after-load 'org
+  (progn
+    (define-key org-mode-map (kbd "M-p") #'org-metaup)
+    (define-key org-mode-map (kbd "M-n") #'org-metadown)
+    (define-key org-mode-map (kbd "M-F") #'org-shiftright)
+    (define-key org-mode-map (kbd "M-B") #'org-shiftleft)
+    ;; (define-key org-agenda-mode-map (kbd "M-F") #'org-agenda-do-date-later)
+    ;; (define-key org-agenda-mode-map (kbd "M-B") #'org-agenda-do-date-earlier)
+    (define-key org-read-date-minibuffer-local-map (kbd "C-b")
+      (lambda () (interactive) (org-eval-in-calendar '(calendar-backward-day 1))))
+    (define-key org-read-date-minibuffer-local-map (kbd "C-f")
+      (lambda () (interactive) (org-eval-in-calendar '(calendar-forward-day 1))))
+    ))
 
 (use-package org-bullets
   :defer
   :if (window-system)
   :ensure t)
+
+(use-package org-brain
+  :ensure t
+  :after org-mode
+  :init
+  (setq org-brain-path (concat org-directory "/org-brain"))
+  :config
+  (setq org-id-track-globally t)
+  (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
+  (push '("b" "Brain" plain (function org-brain-goto-end)
+          "* %i%?" :empty-lines 1)
+        org-capture-templates)
+  (setq org-brain-visualize-default-choices 'all)
+  (setq org-brain-title-max-length 12))
 
 (use-package yasnippet
   :defer
@@ -549,14 +567,15 @@
   :diminish yas-minor-mode
   :commands yas-minor-mode
   :bind ("C-c TAB" . yas-expand)
-  :config (yas-global-mode))
+  :config (yas-global-mode)
+  (yas-load-directory "/Users/bob/.emacs.d/elpa/yasnippet-classic-snippets-1.0.2/snippets/scala-mode/"))
 
 (use-package restclient
+  :init
+  (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
   :defer
   :if (window-system)
-  :ensure t
-  :config
-  (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode)))
+  :ensure t)
 
 (use-package inf-mongo
   :defer
@@ -661,14 +680,14 @@
      ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
      (t (format "%8d" (buffer-size)))))
   (setq ibuffer-formats
-	'((mark modified read-only " "
-		(name 18 18 :left :elide)
-		" "
-		(size-h 9 -1 :right)
-		" "
-		(mode 16 16 :left :elide)
-		" "
-		filename-and-process))))
+        '((mark modified read-only " "
+                (name 18 18 :left :elide)
+                " "
+                (size-h 9 -1 :right)
+                " "
+                (mode 16 16 :left :elide)
+                " "
+                filename-and-process))))
 
 (use-package flyspell-correct
   :if (window-system)
@@ -714,13 +733,12 @@
   (rich-minority-mode 1 ))
 
 (use-package anzu
-  :if (window-system)
   :ensure t
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . query-replace)
          ("C-c M-%" . anzu-repl))
   :config
-  (global-anzu-mode +1))
+  (global-anzu-mode))
 
 (use-package ansible-vault :ensure t
   :defer
@@ -845,6 +863,8 @@
 
 (use-package w3m
   :defer
+  :init
+  (setq w3m-search-default-engine "google-en")
   :bind
   ("C-c b e" . w3m)
   (:map w3m-mode-map ("F" . w3m-view-next-page))
@@ -855,3 +875,50 @@
   :defer
   :ensure t
   :bind ("C-c C-/" . undo-propose))
+
+(use-package request
+  :ensure t)
+
+(use-package mu4e
+  :load-path "/usr/local/Cellar/mu/1.0_1/share/emacs/site-lisp/mu/mu4e"
+  :config
+  (setq mu4e-maildir "/Users/bob/Maildir/google/")
+  ;; (setq mu4e-maildir-shortcuts
+  ;;   '( ("/INBOX"               . ?i)
+  ;;      ("/[Gmail].Sent Mail"   . ?s)
+  ;;      ("/[Gmail].Trash"       . ?t)
+  ;;      ("/[Gmail].All Mail"    . ?a)))
+  (setq mu4e-get-mail-command "offlineimap")
+  (setq mu4e-sent-messages-behavior 'delete)
+  (setq
+   mu4e-trash-folder "/google/[Gmail].Trash"
+   mu4e-refile-folder "/google/[Gmail].Archive"
+   message-send-mail-function   'smtpmail-send-it
+   smtpmail-default-smtp-server "smtp.gmail.com"
+   smtpmail-smtp-server         "smtp.gmail.com")
+  (add-to-list 'mu4e-bookmarks
+               (make-mu4e-bookmark
+                :name "Inboxs"
+                :query "maildir:\"/INBOX"
+                :key ?i))
+  (setq mu4e-update-interval (* 60 30))
+
+  ;; This allows me to use 'helm' to select mailboxes
+  (setq mu4e-completing-read-function 'completing-read)
+  ;; Why would I want to leave my message open after I've sent it?
+  (setq message-kill-buffer-on-exit t)
+  ;; Don't ask for a 'context' upon opening mu4e
+  (setq mu4e-context-policy 'pick-first)
+  ;; Don't ask to quit... why is this the default?
+  (setq mu4e-confirm-quit nil)
+  :bind ("C-c m" . mu4e))
+
+(use-package yasnippet-classic-snippets
+  :after yasnippet
+  :ensure t
+  :config (yas-load-directory "/Users/bob/.emacs.d/elpa/yasnippet-classic-snippets-1.0.2"))
+
+(use-package github-review
+  :defer
+  :init (setq github-review-fetch-top-level-and-review-comments t)
+  :ensure t)

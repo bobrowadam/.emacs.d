@@ -1,3 +1,7 @@
+;;; package --- Summary
+;;; Code:
+;;; Commentary:
+
 (defun random-alnum ()
   (let* ((alnum "abcdefghijklmnopqrstuvwxyz0123456789")
          (i (% (abs (random))
@@ -69,14 +73,30 @@ You can escape '$' with '\\' as prefix.
   (write-file (format "%s-%s.org" filename (format-time-string "%b-%d-%Y"))))
 (format-time-string "")
 
-(defun sqrt (ai num n-seq)
-  "Newton-Raphson Square Roots"
-  (if n-seq
-      (let ((ai+1 (/ (+ ai (/ num ai)) 2)))
-        (sqrt ai+1 num (cdr n-seq)))
-    ai+1))
+;; (defun sqrt (ai num n-seq)
+;;   "Newton-Raphson Square Roots"
+;;   (if n-seq
+;;       (let ((ai+1 (/ (+ ai (/ num ai)) 2)))
+;;         (sqrt ai+1 num (cdr n-seq)))
+;;     ai+1))
 
 (defun to-string (element)
+  "Format ELEMENT to string."
   (format "%s" element))
 
+(defun my/refresh-google-calendar ()
+    "Refresh google calendar org file."
+    (interactive)
+    (let ((file-path (concat org-directory "/google-calendar.org") )
+           (tmp-path "/tmp/icalawk"))
+      (progn
+        (f-write-text
+         (request-response-data (request
+                                 "https://calendar.google.com/calendar/ical/adam%40bigpanda.io/private-7d0adafb6e98933c62d3d463410fdf71/basic.ics"
+                                 :parser 'buffer-string
+                                 :sync t))
+         'utf-8 tmp-path)
+        (call-process "ical2org.awk" tmp-path `((:file ,file-path) nil) nil))))
+
 (provide 'misc-funcs)
+;;; misc-funcs.el ends here
