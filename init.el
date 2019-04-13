@@ -69,7 +69,7 @@
 (use-package edit-funcs)
 (setq use-package-verbose t)
 (setq use-package-compute-statistics t)
-;; (setq use-package-always-defer t)
+(setq use-package-always-defer t)
 (setq use-package-always-ensure t)
 (eval-when-compile
   (require 'use-package))
@@ -87,32 +87,27 @@
 
 ;; Theme and font
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-(use-package gruber-darker-theme
+
+(use-package smart-mode-line
+  :demand t
+  :if (window-system))
+(use-package gruvbox-theme
+  :demand t
   :if (window-system)
-  :ensure t
+  ;; :after smart-mode-line
   :init (setq custom-safe-themes t)
   :config
-  (set-default-font "Latin Modern Mono 19")
+  (set-frame-font "Latin Modern Mono 19")
   (add-to-list 'default-frame-alist
                '(font . "Latin Modern Mono 19"))
   ;; (load-theme 'ayu)
   ;; (load-theme 'gruber-darker)
   ;; (load-theme 'wheatgrass)
-  (load-theme gruvbox-dark-hard)
   ;; (load-theme 'nimbus)
+  (load-theme 'gruvbox-dark-hard)
   (sml/setup)
+  (sml/apply-theme 'dark)
   (display-battery-mode 1))
-
-;; Run refresh-google-calendar periodically
-(require 'midnight)
-(midnight-mode)
-(add-hook 'midnight-hook 'my/refresh-google-calendar)
-;; (midnight-delay-set 'midnight-delay "00:00")
-
-(use-package smart-mode-line
-  :defer
-  :if (window-system)
-  :ensure t)
 
 (global-set-key (kbd "C-x j") 'whitespace-cleanup)
 (global-set-key (kbd "M-i") 'imenu)
@@ -136,34 +131,28 @@
 (defun unset-electric-indent ()
   (electric-indent-mode -1))
 
-(use-package rainbow-delimiters
-  :defer
-  :ensure t)
+(use-package rainbow-delimiters)
 
 (use-package linum-off
+  :demand t
   :if (memq window-system '(mac ns))
-  :ensure
   :config
   (global-linum-mode 1))
 
 (use-package paredit
-  :defer
   :if (window-system)
   :init
   (defun use-paredit-not-sp ()
     "Use paredit and stop using Smartparens."
     (turn-off-smartparens-mode)
     (paredit-mode 1))
-  :ensure t
   :bind (:map paredit-mode-map
               ("M-W" . paredit-copy-as-kill))
   :hook
   ((emacs-lisp-mode cider-repl-mode cider-mode lisp-mode slime-repl-mode) . use-paredit-not-sp))
 
 (use-package smartparens
-  :defer
   :if (window-system)
-  :ensure t
   :bind (:map smartparens-mode-map
               ("M-(" . sp-wrap-round)
               ("M-s" . sp-unwrap-sexp)
@@ -180,32 +169,68 @@
   (show-smartparens-global-mode t))
 
 (use-package company
-  :ensure t
+  :demand t
   :config
   (global-company-mode t))
 
 (use-package smex
-  :if (window-system)
-  :ensure t)
+  :demand t
+  :if (window-system))
 
 (use-package ivy
+  :disabled
   :if (window-system)
-  :ensure t
+  :demand t
   :config
-  (use-package flx
-    :ensure t)
+  
   (setq ivy-re-builders-alist
         '((t . ivy--regex-fuzzy)))
   (setq ivy-use-selectable-prompt t)
   (setq ivy-initial-inputs-alist nil)
   (ivy-mode 1))
 
+(use-package flx
+  :demand t)
+
+(use-package ido
+  :after flx
+  :demand t
+  :init
+  (setq ido-enable-prefix nil
+        ido-enable-flex-matching t
+        ido-case-fold nil
+        ido-auto-merge-work-directories-length -1
+        ido-create-new-buffer 'always
+        ido-use-filename-at-point nil
+        ido-max-prospects 10)
+  :config
+  (ido-mode t)
+  ;; disable ido faces to see flx highlights.
+  (setq ido-use-faces nil)
+  (setq ido-use-filename-at-point 'guess))
+
+(use-package ido-completing-read+
+  :config (ido-ubiquitous-mode 1)
+  :demand t)
+
+(use-package ido-vertical-mode
+  :after ido
+  :demand t
+  :config (ido-vertical-mode)
+  :config (setq ido-vertical-define-keys 'C-n-C-p-up-down-left-right))
+
+(use-package flx-ido
+  :after ido
+  :demand
+  :config (flx-ido-mode 1))
+
 (use-package counsel
+  :disabled
+  :demand t
   :if (window-system)
-  :ensure t
   :init
   (setq counsel-rg-base-command
-      "rg --heading --context-separator \" \" -i -M 120 --line-number --color never %s .")
+        "rg --heading --context-separator \" \" -i -M 120 --line-number --color never %s .")
   :bind (("M-x" . counsel-M-x)
          ("C-x C-f" . counsel-find-file)
          ("C-x C-m" . counsel-mark-ring)
@@ -213,14 +238,12 @@
          ("C-c C-s C-s" . swiper)))
 
 (use-package whole-line-or-region
-  :ensure t
+  :demand t
   :config
   (whole-line-or-region-global-mode t))
 
 ;; Javascript
 (use-package js2-mode
-  :defer
-  :ensure t
   :init
   (defun my-load-js2-snippets ()
     (yas-minor-mode 1)
@@ -251,8 +274,6 @@
   (setq-default js-indent-level 2))
 
 (use-package highlight-indent-guides
-  :defer
-  :ensure t
   :hook (js2-mode . highlight-indent-guides-mode))
 
 (defun setup-tide-mode ()
@@ -266,8 +287,6 @@
 
 (use-package tide
   :if (window-system)
-  :defer
-  :ensure t
   :after (js2-mode)
   :hook (js2-mode . setup-tide-mode)
   :bind (:map tide-mode-map ("C-c C-t C-r" . tide-rename-symbol))
@@ -280,7 +299,6 @@
 
 (use-package indium
   :if (window-system)
-  :defer
   :config
   (setq indium-client-debug t)
   :ensure t)
@@ -288,62 +306,44 @@
 ;; Magit
 (use-package magit
   :if (window-system)
-  :ensure t
   :bind ("C-x g" . magit-status)
-  ;; :hook (magit-post-refresh-hook . diff-hl-magit-post-refresh)
+  :hook (magit-post-refresh-hook . diff-hl-magit-post-refresh)
   :config
   (setq magit-completing-read-function 'ivy-completing-read)
+  (setq transient-default-level 7)
   (global-magit-file-mode 1)
-  ;; (magit-define-popup-switch 'magit-push-popup
-  ;;   ?t "Follow tags" "--follow-tags")
-  ;; (transient-append-suffix 'Arguments 'magit-push
-  ;;   '("t" "Follow tags" "--follow-tags"))
-  )
-
-(use-package magithub
-  :disabled t
-  :if (window-system)
-  :ensure t
-  :after (magit)
-  :pin melpa
-  :config
-  (setq epa-pinentry-mode 'loopback)
-  (setq magithub-debug-mode t)
-  (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))
-  (magithub-feature-autoinject t))
+  (put 'magit-diff-edit-hunk-commit 'disabled nil))
 
 (use-package forge
   :init
   (setq auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc"))
   (setq epa-pinentry-mode 'loopback)
-  :defer
   :if (window-system)
   :ensure t)
 
 (global-set-key (kbd "C-c C-k") 'my/kill-to-start-of-line)
 
 (use-package zoom-window
-  :defer
   :if (window-system)
-  :ensure t
   :init
   (custom-set-variables
    '(zoom-window-mode-line-color "DarkGreen"))
   :bind ("C-x C-z" . zoom-window-zoom))
 
 (use-package dired
-  :if (window-system)
-  :defer
+  :ensure nil
+  :demand t
   :config
-  (put 'dired-find-alternate-file 'disabled nil)
+  (setq dired-use-ls-dired nil)
   (setq dired-listing-switches "-alh")
-  ;; (setq insert-directory-program "gls" dired-use-ls-dired t)
-  (use-package dired-x
-    ;; :hook (dired-mode . dired-omit-mode)
-    ))
+  (put 'dired-find-alternate-file 'disabled nil))
+
+(use-package dired-x
+  :demand t
+  :ensure nil
+  :after (dired))
 
 (use-package tramp
-  :defer
   :if (window-system)
   :init
   (custom-set-variables
@@ -370,29 +370,21 @@
 
 (use-package docker-tramp
   :if (window-system)
-  :defer
-  :ensure t
+  :disabled
   :config
   (require 'docker-tramp-compat))
 
 (use-package flycheck
-  :defer
   :if (window-system)
-  :ensure t
   :hook ((js2-mode . flycheck-mode)
          (flycheck-mode . my/use-eslint-from-node-modules)))
 
 (use-package cider
-  :defer
   :if (window-system)
-  :ensure t
   :hook (cider-mode . rainbow-delimiters-mode)
   :config (setq cider-prompt-for-symbol nil))
 
-
 (use-package clj-refactor
-  :defer
-  :ensure t
   :after cider
   :init
   (defun my-clojure-mode-hook ()
@@ -404,15 +396,16 @@
 
 (use-package which-key
   :if (window-system)
-  :ensure t
   :config
   (which-key-mode 1))
 
 (use-package projectile
   :if (memq window-system '(mac ns))
+  :demand t
   :init
   (setq projectile-keymap-prefix (kbd "C-c p"))
-  (setq projectile-completion-system 'ivy)
+  ;; (setq projectile-completion-system 'ivy)
+  (setq projectile-completion-system 'ido)
   (setq projectile-switch-project-action #'projectile-dired)
   :config
   (projectile-mode +1))
@@ -427,42 +420,51 @@
 (global-set-key (kbd "C-c e") 'my-run-eshell)
 
 (use-package exec-path-from-shell
+  :demand t
   :if (memq window-system '(mac ns))
-  :ensure t
   :init (setq exec-path-from-shell-arguments '("-l"))
   :config
   (exec-path-from-shell-initialize))
 
-(use-package nodejs-repl
-  :defer)
+(use-package nodejs-repl)
 
 ;;;; SCALA
 (use-package lsp-mode
-  :defer
   :if (window-system)
-  :init (setq lsp-prefer-flymake nil))
+  :init
+  (setq lsp-prefer-flymake nil)
+  (defun my/toggle-ui-show-doc ()
+    (interactive)
+    (if (and (boundp 'ui-show-on/?) ui-show-on/?)
+        (progn
+          (setq-local ui-show-on/? nil)
+          (lsp-ui-doc-hide))
+      (progn
+        (setq-local ui-show-on/? t)
+        (lsp-ui-doc-show)))))
 
 (use-package lsp-ui
   :if (window-system)
-  :ensure t
   :hook (lsp-mode . lsp-ui-mode))
 
 (use-package lsp-scala
   :if (window-system)
-  :ensure t
   :after scala-mode
   :demand t
   :hook ((scala-mode . lsp) (scala-mode . hs-minor-mode))
-  :init (setq lsp-scala-server-command "/usr/local/bin/metals-emacs"))
+  :bind
+  (:map scala-mode-map
+        ("C-c C-." . toggle-ui-show-doc)
+        ("C-c C-r" . lsp-find-references))
+  :init
+  (setq lsp-scala-server-command "/usr/local/bin/metals-emacs")
+  (setq lsp-print-io t))
 
 (use-package company-lsp
-  :defer
   :ensure)
 
 (use-package sbt-mode
   :if (window-system)
-  :defer
-  :ensure t
   :commands sbt-start sbt-command)
 
 (use-package scala-mode
@@ -485,24 +487,12 @@
         scala-indent:default-run-on-strategy
         scala-indent:operator-strategy))
 
-;; (use-package ensime
-;;   :defer
-;;   :if (window-system)
-;;   :pin melpa
-;;   :hook ((scala-mode . unset-electric-indent))
-;;   :bind
-;;   (:map sbt-mode-map
-;;         ("C-c C-c" . ensime-sbt-send-eol))
-;;   :config
-;;   (setq ensime-sbt-perform-on-save "compile")
-;;   :ensure t)
-
-(use-package org-mode
+(use-package org
   :if (window-system)
   :init
   (setq org-tree-slide-header nil)
   (setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")))
+        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)")))
   (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
   (setq org-capture-templates
         `(("l" "link-entry" entry (file+headline ,(concat org-directory "/inbox.org") "Entries")
@@ -519,7 +509,13 @@
                              (,(concat org-directory "/tickler.org") :maxlevel . 1)))
   (setq org-archive-location (concat org-directory "/done.org::"))
   (setq org-complete-tags-always-offer-all-agenda-tags t)
-
+  (setq org-stuck-projects
+        '("+PROJECT" ("NEXT" "DONE") ("@IGNORE" "@REMINDER")
+             ""))
+  (setq org-stuck-projects
+           '("+PROJECT/-MAYBE-DONE" ("NEXT" "TODO") ("@SHOP")
+                                    "\\<IGNORE\\>"))
+  (setq org-tags-exclude-from-inheritance '("PROJECT"))
   :hook (org-mode . (lambda () (org-bullets-mode 1)))
   :bind
   ("C-c a" . org-agenda)
@@ -533,6 +529,7 @@
     (define-key org-mode-map (kbd "M-n") #'org-metadown)
     (define-key org-mode-map (kbd "M-F") #'org-shiftright)
     (define-key org-mode-map (kbd "M-B") #'org-shiftleft)
+    (define-key org-mode-map (kbd "C-c l") #'org-store-link)
     ;; (define-key org-agenda-mode-map (kbd "M-F") #'org-agenda-do-date-later)
     ;; (define-key org-agenda-mode-map (kbd "M-B") #'org-agenda-do-date-earlier)
     (define-key org-read-date-minibuffer-local-map (kbd "C-b")
@@ -542,12 +539,10 @@
     ))
 
 (use-package org-bullets
-  :defer
   :if (window-system)
   :ensure t)
 
 (use-package org-brain
-  :ensure t
   :after org-mode
   :init
   (setq org-brain-path (concat org-directory "/org-brain"))
@@ -561,9 +556,7 @@
   (setq org-brain-title-max-length 12))
 
 (use-package yasnippet
-  :defer
   :if (window-system)
-  :ensure t
   :diminish yas-minor-mode
   :commands yas-minor-mode
   :bind ("C-c TAB" . yas-expand)
@@ -573,12 +566,10 @@
 (use-package restclient
   :init
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
-  :defer
   :if (window-system)
   :ensure t)
 
 (use-package inf-mongo
-  :defer
   :if (window-system)
   :ensure t)
 
@@ -592,17 +583,13 @@
 (csetq ediff-diff-options "-w")
 
 (use-package lastpass
-  :defer
   :if (window-system)
-  :ensure t
   :config
   (setq lastpass-user "adam@bigpanda.io")
   (setq lastpass-multifactor-use-passcode t)
   (lastpass-auth-source-enable))
 
 (use-package goto-chg
-  :defer
-  :ensure t
   :commands goto-last-change
   ;; complementary to
   ;; C-x r m / C-x r l
@@ -611,27 +598,22 @@
          ("C-," . goto-last-change-reverse)))
 
 (use-package ag
-  :defer
   :if (window-system)
   :ensure t)
 (use-package ripgrep
   :init
   (setq ripgrep-arguments '("--context-separator \" \"" "--heading"))
   (setq ripgrep-highlight-search t)
-  :defer
   :if (window-system)
   :ensure t)
 (use-package wgrep-ag
-  :defer
   :if (window-system)
   :ensure t)
 
 (use-package yaml-mode
-  :defer
   :ensure t)
 
 (use-package eshell
-  :defer
   :if (window-system)
   :init
   (defalias 'ffo 'find-file-other-window)
@@ -654,21 +636,16 @@
 (use-package eshell-prompt-extras
   :if (window-system)
   :after eshell
-  :ensure t
   :config
   (autoload 'epe-theme-lambda "eshell-prompt-extras")
   (setq eshell-highlight-prompt nil
         eshell-prompt-function 'epe-theme-lambda))
 
 (use-package expand-region
-  :defer
-  :ensure t
   :bind ("M-#" . er/expand-region))
 
 (use-package ibuffer-projectile
   :if (window-system)
-  :defer
-  :ensure t
   :hook (ibuffer . ibuffer-projectile-set-filter-groups)
   :bind ("C-x C-b" . ibuffer)
   :config
@@ -691,34 +668,25 @@
 
 (use-package flyspell-correct
   :if (window-system)
-  :defer
   :bind ("C-M-$" . flyspell-correct-at-point)
   :ensure t)
 
 (use-package flyspell-correct-ivy
   :if (window-system)
-  :defer
-  :ensure t
   :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-previous-word-generic)))
 
 (use-package ace-window
-  :defer
-  :ensure t
   :bind ( "C-x o" . ace-window)
   :config
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
 (use-package ace-jump-mode
-  :defer
-  :ensure t
   :bind
   ("C-c j" . 'ace-jump-mode )
   ("C-c k" . 'ace-jump-mode-pop-mark))
 
 (use-package rainbow-delimiters
-  :defer
-  :ensure t
   :config
   (rainbow-delimiters-mode))
 
@@ -726,22 +694,19 @@
 (global-set-key (kbd "C-c f r") 'rename-file)
 
 (use-package rich-minority
-  :ensure t
   :init
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|")))
   :config
   (rich-minority-mode 1 ))
 
 (use-package anzu
-  :ensure t
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . query-replace)
          ("C-c M-%" . anzu-repl))
   :config
   (global-anzu-mode))
 
-(use-package ansible-vault :ensure t
-  :defer
+(use-package ansible-vault
   :config
   (add-to-list 'auto-mode-alist '("/vault$" . yaml-mode))
   (add-hook 'yaml-mode-hook
@@ -749,24 +714,13 @@
     (and (string= (file-name-base) "vault") (ansible-vault-mode 1)))))
 
 (use-package diff-hl
-  :defer
-  :ensure t
   :config
   (global-diff-hl-mode))
 
 (setq find-function-C-source-directory "~/source/emacs-26.1/src/")
 
-;; (defun animate-scratch-buffer ()
-;;   (run-with-timer 0.5 nil
-;;                   #'animate-string "Happy hacking!" 3 1))
-
-;; (add-hook 'after-init-hook
-;;           #'animate-scratch-buffer)
-
 (use-package golden-ratio
   :if (window-system)
-  :defer
-  :ensure t
   :init (defun my/gloden-ratio ()
   "Toggle golden ratio"
   (interactive)
@@ -780,15 +734,12 @@
 
 (use-package itail
   :if (window-system)
-  :defer
   :ensure t)
 (put 'narrow-to-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 
 (use-package multiple-cursors
   :if (window-system)
-  :defer
-  :ensure t
   :bind
   (("C->" . 'mc/mark-next-like-this)
    ("C-<" . 'mc/mark-previous-like-this)))
@@ -796,8 +747,6 @@
 
 (use-package slime
   :if (window-system)
-  :defer
-  :ensure t
   :config
   (setq inferior-lisp-program "sbcl")
   (setq slime-contribs '(slime-fancy))
@@ -805,20 +754,14 @@
 
 (use-package slime-company
   :if (window-system)
-  :defer
-  :ensure t
   :after slime)
 
 (use-package cargo
   :if (window-system)
-  :defer
   :ensure t)
 
 (use-package rust-mode
-  :defer
   :if (window-system)
-  :ensure t
-  :after cargo
   :hook
   (rust-mode . cargo-minor-mode)
   (rust-mode . flycheck-rust-setup)
@@ -832,37 +775,27 @@
 
 (use-package racer
   :if (window-system)
-  :defer
-  :ensure t
   :after rust-mode
   :config (setq racer-rust-src-path "/Users/bob/.rustup/toolchains/stable-x86_64-apple-darwin/lib/rustlib/src/rust/src"))
 
-;; (put 'magit-diff-edit-hunk-commit 'disabled nil)
-
 (use-package kubernetes-tramp
   :if (window-system)
-  :defer
   :ensure t)
 
 (use-package kubernetes
   :if (window-system)
-  :defer
-  :ensure t
   :commands (kubernetes-overview))
 
 (use-package redis
   :if (window-system)
-  :defer
   :ensure t)
 
 (use-package eww
   :disabled
   :if (memq window-system '(mac ns))
-  :defer
   :bind ("C-c b s" . eww-search-words))
 
 (use-package w3m
-  :defer
   :init
   (setq w3m-search-default-engine "google-en")
   :bind
@@ -872,8 +805,6 @@
   (autoload 'w3m-browse-url "w3m" "Ask a WWW browser to show a URL." t))
 
 (use-package undo-propose
-  :defer
-  :ensure t
   :bind ("C-c C-/" . undo-propose))
 
 (use-package request
@@ -915,10 +846,7 @@
 
 (use-package yasnippet-classic-snippets
   :after yasnippet
-  :ensure t
   :config (yas-load-directory "/Users/bob/.emacs.d/elpa/yasnippet-classic-snippets-1.0.2"))
 
 (use-package github-review
-  :defer
-  :init (setq github-review-fetch-top-level-and-review-comments t)
-  :ensure t)
+  :init (setq github-review-fetch-top-level-and-review-comments t))
