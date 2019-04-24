@@ -1,60 +1,55 @@
-;;;; Emacs Bookmark Format Version 1 ;;;;
+;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*- 
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("create-alerts.sc"
- (filename . "~/source/scala-scripts/create-alerts.sc")
- (front-context-string . "import $ivy.`io.")
+(("gtd.org"
+ (filename . "~/Dropbox/orgzly/gtd.org")
+ (front-context-string . "* Tasks         ")
  (rear-context-string)
  (position . 1))
-("defuns"
- (filename . "~/.emacs.d/defuns/")
- (front-context-string . "buffer-defuns.el")
- (rear-context-string . "76 Aug 12 23:55 ")
- (position . 259))
-("prod-mongos-11"
- (filename . "/sshx:shadow|ssh:ubuntu@prod-mongos-11:/")
- (front-context-string . "bin\n  drwxr-xr-x")
- (rear-context-string . "96 Apr 17  2016 ")
- (position . 200))
-("clojure-workspace"
- (filename . "~/source/clojure-workspace/")
+("usefull-stuff.org"
+ (filename . "~/Dropbox/BigPanda/usefull-stuff.org")
  (front-context-string)
- (rear-context-string . "08 Oct 19 22:44 ")
- (position . 235))
+ (rear-context-string . "   \n  #+END_SRC\n")
+ (position . 876))
 ("rest-clients"
- (filename . "~/source/rest-clients/")
- (front-context-string . "rest.api.client\n")
- (rear-context-string . "29 Aug 28 18:50 ")
- (position . 235))
-("org-capture-last-stored"
- (filename . "~/Dropbox (BigPanda)/org/inbox.org")
- (front-context-string . "** TODO Create a")
- (rear-context-string . "NDS(e)\n\n* Tasks\n")
- (position . 132))
-("org-capture-last-stored-marker"
- (filename . "~/Dropbox (BigPanda)/org/gtd.org")
- (front-context-string . "** TODO Buy גומי")
- (rear-context-string . "data-api client\n")
- (position . 870))
-("org-refile-last-stored"
- (filename . "~/Dropbox (BigPanda)/org/someday.org")
- (front-context-string . "** WAITING Clust")
- (rear-context-string . "nction to C-s-h\n")
- (position . 451))
-("appearance.el"
- (filename . "~/.emacs.d/settings/appearance.el")
- (front-context-string . ";;; package --- ")
+ (filename . "~/Dropbox/BigPanda/rest-clients/")
+ (front-context-string . "consumer.client\n")
+ (rear-context-string . "52 Apr 10 05:44 ")
+ (position . 254))
+("notes.org"
+ (filename . "~/Dropbox/orgzly/notes.org")
+ (front-context-string . "* Grocery list: ")
  (rear-context-string)
  (position . 1))
-("settings"
- (filename . "~/.emacs.d/settings/")
- (front-context-string . "appearance.el\n  ")
- (rear-context-string . "40 Aug 11 18:16 ")
- (position . 261))
-("init.el"
+("org-refile-last-stored"
+ (filename . "~/Dropbox/orgzly/gtd.org")
+ (front-context-string . "** TODO Check if")
+ (rear-context-string . " kafka streams\"\n")
+ (position . 1622))
+("inbox.org"
+ (filename . "~/Dropbox/orgzly/inbox.org")
+ (front-context-string . "* Entries\n** pos")
+ (rear-context-string)
+ (position . 1))
+("org-capture-last-stored"
+ (filename . "~/Dropbox/orgzly/inbox.org")
+ (front-context-string . "** Incident-log ")
+ (rear-context-string)
+ (position . 11))
+("bob-lisp"
+ (filename . "~/source/emacs_configs/trampconfig/bob-lisp/")
+ (front-context-string . "basic-settings.e")
+ (rear-context-string . "98 Apr 18 01:20 ")
+ (position . 262))
+("main init.el"
  (filename . "~/.emacs.d/init.el")
- (front-context-string . ";;; package --- ")
+ (front-context-string . "(setq package-ar")
+ (rear-context-string . "o-p 'y-or-n-p)\n\n")
+ (position . 1671))
+("init.el"
+ (filename . "~/source/emacs_configs/trampconfig/init.el")
+ (front-context-string . ";; Use Package I")
  (rear-context-string)
  (position . 1))
 )

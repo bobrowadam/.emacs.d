@@ -1,5 +1,5 @@
 # -*- mode: snippet -*-
-# name: bug log
+# name: blog
 # key: blog
 # --
 console.log('--------------------- $1 ---------------------');

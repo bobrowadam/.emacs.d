@@ -23,3 +23,5 @@ smex-items
 custom.el
 .python-environments/
 anaconda-mode/
+transient/*
+/.lsp-session-v1

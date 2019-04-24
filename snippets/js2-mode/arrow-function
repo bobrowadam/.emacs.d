@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: arrow-function
-# key: arrow
-# --
-(${1:default value}) => \{
-  $2
-\}

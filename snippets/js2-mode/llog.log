@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: nlog
+# key: llog
+# --
+console.log('$1`(buffer-name)` line `(count-lines 1 (point))`  -----------------------------------------------------------');
