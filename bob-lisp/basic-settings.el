@@ -17,7 +17,7 @@
       gdb-many-windows t                
 
       epa-pinentry-mode 'loopback       
-      auth-sources '("~/.authinfo.gpg") 
+      auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc")
 
       ;; No more damn prompts!                                       
       dired-recursive-deletes 'always                             
@@ -59,7 +59,6 @@
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))            
 ;; (define-key key-translation-map (kbd "<f9>") (kbd "C-s-h"))       
 (global-set-key (kbd "M-C-h") 'backward-kill-sexp)
-(setq auth-sources '("~/.authinfo.gpg"))                            
 
 ;; Theme and Font
 (use-package zenburn-theme
@@ -93,5 +92,6 @@
       kept-old-versions 2)   ; and some old ones, too
 
 (add-to-list 'prog-mode-hook #'linum-mode)
+(setq find-function-C-source-directory "~/source/emacs-26.1/src/")
 
 (provide 'basic-settings)

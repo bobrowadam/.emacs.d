@@ -38,18 +38,13 @@
  (rear-context-string)
  (position . 11))
 ("bob-lisp"
- (filename . "~/source/emacs_configs/trampconfig/bob-lisp/")
- (front-context-string . "basic-settings.e")
- (rear-context-string . "98 Apr 18 01:20 ")
- (position . 262))
-("main init.el"
+ (filename . "~/.emacs.d/bob-lisp/")
+ (front-context-string . "ammonite-mode.el")
+ (rear-context-string . "62 Apr 24 01:21 ")
+ (position . 239))
+("init.el"
  (filename . "~/.emacs.d/init.el")
  (front-context-string . "(setq package-ar")
  (rear-context-string . "o-p 'y-or-n-p)\n\n")
  (position . 1671))
-("init.el"
- (filename . "~/source/emacs_configs/trampconfig/init.el")
- (front-context-string . ";; Use Package I")
- (rear-context-string)
- (position . 1))
 )

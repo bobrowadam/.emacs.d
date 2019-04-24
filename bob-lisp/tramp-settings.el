@@ -16,5 +16,6 @@
 (add-to-list 'tramp-restricted-shell-hosts-alist
                "\\shadow\\'")
 
+(use-package kubernetes-tramp)
 
 (provide 'tramp-settings)

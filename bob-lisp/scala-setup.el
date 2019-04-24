@@ -51,6 +51,8 @@
         scala-indent:indent-value-expression t
         scala-indent:default-run-on-strategy
         scala-indent:operator-strategy)
-  :hook (scala-mode . smartparens-mode))
+  :hook
+  (scala-mode . smartparens-mode)
+  (scala-mode . (lambda () (yas-load-directory (concat user-emacs-directory "snippets/scala-mode/")))))
 
 (provide 'scala-setup)
