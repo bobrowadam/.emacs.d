@@ -47,6 +47,7 @@
       visible-bell nil)                                              
 (setq-default indent-tabs-mode nil)                                  
 (global-set-key (kbd "M-i") 'imenu)
+(global-set-key (kbd "C-^") #'(lambda () (interactive (delete-indentation -1))))
 
 (delete-selection-mode 1)                                            
 (set-default 'indent-tabs-mode nil)                                  
@@ -71,7 +72,9 @@
   (set-frame-font "Latin Modern Mono 19")          
    (add-to-list 'default-frame-alist              
                 '(font . "Latin Modern Mono 19"))
-   (load-theme 'zenburn t))
+   ;; (load-theme 'zenburn t)
+   (load-theme 'badger t)
+   )
  
 ;; Put backup files neatly away                                                 
 (let ((backup-dir "~/tmp/emacs/backups")

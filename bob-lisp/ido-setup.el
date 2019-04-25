@@ -20,4 +20,5 @@
   ("M-X" . smex-major-mode-commands)
   :init (smex-initialize))
 
+(use-package ido-hacks)
 (provide 'ido-setup)

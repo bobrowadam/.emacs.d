@@ -1,6 +1,7 @@
 (use-package ibuffer
   :demand t
   :bind ("C-x C-b" . ibuffer)
+  :hook (ibuffer . ibuffer-projectile-set-filter-groups)
   :config
   (setq ibuffer-expert t)
   (setq ibuffer-show-empty-filter-groups nil))
@@ -8,9 +9,7 @@
 ;; (use-package ibuffer-tramp :ensure t :demand t)
 
 (use-package ibuffer-projectile
-  :demand t
   :if (window-system)
-  :hook (ibuffer . ibuffer-projectile-set-filter-groups)
   :config
   (define-ibuffer-column size-h
     (:name "Size" :inline t)

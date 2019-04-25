@@ -25,7 +25,7 @@
   :hook ((scala-mode . lsp) (scala-mode . hs-minor-mode))
   :bind
   (:map scala-mode-map
-        ("C-c C-." . my/toggle-ui-show-doc)
+        ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
         ("C-c C-r" . lsp-find-references))
   :init
   (setq lsp-scala-server-command "/usr/local/bin/metals-emacs")

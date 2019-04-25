@@ -1,4 +1,4 @@
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 (require 'package)
 (package-initialize)
 
@@ -56,6 +56,12 @@
 (use-package misc-funcs
   :demand t 
   :load-path "./bob-listp")
+(use-package edit-funcs
+  :demand t
+  :load-path "./bob-lisp"
+  :bind
+  ("C-`" . unpop-to-mark-command)
+  ("M-`" . jump-to-mark))
 (use-package setup-parens
   :load-path "./bob-listp"
   :demand t)
