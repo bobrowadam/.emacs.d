@@ -43,7 +43,10 @@
   :if (window-system)
   :after (js2-mode)
   :hook (js2-mode . setup-tide-mode)
-  :bind (:map tide-mode-map ("C-c C-t C-r" . tide-rename-symbol))
+  :bind (:map tide-mode-map
+              ("C-c C-n" . tide-rename-symbol)
+              ("C-c C-r" . tide-references)
+              ("C-c M-i" . lsp-ui-imenu))
   :config
   (setq company-tooltip-align-annotations t)
   (setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))

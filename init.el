@@ -126,18 +126,15 @@
   (autoload 'epe-theme-lambda "eshell-prompt-extras")
   (setq eshell-highlight-prompt nil
         eshell-prompt-function 'epe-theme-lambda))
-(use-package yasnippet
-  :demand
-  :hook
-  (prog-mode-hook . yas-minor-mode)
-  :config
-  (setq yas-snippet-dirs
-      `(,(concat user-emacs-directory "snippets")))
-  :config (yas-reload-all))
-(use-package yasnippet-snippets)
-(use-package ammonite-mode
+
+(use-package setup-snippets
   :demand t
   :load-path "./bob-lisp")
+
+(use-package inf-amm
+  :demand t
+  :load-path "~/source/inf-ammonite")
+
 (use-package expand-region
   :bind ("M-#" . er/expand-region))
 (use-package anzu

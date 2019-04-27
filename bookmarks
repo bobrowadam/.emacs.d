@@ -33,10 +33,10 @@
  (rear-context-string)
  (position . 1))
 ("org-capture-last-stored"
- (filename . "~/Dropbox/orgzly/inbox.org")
- (front-context-string . "** Incident-log ")
- (rear-context-string)
- (position . 11))
+ (filename . "~/Dropbox/orgzly/tickler.org")
+ (front-context-string . "** Interview wit")
+ (rear-context-string . "4-22 Mon 13:40>\n")
+ (position . 445))
 ("bob-lisp"
  (filename . "~/.emacs.d/bob-lisp/")
  (front-context-string . "ammonite-mode.el")

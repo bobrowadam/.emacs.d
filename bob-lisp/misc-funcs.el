@@ -102,5 +102,10 @@ You can escape '$' with '\\' as prefix.
                (format "\"%s\": \"%s\"" x (to-string (number-sequence 0 10)))
              (format "\"%s\": \"%s\"\n," x (to-string (number-sequence 0 50))))))
 
+(defun save-scratch ()
+  "Save the *scratch* buffer to file."
+  (interactive)
+  (with-current-buffer "*scratch*"
+    (write-file (concat user-emacs-directory "scratch-backup.el"))))
 (provide 'misc-funcs)
 ;;; misc-funcs.el ends here

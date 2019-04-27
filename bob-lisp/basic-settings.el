@@ -1,4 +1,5 @@
-(setq make-backup-files nil             
+(setq make-backup-files nil
+      enable-recursive-minibuffers t
       inhibit-splash-screen t           
       require-final-newline 'ask        
       truncate-partial-width-windows 80 
@@ -73,8 +74,7 @@
    (add-to-list 'default-frame-alist              
                 '(font . "Latin Modern Mono 19"))
    ;; (load-theme 'zenburn t)
-   (load-theme 'badger t)
-   )
+   (load-theme 'badger t))
  
 ;; Put backup files neatly away                                                 
 (let ((backup-dir "~/tmp/emacs/backups")

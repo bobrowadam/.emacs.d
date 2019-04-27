@@ -1,15 +1,6 @@
 (use-package lsp-mode
   :init
-  (setq lsp-prefer-flymake nil)
-  (defun my/toggle-ui-show-doc ()
-    (interactive)
-    (if (and (boundp 'ui-show-on/?) ui-show-on/?)
-        (progn
-          (setq-local ui-show-on/? nil)
-          (lsp-ui-doc-hide))
-      (progn
-        (setq-local ui-show-on/? t)
-        (lsp-ui-doc-show)))))
+  (setq lsp-prefer-flymake nil))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
@@ -26,7 +17,9 @@
   :bind
   (:map scala-mode-map
         ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
-        ("C-c C-r" . lsp-find-references))
+        ("C-c C-r" . lsp-ui-peek-find-references)
+        ("C-c M-i" . lsp-ui-imenu)
+        ("C-c M-d" . lsp-describe-thing-at-point))
   :init
   (setq lsp-scala-server-command "/usr/local/bin/metals-emacs")
   (setq lsp-print-io t))
