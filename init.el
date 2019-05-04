@@ -83,7 +83,8 @@
   :config (global-company-mode 1))
 (use-package setup-projectile
   :load-path "./bob-lisp"
-  :demand t)
+  :demand t
+  :bind ("C-c e" . projectile-run-eshell))
 (use-package sicp)
 (use-package ace-window
   :bind ( "C-x o" . ace-window)
@@ -117,7 +118,7 @@
   :demand
   :bind
   ("C-c M-c" . avy-goto-char)
-  ("C-c M-s" . avy-goto-word-1))
+  ("C-c M-d" . avy-goto-word-1))
 (use-package ripgrep
   :bind ("C-c M-r" . ripgrep-regexp))
 (use-package eshell-prompt-extras
@@ -129,6 +130,7 @@
 
 (use-package setup-snippets
   :demand t
+  :bind ("C-c TAB" . yas-expand)
   :load-path "./bob-lisp")
 
 (use-package inf-amm
@@ -153,4 +155,5 @@
   :demand t
   :load-path "./bob-lisp")
 (use-package kubernetes
-  :commands (kubernetes-overview))
+  :commands (kubernetes-overview)
+  :bind ("C-c k" . kubernetes-overview))

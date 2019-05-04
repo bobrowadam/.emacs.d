@@ -63,7 +63,9 @@
 (global-set-key (kbd "M-C-h") 'backward-kill-sexp)
 
 ;; Theme and Font
-(use-package zenburn-theme
+(use-package gruvbox-theme
+  :init (setq custom-theme-directory "~/.emacs.d/themes")
+  :load-path "~/.emacs.d/themes"
   :demand t
   :init
   (setq custom-safe-themes t)
@@ -74,7 +76,7 @@
    (add-to-list 'default-frame-alist              
                 '(font . "Latin Modern Mono 19"))
    ;; (load-theme 'zenburn t)
-   (load-theme 'badger t))
+   (load-theme 'bobs-badger t))
  
 ;; Put backup files neatly away                                                 
 (let ((backup-dir "~/tmp/emacs/backups")
@@ -97,4 +99,12 @@
 (add-to-list 'prog-mode-hook #'linum-mode)
 (setq find-function-C-source-directory "~/source/emacs-26.1/src/")
 
+;; Ediff setup
+(defmacro csetq (variable value)
+  `(funcall (or (get ',variable 'custom-set)
+                'set-default)
+            ',variable ,value))
+(csetq ediff-window-setup-function 'ediff-setup-windows-plain)
+(csetq ediff-split-window-function 'split-window-horizontally)
+(csetq ediff-diff-options "-w")
 (provide 'basic-settings)

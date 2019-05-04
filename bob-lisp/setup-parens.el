@@ -16,7 +16,7 @@
   :config
   (show-smartparens-global-mode t)
   :hook
-  (js2-mode . smartparens-mode)
+  (js2-mode . smartparens-strict-mode)
   (comint-mode . smartparens-mode)
   (scala-mode . smartparens-mode))
 
