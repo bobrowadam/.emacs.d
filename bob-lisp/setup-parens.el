@@ -1,7 +1,11 @@
 (use-package paredit
-  :hook (emacs-lisp-mode . paredit-mode))
+  :demand t
+  :hook
+  (emacs-lisp-mode . paredit-mode)
+  (eval-expression-minibuffer-setup . paredit-mode))
 
 (use-package smartparens
+  :demand t
   :bind (:map smartparens-mode-map
               ("M-(" . sp-wrap-round)
               ("M-s" . sp-unwrap-sexp)
@@ -14,10 +18,11 @@
               ("M-J" . sp-join-sexp)
               ("M-W" . sp-copy-sexp))
   :config
+  (setq sp-ignore-modes-list '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup))
   (show-smartparens-global-mode t)
+  (smartparens-global-mode t)
+  (sp-local-pair 'js2-mode "{ " " }" :trigger-wrap "{")
   :hook
-  (js2-mode . smartparens-strict-mode)
-  (comint-mode . smartparens-mode)
-  (scala-mode . smartparens-mode))
+  (comint-mode . smartparens-mode))
 
 (provide 'setup-parens)

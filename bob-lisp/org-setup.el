@@ -1,6 +1,8 @@
 (use-package org
   :if (window-system)
   :init
+  (setq calendar-longitude 32.085300)
+  (setq calendar-latitude 34.781769)
   (setq org-tree-slide-header nil)
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)")))

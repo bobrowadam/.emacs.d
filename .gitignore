@@ -26,3 +26,4 @@ anaconda-mode/
 transient/*
 /.lsp-session-v1
 /bookmarks
+/scratch-backup.el
