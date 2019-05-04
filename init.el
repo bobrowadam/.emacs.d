@@ -122,6 +122,7 @@
 (use-package ripgrep
   :bind ("C-c M-r" . ripgrep-regexp))
 (use-package eshell-prompt-extras
+  :demand t
   :if (window-system)
   :config
   (autoload 'epe-theme-lambda "eshell-prompt-extras")
