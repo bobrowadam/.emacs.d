@@ -25,3 +25,4 @@ custom.el
 anaconda-mode/
 transient/*
 /.lsp-session-v1
+/bookmarks
