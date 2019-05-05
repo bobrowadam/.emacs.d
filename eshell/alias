@@ -1,2 +1,2 @@
-alias ll ls -l $*
-
+alias em find-file $1
+alias ll ls -l $1
