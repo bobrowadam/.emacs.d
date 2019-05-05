@@ -13,7 +13,8 @@
   (rust-mode . racer-mode)
   :bind (:map rust-mode-map ("TAB" . #'company-indent-or-complete-common))
   :config
-  (setq rust-format-on-save t))
+  (setq rust-format-on-save t)
+  (setq company-tooltip-align-annotations t))
 
 (use-package racer
   :if (window-system)
