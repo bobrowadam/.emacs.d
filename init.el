@@ -84,7 +84,7 @@
 (use-package setup-projectile
   :load-path "./bob-lisp"
   :demand t
-  :bind ("C-c e" . projectile-run-eshell))
+  :bind ("C-c e" . my-run-eshell))
 (use-package sicp)
 (use-package ace-window
   :bind ( "C-x o" . ace-window)
@@ -158,3 +158,9 @@
 (use-package kubernetes
   :commands (kubernetes-overview)
   :bind ("C-c k" . kubernetes-overview))
+
+(use-package zoom-window
+  :init
+  (custom-set-variables
+   '(zoom-window-mode-line-color "DarkBlue"))
+  :bind ("C-x C-z" . zoom-window-zoom))
