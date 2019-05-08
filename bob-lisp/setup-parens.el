@@ -23,6 +23,7 @@
   (smartparens-global-mode t)
   (sp-local-pair 'js2-mode "{ " " }" :trigger-wrap "{")
   :hook
-  (comint-mode . smartparens-mode))
+  (comint-mode . smartparens-mode)
+  (eshell-mode . smartparens-mode))
 
 (provide 'setup-parens)
