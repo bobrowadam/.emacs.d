@@ -23,7 +23,7 @@
   (setq org-archive-location (concat org-directory "/done.org::"))
   (setq org-complete-tags-always-offer-all-agenda-tags t)
   (setq org-stuck-projects
-        '("+PROJECT" ("NEXT" "DONE" "WAITING") ("@IGNORE" "@REMINDER")
+        '("+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER")
              ""))
   ;; (setq org-stuck-projects
   ;;          '("+PROJECT/-MAYBE-DONE" ("NEXT" "TODO") ("@SHOP")
