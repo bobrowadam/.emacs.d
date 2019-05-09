@@ -112,7 +112,11 @@
   ("C-c c" . org-capture)
   ("C-c S" . org-save-all-org-buffers)
   ("C-c r" . #'my/refresh-google-calendar)
-  ("C-c v" . org-brain-visualize))
+  ("C-c v" . org-brain-visualize)
+  ("C-c l" . org-store-link)
+  (:map org-brain-visualize-mode-map
+        ("+" . org-brain-show-descendant-level)
+        ("-" . org-brain-hide-descendant-level)))
 (use-package restclient
   :init
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
