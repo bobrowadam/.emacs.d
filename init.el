@@ -109,7 +109,8 @@
   ("C-c a" . org-agenda)
   ("C-c c" . org-capture)
   ("C-c S" . org-save-all-org-buffers)
-  ("C-c r" . #'my/refresh-google-calendar))
+  ("C-c r" . #'my/refresh-google-calendar)
+  ("C-c v" . org-brain-visualize))
 (use-package restclient
   :init
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
