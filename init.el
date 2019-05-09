@@ -73,6 +73,8 @@
   :demand t
   :load-path "./bob-lisp")
 (use-package setup-magit
+  :bind
+  ("C-x g" . magit-status)
   :demand t
   :load-path "./bob-lisp")
 (use-package whole-line-or-region

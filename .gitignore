@@ -27,3 +27,4 @@ transient/*
 /.lsp-session-v1
 /bookmarks
 /scratch-backup.el
+/.org-id-locations

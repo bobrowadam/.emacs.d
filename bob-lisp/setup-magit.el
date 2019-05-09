@@ -1,5 +1,7 @@
+(defun bob/magit-message (message)
+  (magit-commit-create `("-m" ,message)))
+
 (use-package magit
-  :bind ("C-x g" . magit-status)
   :hook (magit-post-refresh-hook . diff-hl-magit-post-refresh)
   :config
   ;; (setq magit-completing-read-function 'ivy-completing-read)
