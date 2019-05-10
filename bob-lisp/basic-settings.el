@@ -106,4 +106,17 @@
 (csetq ediff-window-setup-function 'ediff-setup-windows-plain)
 (csetq ediff-split-window-function 'split-window-horizontally)
 (csetq ediff-diff-options "-w")
+
+(use-package golden-ratio
+  :demand t
+  :init (defun my/gloden-ratio ()
+          "Toggle golden ratio"
+          (interactive)
+          (if golden-ratio-mode
+              (progn (golden-ratio-mode -1)
+                     (balance-windows))
+            (progn (golden-ratio-mode)
+                   (golden-ratio))))
+  :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
+
 (provide 'basic-settings)
