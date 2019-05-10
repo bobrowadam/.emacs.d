@@ -43,7 +43,14 @@
   :demand t)
 (use-package basic-settings
   :demand t
-  :load-path "./bob-lisp")
+  :load-path "./bob-lisp"
+  :bind
+  ("C-c M-s" . isearch-forward-symbol-at-point)
+  ("M-i" . imenu)
+  ("C-x j" . whitespace-cleanup)
+  ("C-^" . (lambda () (interactive (delete-indentation -1))))
+  ("M-C-h" . backward-kill-sexp))
+
 (use-package tramp-settings
   :demand t
   :load-path "./bob-lisp")

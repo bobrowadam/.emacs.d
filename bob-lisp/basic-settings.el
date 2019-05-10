@@ -47,9 +47,6 @@
 (setq ring-bell-function 'ignore
       visible-bell nil)
 (setq-default indent-tabs-mode nil)
-(global-set-key (kbd "M-i") 'imenu)
-(global-set-key (kbd "C-^") #'(lambda () (interactive (delete-indentation -1))))
-(global-set-key (kbd "C-x j") 'whitespace-cleanup)
 
 (delete-selection-mode 1)
 (set-default 'indent-tabs-mode nil)
@@ -61,7 +58,6 @@
 (define-key key-translation-map [?\C-h] [?\C-?])
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
 ;; (define-key key-translation-map (kbd "<f9>") (kbd "C-s-h"))
-(global-set-key (kbd "M-C-h") 'backward-kill-sexp)
 
 ;; Theme and Font
 (use-package gruvbox-theme
