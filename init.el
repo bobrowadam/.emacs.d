@@ -50,7 +50,8 @@
   ("C-x j" . whitespace-cleanup)
   ("C-^" . (lambda () (interactive (delete-indentation -1))))
   ("M-C-h" . backward-kill-sexp)
-  ("C-x -" . my/gloden-ratio))
+  ("C-x -" . my/gloden-ratio)
+  ("C-x f" . recentf-open-files))
 
 (use-package tramp-settings
   :demand t
