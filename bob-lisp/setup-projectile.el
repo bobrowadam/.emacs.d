@@ -8,9 +8,9 @@
     (if (projectile-project-p)
         (projectile-run-eshell)
       (eshell arg)))
-  :config (projectile-global-mode 1)
-  :bind (:map projectile-mode-map ("C-c p" . projectile-command-map))
+  (setq projectile-completion-system 'ivy)
   :config
-  (setq projectile-switch-project-action #'projectile-dired))
+  (setq projectile-switch-project-action #'projectile-dired)
+  (projectile-global-mode 1))
 
 (provide 'setup-projectile)

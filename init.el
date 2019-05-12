@@ -79,8 +79,18 @@
   :load-path "./bob-lisp"
   :demand t)
 (use-package ido-setup
+  :disabled t
   :demand t
   :load-path "./bob-lisp")
+(use-package setup-ivy
+  :demand t
+  :load-path "./bob-lisp"
+  :bind
+  (("M-x" . counsel-M-x)
+   ("C-x C-f" . counsel-find-file)
+   ("C-x C-m" . counsel-mark-ring)
+   ("C-c C-s C-r" . counsel-rg)
+   ("C-c C-s C-s" . swiper)))
 (use-package setup-magit
   :bind
   ("C-x g" . magit-status)
@@ -95,7 +105,9 @@
 (use-package setup-projectile
   :load-path "./bob-lisp"
   :demand t
-  :bind ("C-c e" . my-run-eshell))
+  :bind
+  ("C-c e" . my-run-eshell)
+  (:map projectile-mode-map ("C-c p" . projectile-command-map)))
 (use-package sicp)
 (use-package ace-window
   :bind ( "C-x o" . ace-window)
