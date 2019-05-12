@@ -69,7 +69,7 @@
   :if (window-system))
 
 (use-package org-brain
-  :after org-mode
+  :demand t
   :init
   (setq org-brain-path (concat org-directory "/org-brain"))
   :config
