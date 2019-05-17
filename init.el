@@ -51,7 +51,13 @@
   ("C-^" . (lambda () (interactive (delete-indentation -1))))
   ("M-C-h" . backward-kill-sexp)
   ("C-x -" . my/gloden-ratio)
-  ("C-x f" . recentf-open-files))
+  ("C-x f" . recentf-open-files)
+  ("M-o" . other-frame))
+
+(use-package setup-eshell
+  :load-path "./bob-list"
+  :bind
+  (:map eshell-mode-map ("M-r" . counsel-esh-history)))
 
 (use-package tramp-settings
   :demand t
@@ -143,28 +149,22 @@
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
   :if (window-system))
 (use-package avy
+  :disabled t
   :demand
   :bind
   ("C-c M-c" . avy-goto-char)
   ("C-c M-d" . avy-goto-word-1))
+(use-package ace-jump-mode
+  :demand
+  :bind
+  ("C-c M-c" . ace-jump-mode))
 (use-package ripgrep
   :bind ("C-c M-r" . ripgrep-regexp))
-(use-package eshell-prompt-extras
-  :demand t
-  :if (window-system)
-  :config
-  (autoload 'epe-theme-lambda "eshell-prompt-extras")
-  (setq eshell-highlight-prompt nil
-        eshell-prompt-function 'epe-theme-lambda))
 
 (use-package setup-snippets
   :demand t
   :bind ("C-c TAB" . yas-expand)
   :load-path "./bob-lisp")
-
-(use-package inf-amm
-  :demand t
-  :load-path "~/source/inf-ammonite")
 
 (use-package expand-region
   :bind ("M-#" . er/expand-region))
@@ -175,20 +175,28 @@
          ("C-c M-%" . anzu-repl))
   :config
   (global-anzu-mode))
+
 (use-package multiple-cursors
   :if (window-system)
   :bind
   (("C->" . 'mc/mark-next-like-this)
    ("C-<" . 'mc/mark-previous-like-this)))
+
 (use-package setup-rust
   :demand t
   :load-path "./bob-lisp")
+
 (use-package kubernetes
   :commands (kubernetes-overview)
+  :config
+  (setq kubernetes-poll-frequency 30)
+  (setq kubernetes-redraw-frequency 30)
   :bind ("C-c k" . kubernetes-overview))
+(use-package kubernetes-tramp)
 
 (use-package zoom-window
   :init
   (custom-set-variables
    '(zoom-window-mode-line-color "DarkBlue"))
   :bind ("C-x C-z" . zoom-window-zoom))
+(use-package xkcd)

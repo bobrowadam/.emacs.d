@@ -130,7 +130,7 @@ sEnter server-name:\s")
   (if-let* ((shell-buffers (seq-filter
                             (lambda (b) (s-contains\? "*SHELL*" b  t))
                             (mapcar (function buffer-name) (buffer-list))))
-            (shell-buffer (ido-completing-read+ "Shell: " shell-buffers)))
+            (shell-buffer (ivy-completing-read "Shell: " shell-buffers)))
       (switch-to-buffer shell-buffer)
     (message "No Shell bufers exists")))
 

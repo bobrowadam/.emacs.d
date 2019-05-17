@@ -65,13 +65,12 @@
       (lambda () (interactive) (org-eval-in-calendar '(calendar-forward-day 1))))
     ))
 
-(use-package org-bullets
-  :if (window-system))
+(use-package org-bullets)
 
 (use-package org-brain
   :demand t
   :init
-  (setq org-brain-path (concat org-directory "/org-brain"))
+  (setq org-brain-path (concat org-directory "/brain"))
   :config
   (setq org-id-track-globally t)
   (setq org-id-locations-file "~/.emacs.d/.org-id-locations")

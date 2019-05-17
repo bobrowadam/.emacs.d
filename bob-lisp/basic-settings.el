@@ -96,6 +96,7 @@
       kept-old-versions 2)   ; and some old ones, too
 
 (add-to-list 'prog-mode-hook #'linum-mode)
+(setq linum-format "%4d   ")
 (setq find-function-C-source-directory "~/source/emacs-26.1/src/")
 
 ;; Ediff setup
