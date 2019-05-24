@@ -17,12 +17,12 @@
   :bind
   (:map scala-mode-map
         ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
-        ("C-c C-r" . lsp-ui-peek-find-references)
+        ("C-c C-r" . lsp-find-references)
         ("C-c M-i" . lsp-ui-imenu)
         ("C-c M-d" . lsp-describe-thing-at-point))
   :init
   (setq lsp-scala-server-command "/usr/local/bin/metals-emacs")
-  (setq lsp-print-io t))
+  (setq lsp-print-io nil))
 
 (use-package sbt-mode
   :commands sbt-start sbt-command)
