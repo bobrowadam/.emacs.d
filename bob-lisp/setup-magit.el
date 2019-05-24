@@ -3,7 +3,9 @@
   (magit-commit-create `("-m" ,message)))
 
 (use-package magit
-  :hook (magit-post-refresh-hook . diff-hl-magit-post-refresh)
+  :hook
+  (magit-post-refresh-hook . diff-hl-magit-post-refresh)
+  (before-save-hook . magit-wip-commit-initial-backup)
   :config
   ;; (setq magit-completing-read-function 'ivy-completing-read)
   (setq transient-default-level 7)
@@ -11,7 +13,11 @@
   (put 'magit-diff-edit-hunk-commit 'disabled nil)
   (transient-append-suffix 'magit-commit
     "c"
-    '("m" "Quick commit using minibuffer for commit message." bob/magit-message)))
+    '("m" "Quick commit using minibuffer for commit message." bob/magit-message))
+  (magit-wip-before-change-mode)
+  (magit-wip-after-apply-mode)
+  (magit-wip-after-save-mode)
+  (setq magit-wip-merge-branch t))
 
 (use-package forge)
 
