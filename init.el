@@ -22,8 +22,11 @@
 (setq use-package-compute-statistics t)
 
 (require 'dash)
+
 (require 'dired)
 (require 'dired-x)
+(setq dired-use-ls-dired nil)
+(setq dired-listing-switches "-alh")
 
 (use-package f)
 (use-package which-key
@@ -52,7 +55,8 @@
   ("M-C-h" . backward-kill-sexp)
   ("C-x -" . my/gloden-ratio)
   ("C-x f" . recentf-open-files)
-  ("M-o" . other-frame))
+  ("M-o" . other-frame)
+  ("C-x k" . kill-this-buffer))
 
 (use-package setup-eshell
   :load-path "./bob-list"
@@ -191,7 +195,8 @@
   :config
   (setq kubernetes-poll-frequency 30)
   (setq kubernetes-redraw-frequency 30)
-  :bind ("C-c k" . kubernetes-overview))
+  :bind
+  ("C-c k" . kubernetes-overview))
 (use-package kubernetes-tramp)
 
 (use-package zoom-window
@@ -199,4 +204,8 @@
   (custom-set-variables
    '(zoom-window-mode-line-color "DarkBlue"))
   :bind ("C-x C-z" . zoom-window-zoom))
-(use-package xkcd)
+
+(use-package logview)
+
+(use-package evil) ;; Sometimes you might turn into the dark side
+(use-package haskell-mode)
