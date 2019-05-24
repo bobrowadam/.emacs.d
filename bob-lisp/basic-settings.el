@@ -1,7 +1,7 @@
 (setq make-backup-files nil
       enable-recursive-minibuffers t
       inhibit-splash-screen t
-      require-final-newline 'ask
+      require-final-newline nil
       truncate-partial-width-windows 80
       sentence-end-double-space t ; explicitly choose default
       x-select-enable-clipboard t
@@ -119,5 +119,10 @@
             (progn (golden-ratio-mode)
                    (golden-ratio))))
   :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
+
+(use-package undo-tree
+  :demand t
+  :config
+  (global-undo-tree-mode 1))
 
 (provide 'basic-settings)
