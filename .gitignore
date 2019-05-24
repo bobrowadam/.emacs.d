@@ -28,3 +28,5 @@ transient/*
 /bookmarks
 /scratch-backup.el
 /.org-id-locations
+/.undo-tree-history
+/logview-cache.extmap
