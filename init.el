@@ -59,6 +59,7 @@
   ("C-x k" . kill-this-buffer))
 
 (use-package setup-eshell
+  :demand t
   :load-path "./bob-list"
   :bind
   (:map eshell-mode-map ("M-r" . counsel-esh-history)))
