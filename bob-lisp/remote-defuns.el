@@ -128,7 +128,9 @@ sEnter server-name:\s")
   "Jump to a buffer shell"
   (interactive)
   (if-let* ((shell-buffers (seq-filter
-                            (lambda (b) (s-contains\? "*SHELL*" b  t))
+                            (lambda (b) (or (s-contains\? "*SHELL*" b  t)
+                                            (s-contains\? "*eshell" b  t)
+                                            (s-contains\? "*sbt*" b  t)))
                             (mapcar (function buffer-name) (buffer-list))))
             (shell-buffer (ivy-completing-read "Shell: " shell-buffers)))
       (switch-to-buffer shell-buffer)
