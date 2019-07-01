@@ -39,6 +39,7 @@
   :init (setq exec-path-from-shell-arguments '("-l"))
   :config (exec-path-from-shell-initialize))
 (use-package rich-minority
+  :demand t
   :init
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|")))
   (rich-minority-mode 1))
@@ -137,6 +138,7 @@
   :demand t
   :load-path "./bob-lisp")
 (use-package org-setup
+  :if (window-system)
   :demand t
   :load-path "./bob-lisp"
   :bind
@@ -210,3 +212,12 @@
 
 (use-package evil) ;; Sometimes you might turn into the dark side
 (use-package haskell-mode)
+(put 'set-goal-column 'disabled nil)
+
+(use-package elm-mode)
+(put 'dired-find-alternate-file 'disabled nil)
+
+(use-package treemacs
+  :demand t)
+(use-package treemacs-projectile
+  :after treemacs)
