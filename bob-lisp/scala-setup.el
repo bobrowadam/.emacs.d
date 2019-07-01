@@ -1,8 +1,10 @@
 (use-package lsp-mode
+  :demand t
   :init
   (setq lsp-prefer-flymake nil))
 
 (use-package lsp-ui
+  :demand t
   :hook (lsp-mode . lsp-ui-mode)
   :config
   (setq
@@ -25,9 +27,11 @@
   (setq lsp-print-io nil))
 
 (use-package sbt-mode
+  :demand t
   :commands sbt-start sbt-command)
 
 (use-package scala-mode
+  :demand t
   :mode "\\.s\\(cala\\|bt\\)$"
   :init
   (defun sbt-compile ()
