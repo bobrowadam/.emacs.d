@@ -1,2 +1,3 @@
 alias em find-file $1
 alias ll ls -l $1
+alias ccache sudo killall -HUP mDNSResponder
