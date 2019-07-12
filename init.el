@@ -221,3 +221,7 @@
   :demand t)
 (use-package treemacs-projectile
   :after treemacs)
+
+(use-package control-mode
+  :config (control-mode-default-setup))
+
