@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: printl
+# key: printl
+# --
+
+println("$1`(buffer-name)` line `(count-lines 1 (point))`  -----------------------------------------------------------");
