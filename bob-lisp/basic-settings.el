@@ -22,7 +22,8 @@
 
       ;; No more damn prompts!
       dired-recursive-deletes 'always
-      dired-recursive-copies 'always)
+      dired-recursive-copies 'always
+      cursor-type '(bar . 4))
 
 
 (setq scroll-conservatively 10

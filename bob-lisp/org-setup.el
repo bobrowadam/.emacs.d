@@ -1,6 +1,10 @@
 (use-package org
   :if (window-system)
   :init
+  (setq org-babel-load-languages '((emacs-lisp . t)
+                                   (shell . t)
+                                   (mongo . t)
+                                   (javascript . t)))
   (setq calendar-longitude 32.085300)
   (setq calendar-latitude 34.781769)
   (setq org-tree-slide-header nil)
@@ -29,6 +33,9 @@
   ;;          '("+PROJECT/-MAYBE-DONE" ("NEXT" "TODO") ("@SHOP")
   ;;                                   "\\<IGNORE\\>"))
   (setq org-tags-exclude-from-inheritance '("PROJECT"))
+  :config
+  (org-babel-shell-initialize)
+  (require 'ob-js)
   :hook (org-mode . (lambda () (org-bullets-mode 1))))
 
 (use-package request
@@ -79,5 +86,9 @@
         org-capture-templates)
   (setq org-brain-visualize-default-choices 'all)
   (setq org-brain-title-max-length 12))
+
+(use-package ob-mongo
+  :after org
+  :ensure t)
 
 (provide 'org-setup)

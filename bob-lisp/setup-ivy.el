@@ -7,7 +7,7 @@
         '((t . ivy--regex-fuzzy)))
   (setq ivy-use-selectable-prompt t)
   (setq ivy-initial-inputs-alist nil)
-  (setq ivy-use-virtual-buffers t)
+  (setq ivy-use-virtual-buffers nil)
   (setq ivy-count-format "(%d%d) ")
   (ivy-mode 1))
 

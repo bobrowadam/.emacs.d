@@ -198,6 +198,7 @@
   :config
   (setq kubernetes-poll-frequency 30)
   (setq kubernetes-redraw-frequency 30)
+  (setenv "AWS_PROFILE" "dev-k8s")
   :bind
   ("C-c k" . kubernetes-overview))
 (use-package kubernetes-tramp)
@@ -219,9 +220,9 @@
 
 (use-package treemacs
   :demand t)
+
 (use-package treemacs-projectile
   :after treemacs)
 
 (use-package control-mode
-  :config (control-mode-default-setup))
-
+  :init (control-mode-default-setup))
