@@ -31,11 +31,17 @@
   (defalias 'status 'magit-status))
 
 (use-package eshell-prompt-extras
-  :demand t
+  :disabled t
   :if (window-system)
   :config
   (autoload 'epe-theme-lambda "eshell-prompt-extras")
   (setq eshell-highlight-prompt nil
         eshell-prompt-function 'epe-theme-lambda))
+
+(use-package eshell-git-prompt
+  :demand t
+  :ensure t
+  :config
+  (eshell-git-prompt-use-theme 'git-radar))
 
 (provide 'setup-eshell)

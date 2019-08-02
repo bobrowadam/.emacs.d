@@ -1,10 +1,12 @@
 (use-package org
   :if (window-system)
   :init
-  (setq org-babel-load-languages '((emacs-lisp . t)
-                                   (shell . t)
-                                   (mongo . t)
-                                   (javascript . t)))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . nil)
+     (js . t)
+     (shell . t)
+     (rust . t)))
   (setq calendar-longitude 32.085300)
   (setq calendar-latitude 34.781769)
   (setq org-tree-slide-header nil)
@@ -28,13 +30,12 @@
   (setq org-complete-tags-always-offer-all-agenda-tags t)
   (setq org-stuck-projects
         '("+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER")
-             ""))
+          ""))
   ;; (setq org-stuck-projects
   ;;          '("+PROJECT/-MAYBE-DONE" ("NEXT" "TODO") ("@SHOP")
   ;;                                   "\\<IGNORE\\>"))
   (setq org-tags-exclude-from-inheritance '("PROJECT"))
   :config
-  (org-babel-shell-initialize)
   (require 'ob-js)
   :hook (org-mode . (lambda () (org-bullets-mode 1))))
 
@@ -75,7 +76,6 @@
 (use-package org-bullets)
 
 (use-package org-brain
-  :demand t
   :init
   (setq org-brain-path (concat org-directory "/brain"))
   :config
@@ -88,7 +88,8 @@
   (setq org-brain-title-max-length 12))
 
 (use-package ob-mongo
-  :after org
+  :ensure t)
+(use-package ob-rust
   :ensure t)
 
 (provide 'org-setup)

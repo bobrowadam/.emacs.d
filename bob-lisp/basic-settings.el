@@ -25,7 +25,7 @@
       dired-recursive-copies 'always
       cursor-type '(bar . 4))
 
-
+(setq initial-scratch-message ";; Oh it's you again :|")
 (setq scroll-conservatively 10
       scroll-margin 2)
 (setq display-time-day-and-date t)

@@ -147,10 +147,8 @@
   ("C-c S" . org-save-all-org-buffers)
   ("C-c r" . #'my/refresh-google-calendar)
   ("C-c v" . org-brain-visualize)
-  ("C-c l" . org-store-link)
-  (:map org-brain-visualize-mode-map
-        ("+" . org-brain-show-descendant-level)
-        ("-" . org-brain-hide-descendant-level)))
+  ("C-c l" . org-store-link))
+
 (use-package restclient
   :init
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
@@ -195,12 +193,14 @@
 
 (use-package kubernetes
   :commands (kubernetes-overview)
+  :init
+  (setenv "AWS_PROFILE" "dev-k8s")
   :config
   (setq kubernetes-poll-frequency 30)
   (setq kubernetes-redraw-frequency 30)
-  (setenv "AWS_PROFILE" "dev-k8s")
   :bind
   ("C-c k" . kubernetes-overview))
+
 (use-package kubernetes-tramp)
 
 (use-package zoom-window
@@ -208,8 +208,6 @@
   (custom-set-variables
    '(zoom-window-mode-line-color "DarkBlue"))
   :bind ("C-x C-z" . zoom-window-zoom))
-
-(use-package logview)
 
 (use-package evil) ;; Sometimes you might turn into the dark side
 (use-package haskell-mode)
@@ -226,3 +224,8 @@
 
 (use-package control-mode
   :init (control-mode-default-setup))
+
+(use-package elpy
+  :ensure t
+  :init
+  (advice-add 'python-mode :before 'elpy-enable))

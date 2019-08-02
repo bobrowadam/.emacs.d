@@ -39,9 +39,9 @@
     (sbt-command "compile"))
   :bind
   (:map scala-mode-map
-        ("C-c C-b C-c" . sbt-command)
-        ("C-c C-b C-b" . sbt-compile)
-        ("C-c C-b C-s". sbt-switch-to-active-sbt-buffer))
+        ("C-c C-c C-c" . sbt-command)
+        ("C-c C-c C-b" . sbt-compile)
+        ("C-c C-c C-s". sbt-switch-to-active-sbt-buffer))
   :config
   (setq scala-indent:align-forms t
         scala-indent:align-parameters t
