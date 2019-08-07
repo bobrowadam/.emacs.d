@@ -126,4 +126,18 @@
   :config
   (global-undo-tree-mode 1))
 
+(defun bob/create-scratch ()
+    (interactive)
+    (progn (get-buffer-create "*scratch*")
+           (and initial-scratch-message
+                (get-buffer "*scratch*")
+                (with-current-buffer "*scratch*"
+	          (when (zerop (buffer-size))
+	            (insert (substitute-command-keys initial-scratch-message))
+	            (set-buffer-modified-p nil))))
+           (if (get-buffer "*scratch*")
+               (with-current-buffer "*scratch*"
+                 (if (eq major-mode 'fundamental-mode)
+	             (funcall initial-major-mode))))))
+
 (provide 'basic-settings)
