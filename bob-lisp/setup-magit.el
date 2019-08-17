@@ -24,4 +24,7 @@
 (use-package github-review
   :init (setq github-review-fetch-top-level-and-review-comments t))
 
+(use-package diff-hl
+  :init (global-diff-hl-mode))
+
 (provide 'setup-magit)
