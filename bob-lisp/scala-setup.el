@@ -1,7 +1,37 @@
+;;; scala-setup.el --- summary -*- lexical-binding: t -*-
+
+;; Author: adam bob
+;; Maintainer: adam bob
+;; Version: 1
+;; Package-Requires: (dependencies)
+
+
+;; This file is not part of GNU Emacs
+
+;; This file is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; For a full copy of the GNU General Public License
+;; see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;; Scala configurtaion
+
+;;; Code:
+
 (use-package lsp-mode
   :demand t
   :init
-  (setq lsp-prefer-flymake nil))
+  (defvar lsp-print-io t)
+  (defvar lsp-scala-server-command "/usr/local/bin/metals-emacs")
+  (defvar lsp-prefer-flymake nil))
 
 (use-package lsp-ui
   :demand t
@@ -12,28 +42,22 @@
    lsp-ui-peek-enable t
    lsp-ui-sideline-enable t))
 
-(use-package lsp-scala
-  :after scala-mode
-  :demand t
-  :hook ((scala-mode . lsp) (scala-mode . hs-minor-mode))
-  :bind
-  (:map scala-mode-map
-        ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
-        ("C-c C-r" . lsp-find-references)
-        ("C-c M-i" . lsp-ui-imenu)
-        ("C-c M-d" . lsp-describe-thing-at-point))
-  :init
-  (setq lsp-scala-server-command "/usr/local/bin/metals-emacs")
-  (setq lsp-print-io nil))
-
 (use-package sbt-mode
   :demand t
-  :commands sbt-start sbt-command)
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map))
 
 (use-package scala-mode
   :demand t
   :mode "\\.s\\(cala\\|bt\\)$"
   :init
+  (setq lsp-scala-server-command "/usr/local/bin/metals-emacs")
   (defun sbt-compile ()
     (interactive)
     (sbt-command "compile"))
@@ -41,7 +65,11 @@
   (:map scala-mode-map
         ("C-c C-c C-c" . sbt-command)
         ("C-c C-c C-b" . sbt-compile)
-        ("C-c C-c C-s". sbt-switch-to-active-sbt-buffer))
+        ("C-c C-c C-s". sbt-switch-to-active-sbt-buffer)
+        ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
+        ("C-c C-r" . lsp-find-references)
+        ("C-c M-i" . lsp-ui-imenu)
+        ("C-c M-d" . lsp-describe-thing-at-point))
   :config
   (setq scala-indent:align-forms t
         scala-indent:align-parameters t
@@ -50,6 +78,14 @@
         scala-indent:operator-strategy)
   :hook
   (scala-mode . smartparens-mode)
+  (scala-mode . lsp)
+  (scala-mode . hs-minor-mode)
   (scala-mode . (lambda () (yas-load-directory (concat user-emacs-directory "snippets/scala-mode/")))))
 
+(use-package company-lsp
+  :demand t
+  :ensure t)
+
 (provide 'scala-setup)
+
+;;; scala-setup.el ends here
