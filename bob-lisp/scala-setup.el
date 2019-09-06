@@ -45,6 +45,7 @@
 (use-package sbt-mode
   :demand t
   :commands sbt-start sbt-command
+  :hook (sbt-mode . (lambda () (setenv "AWS_PROFILE" "scala-deps")))
   :config
   ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
   ;; allows using SPACE when in the minibuffer

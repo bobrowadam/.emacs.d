@@ -113,6 +113,9 @@
   :init (whole-line-or-region-mode 1))
 (use-package company
   :demand t
+  :init
+  (setq company-minimum-prefix-length 2)
+  (setq company-idle-delay 0.1)
   :config (global-company-mode 1))
 (use-package setup-projectile
   :load-path "./bob-lisp"
@@ -194,7 +197,7 @@
 (use-package kubernetes
   :commands (kubernetes-overview)
   :init
-  (setenv "AWS_PROFILE" "dev-k8s")
+  :hook (kubernetes-overview-mode . (lambda () (setenv "AWS_PROFILE" "dev-k8s")))
   :config
   (setq kubernetes-poll-frequency 30)
   (setq kubernetes-redraw-frequency 30)
