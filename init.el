@@ -243,9 +243,11 @@
 (put 'dired-find-alternate-file 'disabled nil)
 
 (use-package treemacs
+  :disabled t
   :demand t)
 
 (use-package treemacs-projectile
+  :disabled t
   :after treemacs)
 
 (use-package control-mode
