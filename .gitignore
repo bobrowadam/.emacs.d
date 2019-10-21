@@ -31,3 +31,5 @@ transient/*
 /.undo-tree-history
 /logview-cache.extmap
 /.cache/treemacs-persist
+/elpy/*
+/xkcd/*
