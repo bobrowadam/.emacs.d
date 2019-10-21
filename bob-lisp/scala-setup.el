@@ -26,22 +26,6 @@
 
 ;;; Code:
 
-(use-package lsp-mode
-  :demand t
-  :init
-  (defvar lsp-print-io t)
-  (defvar lsp-scala-server-command "/usr/local/bin/metals-emacs")
-  (defvar lsp-prefer-flymake nil))
-
-(use-package lsp-ui
-  :demand t
-  :hook (lsp-mode . lsp-ui-mode)
-  :config
-  (setq
-   lsp-ui-doc-enable t
-   lsp-ui-peek-enable t
-   lsp-ui-sideline-enable t))
-
 (use-package sbt-mode
   :demand t
   :commands sbt-start sbt-command
@@ -66,11 +50,7 @@
   (:map scala-mode-map
         ("C-c C-c C-c" . sbt-command)
         ("C-c C-c C-b" . sbt-compile)
-        ("C-c C-c C-s". sbt-switch-to-active-sbt-buffer)
-        ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
-        ("C-c C-r" . lsp-find-references)
-        ("C-c M-i" . lsp-ui-imenu)
-        ("C-c M-d" . lsp-describe-thing-at-point))
+        ("C-c C-c C-s". sbt-switch-to-active-sbt-buffer))
   :config
   (setq scala-indent:align-forms t
         scala-indent:align-parameters t
@@ -80,10 +60,12 @@
   :hook
   (scala-mode . smartparens-mode)
   (scala-mode . lsp)
+  ;; (scala-mode . lsp-mode)
   (scala-mode . hs-minor-mode)
   (scala-mode . (lambda () (yas-load-directory (concat user-emacs-directory "snippets/scala-mode/")))))
 
-(use-package company-lsp
+(use-package ammonite-term-repl
+  :hook (term-mode . smartparens-mode)
   :demand t
   :ensure t)
 

@@ -6,7 +6,7 @@
   :config
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
-          ,(concat user-emacs-directory "elpa/yasnippet-snippets-20190422.1416/snippets/")))
+          ,(concat user-emacs-directory "elpa/yasnippet-snippets-20190926.1252/snippets")))
   :config (yas-reload-all))
 (use-package yasnippet-snippets)
 

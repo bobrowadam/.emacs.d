@@ -114,8 +114,9 @@
 (use-package company
   :demand t
   :init
-  (setq company-minimum-prefix-length 2)
-  (setq company-idle-delay 0.1)
+  (setq company-tooltip-align-annotations t)
+  (setq company-minimum-prefix-length 1)
+  (setq company-idle-delay 0.2)
   :config (global-company-mode 1))
 (use-package setup-projectile
   :load-path "./bob-lisp"
@@ -133,13 +134,28 @@
   :demand t
   :hook
   (scala-mode . highlight-indent-guides-mode))
+
+(use-package lsp-setup
+  :demand t
+  :load-path "./bob-lisp"
+  :bind
+  (:map lsp-mode-map
+        ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
+        ("C-c C-r" . lsp-find-references)
+        ("C-c M-i" . lsp-ui-imenu)
+        ("C-c M-d" . lsp-describe-thing-at-point)
+        ("C-c C-f" . lsp-format-buffer)
+        ("C-=" . origami-toggle-node)))
+
 (use-package scala-setup
-  :after company
+  :after (company lsp-setup)
   :demand t
   :load-path "./bob-lisp")
+
 (use-package setup-js
   :demand t
   :load-path "./bob-lisp")
+
 (use-package org-setup
   :if (window-system)
   :demand t
@@ -163,6 +179,8 @@
   ("C-c M-c" . avy-goto-char)
   ("C-c M-d" . avy-goto-word-1))
 (use-package ace-jump-mode
+  :init
+  (setq ace-jump-mode-case-fold nil)
   :demand
   :bind
   ("C-c M-c" . ace-jump-mode))
@@ -191,7 +209,12 @@
    ("C-<" . 'mc/mark-previous-like-this)))
 
 (use-package setup-rust
+  :after (lsp-setup)
   :demand t
+  :bind (:map rust-mode-map
+              ("C-c C-c C-r" . rust-run)
+              ("C-c C-c C-b" . rust-compile)
+              ("C-c C-c C-s". sbt-switch-to-active-sbt-buffer))
   :load-path "./bob-lisp")
 
 (use-package kubernetes
