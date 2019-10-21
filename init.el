@@ -9,7 +9,7 @@
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
- 
+
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -75,7 +75,7 @@
   ("C-c s s". bob/shell)
   ("C-c s j" . bob/jump-to-shell))
 (use-package misc-funcs
-  :demand t 
+  :demand t
   :load-path "./bob-listp")
 (use-package edit-funcs
   :demand t
@@ -252,6 +252,7 @@
   :init (control-mode-default-setup))
 
 (use-package elpy
-  :ensure t
   :init
   (advice-add 'python-mode :before 'elpy-enable))
+
+(use-package try)
