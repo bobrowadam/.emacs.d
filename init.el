@@ -258,3 +258,6 @@
   (advice-add 'python-mode :before 'elpy-enable))
 
 (use-package try)
+
+;; This is for term mode act nice with other frame
+(define-key term-raw-map (kbd "M-o") 'other-frame)
