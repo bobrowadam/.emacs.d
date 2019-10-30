@@ -33,6 +33,8 @@
   :config
   ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
   ;; allows using SPACE when in the minibuffer
+  (setq
+   sbt:program-options '("-Djline.terminal=none" "-Dsbt.supershell=false"))
   (substitute-key-definition
    'minibuffer-complete-word
    'self-insert-command
@@ -60,6 +62,8 @@
   :hook
   (scala-mode . smartparens-mode)
   (scala-mode . lsp)
+  (scala-mode . set-scala-fmt-path)
+
   ;; (scala-mode . lsp-mode)
   (scala-mode . hs-minor-mode)
   (scala-mode . (lambda () (yas-load-directory (concat user-emacs-directory "snippets/scala-mode/")))))
@@ -70,5 +74,8 @@
   :ensure t)
 
 (provide 'scala-setup)
+
+(defun set-scala-fmt-path ()
+  (setq lsp-metals-scalafmt-config-path (format "%s%s" (projectile-project-root) ".scalafmt.conf")))
 
 ;;; scala-setup.el ends here
