@@ -41,7 +41,7 @@
 (use-package rich-minority
   :demand t
   :init
-  (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens") "\\|")))
+  (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens" " Projectile") "\\|")))
   (rich-minority-mode 1))
 (use-package flycheck
   :demand t)
@@ -103,11 +103,13 @@
    ("C-x C-m" . counsel-mark-ring)
    ("C-c C-s C-r" . counsel-rg)
    ("C-c C-s C-s" . swiper)))
+
 (use-package setup-magit
   :bind
   ("C-x g" . magit-status)
   :demand t
   :load-path "./bob-lisp")
+
 (use-package whole-line-or-region
   :demand t
   :init (whole-line-or-region-mode 1))

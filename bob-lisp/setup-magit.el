@@ -4,7 +4,6 @@
 
 (use-package magit
   :hook
-  (magit-post-refresh-hook . diff-hl-magit-post-refresh)
   (before-save-hook . magit-wip-commit-initial-backup)
   :config
   ;; (setq magit-completing-read-function 'ivy-completing-read)
@@ -25,6 +24,7 @@
   :init (setq github-review-fetch-top-level-and-review-comments t))
 
 (use-package diff-hl
+  :demand t
   :init (global-diff-hl-mode))
 
 (provide 'setup-magit)

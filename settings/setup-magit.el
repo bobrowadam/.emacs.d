@@ -71,8 +71,9 @@
 (use-package diff-hl
   :ensure t
   :init
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
-  (add-hook 'emacs-lisp-mode-hook 'diff-hl-mode))
+  (add-hook 'emacs-lisp-mode-hook 'diff-hl-mode)
+  :hook
+  (magit-post-refresh-hook . diff-hl-magit-post-refresh))
 
 (use-package counsel
   :ensure t
