@@ -59,4 +59,7 @@
 (use-package nodejs-repl
   :config
   (setq nodejs-repl-arguments "NODE_PATH=/usr/local/lib/node_modules"))
+
+(use-package json-mode)
+
 (provide 'setup-js)
