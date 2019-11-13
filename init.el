@@ -14,6 +14,15 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)                ;; if you use :diminish
+(require 'bind-key)                ;; if you use any :bind variant
+
+(use-package use-package-chords
+  :ensure t
+  :config (key-chord-mode 1))
+
 (setq use-package-always-defer t)
 (setq use-package-always-ensure t)
 (setq use-package-verbose t)
@@ -57,7 +66,11 @@
   ("C-x -" . my/gloden-ratio)
   ("C-x f" . recentf-open-files)
   ("M-o" . other-frame)
-  ("C-x k" . kill-this-buffer))
+  ("C-x k" . kill-this-buffer)
+  :chords
+  (("jj" . "_")
+   ("ii" . "|")
+   ("kk" . "~")))
 
 (use-package setup-eshell
   :demand t
@@ -211,6 +224,7 @@
    ("C-<" . 'mc/mark-previous-like-this)))
 
 (use-package setup-rust
+  :if (window-system)
   :after (lsp-setup)
   :demand t
   :bind (:map rust-mode-map
