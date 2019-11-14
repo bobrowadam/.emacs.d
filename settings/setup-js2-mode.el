@@ -56,7 +56,9 @@
   (add-hook 'js2-mode-hook 'color-identifiers-mode))
 
 (use-package json-mode
-  :ensure t)
+  :ensure t
+  :hook (json-mode . origami-mode)
+  :bind (:map json-mode-map ("C-=" . origami-toggle-node)))
 
 ;; Tern
 (autoload 'tern-mode "tern.el" nil t)
