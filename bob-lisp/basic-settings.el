@@ -61,20 +61,12 @@
 ;; (define-key key-translation-map (kbd "<f9>") (kbd "C-s-h"))
 
 ;; Theme and Font
-(use-package gruvbox-theme
-  :init (setq custom-theme-directory "~/.emacs.d/themes")
-  :load-path "~/.emacs.d/themes"
-  :demand t
-  :init
-  (setq custom-safe-themes t)
-  (defvar zenburn-override-colors-alist
-  '(("zenburn-bg" . "#111111")))
-  :config
-  (set-frame-font "Latin Modern Mono 21")
-   (add-to-list 'default-frame-alist
-                '(font . "Latin Modern Mono 21"))
-   ;; (load-theme 'zenburn t)
-   (load-theme 'bobs-badger t))
+(setq custom-safe-themes t)
+(setq custom-theme-directory "~/.emacs.d/themes")
+(set-frame-font "Latin Modern Mono 21")
+  (add-to-list 'default-frame-alist
+               '(font . "Latin Modern Mono 21"))
+(load-theme 'bobs-badger t)
  
 ;; Put backup files neatly away                                                 
 
