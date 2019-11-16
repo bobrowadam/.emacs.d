@@ -143,6 +143,7 @@
 (use-package whole-line-or-region
   :demand t
   :init (whole-line-or-region-mode 1))
+
 (use-package company
   :demand t
   :init
@@ -150,6 +151,7 @@
   (setq company-minimum-prefix-length 1)
   (setq company-idle-delay 0.2)
   :config (global-company-mode 1))
+
 (use-package setup-projectile
   :load-path "./bob-lisp"
   :demand t
