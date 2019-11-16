@@ -56,9 +56,7 @@
   (setq tide-format-options
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 
-(use-package nodejs-repl
-  :config
-  (setq nodejs-repl-arguments "NODE_PATH=/usr/local/lib/node_modules"))
+(use-package nodejs-repl)
 
 (use-package json-mode)
 

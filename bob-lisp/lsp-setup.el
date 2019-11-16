@@ -42,7 +42,6 @@
   :hook lsp-origami-mode)
 
 (use-package lsp-ui
-  :demand t
   :hook (lsp-mode . lsp-ui-mode)
   :config
   (setq
@@ -50,14 +49,8 @@
    lsp-ui-peek-enable t
    lsp-ui-sideline-enable t))
 
-(use-package lsp-origami
-  :demand t
-  :ensure t)
-
-(use-package company-lsp
-  :demand t
-  :ensure t)
-
+(use-package lsp-origami :ensure t)
+(use-package company-lsp :ensure t)
 (provide 'lsp-setup)
 
 ;;; ls-setup.el ends here

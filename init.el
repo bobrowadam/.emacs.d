@@ -16,9 +16,7 @@
 
 (eval-when-compile
   (require 'use-package))
-(require 'diminish)                ;; if you use :diminish
-(require 'bind-key)                ;; if you use any :bind variant
-
+(savehist-mode)
 (use-package use-package-chords
   :ensure t
   :config (key-chord-mode 1))
@@ -27,22 +25,22 @@
 (setq use-package-always-ensure t)
 (setq use-package-verbose t)
 (setq use-package-debug t)
-(setq use-package-verbose t)
 (setq use-package-compute-statistics t)
 
-(require 'dash)
+(use-package dash)
 
 (require 'dired)
 (require 'dired-x)
 (setq dired-use-ls-dired nil)
 (setq dired-listing-switches "-alh")
-
+(savehist-mode)
 (use-package f)
 (use-package which-key
   :demand t
   :if (window-system)
   :config
   (which-key-mode 1))
+
 (use-package exec-path-from-shell
   :demand t
   :init (setq exec-path-from-shell-arguments '("-l"))
@@ -70,7 +68,7 @@
   :chords
   (("jj" . "_")
    ("ii" . "|")
-   ("kk" . "~")))
+   ("qq" . "~")))
 
 (use-package setup-eshell
   :demand t
@@ -81,32 +79,51 @@
 (use-package tramp-settings
   :demand t
   :load-path "./bob-lisp")
+
 (use-package remote-defuns
   :demand t
   :load-path "./bob-lisp"
   :bind
   ("C-c s s". bob/shell)
   ("C-c s j" . bob/jump-to-shell))
+
 (use-package misc-funcs
   :demand t
   :load-path "./bob-listp")
+
 (use-package edit-funcs
   :demand t
   :load-path "./bob-lisp"
   :bind
   ("C-`" . unpop-to-mark-command)
   ("M-`" . jump-to-mark))
+
 (use-package setup-parens
   :load-path "./bob-listp"
-  :demand t)
-(use-package inf-mongo)
+  :demand t
+  :bind (:map smartparens-mode-map
+              ("M-(" . sp-wrap-round)
+              ("M-s" . sp-unwrap-sexp)
+              ("C-)" . sp-forward-slurp-sexp)
+              ("C-}" . sp-forward-barf-sexp)
+              ("C-{" . sp-backward-barf-sexp)
+              ("C-(" . sp-backward-slurp-sexp)
+              ("C-'" . sp-rewrap-sexp)
+              ("M-S" . sp-split-sexp)
+              ("M-J" . sp-join-sexp)
+              ("M-W" . sp-copy-sexp)))
+
+(use-package inf-mongo :demand)
+
 (use-package ibuffer-setup
-  :load-path "./bob-lisp"
-  :demand t)
+  :demand
+  :load-path "./bob-lisp")
+
 (use-package ido-setup
   :disabled t
   :demand t
   :load-path "./bob-lisp")
+
 (use-package setup-ivy
   :demand t
   :load-path "./bob-lisp"
@@ -187,18 +204,18 @@
   :init
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
   :if (window-system))
+
 (use-package avy
-  :disabled t
-  :demand
-  :bind
-  ("C-c M-c" . avy-goto-char)
-  ("C-c M-d" . avy-goto-word-1))
+  :chords
+  (("fd" . avy-goto-char-in-line)))
+
 (use-package ace-jump-mode
   :init
   (setq ace-jump-mode-case-fold nil)
   :demand
   :bind
   ("C-c M-c" . ace-jump-mode))
+
 (use-package ripgrep
   :bind ("C-c M-r" . ripgrep-regexp))
 
@@ -209,6 +226,7 @@
 
 (use-package expand-region
   :bind ("M-#" . er/expand-region))
+
 (use-package anzu
   :demand t
   :bind (("C-M-%" . anzu-query-replace-regexp)
@@ -253,11 +271,7 @@
 
 (use-package evil) ;; Sometimes you might turn into the dark side
 (use-package haskell-mode)
-(put 'set-goal-column 'disabled nil)
-
 (use-package elm-mode)
-(put 'dired-find-alternate-file 'disabled nil)
-
 (use-package treemacs
   :disabled t
   :demand t)
@@ -278,3 +292,5 @@
 ;; This is for term mode act nice with other frame
 (define-key term-raw-map (kbd "M-o") 'other-frame)
 (put 'narrow-to-region 'disabled nil)
+(put 'dired-find-alternate-file 'disabled nil)
+(put 'set-goal-column 'disabled nil)
