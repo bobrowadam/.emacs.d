@@ -1,3 +1,4 @@
+(use-package yasnippet-snippets)
 (use-package yasnippet
   :demand
   :hook
@@ -6,8 +7,7 @@
   :config
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
-          ,(concat user-emacs-directory "elpa/yasnippet-snippets-20190926.1252/snippets")))
+          ,yasnippet-snippets-dir))
   :config (yas-reload-all))
-(use-package yasnippet-snippets)
 
 (provide 'setup-snippets)
