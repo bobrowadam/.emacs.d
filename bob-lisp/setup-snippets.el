@@ -1,6 +1,6 @@
 (use-package yasnippet-snippets)
 (use-package yasnippet
-  :demand
+  :defer
   :hook
   (prog-mode-hook . yas-minor-mode)
   (emacs-lisp-mode . yas-minor-mode)
@@ -8,6 +8,6 @@
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
           ,yasnippet-snippets-dir))
-  :config (yas-reload-all))
+  (yas-reload-all))
 
 (provide 'setup-snippets)

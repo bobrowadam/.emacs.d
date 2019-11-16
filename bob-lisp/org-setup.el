@@ -1,12 +1,6 @@
 (use-package org
   :if (window-system)
   :init
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . nil)
-     (js . t)
-     (shell . t)
-     (rust . t)))
   (setq calendar-longitude 32.085300)
   (setq calendar-latitude 34.781769)
   (setq org-tree-slide-header nil)
@@ -36,11 +30,17 @@
   ;;                                   "\\<IGNORE\\>"))
   (setq org-tags-exclude-from-inheritance '("PROJECT"))
   :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . nil)
+     (js . t)
+     (shell . t)
+     (rust . t)))
   (require 'ob-js)
   :hook (org-mode . (lambda () (org-bullets-mode 1))))
 
 (use-package request
-  :demand t
+  ;; :demand t
   :config
   (defun my/refresh-google-calendar ()
     "Refresh google calendar org file."

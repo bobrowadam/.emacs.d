@@ -1,4 +1,3 @@
-;; (setq debug-on-error t)
 (require 'package)
 (package-initialize)
 
@@ -45,13 +44,13 @@
   :demand t
   :init (setq exec-path-from-shell-arguments '("-l"))
   :config (exec-path-from-shell-initialize))
+
 (use-package rich-minority
   :demand t
   :init
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens" " Projectile") "\\|")))
   (rich-minority-mode 1))
-(use-package flycheck
-  :demand t)
+(use-package flycheck)
 (use-package basic-settings
   :demand t
   :load-path "./bob-lisp"
@@ -72,9 +71,7 @@
 
 (use-package setup-eshell
   :demand t
-  :load-path "./bob-list"
-  :bind
-  (:map eshell-mode-map ("M-r" . counsel-esh-history)))
+  :load-path "./bob-list")
 
 (use-package tramp-settings
   :demand t
@@ -113,7 +110,7 @@
               ("M-J" . sp-join-sexp)
               ("M-W" . sp-copy-sexp)))
 
-(use-package inf-mongo :demand)
+(use-package inf-mongo)
 
 (use-package ibuffer-setup
   :demand
@@ -156,14 +153,16 @@
   :load-path "./bob-lisp"
   :demand t
   :bind
-  ("C-c e" . my-run-eshell)
-  (:map projectile-mode-map ("C-c p" . projectile-command-map)))
+  ("C-c e" . my-run-eshell))
+
 (use-package sicp)
+
 (use-package ace-window
   :bind ( "C-x o" . ace-window)
   :config
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
 (use-package highlight-indent-guides
   :demand t
   :hook
@@ -171,15 +170,7 @@
 
 (use-package lsp-setup
   :demand t
-  :load-path "./bob-lisp"
-  :bind
-  (:map lsp-mode-map
-        ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
-        ("C-c C-r" . lsp-find-references)
-        ("C-c M-i" . lsp-ui-imenu)
-        ("C-c M-d" . lsp-describe-thing-at-point)
-        ("C-c C-f" . lsp-format-buffer)
-        ("C-=" . origami-toggle-node)))
+  :load-path "./bob-lisp")
 
 (use-package scala-setup
   :after (company lsp-setup)
@@ -208,10 +199,13 @@
   :if (window-system))
 
 (use-package avy
-  :chords
-  (("fd" . avy-goto-char-in-line)))
+  :init (setq avy-case-fold-search nil)
+  :bind
+  ("C-c M-d" . avy-goto-char-in-line)
+  ("C-c M-c" . avy-goto-word-1))
 
 (use-package ace-jump-mode
+  :disabled
   :init
   (setq ace-jump-mode-case-fold nil)
   :demand
@@ -292,7 +286,7 @@
 (use-package try)
 
 ;; This is for term mode act nice with other frame
-(define-key term-raw-map (kbd "M-o") 'other-frame)
+;; (define-key term-raw-map (kbd "M-o") 'other-frame)
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'set-goal-column 'disabled nil)

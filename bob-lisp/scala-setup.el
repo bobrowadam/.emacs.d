@@ -27,7 +27,6 @@
 ;;; Code:
 
 (use-package sbt-mode
-  :demand t
   :commands sbt-start sbt-command
   :hook (sbt-mode . (lambda () (setenv "AWS_PROFILE" "scala-deps")))
   :config
@@ -41,7 +40,6 @@
    minibuffer-local-completion-map))
 
 (use-package scala-mode
-  :demand t
   :mode "\\.s\\(cala\\|bt\\)$"
   :init
   (setq lsp-scala-server-command "/usr/local/bin/metals-emacs")
@@ -70,7 +68,6 @@
 
 (use-package ammonite-term-repl
   :hook (term-mode . smartparens-mode)
-  :demand t
   :ensure t)
 
 (provide 'scala-setup)
