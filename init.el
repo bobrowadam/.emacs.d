@@ -1,9 +1,11 @@
 (require 'package)
-(package-initialize)
+(setq package-enable-at-startup nil)
+(unless package--initialized (package-initialize))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (unless (not (file-exists-p custom-file))
   (load custom-file))
+
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")
@@ -16,6 +18,7 @@
 (eval-when-compile
   (require 'use-package))
 (savehist-mode)
+
 (use-package use-package-chords
   :ensure t
   :config (key-chord-mode 1))

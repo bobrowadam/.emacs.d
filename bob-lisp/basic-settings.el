@@ -102,7 +102,6 @@
 (csetq ediff-diff-options "-w")
 
 (use-package golden-ratio
-  :demand t
   :init (defun my/gloden-ratio ()
           "Toggle golden ratio"
           (interactive)
