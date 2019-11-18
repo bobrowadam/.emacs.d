@@ -53,7 +53,12 @@
   :init
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens" " Projectile") "\\|")))
   (rich-minority-mode 1))
-(use-package flycheck)
+
+(use-package flycheck
+  :demand
+  :config
+  (global-flycheck-mode 1))
+
 (use-package basic-settings
   :demand t
   :load-path "./bob-lisp"
@@ -81,10 +86,18 @@
   :load-path "./bob-lisp")
 
 (use-package remote-defuns
+  :disabled
   :demand t
   :load-path "./bob-lisp"
   :bind
   ("C-c s s". bob/shell)
+  ("C-c s j" . bob/jump-to-shell))
+
+(use-package shell-defuns
+  :demand t
+  :load-path "./bob-lisp"
+  :bind
+  ("C-c s s". bob/shell-in-project)
   ("C-c s j" . bob/jump-to-shell))
 
 (use-package misc-funcs
@@ -288,8 +301,18 @@
 
 (use-package try)
 
+(use-package vterm
+  :demand t
+  :config
+  (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
+  :bind
+  ;; (:map vterm-mode-map ("C-y" . vterm-yank))
+  )
+
 ;; This is for term mode act nice with other frame
 ;; (define-key term-raw-map (kbd "M-o") 'other-frame)
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'set-goal-column 'disabled nil)
+
+;;; init.el ends here
