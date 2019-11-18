@@ -1,6 +1,5 @@
 (use-package js2-mode
   :demand t
-  :after flycheck
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   (defun my/use-eslint-from-node-modules ()
@@ -19,10 +18,12 @@
   (js2-mode . yas-minor-mode)
   (js2-mode . my/use-eslint-from-node-modules)
   (js2-mode . flycheck-mode)
+  (js2-mode . origami-mode)
   ;; (js2-mode . my-load-js2-snippets)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
-              ("C-c C-s" . nil))
+              ("C-c C-s" . nil)
+              ("C-=" . origami-toggle-node))
   :config
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)

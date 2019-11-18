@@ -1,6 +1,8 @@
 ;;; setup-js2-mode.el --- tweak js2 settings -*- lexical-binding: t; -*-
 (use-package js2-mode
   :ensure t
+  :bind
+  (:map origami-mode-map ("C-=" . origami-toggle-node))
   :init
   (setq-default js2-allow-rhino-new-expr-initializer nil)
   (setq-default js-indent-level 2)
@@ -31,9 +33,7 @@
   (add-hook 'js2-mode-hook (lambda ()
                              (setq dash-at-point-docset "JavaScript,Chai,Express,MomentsJS,Mongoose,NodeJs,Sinon")))
   (add-hook 'js2-mode-hook 'js2-mode-hide-warnings-and-errors)
-  ;; :bind
-  ;; (:map js2-mode-map
-  ;;       ("C-c TAB" . js2-indent-bounce))
+  (add-hook 'js2-mode-hook origami-mode)
   :config
   (use-package highlight-indent-guides
     :ensure t

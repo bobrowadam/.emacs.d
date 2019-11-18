@@ -54,10 +54,7 @@
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens" " Projectile") "\\|")))
   (rich-minority-mode 1))
 
-(use-package flycheck
-  :demand
-  :config
-  (global-flycheck-mode 1))
+(use-package flycheck)
 
 (use-package basic-settings
   :demand t
