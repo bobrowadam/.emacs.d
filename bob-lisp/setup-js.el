@@ -59,6 +59,8 @@
 
 (use-package nodejs-repl)
 
-(use-package json-mode)
+(use-package json-mode
+  :hook (json-mode . origami-mode)
+  :bind (:map json-mode-map ("C-=" . origami-toggle-node)))
 
 (provide 'setup-js)
