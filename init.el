@@ -306,6 +306,8 @@
   (:map vterm-mode-map ("C-c C-j" . vterm-copy-mode))
   (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
+(use-package racket-mode
+  :mode "\\.rktl$")
 ;; This is for term mode act nice with other frame
 ;; (define-key term-raw-map (kbd "M-o") 'other-frame)
 (put 'narrow-to-region 'disabled nil)
