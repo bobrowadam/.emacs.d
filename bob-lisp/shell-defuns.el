@@ -15,9 +15,10 @@
 (defun bob/vterm-other-window (buffer-name)
   "Create a new vterm buffer with BUFFER-NAME."
   (let ((buffer buffer-name))
-    (generate-new-buffer buffer)
-    (with-current-buffer buffer
-      (vterm-mode))
+    (unless (get-buffer buffer)
+        (generate-new-buffer buffer)
+     (with-current-buffer buffer
+       (vterm-mode)))
     (pop-to-buffer buffer)))
 
 (defun bob/shell-in-project (&optional user-shell-name)

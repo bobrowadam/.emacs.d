@@ -303,8 +303,8 @@
   :config
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
   :bind
-  ;; (:map vterm-mode-map ("C-y" . vterm-yank))
-  )
+  (:map vterm-mode-map ("C-c C-j" . vterm-copy-mode))
+  (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
 ;; This is for term mode act nice with other frame
 ;; (define-key term-raw-map (kbd "M-o") 'other-frame)
