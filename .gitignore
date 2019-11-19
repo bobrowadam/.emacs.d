@@ -33,3 +33,4 @@ transient/*
 /.cache/treemacs-persist
 /elpy/*
 /xkcd/*
+/forge-database.sqlite
