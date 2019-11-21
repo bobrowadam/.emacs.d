@@ -2,7 +2,8 @@
   :demand t
   :hook
   (emacs-lisp-mode . paredit-mode)
-  (eval-expression-minibuffer-setup . paredit-mode))
+  (eval-expression-minibuffer-setup . paredit-mode)
+  (racket-mode . paredit-mode))
 
 (use-package smartparens
   :demand t

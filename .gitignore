@@ -34,3 +34,5 @@ transient/*
 /elpy/*
 /xkcd/*
 /forge-database.sqlite
+/eclipse.jdt.ls/
+/workspace/

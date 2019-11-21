@@ -307,9 +307,20 @@
   (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
 (use-package racket-mode
-  :mode "\\.rktl$")
+  :mode "\\.rktl$"
+  :init (setq racket-program "~/source/Racket v7.4/bin/racket")
+  :bind (:map racket-mode-map
+              ("{" . paredit-open-curly)
+              ("M-{" . paredit-wrap-curly)
+              ("M-[" . paredit-wrap-square)
+              ("[" . paredit-open-square)))
 ;; This is for term mode act nice with other frame
 ;; (define-key term-raw-map (kbd "M-o") 'other-frame)
+
+(use-package java-setup
+  :demand t
+  :load-path "./bob-lisp")
+
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'set-goal-column 'disabled nil)
