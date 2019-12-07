@@ -31,7 +31,6 @@
 ;;; Code:
 (require 's)
 (require 'dash)
-(require 'cl)
 
 (defun duplicate-current-line-or-region (arg)
   "Duplicates the current line or region ARG times.
@@ -63,7 +62,7 @@ However, if there's a region, all lines that region covers will be duplicated."
 
 (defun my/get-buffer-name (path prefix)
   "Get last string from a file system PATH with PREFIX."
-  (let ((s-str (remove-duplicates (s-split "/\\|@\\||\\|:" path t)
+  (let ((s-str (cl-remove-duplicates (s-split "/\\|@\\||\\|:" path t)
                                   :test (lambda (x y) (or (null y) (equal x y)))
                    :from-end t)))
     (my/gen-buffer-name-from-string-list s-str prefix)))
