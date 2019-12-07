@@ -137,11 +137,6 @@
   :demand
   :load-path "./bob-lisp")
 
-(use-package ido-setup
-  :disabled t
-  :demand t
-  :load-path "./bob-lisp")
-
 (use-package setup-ivy
   :demand t
   :load-path "./bob-lisp"
@@ -340,6 +335,7 @@
 ;; (define-key term-raw-map (kbd "M-o") 'other-frame)
 
 (use-package java-setup
+  :disabled
   :if (window-system)
   :demand t
   :load-path "./bob-lisp")
