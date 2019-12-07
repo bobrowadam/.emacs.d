@@ -31,10 +31,11 @@
 
 (use-package dash)
 
-(require 'dired)
-(require 'dired-x)
-(setq dired-use-ls-dired nil)
-(setq dired-listing-switches "-alh")
+(use-package setup-dired
+  :load-path "./bob-lisp"
+  :demand t
+  :hook (dired-mode . auto-revert-mode))
+
 (savehist-mode)
 (use-package f)
 (use-package which-key
