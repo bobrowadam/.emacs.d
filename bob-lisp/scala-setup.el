@@ -50,7 +50,8 @@
   (:map scala-mode-map
         ("C-c C-c C-c" . sbt-command)
         ("C-c C-c C-b" . sbt-compile)
-        ("C-c C-c C-s". sbt-switch-to-active-sbt-buffer))
+        ("C-c C-c C-s". sbt-switch-to-active-sbt-buffer)
+        ("C-=". origami-toggle-node))
   :config
   (setq scala-indent:align-forms t
         scala-indent:align-parameters t
@@ -61,6 +62,7 @@
   (scala-mode . smartparens-mode)
   (scala-mode . lsp)
   (scala-mode . set-scala-fmt-path)
+  (scala-mode . origami-mode)
 
   ;; (scala-mode . lsp-mode)
   (scala-mode . hs-minor-mode)

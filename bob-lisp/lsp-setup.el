@@ -46,8 +46,7 @@
         ("C-c C-r" . lsp-find-references)
         ("C-c M-i" . lsp-ui-imenu)
         ("C-c M-d" . lsp-describe-thing-at-point)
-        ("C-c C-f" . lsp-format-buffer)
-        ("C-=" . origami-toggle-node)))
+        ("C-c C-f" . lsp-format-buffer)))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
