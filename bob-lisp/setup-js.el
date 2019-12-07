@@ -1,5 +1,4 @@
 (use-package js2-mode
-  :demand t
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   (defun my/use-eslint-from-node-modules ()

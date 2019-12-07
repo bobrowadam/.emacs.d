@@ -1,5 +1,4 @@
 (use-package tramp
-  :demand t
   :config
   (setq tramp-password-prompt-regexp
         (concat

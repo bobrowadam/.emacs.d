@@ -1,4 +1,5 @@
 (require 'package)
+;; (setq debug-on-error t)
 (setq package-enable-at-startup nil)
 (unless package--initialized (package-initialize))
 
@@ -37,7 +38,7 @@
   :hook (dired-mode . auto-revert-mode))
 
 (savehist-mode)
-(use-package f)
+(use-package f :demand t)
 (use-package which-key
   :demand t
   :if (window-system)
@@ -45,11 +46,13 @@
   (which-key-mode 1))
 
 (use-package exec-path-from-shell
+  :if (window-system)
   :demand t
   :init (setq exec-path-from-shell-arguments '("-l"))
   :config (exec-path-from-shell-initialize))
 
 (use-package rich-minority
+  :if (window-system)
   :demand t
   :init
   (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens" " Projectile") "\\|")))
@@ -76,33 +79,36 @@
    ("qq" . "~")))
 
 (use-package setup-eshell
+  :if (window-system)
   :demand t
   :load-path "./bob-list")
 
 (use-package tramp-settings
+  :if (window-system)
   :demand t
   :load-path "./bob-lisp")
 
 (use-package remote-defuns
-  :disabled
+  ;; :disabled
   :demand t
-  :load-path "./bob-lisp"
-  :bind
-  ("C-c s s". bob/shell)
-  ("C-c s j" . bob/jump-to-shell))
+  :load-path "./bob-lisp")
 
 (use-package shell-defuns
+  :if (window-system)
   :demand t
   :load-path "./bob-lisp"
   :bind
-  ("C-c s s". bob/shell-in-project)
+  ("C-c s s". bob/projectile-run-vterm)
+  ("C-c s e" . bob/vterm)
   ("C-c s j" . bob/jump-to-shell))
 
 (use-package misc-funcs
+  :if (window-system)
   :demand t
   :load-path "./bob-listp")
 
 (use-package edit-funcs
+  :if (window-system)
   :demand t
   :load-path "./bob-lisp"
   :bind
@@ -110,6 +116,7 @@
   ("M-`" . jump-to-mark))
 
 (use-package setup-parens
+  :if (window-system)
   :load-path "./bob-listp"
   :demand t
   :bind (:map smartparens-mode-map
@@ -146,6 +153,7 @@
    ("C-c C-s C-s" . swiper)))
 
 (use-package setup-magit
+  :if (window-system)
   :bind
   ("C-x g" . magit-status)
   :demand t
@@ -156,6 +164,7 @@
   :init (whole-line-or-region-mode 1))
 
 (use-package company
+  :if (window-system)
   :demand t
   :init
   (setq company-tooltip-align-annotations t)
@@ -164,6 +173,7 @@
   :config (global-company-mode 1))
 
 (use-package setup-projectile
+  :if (window-system)
   :load-path "./bob-lisp"
   :demand t
   :bind
@@ -178,20 +188,24 @@
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
 (use-package highlight-indent-guides
+  :if (window-system)
   :demand t
   :hook
   (scala-mode . highlight-indent-guides-mode))
 
 (use-package lsp-setup
+  :if (window-system)
   :demand t
   :load-path "./bob-lisp")
 
 (use-package scala-setup
+  :if (window-system)
   :after (company lsp-setup)
   :demand t
   :load-path "./bob-lisp")
 
 (use-package setup-js
+  :if (window-system)
   :demand t
   :load-path "./bob-lisp")
 
@@ -230,6 +244,7 @@
   :bind ("C-c M-r" . ripgrep-regexp))
 
 (use-package setup-snippets
+  :if (window-system)
   :demand t
   :bind ("C-c TAB" . yas-expand)
   :load-path "./bob-lisp")
@@ -238,6 +253,7 @@
   :bind ("M-#" . er/expand-region))
 
 (use-package anzu
+  :if (window-system)
   :demand t
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . query-replace)
@@ -287,20 +303,24 @@
   :demand t)
 
 (use-package treemacs-projectile
+  :if (window-system)
   :disabled t
   :after treemacs)
 
 (use-package control-mode
+  :if (window-system)
   :init (control-mode-default-setup))
 
 (use-package elpy
+  :if (window-system)
   :init
   (advice-add 'python-mode :before 'elpy-enable))
 
 (use-package try)
 
 (use-package vterm
-  :demand t
+  :if (window-system)
+  ;; :demand t
   :config
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
   :bind
@@ -308,6 +328,7 @@
   (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
 (use-package racket-mode
+  :if (window-system)
   :mode "\\.rktl$"
   :init (setq racket-program "~/source/Racket v7.4/bin/racket")
   :bind (:map racket-mode-map
@@ -319,6 +340,7 @@
 ;; (define-key term-raw-map (kbd "M-o") 'other-frame)
 
 (use-package java-setup
+  :if (window-system)
   :demand t
   :load-path "./bob-lisp")
 
