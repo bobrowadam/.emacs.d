@@ -24,7 +24,7 @@
   "Open shell on current project with.
 use USER-SHELL-NAME for buffer name"
   (interactive)
-  (let ((shell-name (format "*SHELL*::%s" (upcase default-directory))))
+  (let ((shell-name (format "*SHELL*::%s" (upcase (abbreviate-file-name default-directory)))))
     (bob/vterm-other-window shell-name)))
 
 (defun bob/projectile-run-vterm ()

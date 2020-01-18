@@ -315,7 +315,7 @@
 
 (use-package vterm
   :if (window-system)
-  ;; :demand t
+  :demand t
   :config
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
   :bind
