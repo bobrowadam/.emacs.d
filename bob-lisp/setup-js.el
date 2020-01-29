@@ -45,7 +45,9 @@
 (use-package tide
   :if (window-system)
   :after (js2-mode)
-  :hook (js2-mode . setup-tide-mode)
+  :hook
+  (js2-mode . setup-tide-mode)
+  (before-save . tide-format-before-save)
   :bind (:map tide-mode-map
               ("C-c C-n" . tide-rename-symbol)
               ("C-c C-r" . tide-references)
