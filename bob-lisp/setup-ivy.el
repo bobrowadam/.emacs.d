@@ -14,8 +14,10 @@
 
 (use-package counsel
   :if (window-system)
+  :after ivy
   :init
   (setq counsel-rg-base-command
-        "rg --heading --context-separator \" \" -i -M 120 --line-number --color never %s ."))
+        "rg --heading --context-separator \" \" -i -M 120 --line-number --color never %s .")
+  :config (setcdr (assoc 'counsel-M-x ivy-initial-inputs-alist) ""))
 
 (provide 'setup-ivy)

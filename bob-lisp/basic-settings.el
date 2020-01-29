@@ -63,10 +63,17 @@
 ;; Theme and Font
 (setq custom-safe-themes t)
 (setq custom-theme-directory "~/.emacs.d/themes")
-(set-frame-font "Latin Modern Mono 21")
-  (add-to-list 'default-frame-alist
-               '(font . "Latin Modern Mono 21"))
-(load-theme 'bobs-badger t)
+(set-frame-font "Monaco 21")
+(add-to-list 'default-frame-alist
+             '(font . "Monaco 21"))
+;; (set-frame-font "Latin Modern Mono 21")
+;; (add-to-list 'default-frame-alist
+;;              '(font . "Latin Modern Mono 21"))
+;; (load-theme 'bobs-badger t)
+
+(use-package monokai-theme
+  :demand t
+  :config (load-theme 'monokai t))
  
 ;; Put backup files neatly away                                                 
 
@@ -113,22 +120,23 @@
   :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
 (use-package undo-tree
+  :disabled
   :demand t
   :config
   (global-undo-tree-mode 1))
 
 (defun bob/create-scratch ()
-    (interactive)
-    (progn (get-buffer-create "*scratch*")
-           (and initial-scratch-message
-                (get-buffer "*scratch*")
-                (with-current-buffer "*scratch*"
-	          (when (zerop (buffer-size))
-	            (insert (substitute-command-keys initial-scratch-message))
-	            (set-buffer-modified-p nil))))
-           (if (get-buffer "*scratch*")
-               (with-current-buffer "*scratch*"
-                 (if (eq major-mode 'fundamental-mode)
-	             (funcall initial-major-mode))))))
+  (interactive)
+  (progn (get-buffer-create "*scratch*")
+         (and initial-scratch-message
+              (get-buffer "*scratch*")
+              (with-current-buffer "*scratch*"
+	        (when (zerop (buffer-size))
+	          (insert (substitute-command-keys initial-scratch-message))
+	          (set-buffer-modified-p nil))))
+         (if (get-buffer "*scratch*")
+             (with-current-buffer "*scratch*"
+               (if (eq major-mode 'fundamental-mode)
+	           (funcall initial-major-mode))))))
 
 (provide 'basic-settings)

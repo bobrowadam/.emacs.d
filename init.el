@@ -1,5 +1,5 @@
 (require 'package)
-;; (setq debug-on-error t)
+(setq debug-on-error nil)
 (setq package-enable-at-startup nil)
 (unless package--initialized (package-initialize))
 
@@ -77,6 +77,12 @@
   (("jj" . "_")
    ("ii" . "|")
    ("qq" . "~")))
+
+(use-package undo-fu
+  :load-path "./bob-lisp"
+  :bind
+  ("C-/" . undo-fu-only-undo)
+  ("C-?" . undo-fu-only-redo))
 
 (use-package setup-eshell
   :if (window-system)
@@ -338,6 +344,9 @@
   :disabled
   :if (window-system)
   :demand t
+  :load-path "./bob-lisp")
+
+(use-package setup-jira
   :load-path "./bob-lisp")
 
 (put 'narrow-to-region 'disabled nil)

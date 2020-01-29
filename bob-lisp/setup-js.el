@@ -22,7 +22,8 @@
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
-              ("C-=" . origami-toggle-node))
+              ("C-=" . origami-toggle-node)
+              ("C-x C-e" . js-send-last-sexp))
   :config
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
@@ -56,7 +57,8 @@
   (setq tide-format-options
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 
-(use-package nodejs-repl)
+(use-package nodejs-repl :disabled)
+(use-package js-comint)
 
 (use-package json-mode
   :hook (json-mode . origami-mode)
