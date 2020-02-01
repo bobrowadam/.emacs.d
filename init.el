@@ -79,6 +79,7 @@
    ("qq" . "~")))
 
 (use-package undo-fu
+  :disabled
   :load-path "./bob-lisp"
   :bind
   ("C-/" . undo-fu-only-undo)

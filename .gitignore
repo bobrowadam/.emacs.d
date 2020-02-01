@@ -36,3 +36,4 @@ transient/*
 /forge-database.sqlite
 /eclipse.jdt.ls/
 /workspace/
+/.dap-breakpoints

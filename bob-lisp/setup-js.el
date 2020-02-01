@@ -23,7 +23,8 @@
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
               ("C-=" . origami-toggle-node)
-              ("C-x C-e" . js-send-last-sexp))
+              ("C-x C-e" . js-send-last-sexp)
+              ("C-c C-c C-b" . tide-compile-file))
   :config
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
