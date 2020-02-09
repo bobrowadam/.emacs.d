@@ -18,51 +18,46 @@
   (js2-mode . my/use-eslint-from-node-modules)
   (js2-mode . flycheck-mode)
   (js2-mode . origami-mode)
-  ;; (js2-mode . my-load-js2-snippets)
+  (js2-mode . tide-setup)
+  (js2-mode . highlight-indent-guides-mode)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
               ("C-=" . origami-toggle-node)
-              ("C-x C-e" . js-send-last-sexp)
-              ("C-c C-c C-b" . tide-compile-file))
+              ("C-x C-e" . js-send-last-sexp))
   :config
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
-  (setq-default js-indent-level 2))
+  (setq-default js-indent-level 2)
+  (eldoc-mode +1)
+  ;; (tide-hl-identifier-mode +1)
+  )
 
-(use-package highlight-indent-guides
-  :hook (js2-mode . highlight-indent-guides-mode))
-
-(defun setup-tide-mode ()
-  (interactive)
-  (when (not (tramp-tramp-file-p (buffer-file-name (current-buffer))))
-    (tide-setup)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (setq flycheck-check-syntax-automatically '(idle-change))
-    (eldoc-mode +1)
+(use-package typescript-mode
+  :config
+  (tide-setup)
+  (highlight-indent-guides-mode +1)
   (tide-hl-identifier-mode +1)
-  (company-mode +1)))
+  (eldoc-mode +1))
 
 (use-package tide
   :if (window-system)
-  :after (js2-mode)
-  :hook
-  (js2-mode . setup-tide-mode)
-  (before-save . tide-format-before-save)
   :bind (:map tide-mode-map
               ("C-c C-n" . tide-rename-symbol)
               ("C-c C-r" . tide-references)
-              ("C-c M-i" . lsp-ui-imenu))
-  :config
+              ;; ("C-c M-i" . lsp-ui-imenu)
+              ("C-c C-c C-b" . tide-compile-file))
+  :hook (before-save . tide-format-before-save)
+  :init
+  (setq tide-node-executable "node12")
   (setq company-tooltip-align-annotations t)
   (setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))
   (setq tide-tsserver-process-environment nil)
   (setq tide-format-options
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 
-(use-package nodejs-repl :disabled)
+(use-package highlight-indent-guides)
 (use-package js-comint)
-
 (use-package json-mode
   :hook (json-mode . origami-mode)
   :bind (:map json-mode-map ("C-=" . origami-toggle-node)))

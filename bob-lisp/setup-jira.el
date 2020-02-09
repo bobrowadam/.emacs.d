@@ -1,9 +1,7 @@
 (use-package org-jira
-  :ensure t
+  :demand t
   :config
   (setq jiralib-url "https://agilepanda.atlassian.net"))
-
-
 
 (provide 'setup-jira)
 

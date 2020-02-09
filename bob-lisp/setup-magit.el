@@ -3,7 +3,7 @@
   (magit-commit-create `("-m" ,message)))
 
 (use-package magit
-  :init (setq with-editor-emacsclient-executable "/Applications/emacs-plus/bin/emacsclient")
+  :init (setq with-editor-emacsclient-executable "/Applications/emacs-plus/26.3/bin/emacsclient")
   :hook
   (before-save-hook . magit-wip-commit-initial-backup)
   :config
