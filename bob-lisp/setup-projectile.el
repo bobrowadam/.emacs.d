@@ -6,7 +6,7 @@
  if in project use `projectile-run-eshell"
     (interactive "P")
     (if (projectile-project-p)
-        (projectile-run-eshell)
+        (projectile-run-eshell arg)
       (eshell arg)))
   (setq projectile-completion-system 'ivy)
   :config
