@@ -31,6 +31,7 @@
 (setq use-package-compute-statistics t)
 
 (use-package dash)
+(use-package dap-mode)
 
 (use-package setup-dired
   :load-path "./bob-lisp"
@@ -96,7 +97,6 @@
   :load-path "./bob-lisp")
 
 (use-package remote-defuns
-  ;; :disabled
   :demand t
   :load-path "./bob-lisp")
 
@@ -243,7 +243,13 @@
   ("C-c M-c" . ace-jump-mode))
 
 (use-package ripgrep
-  :bind ("C-c M-r" . ripgrep-regexp))
+  :init (setq wgrep-auto-save-buffer t)
+  :bind
+  ("C-c M-r" . ripgrep-regexp)
+  (:map ripgrep-search-mode-map ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)))
+
+(use-package wgrep
+  :ensure t)
 
 (use-package setup-snippets
   :if (window-system)
