@@ -34,11 +34,16 @@
   )
 
 (use-package typescript-mode
+  :hook
+  (typescript-mode . tide-setup)
+  (typescript-mode . highlight-indent-guides-mode)
+  (typescript-mode . tide-hl-identifier-mode)
+  (typescript-mode . yas-minor-mode)
+  (typescript-mode . flycheck-mode)
   :config
-  (tide-setup)
-  (highlight-indent-guides-mode +1)
-  (tide-hl-identifier-mode +1)
-  (eldoc-mode +1))
+  (eldoc-mode +1)
+  (origami-mode +1)
+  :bind (:map typescript-mode-map ("C-=" . origami-toggle-node)))
 
 (use-package tide
   :if (window-system)
@@ -46,18 +51,19 @@
               ("C-c C-n" . tide-rename-symbol)
               ("C-c C-r" . tide-references)
               ;; ("C-c M-i" . lsp-ui-imenu)
-              ("C-c C-c C-b" . tide-compile-file))
+              ("C-c C-c C-b" . tide-compile-file)
+              ("C-x C-e" . ts-send-last-sexp)
+              ("C-M-x" . ts-send-last-sexp-and-go))
   :hook (before-save . tide-format-before-save)
   :init
   (setq tide-node-executable "node12")
   (setq company-tooltip-align-annotations t)
   (setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))
-  (setq tide-tsserver-process-environment nil)
   (setq tide-format-options
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
-
 (use-package highlight-indent-guides)
 (use-package js-comint)
+(use-package ts-comint)
 (use-package json-mode
   :hook (json-mode . origami-mode)
   :bind (:map json-mode-map ("C-=" . origami-toggle-node)))
