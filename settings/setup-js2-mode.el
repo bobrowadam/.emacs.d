@@ -45,9 +45,6 @@
 
   (js2-imenu-extras-mode))
 
-;; Tern.JS
-;; (add-to-list 'load-path (expand-file-name "tern/emacs" site-lisp-dir))
-;; (autoload 'tern-mode "tern.el" nil t)
 
 (use-package color-identifiers-mode
   :disabled
@@ -59,11 +56,6 @@
   :ensure t
   :hook (json-mode . origami-mode)
   :bind (:map json-mode-map ("C-=" . origami-toggle-node)))
-
-;; Tern
-(autoload 'tern-mode "tern.el" nil t)
-(add-hook 'js2-mode-hook (lambda () (tern-mode t)
-                           (company-mode)))
 
 (use-package tern
   :ensure t
@@ -101,7 +93,7 @@
                       '(javascript-jshint)))
 
 (use-package indium
-  :ensure t)
+  :demand t)
 
 (use-package dash-at-point
   :ensure t
