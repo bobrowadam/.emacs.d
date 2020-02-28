@@ -27,14 +27,14 @@ use USER-SHELL-NAME for buffer name"
   (let ((shell-name (format "*SHELL*::%s" (upcase (abbreviate-file-name default-directory)))))
     (bob/vterm-other-window shell-name)))
 
-(defun bob/projectile-run-vterm ()
+(defun bob/projectile-run-vterm (&optional arg)
   "Invoke `shell' in the project's root.
 
 Switch to the project specific shell buffer if it already exists."
-  (interactive)
+  (interactive "P")
   (if (projectile-project-p)
       (projectile-with-default-dir (projectile-ensure-project (projectile-project-root))
-        (bob/vterm-other-window (concat "*SHELL " (projectile-project-name) "*")))
+        (bob/vterm-other-window (concat "*SHELL " (projectile-project-name) "*" (to-string arg))))
     (vterm)))
 
 (defun bob/jump-to-shell ()
