@@ -17,8 +17,8 @@
   (js2-mode . yas-minor-mode)
   (js2-mode . my/use-eslint-from-node-modules)
   (js2-mode . flycheck-mode)
-  (js2-mode . origami-mode)
   (js2-mode . tide-setup)
+  (js2-mode . origami-mode)
   (js2-mode . highlight-indent-guides-mode)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
@@ -29,9 +29,7 @@
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
   (setq-default js-indent-level 2)
-  (eldoc-mode +1)
-  ;; (tide-hl-identifier-mode +1)
-  )
+  (eldoc-mode +1))
 
 (use-package typescript-mode
   :hook
@@ -40,6 +38,7 @@
   (typescript-mode . tide-hl-identifier-mode)
   (typescript-mode . yas-minor-mode)
   (typescript-mode . flycheck-mode)
+  (typescript-mode . origami-mode)
   :config
   (eldoc-mode +1)
   (origami-mode +1)
