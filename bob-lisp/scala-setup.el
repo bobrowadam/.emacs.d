@@ -68,6 +68,12 @@
   (scala-mode . hs-minor-mode)
   (scala-mode . (lambda () (yas-load-directory (concat user-emacs-directory "snippets/scala-mode/")))))
 
+(use-package posframe)
+(use-package dap-mode
+  :hook
+  (lsp-mode . dap-mode)
+  (lsp-mode . dap-ui-mode))
+
 (use-package ammonite-term-repl
   :hook (term-mode . smartparens-mode)
   :ensure t)
