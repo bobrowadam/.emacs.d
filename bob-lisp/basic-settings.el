@@ -97,7 +97,8 @@
 
 (add-to-list 'prog-mode-hook #'linum-mode)
 (setq linum-format "%4d   ")
-(setq find-function-C-source-directory "~/source/emacs-26.1/src/")
+;; Set Emacs C source dir:
+(setq find-function-C-source-directory "~/source/emacs/src")
 
 ;; Ediff setup
 (defmacro csetq (variable value)
