@@ -211,6 +211,11 @@
   :demand t
   :load-path "./bob-lisp")
 
+(use-package haskell-setup
+  :if (window-system)
+  :demand t
+  :load-path "./bob-lisp")
+
 (use-package org-setup
   :if (window-system)
   :demand t
@@ -304,7 +309,6 @@
   :bind ("C-x C-z" . zoom-window-zoom))
 
 (use-package evil) ;; Sometimes you might turn into the dark side
-(use-package haskell-mode)
 (use-package elm-mode)
 (use-package treemacs
   :disabled t

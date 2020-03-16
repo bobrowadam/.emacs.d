@@ -53,7 +53,7 @@ Any other prefis will be used as the suffix itself."
                                               (s-contains\? "*eshell" b  t)
                                               (s-contains\? "*sbt*" b  t)
                                               (s-contains\? "vterm<" b  t)
-                                              (s-contains\? (buffer-name inferior-haskell-buffer) b  t)))
+                                              ))
                               (mapcar (function buffer-name) (buffer-list))))))
             (shell-buffer (ivy-completing-read "Shell: " shell-buffers)))
       (progn
