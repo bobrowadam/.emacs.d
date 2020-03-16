@@ -1,6 +1,5 @@
 (use-package yasnippet-snippets)
 (use-package yasnippet
-  :defer
   :hook
   (prog-mode-hook . yas-minor-mode)
   (emacs-lisp-mode . yas-minor-mode)

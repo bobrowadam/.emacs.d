@@ -83,4 +83,10 @@
 (defun set-scala-fmt-path ()
   (setq lsp-metals-scalafmt-config-path (format "%s%s" (projectile-project-root) ".scalafmt.conf")))
 
+(use-package lsp-treemacs
+  :disabled t
+  :config
+  (lsp-metals-treeview-enable t)
+  (setq lsp-metals-treeview-show-when-views-received t)
+  )
 ;;; scala-setup.el ends here

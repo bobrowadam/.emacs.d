@@ -49,7 +49,7 @@
 (use-package exec-path-from-shell
   :if (window-system)
   :demand t
-  :init (setq exec-path-from-shell-arguments '("-l"))
+  ;; :init (setq exec-path-from-shell-arguments '("-l"))
   :config (exec-path-from-shell-initialize))
 
 (use-package rich-minority
@@ -310,15 +310,6 @@
 
 (use-package evil) ;; Sometimes you might turn into the dark side
 (use-package elm-mode)
-(use-package treemacs
-  :disabled t
-  :demand t)
-
-(use-package treemacs-projectile
-  :if (window-system)
-  :disabled t
-  :after treemacs)
-
 (use-package control-mode
   :if (window-system)
   :init (control-mode-default-setup))
@@ -358,6 +349,10 @@
   :load-path "./bob-lisp")
 
 (use-package setup-jira
+  :load-path "./bob-lisp")
+
+(use-package setup-web-dev
+  :demand t
   :load-path "./bob-lisp")
 
 (put 'narrow-to-region 'disabled nil)
