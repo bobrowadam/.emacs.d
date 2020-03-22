@@ -1,6 +1,7 @@
 (use-package org
   :if (window-system)
   :init
+  (setq org-loop-over-headlines-in-active-region t)
   (setq calendar-longitude 32.085300)
   (setq calendar-latitude 34.781769)
   (setq org-tree-slide-header nil)
@@ -87,9 +88,7 @@
   (setq org-brain-visualize-default-choices 'all)
   (setq org-brain-title-max-length 12))
 
-(use-package ob-mongo
-  :ensure t)
-(use-package ob-rust
-  :ensure t)
+(use-package ob-mongo)
+(use-package ob-rust)
 
 (provide 'org-setup)
