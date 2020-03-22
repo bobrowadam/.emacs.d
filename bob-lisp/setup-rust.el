@@ -10,8 +10,9 @@
   :hook
   (rust-mode . cargo-minor-mode)
   (rust-mode . flycheck-rust-setup)
-  (rust-mode . flycheck-mode)
+  (rust-mode . flycheck-mode )
   (rust-mode . highlight-indent-guides-mode)
+  (rust-mode . yas-minor-mode)
   (rust-mode . eldoc-mode)
   ;; (rust-mode . racer-mode)
   (rust-mode . lsp)
