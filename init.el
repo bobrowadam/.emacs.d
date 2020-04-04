@@ -79,30 +79,21 @@
    ("ii" . "|")
    ("qq" . "~")))
 
-(use-package undo-fu
-  :disabled
-  :load-path "./bob-lisp"
-  :bind
-  ("C-/" . undo-fu-only-undo)
-  ("C-?" . undo-fu-only-redo))
-
 (use-package setup-eshell
+  :disabled
   :if (window-system)
   :demand t
   :load-path "./bob-list")
 
 (use-package tramp-settings
   :if (window-system)
-  :demand t
   :load-path "./bob-lisp")
 
 (use-package remote-defuns
-  :demand t
   :load-path "./bob-lisp")
 
 (use-package shell-defuns
   :if (window-system)
-  :demand t
   :load-path "./bob-lisp"
   :bind
   ("C-c s s". bob/projectile-run-vterm)
@@ -201,6 +192,7 @@
   :load-path "./bob-lisp")
 
 (use-package scala-setup
+  :disabled
   :if (window-system)
   :after (company lsp-setup)
   :demand t
@@ -212,6 +204,7 @@
   :load-path "./bob-lisp")
 
 (use-package haskell-setup
+  :disabled
   :if (window-system)
   :demand t
   :load-path "./bob-lisp")
@@ -253,8 +246,7 @@
   ("C-c M-r" . ripgrep-regexp)
   (:map ripgrep-search-mode-map ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)))
 
-(use-package wgrep
-  :ensure t)
+(use-package wgrep)
 
 (use-package setup-snippets
   :if (window-system)
@@ -291,6 +283,7 @@
   :load-path "./bob-lisp")
 
 (use-package kubernetes
+  :disabled
   :commands (kubernetes-overview)
   :init
   :hook (kubernetes-overview-mode . (lambda () (setenv "AWS_PROFILE" "dev-k8s")))
@@ -300,7 +293,9 @@
   :bind
   ("C-c k" . kubernetes-overview))
 
-(use-package kubernetes-tramp)
+(use-package kubernetes-tramp
+  :disabled
+  )
 
 (use-package zoom-window
   :init
@@ -309,12 +304,12 @@
   :bind ("C-x C-z" . zoom-window-zoom))
 
 (use-package evil) ;; Sometimes you might turn into the dark side
-(use-package elm-mode)
 (use-package control-mode
   :if (window-system)
   :init (control-mode-default-setup))
 
 (use-package elpy
+  :disabled
   :if (window-system)
   :init
   (advice-add 'python-mode :before 'elpy-enable))
@@ -330,30 +325,19 @@
   (:map vterm-mode-map ("C-c C-j" . vterm-copy-mode))
   (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
-(use-package racket-mode
-  :if (window-system)
-  :mode "\\.rktl$"
-  :init (setq racket-program "~/source/Racket v7.4/bin/racket")
-  :bind (:map racket-mode-map
-              ("{" . paredit-open-curly)
-              ("M-{" . paredit-wrap-curly)
-              ("M-[" . paredit-wrap-square)
-              ("[" . paredit-open-square)))
-;; This is for term mode act nice with other frame
-;; (define-key term-raw-map (kbd "M-o") 'other-frame)
-
-(use-package java-setup
-  :disabled
-  :if (window-system)
-  :demand t
-  :load-path "./bob-lisp")
-
-(use-package setup-jira
-  :load-path "./bob-lisp")
-
 (use-package setup-web-dev
   :demand t
   :load-path "./bob-lisp")
+
+(use-package perspective
+  :demand t
+  :bind
+  ("C-x b" . persp-ivy-switch-buffer)
+  ("C-x C-b" . persp-ibuffer)
+  :hook (kill-emacs . persp-state-save)
+  :config
+  (setq persp-state-default-file (concat user-emacs-directory ".persp-state"))
+  (persp-state-load persp-state-default-file))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
