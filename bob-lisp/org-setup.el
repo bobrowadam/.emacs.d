@@ -1,4 +1,6 @@
 (use-package org
+- Note taken on [2020-04-08 Wed 02:31] \\
+  bla
   :if (window-system)
   :init
   (setq org-loop-over-headlines-in-active-region t)
@@ -20,7 +22,8 @@
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-refile-targets `((,(concat org-directory "/inbox.org") :maxlevel . 1)
                              (,(concat org-directory "/gtd.org") :maxlevel . 3)
-                             (,(concat org-directory "/tickler.org") :maxlevel . 1)))
+                             (,(concat org-directory "/tickler.org") :maxlevel . 1)
+                             (,(concat org-directory "/notes.org") :maxlevel . 1)))
   (setq org-archive-location (concat org-directory "/done.org::"))
   (setq org-complete-tags-always-offer-all-agenda-tags t)
   (setq org-stuck-projects
@@ -46,12 +49,13 @@
   (defun my/refresh-google-calendar ()
     "Refresh google calendar org file."
     (interactive)
-    (let ((file-path (concat org-directory "/google-calendar.org") )
-          (tmp-path "/tmp/icalawk"))
+    (let ((file-path (concat org-directory "/google-calendar.org"))
+          (tmp-path "/tmp/icalawk")
+          (ical-private-url (f-read-text "./ical-url-path")))
       (progn
         (f-write-text
          (request-response-data (request
-                                 "https://calendar.google.com/calendar/ical/adam%40bigpanda.io/private-7d0adafb6e98933c62d3d463410fdf71/basic.ics"
+                                 ical-private-url
                                  :parser 'buffer-string
                                  :sync t))
          'utf-8 tmp-path)
