@@ -330,6 +330,7 @@
   :load-path "./bob-lisp")
 
 (use-package perspective
+  :disabled
   :demand t
   :bind
   ("C-x b" . persp-ivy-switch-buffer)
