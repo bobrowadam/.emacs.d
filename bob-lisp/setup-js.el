@@ -55,7 +55,7 @@
               ("C-M-x" . ts-send-last-sexp-and-go))
   :hook (before-save . tide-format-before-save)
   :init
-  (setq tide-node-executable "node12")
+  (setq tide-node-executable "node")
   (setq company-tooltip-align-annotations t)
   (setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))
   (setq tide-format-options
