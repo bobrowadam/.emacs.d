@@ -78,14 +78,15 @@ You can escape '$' with '\\' as prefix.
   "Refresh google calendar org file."
   (interactive)
   (require 'request)
-  (let ((file-path (concat org-directory "/google-calendar.org") )
-        (tmp-path "/tmp/icalawk"))
+  (let ((file-path (concat org-directory "/google-calendar.org"))
+        (tmp-path "/tmp/icalawk")
+        (ical-private-url (f-read-text (concat org-directory "/ical-url-path"))))
     (progn
       (f-write-text
        (request-response-data (request
-                               "https://calendar.google.com/calendar/ical/adam%40bigpanda.io/private-7d0adafb6e98933c62d3d463410fdf71/basic.ics"
-                               :parser 'buffer-string
-                               :sync t))
+                                ical-private-url
+                                :parser 'buffer-string
+                                :sync t))
        'utf-8 tmp-path)
       (call-process "ical2org.awk" tmp-path `((:file ,file-path) nil) nil))))
 
