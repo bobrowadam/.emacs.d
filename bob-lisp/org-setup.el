@@ -1,6 +1,4 @@
 (use-package org
-- Note taken on [2020-04-08 Wed 02:31] \\
-  bla
   :if (window-system)
   :init
   (setq org-loop-over-headlines-in-active-region t)
