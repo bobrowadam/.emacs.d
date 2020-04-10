@@ -1,4 +1,5 @@
 (use-package js2-mode
+  :after nvm
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   (defun my/use-eslint-from-node-modules ()
@@ -26,10 +27,13 @@
               ("C-=" . origami-toggle-node)
               ("C-x C-e" . js-send-last-sexp))
   :config
+  (nvm-use "8.11.1")
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
   (setq-default js-indent-level 2)
   (eldoc-mode +1))
+
+(use-package nvm)
 
 (use-package typescript-mode
   :hook
