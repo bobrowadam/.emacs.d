@@ -1,5 +1,16 @@
 (use-package smex
+  :disabled t
   :ensure t)
+
+(use-package amx
+  :after ivy
+  :custom
+  (amx-backend 'auto)
+  (amx-save-file "~/.emacs.d/amx-items")
+  (amx-history-length 50)
+  (amx-show-key-bindings nil)
+  :config
+  (amx-mode 1))
 
 (use-package ivy
   :demand t
