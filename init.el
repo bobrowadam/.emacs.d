@@ -38,7 +38,12 @@
   :demand t
   :hook (dired-mode . auto-revert-mode))
 
-(savehist-mode)
+(use-package saveplace
+  :config
+  (setq save-place-file "~/.emacs.d/saveplace")
+  (setq save-place-forget-unreadable-files t)
+  (save-place-mode 1))
+
 (use-package f :demand t)
 (use-package which-key
   :demand t
@@ -49,15 +54,8 @@
 (use-package exec-path-from-shell
   :if (window-system)
   :demand t
-  ;; :init (setq exec-path-from-shell-arguments '("-l"))
+  :init (setq exec-path-from-shell-arguments '("-l"))
   :config (exec-path-from-shell-initialize))
-
-(use-package rich-minority
-  :if (window-system)
-  :demand t
-  :init
-  (setq rm-whitelist (setq rm-whitelist (mapconcat #'identity '( " Paredit" " Smartparens" " Projectile") "\\|")))
-  (rich-minority-mode 1))
 
 (use-package flycheck)
 
@@ -293,17 +291,12 @@
   :bind
   ("C-c k" . kubernetes-overview))
 
-(use-package kubernetes-tramp
-  :disabled
-  )
-
 (use-package zoom-window
   :init
   (custom-set-variables
    '(zoom-window-mode-line-color "DarkBlue"))
   :bind ("C-x C-z" . zoom-window-zoom))
 
-(use-package evil) ;; Sometimes you might turn into the dark side
 (use-package control-mode
   :if (window-system)
   :init (control-mode-default-setup))

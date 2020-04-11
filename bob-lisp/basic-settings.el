@@ -75,7 +75,18 @@
   :demand t
   :config (load-theme 'monokai t))
  
-;; Put backup files neatly away                                                 
+(use-package doom-modeline
+  :demand t
+  :init
+  (setq doom-modeline-height 20)
+  (setq doom-modeline-bar-width 2)
+  (setq doom-modeline-minor-modes nil)
+  (setq doom-modeline-lsp t)
+  (setq doom-modeline-github t)
+  (setq doom-modeline-env-enable-rust t)
+  (setq doom-modeline-env-rust-executable "rustc")
+  (setq find-file-visit-truename t)
+  (doom-modeline-mode 1))
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")

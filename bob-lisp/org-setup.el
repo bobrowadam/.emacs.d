@@ -36,8 +36,7 @@
    'org-babel-load-languages
    '((emacs-lisp . nil)
      (js . t)
-     (shell . t)
-     (rust . t)))
+     (shell . t)))
   (require 'ob-js)
   :hook (org-mode . (lambda () (org-bullets-mode 1))))
 
@@ -91,6 +90,5 @@
   (setq org-brain-title-max-length 12))
 
 (use-package ob-mongo)
-(use-package ob-rust)
 
 (provide 'org-setup)
