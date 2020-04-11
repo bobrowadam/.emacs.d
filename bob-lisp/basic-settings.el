@@ -71,12 +71,11 @@
 ;;              '(font . "Latin Modern Mono 21"))
 ;; (load-theme 'bobs-badger t)
 
-(use-package monokai-theme
-  :demand t
-  :config (load-theme 'monokai t))
+;; (use-package monokai-theme
+;;   :demand t
+;;   :config (load-theme 'monokai t))
  
 (use-package doom-modeline
-  :demand t
   :init
   (setq doom-modeline-height 20)
   (setq doom-modeline-bar-width 2)
@@ -87,6 +86,12 @@
   (setq doom-modeline-env-rust-executable "rustc")
   (setq find-file-visit-truename t)
   (doom-modeline-mode 1))
+
+(use-package doom-themes
+  :demand t
+  :ensure t
+  :init
+  (load-theme 'doom-city-lights t))
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")
