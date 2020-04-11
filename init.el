@@ -32,7 +32,6 @@
 
 (use-package dash)
 (use-package dap-mode)
-
 (use-package setup-dired
   :load-path "./bob-lisp"
   :demand t
