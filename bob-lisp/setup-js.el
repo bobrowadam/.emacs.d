@@ -33,7 +33,7 @@
   (setq-default js-indent-level 2)
   (eldoc-mode +1))
 
-(use-package nvm)
+(use-package nvm :demand t)
 
 (use-package typescript-mode
   :hook
