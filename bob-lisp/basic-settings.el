@@ -91,7 +91,7 @@
   :demand t
   :ensure t
   :init
-  (load-theme 'doom-city-lights t))
+  (load-theme 'doom-monokai-classic t))
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")
