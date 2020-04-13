@@ -77,7 +77,9 @@
 ;;   :config (load-theme 'monokai t))
  
 (use-package doom-modeline
-  :init
+  :after ivy
+  :demand t
+  :config
   (setq doom-modeline-height 20)
   (setq doom-modeline-bar-width 2)
   (setq doom-modeline-minor-modes nil)
@@ -86,12 +88,12 @@
   (setq doom-modeline-env-enable-rust t)
   (setq doom-modeline-env-rust-executable "rustc")
   (setq find-file-visit-truename t)
-  (doom-modeline-mode 1))
+  (doom-modeline-mode 1)
+  (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "#4E4E4E"))))))
 
 (use-package doom-themes
   :demand t
-  :ensure t
-  :init
+  :config
   (load-theme 'doom-monokai-classic t))
 
 ;; Put backup files neatly away
