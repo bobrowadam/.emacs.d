@@ -61,6 +61,9 @@
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
 ;; (define-key key-translation-map (kbd "<f9>") (kbd "C-s-h"))
 
+;; Deal with editing large files:
+(global-so-long-mode 1)
+
 ;; Theme and Font
 (setq custom-safe-themes t)
 (setq custom-theme-directory "~/.emacs.d/themes")
