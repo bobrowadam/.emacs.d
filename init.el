@@ -136,7 +136,7 @@
   :demand t
   :load-path "./bob-lisp"
   :bind
-  (("M-x" . counsel-M-x)
+  (("M-x" . amx)
    ("C-x C-f" . counsel-find-file)
    ("C-x C-m" . counsel-mark-ring)
    ("C-c C-s C-r" . counsel-rg)
@@ -310,7 +310,6 @@
 
 (use-package vterm
   :if (window-system)
-  :commands (vterm)
   :config
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
   :bind

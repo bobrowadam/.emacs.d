@@ -8,7 +8,7 @@
   (amx-backend 'auto)
   (amx-save-file "~/.emacs.d/amx-items")
   (amx-history-length 50)
-  (amx-show-key-bindings nil)
+  (amx-show-key-bindings t)
   :config
   (amx-mode 1))
 
