@@ -15,6 +15,6 @@
          ".*:\0? *"))
   (setq tramp-default-method "ssh")
   (add-to-list 'tramp-restricted-shell-hosts-alist
-               "\\shadow\\'"))
+               "\\bastion\\'"))
 
 (provide 'tramp-settings)
