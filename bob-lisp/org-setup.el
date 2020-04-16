@@ -15,7 +15,7 @@
            "* %?\n  %i")
           ("T" "reminder" entry (file+headline ,(concat org-directory "/tickler.org") "Reminders")
            "* %?\n  %i")))
-  (setq org-agenda-files `(,(concat org-directory "/tickler.org") ,(concat org-directory "/google-calendar-private.org"), (concat org-directory "/google-calendar-riseup.org") ,(concat org-directory "/inbox.org") ,(concat org-directory "/gtd.org")))
+  (setq org-agenda-files `(,(concat org-directory "/tickler.org") ,(concat org-directory "/riseup-google-calendar.org"), (concat org-directory "/private-google-calendar.org") ,(concat org-directory "/inbox.org") ,(concat org-directory "/gtd.org")))
   (setq org-agenda-start-on-weekday 0)
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-refile-targets `((,(concat org-directory "/inbox.org") :maxlevel . 1)
@@ -37,6 +37,8 @@
    '((emacs-lisp . nil)
      (js . t)
      (shell . t)))
+  (custom-set-faces
+   '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
   (require 'ob-js)
   :hook (org-mode . (lambda () (org-bullets-mode 1))))
 

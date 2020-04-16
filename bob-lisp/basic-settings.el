@@ -94,6 +94,8 @@
   (doom-modeline-mode 1)
   (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "#4E4E4E"))))))
 
+;; (custom-set-faces '(ivy-current-match ((t (:extend t :background "#4E4E4E")))))
+
 (use-package doom-themes
   :demand t
   :config
