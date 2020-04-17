@@ -22,7 +22,12 @@
               ("C-=". origami-toggle-node))
   :config
   (setq rust-format-on-save t)
-  (setq company-tooltip-align-annotations t))
+  (setq company-tooltip-align-annotations t)
+  ;; This is to prevent cargo projects slip into projectile known projects
+  (setq projectile-ignored-project-function 'projectile-ignore-cargo)
+  (defun projectile-ignore-cargo (project-name)
+    (s-contains? ".cargo" project-name))
+)
 
 (use-package racer
   :disabled t
