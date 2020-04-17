@@ -31,7 +31,7 @@
 (setq use-package-compute-statistics t)
 
 (use-package dash)
-(use-package dap-mode)
+(use-package dap-mode :disabled t)
 (use-package setup-dired
   :load-path "./bob-lisp"
   :demand t
@@ -43,7 +43,7 @@
   (setq save-place-forget-unreadable-files t)
   (save-place-mode 1))
 
-(use-package f :demand t)
+(use-package f)
 (use-package which-key
   :demand t
   :if (window-system)
@@ -258,10 +258,9 @@
   :if (window-system)
   :demand t
   :bind (("C-M-%" . anzu-query-replace-regexp)
-         ("M-%" . query-replace)
-         ("C-c M-%" . anzu-repl))
+         ("M-%" . anzu-query-replace))
   :config
-  (global-anzu-mode))
+  (global-anzu-mode 1))
 
 (use-package multiple-cursors
   :if (window-system)
