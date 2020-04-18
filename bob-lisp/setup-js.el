@@ -54,9 +54,7 @@
               ("C-c C-n" . tide-rename-symbol)
               ("C-c C-r" . tide-references)
               ;; ("C-c M-i" . lsp-ui-imenu)
-              ("C-c C-c C-b" . tide-compile-file)
-              ("C-x C-e" . ts-send-last-sexp)
-              ("C-M-x" . ts-send-last-sexp-and-go))
+              ("C-c C-c C-b" . tide-compile-file))
   :hook (before-save . tide-format-before-save)
   :init
   (setq tide-node-executable "node")
@@ -65,8 +63,11 @@
   (setq tide-format-options
         '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
 (use-package highlight-indent-guides)
-(use-package js-comint)
-(use-package ts-comint)
+(use-package js-comint
+  :after js2-mode
+  :init (js-do-use-nvm))
+
+;; (use-package ts-comint :disabled t)
 (use-package json-mode
   :hook (json-mode . origami-mode)
   :bind (:map json-mode-map ("C-=" . origami-toggle-node)))
