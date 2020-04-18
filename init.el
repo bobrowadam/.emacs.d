@@ -89,14 +89,6 @@
 (use-package remote-defuns
   :load-path "./bob-lisp")
 
-(use-package shell-defuns
-  :if (window-system)
-  :load-path "./bob-lisp"
-  :bind
-  ("C-c s s". bob/projectile-run-vterm)
-  ("C-c s e" . bob/vterm)
-  ("C-c s j" . bob/jump-to-shell))
-
 (use-package misc-funcs
   :if (window-system)
   :demand t
@@ -307,11 +299,17 @@
 
 (use-package try)
 
+(use-package shell-defuns :load-path "./bob-lisp" :demand t)
 (use-package vterm
   :if (window-system)
+  :after shell-defuns
+  :demand t
   :config
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
   :bind
+  ("C-c s s". bob/projectile-run-vterm)
+  ("C-c s e" . bob/vterm)
+  ("C-c s j" . bob/jump-to-shell)
   (:map vterm-mode-map ("C-c C-j" . vterm-copy-mode))
   (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
