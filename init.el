@@ -83,6 +83,7 @@
   :load-path "./bob-list")
 
 (use-package tramp-settings
+  :demand t
   :if (window-system)
   :load-path "./bob-lisp")
 

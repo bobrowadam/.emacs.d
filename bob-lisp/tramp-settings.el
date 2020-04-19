@@ -15,6 +15,8 @@
          ".*:\0? *"))
   (setq tramp-default-method "ssh")
   (add-to-list 'tramp-restricted-shell-hosts-alist
-               "\\bastion\\'"))
+               "\\bastion\\'")
+  (add-to-list 'tramp-default-proxies-alist
+                 '("bob" nil "/sshx:bastion:")))
 
 (provide 'tramp-settings)
