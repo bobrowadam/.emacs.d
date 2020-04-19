@@ -40,7 +40,9 @@
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
   (require 'ob-js)
-  :hook (org-mode . (lambda () (org-bullets-mode 1))))
+  :hook
+  (org-mode . (lambda () (org-bullets-mode 1)))
+  (org-archive-hook . #'org-save-all-org-buffers))
 
 (use-package request
   ;; :demand t
