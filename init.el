@@ -71,6 +71,7 @@
   ("C-x f" . recentf-open-files)
   ("M-o" . other-frame)
   ("C-x k" . kill-this-buffer)
+  ("M-SPC" . cycle-spacing)
   :chords
   (("jj" . "_")
    ("ii" . "|")
