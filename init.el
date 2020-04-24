@@ -44,6 +44,10 @@
   (save-place-mode 1))
 
 (use-package f)
+(use-package server
+  :if (window-system)
+  :init (server-start))
+
 (use-package which-key
   :demand t
   :if (window-system)
