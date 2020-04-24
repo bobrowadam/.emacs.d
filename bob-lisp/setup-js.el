@@ -27,7 +27,7 @@
               ("C-=" . origami-toggle-node)
               ("C-x C-e" . js-send-last-sexp))
   :config
-  (nvm-use "8.11.1")
+  (nvm-use "v12.14.0")
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
   (setq-default js-indent-level 2)
@@ -60,8 +60,9 @@
   (setq tide-node-executable "node")
   (setq company-tooltip-align-annotations t)
   (setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))
-  (setq tide-format-options
-        '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
+  ;; (setq tide-format-options
+  ;;       '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil))
+  )
 (use-package highlight-indent-guides)
 (use-package js-comint
   :after js2-mode
