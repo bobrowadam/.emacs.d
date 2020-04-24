@@ -24,6 +24,7 @@
 (use-package github-review
   :init (setq github-review-fetch-top-level-and-review-comments t))
 
+(use-package git-timemachine)
 (use-package diff-hl
   :demand t
   :init (global-diff-hl-mode))
