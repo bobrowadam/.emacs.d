@@ -1,6 +1,7 @@
 (use-package paredit
   :hook
-  (eval-expression-minibuffer-setup . enable-paredit-mode))
+  (eval-expression-minibuffer-setup . enable-paredit-mode)
+  (emacs-lisp-mode . enable-paredit-mode))
 
 (use-package smartparens
   :demand t

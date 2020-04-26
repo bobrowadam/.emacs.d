@@ -15,21 +15,18 @@
            "* %?\n  %i")
           ("T" "reminder" entry (file+headline ,(concat org-directory "/tickler.org") "Reminders")
            "* %?\n  %i")))
-  (setq org-agenda-files `(,(concat org-directory "/tickler.org") ,(concat org-directory "/riseup-google-calendar.org"), (concat org-directory "/private-google-calendar.org") ,(concat org-directory "/inbox.org") ,(concat org-directory "/gtd.org")))
+  (setq org-agenda-files `(,(concat org-directory "/tickler.org") ,(concat org-directory "/riseup-google-calendar.org"), (concat org-directory "/private-google-calendar.org") ,(concat org-directory "/inbox.org") ,(concat org-directory "/gtd.org"), (concat org-directory "/notes.org")))
   (setq org-agenda-start-on-weekday 0)
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-refile-targets `((,(concat org-directory "/inbox.org") :maxlevel . 1)
                              (,(concat org-directory "/gtd.org") :maxlevel . 3)
                              (,(concat org-directory "/tickler.org") :maxlevel . 1)
-                             (,(concat org-directory "/notes.org") :maxlevel . 1)))
+                             (,(concat org-directory "/notes.org") :maxlevel . 4)))
   (setq org-archive-location (concat org-directory "/done.org::"))
   (setq org-complete-tags-always-offer-all-agenda-tags t)
   (setq org-stuck-projects
         '("+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER")
           ""))
-  ;; (setq org-stuck-projects
-  ;;          '("+PROJECT/-MAYBE-DONE" ("NEXT" "TODO") ("@SHOP")
-  ;;                                   "\\<IGNORE\\>"))
   (setq org-tags-exclude-from-inheritance '("PROJECT"))
   :config
   (org-babel-do-load-languages
@@ -42,7 +39,9 @@
   (require 'ob-js)
   :hook
   (org-mode . (lambda () (org-bullets-mode 1)))
-  (org-archive-hook . #'org-save-all-org-buffers))
+  (org-archive . org-save-all-org-buffers)
+  (org-after-refile-insert . org-save-all-org-buffers)
+  )
 
 (use-package request
   ;; :demand t
