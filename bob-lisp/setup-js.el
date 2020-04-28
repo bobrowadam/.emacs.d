@@ -63,7 +63,7 @@
   ;; (setq tide-format-options
   ;;       '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil))
   )
-(use-package highlight-indent-guides)
+
 (use-package js-comint
   :after js2-mode
   :init (js-do-use-nvm))

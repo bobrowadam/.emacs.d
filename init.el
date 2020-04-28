@@ -175,11 +175,7 @@
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
-(use-package highlight-indent-guides
-  :if (window-system)
-  :demand t
-  :hook
-  (scala-mode . highlight-indent-guides-mode))
+(use-package highlight-indent-guides :if (window-system))
 
 (use-package lsp-setup
   :if (window-system)
