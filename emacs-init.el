@@ -1,0 +1,272 @@
+(use-package emacs
+  :init ()
+  :config
+  (menu-bar-mode -1)
+  (delete-selection-mode 1))
+(use-package whole-line-or-region
+  :ensure t
+  :init (whole-line-or-region-global-mode))
+(use-package emacs
+  :custom
+  (use-file-dialog nil)
+  (use-dialog-box nil)
+  (inhibit-splash-screen t)
+  (ring-bell-function 'ignore)
+  (visible-bell nil)
+  :config
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (global-unset-key (kbd "C-z"))
+  (global-unset-key (kbd "C-x C-z"))
+  (global-unset-key (kbd "C-h h"))
+  (global-unset-key (kbd "s-p"))
+  (global-unset-key (kbd "s-n")))
+
+(use-package emacs
+  :init    (setq-default indent-tabs-mode nil)
+  (setq tab-always-indent nil))
+
+(use-package cus-edit
+  :config
+  (setq custom-file "~/.emacs.d/custom.el")
+
+  (unless (file-exists-p custom-file)
+    (write-region "" nil custom-file))
+
+  (load custom-file))
+
+(use-package emacs
+  :config
+  (define-key key-translation-map [?\C-h] [?\C-?])
+  (define-key key-translation-map (kbd "<f1>") (kbd "C-h")))
+
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+(use-package exec-path-from-shell :ensure t
+  :config (exec-path-from-shell-initialize))
+
+(use-package emacs
+  :config
+  (set-face-attribute 'default nil :family "menlo" :height 180))
+(use-package doom-themes :ensure t
+  :config
+  (load-theme 'doom-tomorrow-night))
+(use-package doom-modeline :ensure t
+  :config (doom-modeline-mode 1))
+
+(use-package ivy
+  :demand t
+  :config
+  (setq ivy-re-builders-alist
+        '((t . ivy--regex-fuzzy)))
+  (setq ivy-use-selectable-prompt t)
+  (setq ivy-initial-inputs-alist nil)
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d%d) ")
+  (ivy-mode 1))
+(use-package ivy-posframe
+  :ensure t
+  :custom
+  (ivy-posframe-parameters
+   '((left-fringe . 2)
+     (right-fringe . 2)
+     (internal-border-width . 2)
+     (font . "menlo")))
+  (ivy-posframe-height-alist
+   '((swiper . 15)
+     (swiper-isearch . 15)
+     (t . 10)))
+  (ivy-posframe-display-functions-alist
+   '((complete-symbol . ivy-posframe-display-at-point)
+     (swiper . nil)
+     (swiper-isearch . nil)
+     (t . ivy-posframe-display-at-frame-center)))
+  :config
+  (ivy-posframe-mode 1))
+
+(use-package amx :ensure t
+  :bind ("M-x" . amx))
+
+(use-package projectile
+  :demand
+  :init
+  (setq projectile-completion-system 'ivy)
+  :config
+  (setq projectile-switch-project-action #'projectile-dired)
+  (projectile-global-mode 1)
+  :bind
+  (:map projectile-mode-map ("C-c p" . projectile-command-map)))
+
+(use-package dired
+  :init
+  (setq dired-use-ls-dired nil)
+  (setq dired-listing-switches "-alh"))
+(use-package dired-x)
+(use-package dired-aux
+  :ensure nil
+  :config
+  (setq dired-isearch-filenames 'dwim)
+  ;; The following variables were introduced in Emacs 27.1
+  (setq dired-create-destination-dirs 'ask)
+  (setq dired-vc-rename-file t)
+  :bind (:map dired-mode-map
+              ("C-+" . dired-create-empty-file)
+              ("M-s f" . nil)))
+
+(use-package anzu
+  :ensure t
+  :custom
+  (anzu-search-threshold 100)
+  (anzu-replace-threshold nil)
+  (anzu-deactivate-region nil)
+  (anzu-replace-to-string-separator "")
+  (anzu-cons-mode-line-p nil)
+  :config
+  (global-anzu-mode 1)
+  :bind (([remap isearch-query-replace] . anzu-isearch-query-replace)
+         ([remap isearch-query-replace-regexp] . anzu-isearch-query-replace-regexp)
+
+         ([remap query-replace] . anzu-query-replace)
+         ([remap query-replace-regexp] . anzu-query-replace-regexp)
+         :map isearch-mode-map ("M-s %" . anzu-query-replace-at-cursor)))
+
+(use-package isearch
+  :diminish
+  :config
+  (setq search-highlight t)
+  (setq search-whitespace-regexp ".*?")
+  (setq isearch-lax-whitespace t)
+  (setq isearch-regexp-lax-whitespace nil)
+  (setq isearch-lazy-highlight t)
+  ;; All of the following variables were introduced in Emacs 27.1.
+  (setq isearch-lazy-count t)
+  (setq lazy-count-prefix-format "(%s/%s) ")
+  (setq lazy-count-suffix-format nil)
+  (setq isearch-yank-on-move 'shift)
+  (setq isearch-allow-scroll 'unlimited)
+
+  (defun prot/isearch-mark-and-exit ()
+    "Mark the current search string and exit the search."
+    (interactive)
+    (push-mark isearch-other-end t 'activate)
+    (setq deactivate-mark nil)
+    (isearch-done))
+
+  (defun prot/isearch-other-end ()
+    "End current search in the opposite side of the match.
+Particularly useful when the match does not fall within the
+confines of word boundaries (e.g. multiple words)."
+    (interactive)
+    (isearch-done)
+    (when isearch-other-end
+      (goto-char isearch-other-end)))
+
+  (defun prot/isearch-abort ()
+    "Remove non-matching `isearch' input, reverting to previous
+successful search and continuing with the search.
+
+This is a modified variant of the original `isearch-abort',
+mapped to C-g which will remove the failed match if any and only
+afterwards exit the search altogether."
+    (interactive)
+    (discard-input)
+    (while (or (not isearch-success) isearch-error)
+      (isearch-pop-state))
+    (isearch-update))
+
+  (defun prot/isearch-query-replace-symbol-at-point ()
+    "Run `query-replace-regexp' for the symbol at point."
+    (interactive)
+    (isearch-forward-symbol-at-point)
+    (isearch-query-replace-regexp))
+
+  :bind (("M-s M-o" . multi-occur)
+         ("M-s %" . prot/isearch-query-replace-symbol-at-point)
+         :map minibuffer-local-isearch-map
+         ("M-/" . isearch-complete-edit)
+         :map isearch-mode-map
+         ("M-/" . isearch-complete)
+         ("C-SPC" . prot/isearch-mark-and-exit)
+         ("DEL" . prot/isearch-abort)
+         ("<C-return>" . prot/isearch-other-end)))
+
+(use-package magit
+  :ensure t
+  :bind ("C-x g" . magit-status))
+
+(setq org-src-tab-acts-natively t)
+(use-package org
+  :ensure t
+  :if (window-system)
+  :init
+  (setq org-loop-over-headlines-in-active-region t)
+  (setq calendar-longitude 32.085300)
+  (setq calendar-latitude 34.781769)
+  (setq org-tree-slide-header nil)
+
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . nil)
+     (js . t)
+     (shell . t)))
+  (custom-set-faces
+   '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
+  (require 'ob-js)
+  :hook
+  (org-mode-hook . (lambda () (org-bullets-mode 1)))
+  (org-archive-hook . org-save-all-org-buffers)
+  (org-after-refile-insert-hook . org-save-all-org-buffers))
+
+;; Couldn't bind this in 'use-package' form:
+(with-eval-after-load 'org
+  (progn
+    (define-key org-mode-map (kbd "M-p") #'org-metaup)
+    (define-key org-mode-map (kbd "M-n") #'org-metadown)
+    (define-key org-mode-map (kbd "M-F") #'org-shiftright)
+    (define-key org-mode-map (kbd "M-B") #'org-shiftleft)
+    (define-key org-mode-map (kbd "C-c l") #'org-store-link)
+    (define-key org-read-date-minibuffer-local-map (kbd "C-b")
+      (lambda ()
+        (interactive)
+        (org-eval-in-calendar '(calendar-backward-day 1))))
+    (define-key org-read-date-minibuffer-local-map (kbd "C-f")
+      (lambda () (interactive)
+        (org-eval-in-calendar '(calendar-forward-day 1))))))
+
+(use-package org-bullets :ensure t)
+
+(use-package paredit
+  :hook
+  (eval-expression-minibuffer-setup-hook . enable-paredit-mode)
+  (emacs-lisp-mode-hook . enable-paredit-mode)
+  (org-mode-hook . enable-paredit-mode))
+
+(use-package smartparens :ensure t)
+
+(use-package company
+  :if (window-system)
+  :init
+  (setq company-tooltip-align-annotations t)
+  (setq company-minimum-prefix-length 1)
+  (setq company-idle-delay 0.2)
+  (global-company-mode 1))
+
+(use-package js2-mode
+  :ensure t)
+
+(use-package indium
+  :ensure)
+
+(use-package yasnippet-snippets :ensure)
+(use-package yasnippet
+  :hook
+  (prog-mode-hook . yas-minor-mode)
+  (emacs-lisp-mode-hook . yas-minor-mode)
+  (org-mode-hook . yas-minor-mode)
+  :config
+  (setq yas-snippet-dirs
+        `(,(concat user-emacs-directory "snippets")
+          ,yasnippet-snippets-dir))
+  (yas-reload-all))
