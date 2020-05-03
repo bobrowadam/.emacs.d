@@ -57,7 +57,9 @@
 
 (use-package f)
 (use-package server
-  :if (window-system)
+  :if (and (fboundp 'server-running-p) 
+           (not (server-running-p))
+           (window-system))
   :init (server-start))
 
 (use-package which-key
@@ -249,7 +251,8 @@
   ("C-c M-r" . ripgrep-regexp)
   (:map ripgrep-search-mode-map ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)))
 
-(use-package deadgrep)
+(use-package deadgrep
+  :bind ("C-c C-d" . deadgrep))
 
 (use-package wgrep)
 

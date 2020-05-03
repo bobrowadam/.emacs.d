@@ -27,6 +27,7 @@
               ("C-=" . origami-toggle-node)
               ("C-x C-e" . js-send-last-sexp))
   :config
+  (setenv "BOB_DIR" (format "%s%s" (getenv "HOME") "/source/bob"))
   (nvm-use "v12.14.0")
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
@@ -72,5 +73,12 @@
 (use-package json-mode
   :hook (json-mode . origami-mode)
   :bind (:map json-mode-map ("C-=" . origami-toggle-node)))
+
+(use-package indium
+  :hook
+  (js2-mode . indium-interaction-mode)
+  :bind
+  
+  (:map indium-debugger-mode-map ("C-c C-SPC" . indium-debugger-step-over)))
 
 (provide 'setup-js)
