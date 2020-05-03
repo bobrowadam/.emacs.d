@@ -10,7 +10,7 @@
       history-delete-duplicates t
       comint-input-ignoredups t
 
-      view-read-only t ; all read-only buffers in view-mode
+      view-read-only nil ; all read-only buffers in view-mode
       view-inhibit-help-message t ; don't tell me about it
 
       delete-active-region nil ; just use <delete>

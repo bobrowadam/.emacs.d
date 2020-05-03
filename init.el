@@ -12,6 +12,7 @@
 (require 'package)
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
+
 (unless package--initialized (package-initialize))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -145,7 +146,7 @@
   :demand t
   :load-path "./bob-lisp"
   :bind
-  (("M-x" . amx)
+  (("M-x" . counsel-M-x)
    ("C-x C-f" . counsel-find-file)
    ("C-x C-m" . counsel-mark-ring)
    ("C-c C-s C-r" . counsel-rg)
@@ -248,6 +249,8 @@
   ("C-c M-r" . ripgrep-regexp)
   (:map ripgrep-search-mode-map ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)))
 
+(use-package deadgrep)
+
 (use-package wgrep)
 
 (use-package setup-snippets
@@ -340,6 +343,8 @@
   :config
   (setq persp-state-default-file (concat user-emacs-directory ".persp-state"))
   (persp-state-load persp-state-default-file))
+
+(use-package yaml-mode)
 
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
