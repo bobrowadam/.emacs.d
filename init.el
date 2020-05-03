@@ -57,9 +57,6 @@
 
 (use-package f)
 (use-package server
-  :if (and (fboundp 'server-running-p) 
-           (not (server-running-p))
-           (window-system))
   :init (server-start))
 
 (use-package which-key
