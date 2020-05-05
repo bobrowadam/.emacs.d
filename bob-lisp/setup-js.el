@@ -77,6 +77,7 @@
 (use-package indium
   :hook
   (js2-mode . indium-interaction-mode)
+  (js-mode . indium-interaction-mode)
   :bind
   
   (:map indium-debugger-mode-map ("C-c C-SPC" . indium-debugger-step-over)))

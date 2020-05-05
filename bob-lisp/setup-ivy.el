@@ -1,9 +1,8 @@
-(use-package smex
-  :disabled t
-  :ensure t)
+(use-package smex)
 
 (use-package amx
   :after ivy
+  :disabled t
   :custom
   (amx-backend 'auto)
   (amx-save-file "~/.emacs.d/amx-items")

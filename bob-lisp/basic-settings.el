@@ -23,7 +23,7 @@
       ;; No more damn prompts!
       dired-recursive-deletes 'always
       dired-recursive-copies 'always
-      cursor-type '(bar . 4))
+      blink-cursor-blinks 1)
 
 (setq initial-scratch-message ";; Oh it's you again :|")
 (setq scroll-conservatively 10
@@ -42,6 +42,8 @@
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (tooltip-mode -1))
+
+(setq-default cursor-type '(bar . 4))
 
 (global-subword-mode t)
 (global-superword-mode -1)
