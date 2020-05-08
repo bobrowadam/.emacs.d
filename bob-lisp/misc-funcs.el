@@ -108,5 +108,15 @@ You can escape '$' with '\\' as prefix.
   (interactive)
   (with-current-buffer "*scratch*"
     (write-file (concat user-emacs-directory "scratch-backup.el"))))
+
+(defun calc-sourdough-hidration (levan flour water)
+  (-let* ((total-flour (+ (* levan 0.5) flour))
+          (total-water (+ (* levan 0.5) water))
+          (final-bread-weight (* (+ levan flour water) 0.8))
+          (hidration (* 100 (/ total-water total-flour))))
+    (format "Hidration: %d%%
+Total flour weight: %d grams
+Final bread weight: %d grams" hidration total-flour final-bread-weight)))
+
 (provide 'misc-funcs)
 ;;; misc-funcs.el ends here
