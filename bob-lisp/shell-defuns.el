@@ -48,17 +48,16 @@ Any other prefis will be used as the suffix itself."
   (if-let* ((shell-buffers (bob/drop-current-shell-buffer
                             (set-last-shell-buffer-as-first
                              (seq-filter
-                              (lambda (b) (or (s-contains\? "*shell*" b  t)
-                                              (s-contains\? "*shell" b  t)
-                                              (s-contains\? "*eshell" b  t)
-                                              (s-contains\? "*sbt*" b  t)
-                                              (s-contains\? "vterm<" b  t)
+                              (lambda (b) (or (equal (with-current-buffer b major-mode) 'vterm-mode)
+                                              (equal (with-current-buffer b major-mode) 'eshell-mode)
+                                              (equal (with-current-buffer b major-mode) 'shell-mode)
+                                              (equal (with-current-buffer b major-mode) 'js-comint-mode)
                                               ))
                               (mapcar (function buffer-name) (buffer-list))))))
             (shell-buffer (ivy-completing-read "Shell: " shell-buffers)))
       (progn
         (setq bob/last-shell-buffer shell-buffer)
-       (switch-to-buffer shell-buffer))
+        (switch-to-buffer shell-buffer))
     (message "No Shell bufers exists")))
 
 (defun bob/drop-current-shell-buffer (buffers)
