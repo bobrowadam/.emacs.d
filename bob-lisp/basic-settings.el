@@ -71,12 +71,13 @@
 ;; Theme and Font
 (setq custom-safe-themes t)
 (setq custom-theme-directory "~/.emacs.d/themes")
-(set-frame-font "Monaco 21")
-(add-to-list 'default-frame-alist
-             '(font . "Monaco 21"))
-;; (set-frame-font "Latin Modern Mono 21")
+;; (set-frame-font "Monaco 21")
 ;; (add-to-list 'default-frame-alist
-;;              '(font . "Latin Modern Mono 21"))
+;;              '(font . "Monaco 21"))
+
+(set-frame-font "Roboto Mono 19")
+(add-to-list 'default-frame-alist
+             '(font . "Roboto Mono 19"))
 ;; (load-theme 'bobs-badger t)
 
 ;; (use-package monokai-theme
@@ -97,12 +98,11 @@
   (setq find-file-visit-truename t)
   (doom-modeline-mode 1)
   (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "#4E4E4E"))))))
-;; (custom-set-faces '(ivy-current-match ((t (:extend t :background "#4E4E4E")))))
 
 (use-package doom-themes
   :demand t
   :config
-  (load-theme 'doom-monokai-classic t))
+  (load-theme 'doom-oceanic-next t))
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")
