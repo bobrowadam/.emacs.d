@@ -42,18 +42,20 @@ Any other prefis will be used as the suffix itself."
      (vterm))))
 
 (defvar bob/last-shell-buffer nil)
+
 (defun bob/jump-to-shell ()
   "Jump to a shell buffer."
   (interactive)
-  (if-let* ((shell-buffers (bob/drop-current-shell-buffer
-                            (set-last-shell-buffer-as-first
-                             (seq-filter
-                              (lambda (b) (or (equal (with-current-buffer b major-mode) 'vterm-mode)
-                                              (equal (with-current-buffer b major-mode) 'eshell-mode)
-                                              (equal (with-current-buffer b major-mode) 'shell-mode)
-                                              (equal (with-current-buffer b major-mode) 'js-comint-mode)
-                                              ))
-                              (mapcar (function buffer-name) (buffer-list))))))
+  (if-let* ((shell-buffers
+             (bob/drop-current-shell-buffer
+              (set-last-shell-buffer-as-first
+               (seq-filter
+                (lambda (b) (or (equal (with-current-buffer b major-mode) 'vterm-mode)
+                                (equal (with-current-buffer b major-mode) 'eshell-mode)
+                                (equal (with-current-buffer b major-mode) 'shell-mode)
+                                (equal (with-current-buffer b major-mode) 'js-comint-mode)
+                                ))
+                (mapcar (function buffer-name) (buffer-list))))))
             (shell-buffer (ivy-completing-read "Shell: " shell-buffers)))
       (progn
         (setq bob/last-shell-buffer shell-buffer)
