@@ -1,4 +1,4 @@
-(setq gc-cons-threshold (* 50 1000 1000))
+(setq gc-cons-percentage 0.9)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
@@ -7,7 +7,7 @@
                              (float-time
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)
-            (setq gc-cons-threshold (* 2 1000 1000))))
+            (setq gc-cons-percentage 0.1)))
 
 (require 'package)
 (setq debug-on-error nil)
