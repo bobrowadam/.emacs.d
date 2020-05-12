@@ -28,6 +28,7 @@
         '("+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER")
           ""))
   (setq org-tags-exclude-from-inheritance '("PROJECT"))
+  (setq org-deadline-warning-days 3)
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
