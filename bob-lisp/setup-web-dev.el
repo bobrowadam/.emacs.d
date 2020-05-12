@@ -11,13 +11,14 @@
   (web-mode . highlight-indent-guides-mode)
   (web-mode . emojify-mode)
   :config
-  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-markup-indent-offset 4)
   (setq web-mode-code-indent-offset 2)
-  (setq web-mode-attr-indent-offset 2)
+  (setq web-mode-attr-indent-offset 8)
   (setq web-mode-enable-auto-pairing t)
-  (setq web-mode-style-padding 1)
-  (setq web-mode-script-padding 1)
-  (setq web-mode-block-padding 0)
+  (setq web-mode-style-padding 2)
+  (setq web-mode-indent-style 2)
+  (setq web-mode-script-padding 2)
+  (setq web-mode-block-padding 2)
   (setq web-mode-comment-style 2)
   (setq web-mode-enable-css-colorization t)
   (setq web-mode-enable-current-element-highlight t)
@@ -28,6 +29,12 @@
               ("C-c C-t C-m" . web-mode-tag-match)
               ("C-c C-t C-e" . web-mode-tag-end))
 )
+
+(use-package vue-mode
+  :disabled t
+  :mode "\\.vue\\'"
+  :config
+  (add-hook 'vue-mode-hook #'lsp))
 
 (use-package skewer-mode)
 (use-package impatient-mode)
