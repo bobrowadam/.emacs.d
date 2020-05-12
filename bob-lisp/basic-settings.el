@@ -36,6 +36,7 @@
 (display-time)
 (display-battery-mode)
 (menu-bar-mode -1)
+(column-number-mode 1)
 (when (window-system)
   (setq confirm-kill-emacs 'yes-or-no-p))
 
