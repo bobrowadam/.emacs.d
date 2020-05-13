@@ -36,6 +36,10 @@
   :config
   (add-hook 'vue-mode-hook #'lsp))
 
+(use-package vue-html-mode
+  :disabled t
+  )
+
 (use-package skewer-mode)
 (use-package impatient-mode)
 (use-package emojify)
