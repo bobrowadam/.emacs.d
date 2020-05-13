@@ -29,4 +29,9 @@
   :ensure t
   :init (diredfl-global-mode))
 
+(use-package dired-rsync
+  :init
+  (setq dired-rsync-passphrase-stall-regex "Verification code")
+  :bind (:map dired-mode-map ("C-c C-r" . dired-rsync)))
+
 (provide 'setup-dired)
