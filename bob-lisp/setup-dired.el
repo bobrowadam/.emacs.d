@@ -5,10 +5,7 @@
   :ensure nil
   )
 
-(use-package dired-x
-  :ensure nil
-  :demand t
-  )
+(use-package dired-x :ensure nil :demand t)
 
 (use-package dired-aux
   :demand t
@@ -27,5 +24,9 @@
               ("<tab>" . dired-subtree-toggle)
               ("<C-tab>" . dired-subtree-cycle)
               ("<backtab>" . dired-subtree-remove)))
+
+(use-package diredfl
+  :ensure t
+  :init (diredfl-global-mode))
 
 (provide 'setup-dired)
