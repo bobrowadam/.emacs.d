@@ -264,6 +264,7 @@
 
 (use-package anzu
   :if (window-system)
+  :defer 10
   :demand t
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . anzu-query-replace))

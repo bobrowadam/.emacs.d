@@ -34,4 +34,6 @@
   (setq dired-rsync-passphrase-stall-regex "Verification code")
   :bind (:map dired-mode-map ("C-c C-r" . dired-rsync)))
 
+(use-package dired-du)
+
 (provide 'setup-dired)
