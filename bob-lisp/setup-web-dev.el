@@ -11,9 +11,9 @@
   (web-mode . highlight-indent-guides-mode)
   (web-mode . emojify-mode)
   :config
-  (setq web-mode-markup-indent-offset 4)
+  (setq web-mode-markup-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
-  (setq web-mode-attr-indent-offset 8)
+  (setq web-mode-attr-indent-offset 15)
   (setq web-mode-enable-auto-pairing t)
   (setq web-mode-style-padding 2)
   (setq web-mode-indent-style 2)
@@ -22,6 +22,8 @@
   (setq web-mode-comment-style 2)
   (setq web-mode-enable-css-colorization t)
   (setq web-mode-enable-current-element-highlight t)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-enable-auto-indentation nil)
   (nvm-use "v12.14.0")
   :bind (:map web-mode-map
               ("C-c C-t C-n" . web-mode-tag-next)
