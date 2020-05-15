@@ -1,4 +1,5 @@
 (use-package tramp
+  :init (setq tramp-verbose 6)
   :config
   (setq tramp-password-prompt-regexp
         (concat
@@ -20,6 +21,6 @@
                "\\bastion_local\\'")
   
   (add-to-list 'tramp-default-proxies-alist
-               '("bob" nil "/sshx:bastion:")))
+               '("bob$" nil "/sshx:bastion:")))
 
 (provide 'tramp-settings)
