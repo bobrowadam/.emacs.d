@@ -109,7 +109,11 @@
 (use-package misc-funcs
   :if (window-system)
   :demand t
-  :load-path "./bob-listp")
+  :load-path "./bob-listp"
+  :bind
+  ("C-+" . increment-number-at-point)
+  ("C-_" . decrement-number-at-point)
+)
 
 (use-package edit-funcs
   :if (window-system)
