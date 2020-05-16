@@ -112,11 +112,15 @@ You can escape '$' with '\\' as prefix.
 (defun calc-sourdough-hidration (levan flour water)
   (-let* ((total-flour (+ (* levan 0.5) flour))
           (total-water (+ (* levan 0.5) water))
-          (final-bread-weight (* (+ levan flour water) 0.8))
-          (hidration (* 100 (/ total-water total-flour))))
+          (total-dough (+ levan flour water))
+          (final-bread-weight (* total-dough 0.8))
+          (hidration (* 100 (/ total-water total-flour)))
+          (salt-weight (* 0.02 total-flour)))
     (format "Hidration: %d%%
 Total flour weight: %d grams
-Final bread weight: %d grams" hidration total-flour final-bread-weight)))
+Total dough weight: %d grams
+Final bread weight: %d grams
+Recomende Salt weight: %.1f grams" hidration total-flour total-dough final-bread-weight salt-weight)))
 
 (defun increment-number-at-point ()
       (interactive)
