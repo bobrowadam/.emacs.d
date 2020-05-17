@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: template
+# key: tem
+# --
+<template>
+<${1:div}>
+  $2
+</$1>
+</template>

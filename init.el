@@ -71,7 +71,7 @@
   :init (setq exec-path-from-shell-arguments '("-l"))
   :config (exec-path-from-shell-initialize))
 
-(use-package flycheck)
+(use-package flycheck :demand t)
 
 (use-package basic-settings
   :demand t
@@ -334,7 +334,9 @@
   (:map vterm-mode-map ("C-c C-j" . vterm-copy-mode))
   (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
+(use-package add-node-modules-path)
 (use-package setup-web-dev
+  :after flycheck
   :demand t
   :load-path "./bob-lisp")
 

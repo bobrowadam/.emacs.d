@@ -10,7 +10,12 @@
   (web-mode . yas-minor-mode)
   (web-mode . highlight-indent-guides-mode)
   (web-mode . emojify-mode)
+  (web-mode . flycheck-mode)
+  (web-mode . (lambda ()
+                (flycheck-select-checker 'javascript-eslint)))
+  (web-mode . add-node-modules-path)
   :config
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
   (setq web-mode-attr-indent-offset 15)
