@@ -6,7 +6,7 @@
   (setq calendar-latitude 34.781769)
   (setq org-tree-slide-header nil)
   (setq org-todo-keywords
-        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)")))
+        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
   (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
   (setq org-capture-templates
         `(("l" "link-entry" entry (file+headline ,(concat org-directory "/inbox.org") "Entries")
