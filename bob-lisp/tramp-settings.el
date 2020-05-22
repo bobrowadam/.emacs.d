@@ -21,6 +21,18 @@
                "\\bastion_local\\'")
   
   (add-to-list 'tramp-default-proxies-alist
-               '("bob$" nil "/sshx:bastion:")))
+               '("bob$" nil "/sshx:bastion:"))
+  (setq remote-file-name-inhibit-cache 3600
+      tramp-completion-reread-directory-timeout nil
+      vc-ignore-dir-regexp (format "%s\\|%s"
+                                   vc-ignore-dir-regexp
+                                   tramp-file-name-regexp)
+      tramp-verbose 0)
+  (setq tramp-histfile-override t)
+  ;; Save backup files locally
+  ;; from https://stackoverflow.com/a/47021266
+  (add-to-list 'backup-directory-alist
+               (cons tramp-file-name-regexp "/tmp/emacs-backup/"))
+  )
 
 (provide 'tramp-settings)
