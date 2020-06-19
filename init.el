@@ -68,7 +68,6 @@
 (use-package exec-path-from-shell
   :if (window-system)
   :demand t
-  :init (setq exec-path-from-shell-arguments '("-l"))
   :config (exec-path-from-shell-initialize))
 
 (use-package flycheck :demand t)
@@ -190,7 +189,7 @@
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
-(use-package highlight-indent-guides :if (window-system))
+(use-package highlight-indent-guides :ensure t)
 
 (use-package lsp-setup
   :if (window-system)
