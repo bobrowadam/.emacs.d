@@ -27,7 +27,7 @@
       blink-cursor-blinks 1)
 
 (setq initial-scratch-message ";; Oh it's you again :|")
-(setq scroll-conservatively 10
+(setq scroll-conservatively 101
       scroll-margin 2)
 (setq display-time-day-and-date t)
 (setq display-time-24hr-format t)
@@ -103,6 +103,8 @@
   :demand t
   :config
   (load-theme 'doom-oceanic-next t))
+
+(use-package tron-legacy-theme)
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")

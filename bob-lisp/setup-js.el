@@ -1,5 +1,4 @@
 (use-package js2-mode
-  :after nvm
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   (defun my/use-eslint-from-node-modules ()
@@ -28,13 +27,13 @@
               ("C-x C-e" . js-send-last-sexp))
   :config
   (setenv "BOB_DIR" (format "%s%s" (getenv "HOME") "/source/bob"))
-  (nvm-use "v12.14.0")
+  ;; (nvm-use "v12.14.0")
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
   (setq-default js-indent-level 2)
   (eldoc-mode +1))
 
-(use-package nvm :demand t)
+(use-package nvm :disabled t :demand t)
 
 (use-package typescript-mode
   :hook
@@ -67,7 +66,9 @@
 
 (use-package js-comint
   :after js2-mode
-  :init (js-do-use-nvm))
+  ;; :init
+  ;; (js-do-use-nvm)
+  )
 
 ;; (use-package ts-comint :disabled t)
 (use-package json-mode

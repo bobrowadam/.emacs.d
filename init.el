@@ -253,7 +253,7 @@
   (:map ripgrep-search-mode-map ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)))
 
 (use-package deadgrep
-  :bind ("C-c C-d" . deadgrep))
+  :bind ("C-c C-s C-d" . deadgrep))
 
 (use-package wgrep)
 
