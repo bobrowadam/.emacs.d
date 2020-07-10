@@ -86,6 +86,7 @@
   ("M-o" . other-frame)
   ("C-x k" . kill-this-buffer)
   ("M-SPC" . cycle-spacing)
+  ("<s-return>" . toggle-frame-fullscreen)
   :chords
   (("jj" . "_")
    ("ii" . "|")
