@@ -174,6 +174,13 @@
   (setq company-idle-delay 0.2)
   :config (global-company-mode 1))
 
+(use-package company-tabnine
+  :disabled t
+  :init
+  (add-to-list 'company-backends #'company-tabnine)
+  ;; (setq company-idle-delay 0)
+  (setq company-show-numbers t))
+
 (use-package setup-projectile
   :if (window-system)
   :load-path "./bob-lisp"
