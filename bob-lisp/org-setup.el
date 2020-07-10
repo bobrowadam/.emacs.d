@@ -37,7 +37,11 @@
      (shell . t)))
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
+
   (require 'ob-js)
+  ;; Fix bug in ob-js: https://emacs.stackexchange.com/questions/55690/org-babel-javascript-error
+  (setq org-babel-js-function-wrapper
+        "console.log(require('util').inspect(function(){\n%s\n}(), { depth: 100 }))")
   :hook
   (org-mode . (lambda () (org-bullets-mode 1)))
   (org-archive . org-save-all-org-buffers)
