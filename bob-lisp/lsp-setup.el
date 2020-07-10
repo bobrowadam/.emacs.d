@@ -39,23 +39,29 @@
   (defvar lsp-prefer-flymake nil)
   :config
   (require 'lsp-clients)
-  :hook (lsp-mode . origami-mode)
+  :hook
+  (lsp-mode . origami-mode)
+
   :bind
   (:map lsp-mode-map
-        ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
+        ;; ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
         ("C-c C-r" . lsp-find-references)
-        ("C-c M-i" . lsp-ui-imenu)
+        ;; ("C-c M-i" . lsp-ui-imenu)
         ("C-c M-d" . lsp-describe-thing-at-point)
         ("C-c C-f" . lsp-format-buffer)
         ("C-c C-n" . lsp-rename)))
 
 (use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
+  :disabled t
   :config
   (setq
    lsp-ui-doc-enable t
    lsp-ui-peek-enable t
-   lsp-ui-sideline-enable t))
+   lsp-ui-sideline-enable t)
+  (:map lsp-mode-map
+        ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
+        ("C-c M-i" . lsp-ui-imenu)
+        ))
 
 (use-package lsp-origami :ensure t)
 (use-package company-lsp :ensure t)

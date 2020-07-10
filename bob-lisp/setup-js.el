@@ -1,25 +1,17 @@
 (use-package js2-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-  (defun my/use-eslint-from-node-modules ()
-    (let* ((root (locate-dominating-file
-                  (or (buffer-file-name) default-directory)
-                  "node_modules"))
-           (eslint (and root
-                        (expand-file-name "node_modules/eslint/bin/eslint.js"
-                                          root))))
-      (when (and eslint (file-executable-p eslint))
-        (setq-local flycheck-javascript-eslint-executable eslint))))
   :hook
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
   (js2-mode . yas-minor-mode)
-  (js2-mode . my/use-eslint-from-node-modules)
+  ;; (js2-mode . my/use-eslint-from-node-modules)
   (js2-mode . flycheck-mode)
   (js2-mode . tide-setup)
   (js2-mode . origami-mode)
   (js2-mode . highlight-indent-guides-mode)
+  (js2-mode . add-node-modules-path)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
@@ -36,6 +28,8 @@
 (use-package nvm :disabled t :demand t)
 
 (use-package typescript-mode
+  :init
+  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
   :hook
   (typescript-mode . tide-setup)
   (typescript-mode . highlight-indent-guides-mode)
@@ -43,9 +37,12 @@
   (typescript-mode . yas-minor-mode)
   (typescript-mode . flycheck-mode)
   (typescript-mode . origami-mode)
-  :config
-  (eldoc-mode +1)
-  (origami-mode +1)
+  (typescript-mode . (lambda () (eldoc-mode +1)))
+  (typescript-mode . (lambda ()
+                       (progn (add-node-modules-path)
+                             (flycheck-select-checker 'javascript-eslint))))
+  ;; (typescript-mode . (lambda () (flycheck-select-checker 'javascript-eslint)))
+  
   :bind (:map typescript-mode-map ("C-=" . origami-toggle-node)))
 
 (use-package tide
@@ -53,7 +50,6 @@
   :bind (:map tide-mode-map
               ("C-c C-n" . tide-rename-symbol)
               ("C-c C-r" . tide-references)
-              ;; ("C-c M-i" . lsp-ui-imenu)
               ("C-c C-c C-b" . tide-compile-file))
   :hook (before-save . tide-format-before-save)
   :init

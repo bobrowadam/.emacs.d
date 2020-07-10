@@ -35,7 +35,4 @@
   :after rust-mode
   :config (setq racer-rust-src-path "/Users/bob/.rustup/toolchains/stable-x86_64-apple-darwin/lib/rustlib/src/rust/src"))
 
-(use-package lsp-ui)
-
-
 (provide 'setup-rust)
