@@ -118,9 +118,10 @@ You can escape '$' with '\\' as prefix.
           (salt-weight (* 0.02 total-flour)))
     (format "Hidration: %d%%
 Total flour weight: %d grams
+Total Water weight: %d grams
 Total dough weight: %d grams
 Final bread weight: %d grams
-Recomende Salt weight: %.1f grams" hidration total-flour total-dough final-bread-weight salt-weight)))
+Recomended Salt weight: %.1f grams" hidration total-flour total-water total-dough final-bread-weight salt-weight)))
 
 (defun increment-number-at-point ()
       (interactive)
