@@ -2,4 +2,4 @@
 # name: clog
 # key: clog
 # --
-console.log('#-------------------------------------#\n${1:enumerate}:\n', JSON.stringify($1, null, '   '));
+console.log('#-------------------------------------#\n${1:enumerate}:\n', $1);
