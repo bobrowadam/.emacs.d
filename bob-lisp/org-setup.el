@@ -15,7 +15,16 @@
            "* %?\n  %i")
           ("T" "reminder" entry (file+headline ,(concat org-directory "/tickler.org") "Reminders")
            "* %?\n  %i")))
-  (setq org-agenda-files `(,(concat org-directory "/tickler.org") ,(concat org-directory "/riseup-google-calendar.org"), (concat org-directory "/private-google-calendar.org") ,(concat org-directory "/inbox.org") ,(concat org-directory "/gtd.org"), (concat org-directory "/notes.org")))
+  (setq org-agenda-files
+        `(
+          ,(concat org-directory "/tickler.org")
+          ,(concat org-directory "/riseup-google-calendar.org")
+          , (concat org-directory "/private-google-calendar.org")
+            ,(concat org-directory "/inbox.org")
+            ,(concat org-directory "/gtd.org")
+            ,(concat org-directory "/notes.org")
+            ,(concat org-directory "/meet-plan.org")))
+  
   (setq org-agenda-start-on-weekday 0)
   (setq org-default-notes-file (concat org-directory "/notes.org"))
   (setq org-refile-targets `((,(concat org-directory "/inbox.org") :maxlevel . 1)
@@ -32,7 +41,7 @@
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((emacs-lisp . nil)
+   '((emacs-lisp . t)
      (js . t)
      (shell . t)))
   (custom-set-faces
@@ -98,5 +107,9 @@
   (setq org-brain-title-max-length 12))
 
 (use-package ob-mongo)
+(use-package ob-restclient
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((restclient . t))))
 
 (provide 'org-setup)

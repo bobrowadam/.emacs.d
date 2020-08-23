@@ -43,7 +43,7 @@
 (setq use-package-compute-statistics t)
 
 (use-package dash)
-(use-package dap-mode :disabled t)
+
 (use-package dap-setup
   :load-path "./bob-lisp"
   :demand t)
@@ -157,7 +157,8 @@
    ("C-x C-f" . counsel-find-file)
    ("C-x C-m" . counsel-mark-ring)
    ("C-c C-s C-r" . counsel-rg)
-   ("C-c C-s C-s" . swiper)))
+   ("C-c C-s C-s" . swiper)
+   ("C-c C-s C-g" . counsel-google)))
 
 (use-package setup-magit
   :if (window-system)
@@ -217,6 +218,7 @@
 
 (use-package setup-js
   :if (window-system)
+  :after flycheck
   :demand t
   :load-path "./bob-lisp")
 
@@ -375,6 +377,9 @@
   (setq docker-tramp-use-names t))
 
 (use-package literate-calc-mode)
+
+(use-package bang
+  :bind ("M-!" . bang))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)

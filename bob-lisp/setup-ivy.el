@@ -22,6 +22,23 @@
   (setq ivy-count-format "(%d%d) ")
   (ivy-mode 1))
 
+(use-package ivy-posframe
+  :disabled t
+  :demand t
+  :config
+  (setq ivy-posframe-display-functions-alist
+      '((swiper          . ivy-posframe-display-at-point)
+        (complete-symbol . ivy-posframe-display-at-point)
+        (counsel-M-x     . ivy-posframe-display-at-window-bottom-left)
+        (counsel-find-file . ivy-posframe-display-at-window-bottom-left)
+        (ivy-switch-buffer . ivy-posframe-display-at-frame-center)
+        (projectile-switch-to-buffer . ivy-posframe-display-at-frame-center)
+        (t               . ivy-posframe-display-at-frame-center)))
+  (setq ivy-posframe-parameters
+      '((left-fringe . 8)
+        (right-fringe . 8)))
+  (ivy-posframe-mode 1))
+
 (use-package counsel
   :if (window-system)
   :after ivy

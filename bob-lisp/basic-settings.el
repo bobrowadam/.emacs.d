@@ -24,7 +24,8 @@
       ;; No more damn prompts!
       dired-recursive-deletes 'always
       dired-recursive-copies 'always
-      blink-cursor-blinks 1)
+      ;; blink-cursor-blinks 1
+      )
 
 (setq initial-scratch-message ";; Oh it's you again :|")
 (setq scroll-conservatively 101
@@ -45,7 +46,7 @@
   (scroll-bar-mode -1)
   (tooltip-mode -1))
 
-(setq-default cursor-type '(bar . 4))
+;; (setq-default cursor-type '(bar . 4))
 
 (global-subword-mode t)
 (global-superword-mode -1)
@@ -80,10 +81,6 @@
              '(font . "Roboto Mono 19"))
 ;; (load-theme 'bobs-badger t)
 
-;; (use-package monokai-theme
-;;   :demand t
-;;   :config (load-theme 'monokai t))
- 
 (use-package doom-modeline
   :after ivy
   :demand t
@@ -102,7 +99,9 @@
 (use-package doom-themes
   :demand t
   :config
-  (load-theme 'doom-oceanic-next t))
+  (load-theme 'doom-oceanic-next t)
+  ;; (load-theme 'doom-acario-dark t)
+  )
 
 (use-package tron-legacy-theme)
 

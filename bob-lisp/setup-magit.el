@@ -14,6 +14,10 @@
   (transient-append-suffix 'magit-commit
     "c"
     '("m" "Quick commit using minibuffer for commit message." bob/magit-message))
+
+  (transient-append-suffix 'magit-file-dispatch
+    "P"
+    '("P" "Push" magit-push))
   (magit-wip-before-change-mode)
   (magit-wip-after-apply-mode)
   (magit-wip-after-save-mode)
