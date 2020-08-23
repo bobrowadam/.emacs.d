@@ -15,6 +15,7 @@
                 (flycheck-select-checker 'javascript-eslint)))
   (web-mode . add-node-modules-path)
   (web-mode . lsp)
+  (web-mode . eldoc-mode)
   :config
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (setq web-mode-markup-indent-offset 2)
