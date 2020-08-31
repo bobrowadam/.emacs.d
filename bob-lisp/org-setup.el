@@ -108,6 +108,8 @@
 
 (use-package ob-mongo)
 (use-package ob-restclient
+  :after org
+  :config
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((restclient . t))))

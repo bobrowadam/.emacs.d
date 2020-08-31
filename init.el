@@ -381,6 +381,8 @@
 (use-package bang
   :bind ("M-!" . bang))
 
+(use-package vlf)
+
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'set-goal-column 'disabled nil)

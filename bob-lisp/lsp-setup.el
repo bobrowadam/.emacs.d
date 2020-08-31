@@ -37,8 +37,6 @@
   (defvar lsp-print-io t)
   (defvar lsp-scala-server-command "/usr/local/bin/metals-emacs")
   (defvar lsp-prefer-flymake nil)
-  :config
-  (require 'lsp-clients)
   :hook
   (lsp-mode . origami-mode)
 

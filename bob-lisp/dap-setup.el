@@ -11,7 +11,13 @@
   (tooltip-mode 1)
   ;; displays floating panel with debug buttons
   ;; requies emacs 26+
-  (dap-ui-controls-mode 1)
+  (dap-ui-controls-mode nil)
+  (defvar dap-ui-buffer-configurations
+  `((,dap-ui--locals-buffer . ((side . right) (slot . 1) (window-width . 0.40)))
+    (,dap-ui--expressions-buffer . ((side . right) (slot . 2) (window-width . 0.20)))
+    (,dap-ui--sessions-buffer . ((side . right) (slot . 3) (window-width . 0.20)))
+    (,dap-ui--breakpoints-buffer . ((side . left) (slot . 2) (window-width . ,treemacs-width)))
+    (,dap-ui--debug-window-buffer . ((side . bottom) (slot . 3) (window-width . 0.20)))))
   (require 'dap-node)
   (dap-register-debug-template
    "Vera"
@@ -93,8 +99,8 @@
   (dap-register-debug-template
    "Whatsapp-Aggregator"
    (list :type "node"
-         :request "launch"
-         ;; :request "attach"
+         ;; :request "launch"
+         :request "attach"
          :args ["run" "debug"]
          :cwd (format "%s/whatsapp-aggregator" services-dir)
          :runtimeExecutable "npm"
@@ -142,6 +148,22 @@
             :request "attach"
             :args ["run" "debug"]
             :cwd ,(format "%s/igor" services-dir)
+            :runtimeExecutable "npm"
+            ;; :protocol "inspector"
+            :smartStep t
+            :port 9229
+            :skipFiles [
+                        ,(format "%s/catapult/%s" services-dir "node_modules/lodash/lodash.js")
+                        "<node_internals>/**/*.js"
+                        ]
+            ))
+  (dap-register-debug-template
+   "johnnycash"
+   `( :type "node"
+            ;; :request "launch"
+            :request "attach"
+            :args ["run" "start"]
+            :cwd ,(format "%s/johnnycash" services-dir)
             :runtimeExecutable "npm"
             ;; :protocol "inspector"
             :smartStep t
