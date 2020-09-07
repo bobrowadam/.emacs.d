@@ -177,7 +177,7 @@
   :init
   (setq company-tooltip-align-annotations t)
   (setq company-minimum-prefix-length 1)
-  (setq company-idle-delay 0.2)
+  (setq company-idle-delay 0.4)
   :config (global-company-mode 1))
 
 (use-package company-tabnine
@@ -217,6 +217,12 @@
   :load-path "./bob-lisp")
 
 (use-package setup-js
+  :if (window-system)
+  :after flycheck
+  :demand t
+  :load-path "./bob-lisp")
+
+(use-package setup-ts
   :if (window-system)
   :after flycheck
   :demand t
@@ -339,6 +345,7 @@
   :after shell-defuns
   :demand t
   :config
+  (setq vterm-max-scrollback 100000)
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
   :bind
   ("C-c s s". bob/projectile-run-vterm)
