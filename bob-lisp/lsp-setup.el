@@ -31,7 +31,7 @@
 ;;; Code:
 
 (use-package lsp-mode
-  ;; :demand t
+  :demand t
   :commands lsp
   :init
   (defvar lsp-print-io t)
@@ -39,7 +39,6 @@
   (defvar lsp-prefer-flymake nil)
   :hook
   (lsp-mode . origami-mode)
-
   :bind
   (:map lsp-mode-map
         ;; ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
@@ -56,6 +55,7 @@
    lsp-ui-doc-enable t
    lsp-ui-peek-enable t
    lsp-ui-sideline-enable t)
+  :bind
   (:map lsp-mode-map
         ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
         ("C-c M-i" . lsp-ui-imenu)

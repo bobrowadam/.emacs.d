@@ -10,7 +10,7 @@
             (setq gc-cons-percentage 0.1)))
 
 (require 'package)
-(setq debug-on-error nil)
+(setq debug-on-error t)
 (setq package-enable-at-startup nil)
 
 (unless package--initialized (package-initialize))
@@ -218,13 +218,11 @@
 
 (use-package setup-js
   :if (window-system)
-  :after flycheck
   :demand t
   :load-path "./bob-lisp")
 
 (use-package setup-ts
   :if (window-system)
-  :after flycheck
   :demand t
   :load-path "./bob-lisp")
 

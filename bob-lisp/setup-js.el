@@ -2,17 +2,15 @@
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
+  (js2-mode . tide-setup)
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
   (js2-mode . yas-minor-mode)
-  (js2-mode . flycheck-mode)
-  (js2-mode . tide-setup)
+  (js2-mode . bob/setup-js2-flycheck)
   (js2-mode . origami-mode)
   (js2-mode . highlight-indent-guides-mode)
-  (js2-mode . add-node-modules-path)
   (js2-mode . eldoc-mode)
-  (js2-mode . dap-mode)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
@@ -28,32 +26,6 @@
   (setq-default unset-electric-indent)
   (setq-default js-indent-level 2))
 
-(use-package typescript-mode
-  :after tide
-  :hook
-  (typescript-mode . tide-setup)
-  ;; (typescript-mode . lsp)
-  (typescript-mode . highlight-indent-guides-mode)
-  (typescript-mode . tide-hl-identifier-mode)
-  (typescript-mode . yas-minor-mode)
-  (typescript-mode . flycheck-mode)
-  (typescript-mode . origami-mode)
-  (typescript-mode . eldoc-mode)
-  (typescript-mode . dap-mode)
-  (typescript-mode . (lambda ()
-                       (progn
-                         (add-node-modules-path)
-                         (flycheck-select-checker 'javascript-eslint))))
-  :bind
-  (:map typescript-mode-map ("C-=" . origami-toggle-node))
-  :config
-  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
-  ;; (flycheck-add-mode 'typescript-tide 'typescript-mode)
-  (setq typescript-indent-level 2)
-  (flycheck-add-next-checker 'javascript-eslint '(t . typescript-tide) 'append)
-  ;; (flycheck-add-next-checker 'javascript-eslint 'typescript-tide)
-  )
-
 (use-package tide
   :if (window-system)
   :demand t
@@ -67,8 +39,18 @@
   (setq company-tooltip-align-annotations t)
   (setq tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log")))
 
-(use-package js-comint :disabled t :after js2-mode)
-(use-package ts-comint :disabled t)
+(defun bob/setup-js2-flycheck ()
+  (progn
+    ;; (lsp)
+    (dap-mode)
+    (add-node-modules-path)
+    (flycheck-mode +1)
+    ;; (lsp-diagnostics-mode)
+    (flycheck-select-checker 'javascript-eslint)
+    (flycheck-add-next-checker 'javascript-eslint 'javascript-tide)
+    )
+  )
+
 (use-package nodejs-repl)
 (use-package json-mode
   :hook (json-mode . origami-mode)
@@ -77,6 +59,12 @@
 (use-package jq-format
   :demand t
   :after json-mode)
+
+;; ################# DISABLED #########################
+
+
+(use-package js-comint :disabled t :after js2-mode)
+(use-package ts-comint :disabled t)
 
 (use-package indium
   :disabled t
