@@ -10,9 +10,8 @@
             (setq gc-cons-percentage 0.1)))
 
 (require 'package)
-(setq debug-on-error t)
+(setq debug-on-error nil)
 (setq package-enable-at-startup nil)
-
 (unless package--initialized (package-initialize))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -116,8 +115,7 @@
   :load-path "./bob-listp"
   :bind
   ("C-+" . increment-number-at-point)
-  ("C-_" . decrement-number-at-point)
-)
+  ("C-_" . decrement-number-at-point))
 
 (use-package edit-funcs
   :if (window-system)
@@ -216,12 +214,42 @@
   :demand t
   :load-path "./bob-lisp")
 
+(use-package tide
+  :if (window-system)
+  :demand t
+  :init
+  (defun setup-tide-mode ()
+    (interactive)
+    (tide-setup)
+    (dap-mode)
+    (add-node-modules-path)
+    (flycheck-mode +1)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (eldoc-mode +1)
+    (tide-hl-identifier-mode +1)
+    (company-mode +1)
+    (flycheck-add-next-checker 'javascript-tide 'javascript-eslint))
+  (setq
+   tide-node-executable "node"
+   company-tooltip-align-annotations t
+   tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))
+  :hook
+  (tide-mode . origami-mode)
+  :bind (:map tide-mode-map
+              ("C-c C-n" . tide-rename-symbol)
+              ("C-c C-r" . tide-references)
+              ("C-c C-c C-b" . tide-compile-file)
+              ("C-=" . origami-toggle-node)
+              ("C-c d" . dap-hydra)))
+
 (use-package setup-js
+  :after tide
   :if (window-system)
   :demand t
   :load-path "./bob-lisp")
 
 (use-package setup-ts
+  :after tide
   :if (window-system)
   :demand t
   :load-path "./bob-lisp")

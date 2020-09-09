@@ -23,7 +23,7 @@
             ,(concat org-directory "/inbox.org")
             ,(concat org-directory "/gtd.org")
             ,(concat org-directory "/notes.org")
-            ,(concat org-directory "/meet-plan.org")))
+            ,(concat org-directory "/meat-plan.org")))
   
   (setq org-agenda-start-on-weekday 0)
   (setq org-default-notes-file (concat org-directory "/notes.org"))

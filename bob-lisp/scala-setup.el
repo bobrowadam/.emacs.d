@@ -27,6 +27,7 @@
 ;;; Code:
 
 (use-package sbt-mode
+  :disabled t
   :commands sbt-start sbt-command
   :hook (sbt-mode . (lambda () (setenv "AWS_PROFILE" "scala-deps")))
   :config
@@ -40,6 +41,7 @@
    minibuffer-local-completion-map))
 
 (use-package scala-mode
+  :disabled t
   :mode "\\.s\\(cala\\|bt\\)$"
   :init
   (setq lsp-scala-server-command "/usr/local/bin/metals-emacs")
@@ -68,13 +70,10 @@
   (scala-mode . hs-minor-mode)
   (scala-mode . (lambda () (yas-load-directory (concat user-emacs-directory "snippets/scala-mode/")))))
 
-(use-package posframe)
-(use-package dap-mode
-  :hook
-  (lsp-mode . dap-mode)
-  (lsp-mode . dap-ui-mode))
+;; (use-package posframe)
 
 (use-package ammonite-term-repl
+  :disable t
   :hook (term-mode . smartparens-mode)
   :ensure t)
 

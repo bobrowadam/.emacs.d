@@ -99,7 +99,8 @@
 (use-package doom-themes
   :demand t
   :config
-  (load-theme 'doom-oceanic-next t)
+  (load-theme 'doom-old-hope)
+  ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
   )
 

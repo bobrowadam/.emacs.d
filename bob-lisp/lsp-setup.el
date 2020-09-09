@@ -31,7 +31,6 @@
 ;;; Code:
 
 (use-package lsp-mode
-  :demand t
   :commands lsp
   :init
   (defvar lsp-print-io t)
@@ -39,22 +38,27 @@
   (defvar lsp-prefer-flymake nil)
   :hook
   (lsp-mode . origami-mode)
+  (lsp-after-initialize . (lambda ()
+                            (progn
+                              (flycheck-mode +1)
+                              (when (equal major-mode 'typescript-mode)
+                                (flycheck-add-next-checker 'lsp 'javascript-eslint))
+                              (when (equal major-mode 'js2-mode)
+                                (flycheck-select-checker 'javascript-eslint))
+                              )))
   :bind
   (:map lsp-mode-map
-        ;; ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
         ("C-c C-r" . lsp-find-references)
-        ;; ("C-c M-i" . lsp-ui-imenu)
         ("C-c M-d" . lsp-describe-thing-at-point)
         ("C-c C-f" . lsp-format-buffer)
         ("C-c C-n" . lsp-rename)))
 
 (use-package lsp-ui
-  :disabled t
   :config
   (setq
-   lsp-ui-doc-enable t
-   lsp-ui-peek-enable t
-   lsp-ui-sideline-enable t)
+   lsp-ui-doc-enable nil
+   lsp-ui-peek-enable nil
+   lsp-ui-sideline-enable nil)
   :bind
   (:map lsp-mode-map
         ("C-c C-." . lsp-ui-sideline-toggle-symbols-info)
