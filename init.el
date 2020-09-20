@@ -167,7 +167,7 @@
 
 (use-package whole-line-or-region
   :demand t
-  :init (whole-line-or-region-mode 1))
+  :init (whole-line-or-region-global-mode 1))
 
 (use-package company
   :if (window-system)
@@ -235,6 +235,7 @@
    tide-tsserver-process-environment '("TSS_LOG=-level verbose -file /tmp/tss.log"))
   :hook
   (tide-mode . origami-mode)
+  (before-save . tide-format-before-save)
   :bind (:map tide-mode-map
               ("C-c C-n" . tide-rename-symbol)
               ("C-c C-r" . tide-references)
@@ -253,6 +254,8 @@
   :if (window-system)
   :demand t
   :load-path "./bob-lisp")
+
+(use-package jest)
 
 (use-package haskell-setup
   :disabled

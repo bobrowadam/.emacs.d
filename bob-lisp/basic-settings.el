@@ -76,9 +76,9 @@
 ;; (add-to-list 'default-frame-alist
 ;;              '(font . "Monaco 21"))
 
-(set-frame-font "Roboto Mono 19")
+(set-frame-font "Roboto Mono 17")
 (add-to-list 'default-frame-alist
-             '(font . "Roboto Mono 19"))
+             '(font . "Roboto Mono 17"))
 ;; (load-theme 'bobs-badger t)
 
 (use-package doom-modeline

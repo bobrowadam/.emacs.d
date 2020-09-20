@@ -12,7 +12,7 @@
   ;; displays floating panel with debug buttons
   ;; requies emacs 26+
   (dap-ui-controls-mode nil)
-  (defvar dap-ui-buffer-configurations
+  (setq dap-ui-buffer-configurations
   `((,dap-ui--locals-buffer . ((side . right) (slot . 1) (window-width . 0.40)))
     (,dap-ui--expressions-buffer . ((side . right) (slot . 2) (window-width . 0.20)))
     (,dap-ui--sessions-buffer . ((side . right) (slot . 3) (window-width . 0.20)))
@@ -64,11 +64,12 @@
          :args ["run" "debug"]
          :cwd (format "%s/lemmings" services-dir)
          :runtimeExecutable "npm"
-         ;; :protocol "inspector"
+         :protocol "inspector"
          :smartStep t
          :port 9229
          :skipFiles: [ "<node_internals>/**/*.js"]
          ))
+  
   (dap-register-debug-template
    "Orca"
    (list :type "node"
@@ -144,8 +145,8 @@
   (dap-register-debug-template
    "igor"
    `( :type "node"
-            ;; :request "launch"
-            :request "attach"
+            :request "launch"
+            ;; :request "attach"
             :args ["run" "debug"]
             :cwd ,(format "%s/igor" services-dir)
             :runtimeExecutable "npm"
@@ -162,9 +163,11 @@
    `( :type "node"
             ;; :request "launch"
             :request "attach"
+            ;; :args ["run" "start"]
             :args ["run" "start"]
             :cwd ,(format "%s/johnnycash" services-dir)
             :runtimeExecutable "npm"
+            ;; :runtimeArgs ["-r" "source-map-support/register" "--inspect" ]
             ;; :protocol "inspector"
             :smartStep t
             :port 9229
