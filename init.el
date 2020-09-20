@@ -59,8 +59,10 @@
   (save-place-mode 1))
 
 (use-package f)
-(use-package server
-  :init (server-start))
+
+(require 'server)
+(unless (server-running-p)
+    (server-start))
 
 (use-package which-key
   :demand t
@@ -175,7 +177,7 @@
   :init
   (setq company-tooltip-align-annotations t)
   (setq company-minimum-prefix-length 1)
-  (setq company-idle-delay 0.4)
+  (setq company-idle-delay 0.3)
   :config (global-company-mode 1))
 
 (use-package company-tabnine
