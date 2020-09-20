@@ -149,12 +149,6 @@
                    (golden-ratio))))
   :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
-(use-package undo-tree
-  :disabled
-  :demand t
-  :config
-  (global-undo-tree-mode 1))
-
 (defun bob/create-scratch ()
   (interactive)
   (progn (get-buffer-create "*scratch*")

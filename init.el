@@ -421,6 +421,13 @@
 
 (use-package vlf)
 
+(use-package undo-fu
+  :init
+  (setq undo-fu-allow-undo-in-region t)
+  :bind
+  ("C-/" . undo-fu-only-undo)
+  ("C-?"  . undo-fu-only-redo))
+
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'set-goal-column 'disabled nil)
