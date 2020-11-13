@@ -9,14 +9,13 @@
   :config
   ;; (setq magit-completing-read-function 'ivy-completing-read)
   (setq transient-default-level 7)
-  (global-magit-file-mode 1)
   (put 'magit-diff-edit-hunk-commit 'disabled nil)
   (transient-append-suffix 'magit-commit
     "c"
     '("m" "Quick commit using minibuffer for commit message." bob/magit-message))
 
   (transient-append-suffix 'magit-file-dispatch
-    "P"
+    "p"
     '("P" "Push" magit-push))
   (magit-wip-before-change-mode)
   (magit-wip-after-apply-mode)

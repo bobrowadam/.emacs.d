@@ -73,10 +73,41 @@
   (dap-register-debug-template
    "Orca"
    (list :type "node"
-         :request "launch"
-         ;; :request "attach"
-         :args ["run" "debug"]
+         :request "attach"
+         :args ["run" "start"]
          :cwd (format "%s/orca" services-dir)
+         ;; :runtimeArgs ["-r" "source-map-support/register" ]
+         :runtimeExecutable "npm"
+         ;; :protocol "inspector"
+         :sourceMap t
+         :name "Orca"
+         :smartStep t
+         :skipFiles: ["<node_internals>/**/*.js"]
+         )
+   )
+
+  (dap-register-debug-template
+   "Costa"
+   (list :type "node"
+         :request "attach"
+         :args ["run" "start"]
+         :cwd (format "%s/costa" services-dir)
+         :runtimeExecutable "npm"
+         ;; :protocol "inspector"
+         :sourceMap t
+         :name "Costa"
+         :smartStep t
+         :skipFiles: ["<node_internals>/**/*.js"]
+         )
+   )
+
+  (dap-register-debug-template
+   "Olaf"
+   (list :type "node"
+         ;; :request "launch"
+         :request "attach"
+         :args ["run" "debug"]
+         :cwd (format "%s/olaf" services-dir)
          :runtimeExecutable "npm"
          ;; :protocol "inspector"
          :smartStep t
@@ -87,8 +118,8 @@
   (dap-register-debug-template
    "Whatsapi"
    (list :type "node"
-         :request "launch"
-         ;; :request "attach"
+         ;; :request "launch"
+         :request "attach"
          :args ["run" "debug"]
          :cwd (format "%s/whatsapi" services-dir)
          :runtimeExecutable "npm"

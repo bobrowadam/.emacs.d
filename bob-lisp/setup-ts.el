@@ -6,6 +6,8 @@
   :config
   (setq typescript-indent-level 2))
 
-(use-package ts-comint :disabled t)
+(use-package ts-comint
+  :config
+  (setq ts-comint-program-command "ts-node"))
 
 (provide 'setup-ts)

@@ -24,9 +24,15 @@
   (setq rust-format-on-save t)
   (setq company-tooltip-align-annotations t)
   ;; This is to prevent cargo projects slip into projectile known projects
-  (setq projectile-ignored-project-function 'projectile-ignore-cargo)
   (defun projectile-ignore-cargo (project-name)
     (s-contains? ".cargo" project-name))
+  (setq projectile-ignored-project-function 'projectile-ignore-cargo)
+  ;; (setq lsp-prefer-capf t)
+  (setq lsp-completion-provider :capf)
+  (setq lsp-completion-enable t)
+  ;; (setenv "PATH" "~/.local/bin:/Users/bob/.cargo/bin:~/bin:/usr/local/bin:/usr/bin")
+  (setq exec-path (append exec-path '("/Users/bob/bin" "~/bob/.local/bin" "")))
+  (setq lsp-rust-analyzer-server-command "/Users/zerok/.local/bin/rust-analyzer")
 )
 
 (use-package racer

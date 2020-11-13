@@ -106,7 +106,7 @@
   (setq org-brain-visualize-default-choices 'all)
   (setq org-brain-title-max-length 12))
 
-(use-package ob-mongo)
+(use-package ob-mongo :load-path "~/source/ob-mongo/")
 (use-package ob-restclient
   :after org
   :config

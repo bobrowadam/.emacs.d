@@ -31,9 +31,9 @@
   (require 'use-package))
 (savehist-mode)
 
-(use-package use-package-chords
-  :ensure t
-  :config (key-chord-mode 1))
+;; (use-package use-package-chords
+;;   :ensure t
+;;   :config (key-chord-mode 1))
 
 (setq use-package-always-defer t)
 (setq use-package-always-ensure t)
@@ -92,10 +92,11 @@
   ("C-x k" . kill-this-buffer)
   ("M-SPC" . cycle-spacing)
   ("<s-return>" . toggle-frame-fullscreen)
-  :chords
-  (("jj" . "_")
-   ("ii" . "|")
-   ("qq" . "~")))
+  ;; :chords
+  ;; (("jj" . "_")
+  ;;  ("ii" . "|")
+  ;;  ("qq" . "~"))
+  )
 
 (use-package setup-eshell
   :disabled
@@ -150,6 +151,8 @@
   :load-path "./bob-lisp")
 
 (use-package setup-ivy
+  :config
+(setq counsel-search-engine 'google)
   :demand t
   :load-path "./bob-lisp"
   :bind
@@ -158,7 +161,7 @@
    ("C-x C-m" . counsel-mark-ring)
    ("C-c C-s C-r" . counsel-rg)
    ("C-c C-s C-s" . swiper)
-   ("C-c C-s C-g" . counsel-google)))
+   ("C-c C-s C-g" . counsel-search)))
 
 (use-package setup-magit
   :if (window-system)
@@ -177,7 +180,7 @@
   :init
   (setq company-tooltip-align-annotations t)
   (setq company-minimum-prefix-length 1)
-  (setq company-idle-delay 0.3)
+  (setq company-idle-delay 0.4)
   :config (global-company-mode 1))
 
 (use-package company-tabnine
@@ -273,7 +276,6 @@
   ("C-c a" . org-agenda)
   ("C-c c" . org-capture)
   ("C-c S" . org-save-all-org-buffers)
-  ("C-c r" . #'my/refresh-google-calendar)
   ("C-c v" . org-brain-visualize)
   ("C-c l" . org-store-link))
 
@@ -428,8 +430,19 @@
   ("C-/" . undo-fu-only-undo)
   ("C-?"  . undo-fu-only-redo))
 
+(use-package scratch-pop
+  :ensure t
+  ;; :demand t
+  ;; :init
+  ;; (setq scratch-pop-backup-directory "~/.emacs.d/scratch_pop/")
+  ;; :config
+  ;; (scratch-pop-restore-scratches)
+  ;; :hook (kill-emacs . scratch-pop-backup-scratches)
+  :bind ("C-c r" . scratch-pop))
+
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'set-goal-column 'disabled nil)
 
 ;;; init.el ends here
+(put 'upcase-region 'disabled nil)
