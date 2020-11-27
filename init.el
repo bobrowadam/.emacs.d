@@ -45,6 +45,8 @@
 
 (use-package dap-setup
   :load-path "./bob-lisp"
+  :config
+  (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP")
   :demand t)
 
 (use-package setup-dired
@@ -74,8 +76,7 @@
   :if (window-system)
   :demand t
   :config
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP"))
+  (exec-path-from-shell-initialize))
 
 (use-package flycheck :demand t)
 
