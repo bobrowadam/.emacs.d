@@ -42,7 +42,8 @@
                             (progn
                               (flycheck-mode +1)
                               (when (equal major-mode 'typescript-mode)
-                                (flycheck-add-next-checker 'lsp 'javascript-eslint))
+                                (flycheck-add-next-checker 'lsp 'javascript-eslint)
+                                (flycheck-select-checker 'javascript-eslint))
                               (when (equal major-mode 'js2-mode)
                                 (flycheck-select-checker 'javascript-eslint))
                               )))
@@ -65,7 +66,8 @@
         ("C-c M-i" . lsp-ui-imenu)
         ))
 
-(use-package lsp-origami :ensure t)
+(use-package lsp-origami :ensure t
+  :bind ("C-=" . origami-toggle-node))
 (use-package company-lsp :ensure t)
 (provide 'lsp-setup)
 

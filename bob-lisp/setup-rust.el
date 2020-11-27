@@ -18,8 +18,7 @@
   (rust-mode . lsp)
   (rust-mode . (lambda () (yas-load-directory (concat user-emacs-directory "snippets/rust-mode/"))))
   :bind (:map rust-mode-map
-              ("TAB" . #'company-indent-or-complete-common)
-              ("C-=". origami-toggle-node))
+              ("TAB" . #'company-indent-or-complete-common))
   :config
   (setq rust-format-on-save t)
   (setq company-tooltip-align-annotations t)

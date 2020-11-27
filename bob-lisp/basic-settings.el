@@ -46,7 +46,8 @@
   (scroll-bar-mode -1)
   (tooltip-mode -1))
 
-;; (setq-default cursor-type '(bar . 4))
+(set-default 'cursor-type  '(bar . 2))
+(blink-cursor-mode 0)
 
 (global-subword-mode t)
 (global-superword-mode -1)
@@ -76,9 +77,9 @@
 ;; (add-to-list 'default-frame-alist
 ;;              '(font . "Monaco 21"))
 
-(set-frame-font "Roboto Mono 17")
+(set-frame-font "Roboto Mono 19")
 (add-to-list 'default-frame-alist
-             '(font . "Roboto Mono 17"))
+             '(font . "Roboto Mono 19"))
 ;; (load-theme 'bobs-badger t)
 
 (use-package doom-modeline

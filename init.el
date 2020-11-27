@@ -73,7 +73,9 @@
 (use-package exec-path-from-shell
   :if (window-system)
   :demand t
-  :config (exec-path-from-shell-initialize))
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP"))
 
 (use-package flycheck :demand t)
 
