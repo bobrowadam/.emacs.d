@@ -8,8 +8,8 @@
   ("\\.vue\\'" . web-mode)
   :hook
   (web-mode . yas-minor-mode)
-  (web-mode . highlight-indent-guides-mode)
-  (web-mode . emojify-mode)
+  ;; (web-mode . highlight-indent-guides-mode)
+  ;; (web-mode . emojify-mode)
   (web-mode . flycheck-mode)
   (web-mode . (lambda ()
                 (flycheck-select-checker 'javascript-eslint)))
@@ -44,12 +44,6 @@
               ("C-c C-s" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
 )
 
-(use-package vue-html-mode
-  :disabled t
-  )
-
-(use-package skewer-mode)
-(use-package impatient-mode)
 (use-package emojify)
 (provide 'setup-web-dev)
 

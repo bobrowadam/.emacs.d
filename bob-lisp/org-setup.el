@@ -58,7 +58,7 @@
   )
 
 (use-package request
-  ;; :demand t
+  :disabled t
   :config
   (defun my/refresh-google-calendar ()
     "Refresh google calendar org file."
@@ -95,6 +95,7 @@
 (use-package org-bullets)
 
 (use-package org-brain
+  :disabled t
   :init
   (setq org-brain-path (concat org-directory "/brain"))
   :config

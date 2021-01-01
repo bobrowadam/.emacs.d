@@ -44,10 +44,11 @@
 (use-package dash)
 
 (use-package dap-setup
+  :demand
   :load-path "./bob-lisp"
   :config
   (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP")
-  :demand t)
+  )
 
 (use-package setup-dired
   :load-path "./bob-lisp"
@@ -155,7 +156,7 @@
 
 (use-package setup-ivy
   :config
-(setq counsel-search-engine 'google)
+  (setq counsel-search-engine 'google)
   :demand t
   :load-path "./bob-lisp"
   :bind
@@ -229,7 +230,6 @@
   (defun setup-tide-mode ()
     (interactive)
     (tide-setup)
-    (dap-mode)
     (add-node-modules-path)
     (flycheck-mode +1)
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
@@ -339,7 +339,6 @@
 (use-package setup-rust
   :if (window-system)
   :after (lsp-setup)
-  :demand t
   :bind (:map rust-mode-map
               ("C-c C-c C-r" . rust-run)
               ("C-c C-c C-b" . rust-compile)
@@ -442,6 +441,13 @@
   ;; (scratch-pop-restore-scratches)
   ;; :hook (kill-emacs . scratch-pop-backup-scratches)
   :bind ("C-c r" . scratch-pop))
+
+(use-package elm-mode
+  :mode "\\.elm$"
+  :hook
+  (elm-mode . lsp)
+  (elm-mode . flycheck-elm-setup)
+  :ensure t)
 
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)

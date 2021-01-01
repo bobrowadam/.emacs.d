@@ -7,7 +7,7 @@
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
   (js2-mode . yas-minor-mode)
-  (js2-mode . add-node-modules-path)
+  ;; (js2-mode . add-node-modules-path)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
