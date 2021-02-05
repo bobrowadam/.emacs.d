@@ -2,22 +2,18 @@
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
-  (js2-mode . setup-tide-mode)
+  ;; (js2-mode . setup-tide-mode)
+  (js2-mode . lsp-deferred)
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
   (js2-mode . yas-minor-mode)
-  ;; (js2-mode . add-node-modules-path)
+  (js2-mode . add-node-modules-path)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
-              ("C-x C-e" . js-send-last-sexp)
-              ("C-c d" . dap-hydra))
+              ("C-x C-e" . js-send-last-sexp))
   :config
-  (setenv "BOB_DIR" (format "%s%s" (getenv "HOME") "/source/bob"))
-  (exec-path-from-shell-copy-envs '("WHATSAPP_NUMBER"))
-  (exec-path-from-shell-copy-envs '("LOCAL_WHATSAPP_NUMBER"))
-  ;; (nvm-use "v12.14.0")
   (setq-default js2-auto-indent-p nil)
   (setq-default unset-electric-indent)
   (setq-default js-indent-level 2))

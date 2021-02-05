@@ -11,7 +11,7 @@
   (require 'smartparens-config)
   ;; (smartparens-global-strict-mode t)
   (smartparens-global-mode t)
-  ;; (sp-local-pair 'js2-mode "{ " " }" :trigger-wrap "{")
+  (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
   )
 
 (provide 'setup-parens)

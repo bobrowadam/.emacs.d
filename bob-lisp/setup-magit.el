@@ -1,6 +1,6 @@
 (defun bob/magit-message (message)
   (interactive "sCommit message: ")
-  (magit-commit-create `("-m" ,message)))
+  (magit-commit-create `("-am" ,message)))
 
 (use-package magit
   :init (setq with-editor-emacsclient-executable nil)

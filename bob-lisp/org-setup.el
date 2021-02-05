@@ -44,6 +44,7 @@
    '((emacs-lisp . t)
      (js . t)
      (shell . t)))
+  (add-to-list 'org-src-lang-modes '("tsx" . typescript))
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
 
@@ -56,6 +57,9 @@
   (org-archive . org-save-all-org-buffers)
   (org-after-refile-insert . org-save-all-org-buffers)
   )
+
+(use-package ox-pandoc)
+(use-package ox-gfm)
 
 (use-package request
   :disabled t

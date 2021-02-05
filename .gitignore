@@ -42,3 +42,5 @@ transient/*
 /saveplace
 /emojis/
 /.cache/
+/projects
+/eln-cache/

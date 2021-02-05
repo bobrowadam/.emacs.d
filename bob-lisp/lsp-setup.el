@@ -31,8 +31,10 @@
 ;;; Code:
 
 (use-package lsp-mode
+  :demand
   :commands lsp
   :init
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
   (defvar lsp-print-io t)
   (defvar lsp-scala-server-command "/usr/local/bin/metals-emacs")
   (defvar lsp-prefer-flymake nil)
@@ -47,12 +49,20 @@
                               (when (equal major-mode 'js2-mode)
                                 (flycheck-select-checker 'javascript-eslint))
                               )))
+  :config
+  (setq lsp-completion-provider :capf)
+  (setq lsp-idle-delay 0.500)
+  (setenv "BOB_DIR" (format "%s%s" (getenv "HOME") "/source/bob"))
+  (exec-path-from-shell-copy-envs '("WHATSAPP_NUMBER"))
+  (exec-path-from-shell-copy-envs '("LOCAL_WHATSAPP_NUMBER"))
   :bind
   (:map lsp-mode-map
         ("C-c C-r" . lsp-find-references)
+        ("M-." . lsp-find-definition)
         ("C-c M-d" . lsp-describe-thing-at-point)
         ("C-c C-f" . lsp-format-buffer)
-        ("C-c C-n" . lsp-rename)))
+        ("C-c C-n" . lsp-rename)
+        ("C-c d" . dap-hydra)))
 
 (use-package lsp-ui
   :config

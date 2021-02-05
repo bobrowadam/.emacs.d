@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: implelemnt
+# key: impl
+# --
+throw new Error('Implementation required!');

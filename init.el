@@ -1,4 +1,4 @@
-(setq gc-cons-percentage 0.9)
+(setq gc-cons-threshold 100000000)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
@@ -7,7 +7,8 @@
                              (float-time
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)
-            (setq gc-cons-percentage 0.1)))
+            ;; (setq gc-cons-percentage 0.1)
+            ))
 
 (require 'package)
 (setq debug-on-error nil)
@@ -225,7 +226,8 @@
 
 (use-package tide
   :if (window-system)
-  :demand t
+  ;; :demand t
+  :disabled t
   :init
   (defun setup-tide-mode ()
     (interactive)
@@ -252,13 +254,11 @@
               ("C-c d" . dap-hydra)))
 
 (use-package setup-js
-  :after tide
   :if (window-system)
   :demand t
   :load-path "./bob-lisp")
 
 (use-package setup-ts
-  :after tide
   :if (window-system)
   :demand t
   :load-path "./bob-lisp")
@@ -323,7 +323,6 @@
 
 (use-package anzu
   :if (window-system)
-  :defer 10
   :demand t
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . anzu-query-replace))
@@ -337,8 +336,8 @@
    ("C-<" . 'mc/mark-previous-like-this)))
 
 (use-package setup-rust
+  :demand
   :if (window-system)
-  :after (lsp-setup)
   :bind (:map rust-mode-map
               ("C-c C-c C-r" . rust-run)
               ("C-c C-c C-b" . rust-compile)
@@ -453,5 +452,32 @@
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'set-goal-column 'disabled nil)
 
+(use-package magit
+  :init
+  (setq with-editor-emacsclient-executable nil)
+  (defun bob/magit-message (message)
+    (interactive "sCommit message: ")
+    (magit-commit-create `("-am" ,message)))
+  :hook
+  (before-save-hook . magit-wip-commit-initial-backup)
+  :config
+  ;; (setq magit-completing-read-function 'ivy-completing-read)
+  (setq transient-default-level 7)
+  (put 'magit-diff-edit-hunk-commit 'disabled nil)
+  (transient-append-suffix 'magit-commit
+    "c"
+    '("m" "Quick commit using minibuffer for commit message." bob/magit-message))
+
+  (transient-append-suffix 'magit-file-dispatch
+    "p"
+    '("P" "Push" magit-push))
+  (magit-wip-before-change-mode)
+  (magit-wip-after-apply-mode)
+  (magit-wip-after-save-mode)
+  (setq magit-wip-merge-branch t)
+  :bind
+  ("C-c g" . magit-status))
+
 ;;; init.el ends here
 (put 'upcase-region 'disabled nil)
+
