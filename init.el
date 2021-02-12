@@ -37,7 +37,7 @@
 
 (use-package exec-path-from-shell
   :if (window-system)
-  :demand t
+  :defer 3
   :config
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP")
@@ -186,10 +186,10 @@
   :ensure nil
   )
 
-(use-package dired-x :ensure nil :defer 15)
+(use-package dired-x :ensure nil :defer 2)
 
 (use-package dired-aux
-  :defer 16
+  :defer 2
   :ensure nil
   :config
   (setq dired-isearch-filenames 'dwim)
@@ -200,6 +200,7 @@
               ("M-s f" . nil)))
 
 (use-package dired-subtree
+  :defer 5
   :ensure t
   :bind (:map dired-mode-map
               ("<tab>" . dired-subtree-toggle)
@@ -253,7 +254,7 @@
   :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
 (use-package which-key
-  :defer 10
+  :defer 3
   :if (window-system)
   :config
   (which-key-mode 1))
@@ -319,17 +320,18 @@
          :sourceMap t
          :name "TS::Run"))
   (dap-register-debug-template
-   "NPM:Run"
+   "Node-attach"
    (list :type "node"
-         :program "node"
-         :request "launch"
+         ;; :program "node"
+         :request "attach"
          :skipFiles ["<node_internals>/**"]
-         :runtimeExecutable "npm"
-         :runtimeArgs ["start"]
-         :cwd "${workspaceFolder}"
-         :name "NPM::Run"))
+         ;; :runtimeExecutable "npm"
+         ;; :runtimeArgs ["start"]
+         ;; :cwd "${workspaceFolder}"
+         :name "Node-attach"))
   :bind
-  (:map dap-mode-map ("C-c d" . dap-hydra)))
+  (:map dap-mode-map
+        ("C-c d" . dap-hydra)))
 
 (use-package lsp-mode
   :commands lsp
@@ -342,7 +344,9 @@
   :bind
   (:map lsp-mode-map
         ("C-c C-f" . lsp-format-buffer)
-        ("C-c C-n" . lsp-rename))
+        ("C-c C-n" . lsp-rename)
+        ("C-c C-r" . lsp-ui-peek-find-references)
+        ("M-." . lsp-ui-peek-find-definitions))
   :hook ((java-mode python-mode go-mode
           js-mode js2-mode typescript-mode web-mode
           c-mode c++-mode objc-mode) . lsp))
@@ -477,10 +481,13 @@
   :init
   (setq projectile-completion-system 'ivy)
   :config
+  (add-to-list 'projectile-globally-ignored-directories "node_modules")
   (setq projectile-switch-project-action #'projectile-dired)
   (projectile-global-mode 1)
   :bind
-  (:map projectile-mode-map ("C-c p" . projectile-command-map)))
+  ("C-c p" . projectile-command-map)
+  ;; (:map projectile-mode-map ("C-c p" . projectile-command-map))
+  )
 
 (use-package paredit
   :hook
@@ -526,7 +533,7 @@
    ("C-<" . 'mc/mark-previous-like-this)))
 
 (use-package anzu
-  :defer 7
+  :defer 5
   :if (window-system)
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . anzu-query-replace))
@@ -549,7 +556,7 @@
   :disabled
   :init
   (setq ace-jump-mode-case-fold nil)
-  :defer 10
+  :defer 5
   :bind
   ("C-c M-c" . ace-jump-mode))
 
@@ -560,11 +567,11 @@
 
 (use-package company
   :if (window-system)
-  :defer 10
+  ;; :defer 
   :init
   (setq company-tooltip-align-annotations t)
   (setq company-minimum-prefix-length 1)
-  (setq company-idle-delay 0.4)
+  (setq company-idle-delay 0.3)
   (setq company-candidates-cache t)
   :config (global-company-mode 1))
 
@@ -684,31 +691,27 @@
 (use-package ibuffer
   :ensure nil
   :bind ("C-x C-b" . ibuffer)
-  :hook (ibuffer . ibuffer-projectile-set-filter-groups)
-  :config
+  :hook
+  (ibuffer-mode . ibuffer-vc-set-filter-groups-by-vc-root)
+  :init
   (setq ibuffer-expert t)
-  (setq ibuffer-show-empty-filter-groups nil))
-
-(use-package ibuffer-projectile
-  :if (window-system)
-  :config
-  (define-ibuffer-column size-h
-    (:name "Size" :inline t)
-    (cond
-     ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
-     ((> (buffer-size) 100000) (format "%7.0fk" (/ (buffer-size) 1000.0)))
-     ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
-     (t (format "%8d" (buffer-size)))))
-  (setq ibuffer-formats
-        '((mark modified read-only " "
-                (name 18 18 :left :elide)
-                " "
-                (size-h 9 -1 :right)
-                " "
-                (mode 16 16 :left :elide)
-                " "
-                filename-and-process))))
-
+  (setq ibuffer-show-empty-filter-groups nil)
+  (use-package ibuffer-vc
+    :commands (ibuffer-vc-set-filter-groups-by-vc-root)
+    :custom
+    (ibuffer-vc-skip-if-remote 'nil))
+  :custom
+  (ibuffer-formats
+   '((mark modified read-only locked " "
+           (name 35 35 :left :elide)
+           " "
+           (size 9 -1 :right)
+           " "
+           (mode 16 16 :left :elide)
+           " " filename-and-process)
+     (mark " "
+           (name 16 -1)
+           " " filename))))
 
 (use-package web-mode
   :mode
@@ -751,3 +754,6 @@
               ("C-=" . origami-toggle-node)
               ("C-c C-s" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
 )
+
+(use-package popup-kill-ring
+  :bind ("M-y" . popup-kill-ring))

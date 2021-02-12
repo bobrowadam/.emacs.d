@@ -44,3 +44,4 @@ transient/*
 /.cache/
 /projects
 /eln-cache/
+/.extension/
