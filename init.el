@@ -152,6 +152,7 @@
   ;; (load-theme 'doom-old-hope)
   ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
+  (setq doom-themes-treemacs-theme "doom-colors")
   )
 
 (use-package tron-legacy-theme)
@@ -349,7 +350,7 @@
         ("M-." . lsp-ui-peek-find-definitions))
   :hook ((java-mode python-mode go-mode
           js-mode js2-mode typescript-mode web-mode
-          c-mode c++-mode objc-mode) . lsp))
+          c-mode c++-mode objc-mode origami-mode) . lsp))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -757,3 +758,39 @@
 
 (use-package popup-kill-ring
   :bind ("M-y" . popup-kill-ring))
+
+(use-package tramp
+  :ensure nil
+  :init (setq tramp-verbose 6)
+  :config
+  (setq tramp-password-prompt-regexp
+        (concat
+         "^.*"
+         (regexp-opt
+          '("passphrase" "Passphrase"
+            ;; English
+            "password" "Verification code"
+            ;; Deutsch
+            "passwort" "Passwort"
+            ;; Français
+            "mot de passe" "Mot de passe")
+          t)
+         ".*:\0? *"))
+  (setq tramp-default-method "ssh")
+  (add-to-list 'tramp-restricted-shell-hosts-alist
+               "\\bastion\\'")
+  (add-to-list 'tramp-default-proxies-alist
+               '("bob$" nil "/sshx:bastion:"))
+  (setq remote-file-name-inhibit-cache 3600
+      tramp-completion-reread-directory-timeout nil
+      vc-ignore-dir-regexp (format "%s\\|%s"
+                                   vc-ignore-dir-regexp
+                                   tramp-file-name-regexp))
+  (setq tramp-histfile-override t)
+  ;; Save backup files locally
+  ;; from https://stackoverflow.com/a/47021266
+  (add-to-list 'backup-directory-alist
+               (cons tramp-file-name-regexp "/tmp/emacs-backup/")))
+
+(use-package scratch-pop
+  :bind ("C-c r" . scratch-pop))
