@@ -485,10 +485,11 @@
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
   (setq projectile-switch-project-action #'projectile-dired)
   (projectile-global-mode 1)
+  (unless projectile-known-projects
+    (-let ((main-projects-directory (read-directory-name "Please enter main projects directory")))
+      (projectile-discover-projects-in-directory main-projects-directory)))
   :bind
-  ("C-c p" . projectile-command-map)
-  ;; (:map projectile-mode-map ("C-c p" . projectile-command-map))
-  )
+  (:map projectile-mode-map ("C-c p" . projectile-command-map)))
 
 (use-package paredit
   :hook
