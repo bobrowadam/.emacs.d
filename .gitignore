@@ -45,3 +45,4 @@ transient/*
 /projects
 /eln-cache/
 /.extension/
+/.lsp-eslint-choices
