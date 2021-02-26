@@ -37,10 +37,10 @@
 
 (use-package exec-path-from-shell
   :if (window-system)
-  :defer 3
+  :defer 1
   :config
   (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP")
+  ;; (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP")
   (setenv "BOB_DIR" (format "%s%s" (getenv "HOME") "/source/bob"))
   (exec-path-from-shell-copy-envs '("WHATSAPP_NUMBER"))
   (exec-path-from-shell-copy-envs '("LOCAL_WHATSAPP_NUMBER")))
@@ -148,14 +148,17 @@
 (use-package doom-themes
   :demand t
   :config
-  (load-theme 'doom-monokai-spectrum)
+  ;; (load-theme 'doom-outrun-electric)
+  ;; (load-theme 'doom-monokai-spectrum)
   ;; (load-theme 'doom-old-hope)
   ;; (load-theme 'doom-oceanic-next t)
-  ;; (load-theme 'doom-acario-dark t)
+  (load-theme 'doom-acario-dark t)
   (setq doom-themes-treemacs-theme "doom-colors")
   )
 
 (use-package tron-legacy-theme)
+
+(use-package night-owl-theme)
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")
@@ -187,10 +190,10 @@
   :ensure nil
   )
 
-(use-package dired-x :ensure nil :defer 2)
+(use-package dired-x :ensure nil :defer 1)
 
 (use-package dired-aux
-  :defer 2
+  :defer 1
   :ensure nil
   :config
   (setq dired-isearch-filenames 'dwim)
@@ -201,7 +204,7 @@
               ("M-s f" . nil)))
 
 (use-package dired-subtree
-  :defer 5
+  :defer 1
   :ensure t
   :bind (:map dired-mode-map
               ("<tab>" . dired-subtree-toggle)
@@ -255,7 +258,6 @@
   :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
 (use-package which-key
-  :defer 3
   :if (window-system)
   :config
   (which-key-mode 1))
@@ -267,27 +269,21 @@
   :after flycheck
   :config (add-hook 'flycheck-mode-hook #'flycheck-posframe-mode))
 
-(use-package origami
-  :bind (:map origami-mode-map
-              ("C-=" . origami-toggle-node)))
-
-
 (use-package typescript-mode
   :init
-  (setq lsp-print-performance t)
-  (setq company-lsp-cache-candidates t)
   (defun lsp-ts-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-format-buffer t t))
+    (add-hook 'before-save-hook #'lsp-eslint-fix-all))
   :hook
   (typescript-mode . lsp-ts-install-save-hooks)
   (typescript-mode . add-node-modules-path)
+  (typescript-mode . origami-mode)
   :config
   (setq typescript-indent-level 2))
 
 (use-package js2-mode
   :init
   (defun lsp-js-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-format-buffer t t))
+    (add-hook 'before-save-hook #'lsp-eslint-fix-all))
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
   (js2-mode . add-node-modules-path)
@@ -296,6 +292,7 @@
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
+  (js2-mode . origami-mode)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
@@ -312,24 +309,36 @@
   (require 'dap-node)
   (dap-node-setup)
   (dap-register-debug-template
-   "TS:Run"
+   "TS:Launch"
    (list :type "node"
          :request "launch"
-         ;; :smartStep t
+         :smartStep t
          :skipFiles ["<node_internals>/**"]
          :outFiles ["${workspaceFolder}/dist/**/*.js"]
          :sourceMap t
          :name "TS::Run"))
   (dap-register-debug-template
-   "Node-attach"
+   "Node:attach"
    (list :type "node"
-         ;; :program "node"
          :request "attach"
          :skipFiles ["<node_internals>/**"]
-         ;; :runtimeExecutable "npm"
-         ;; :runtimeArgs ["start"]
-         ;; :cwd "${workspaceFolder}"
          :name "Node-attach"))
+  (dap-register-debug-template
+   "TS:attach"
+   (list :name "TS Index"
+         :type "node"
+         :skipFiles ["<node_internals>/**"]
+         :outFiles ["${workspaceFolder}/dist/**/*.js"]
+         :request "attach"
+         :sourceMaps t))
+  (dap-register-debug-template
+   "NPM:start"
+   (list :name "Node:start"
+         :type "node"
+         :skipFiles ["<node_internals>/**"]
+         :request "launch"
+         :runtimeArgs ["./node_modules/env-setter/src/ssm-entrypoint-local.js"]
+         :sourceMaps t))
   :bind
   (:map dap-mode-map
         ("C-c d" . dap-hydra)))
@@ -342,15 +351,15 @@
   (lsp-file-watch-threshold 2000)
   (read-process-output-max (* 1024 1024))
   (lsp-eldoc-hook nil)
+  (company-lsp-cache-candidates t)
   :bind
   (:map lsp-mode-map
         ("C-c C-f" . lsp-format-buffer)
         ("C-c C-n" . lsp-rename)
         ("C-c C-r" . lsp-ui-peek-find-references)
         ("M-." . lsp-ui-peek-find-definitions))
-  :hook ((java-mode python-mode go-mode
-          js-mode js2-mode typescript-mode web-mode
-          c-mode c++-mode objc-mode origami-mode) . lsp))
+  :hook ((js2-mode typescript-mode web-mode
+          c-mode c++-mode rust-mode) . lsp))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -501,7 +510,6 @@
   (setq sp-ignore-modes-list '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup))
   :config
   (require 'smartparens-config)
-  ;; (smartparens-global-strict-mode t)
   (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
   :hook
   (typescript-mode . smartparens-global-mode)
@@ -535,7 +543,7 @@
    ("C-<" . 'mc/mark-previous-like-this)))
 
 (use-package anzu
-  :defer 5
+  :defer 1
   :if (window-system)
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . anzu-query-replace))
@@ -569,7 +577,6 @@
 
 (use-package company
   :if (window-system)
-  ;; :defer 
   :init
   (setq company-tooltip-align-annotations t)
   (setq company-minimum-prefix-length 1)
@@ -621,6 +628,7 @@
   (emacs-lisp-mode . yas-minor-mode-on)
   (js2-mode . yas-minor-mode-on)
   (typescript-mode . yas-minor-mode-on)
+  (web-mode . yas-minor-mode-on)
   :config
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
@@ -646,23 +654,9 @@
    '((emacs-lisp . t)
      (js . t)
      (shell . t)))
-  (add-to-list 'org-src-lang-modes '("tsx" . typescript))
+  (add-to-list 'org-src-lang-modes '("tsx" .t ypescript))
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
-  ;; (with-eval-after-load 'org
-  ;; (progn
-  ;;   (define-key org-mode-map (kbd "M-p") #'org-metaup)
-  ;;   (define-key org-mode-map (kbd "M-n") #'org-metadown)
-  ;;   (define-key org-mode-map (kbd "M-F") #'org-shiftright)
-  ;;   (define-key org-mode-map (kbd "M-B") #'org-shiftleft)
-  ;;   (define-key org-mode-map (kbd "C-c l") #'org-store-link)
-  ;;   ;; (define-key org-agenda-mode-map (kbd "M-F") #'org-agenda-do-date-later)
-  ;;   ;; (define-key org-agenda-mode-map (kbd "M-B") #'org-agenda-do-date-earlier)
-  ;;   (define-key org-read-date-minibuffer-local-map (kbd "C-b")
-  ;;     (lambda () (interactive) (org-eval-in-calendar '(calendar-backward-day 1))))
-  ;;   (define-key org-read-date-minibuffer-local-map (kbd "C-f")
-  ;;     (lambda () (interactive) (org-eval-in-calendar '(calendar-forward-day 1))))
-  ;;   ))
   (require 'ob-js)
   ;; Fix bug in ob-js: https://emacs.stackexchange.com/questions/55690/org-babel-javascript-error
   (setq org-babel-js-function-wrapper
@@ -679,7 +673,7 @@
 (use-package vterm
   :if (window-system)
   :after shell-defuns
-  :defer 4
+  :defer 1
   :config
   (setq vterm-max-scrollback 100000)
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
@@ -721,16 +715,14 @@
   ("\\.cssl\\'" . web-mode)
   ("\\.jsx\\'" . web-mode)
   ("\\.vue\\'" . web-mode)
+  :init
+  (defun lsp-web-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-eslint-fix-all))
   :hook
-  (web-mode . yas-minor-mode)
-  (web-mode . flycheck-mode)
-  (web-mode . (lambda ()
-                (flycheck-select-checker 'javascript-eslint)))
+  (web-mode . lsp-web-install-save-hooks)
   (web-mode . add-node-modules-path)
-  (web-mode . lsp)
-  (web-mode . eldoc-mode)
+  ;; (web-mode . eldoc-mode)
   :config
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
   (setq web-mode-attr-indent-offset 18)
@@ -753,7 +745,6 @@
               ("C-c C-t C-p" . web-mode-tag-previous)
               ("C-c C-t C-m" . web-mode-tag-match)
               ("C-c C-t C-e" . web-mode-tag-end)
-              ("C-=" . origami-toggle-node)
               ("C-c C-s" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
 )
 
@@ -795,3 +786,39 @@
 
 (use-package scratch-pop
   :bind ("C-c r" . scratch-pop))
+
+(use-package misc-funcs
+  :load-path "./bob-list"
+  :ensure nil)
+
+(use-package undo-fu
+  :init
+  (setq undo-fu-allow-undo-in-region t)
+  :bind
+  ("C-/" . undo-fu-only-undo)
+  ("C-?"  . undo-fu-only-redo))
+
+(use-package avy
+  :init (setq avy-case-fold-search nil)
+  :bind
+  ("C-c M-d" . avy-goto-char-in-line)
+  ("C-c M-c" . avy-goto-word-1))
+
+(use-package highlight-indent-guides)
+
+(use-package edit-funcs
+  :if (window-system)
+  :demand t
+  :load-path "./bob-lisp"
+  :bind
+  ("C-`" . unpop-to-mark-command)
+  ("M-`" . jump-to-mark))
+
+(use-package jq-format
+  :after json-mode)
+
+(use-package origami
+  :bind (:map origami-mode-map
+              ("C-=" . origami-toggle-node)))
+
+(put 'dired-find-alternate-file 'disabled nil)
