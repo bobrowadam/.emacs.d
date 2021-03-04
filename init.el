@@ -37,7 +37,7 @@
 
 (use-package exec-path-from-shell
   :if (window-system)
-  :defer 1
+  :demand
   :config
   (exec-path-from-shell-initialize)
   ;; (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP")
