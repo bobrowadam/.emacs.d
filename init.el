@@ -32,6 +32,7 @@
 (setq use-package-compute-statistics t)
 
 (require 'server)
+(require 'cl-lib)
 (unless (server-running-p)
   (server-start))
 
@@ -44,7 +45,7 @@
   (setenv "BOB_DIR" (format "%s%s" (getenv "HOME") "/source/bob"))
   (exec-path-from-shell-copy-envs '("WHATSAPP_NUMBER"))
   (exec-path-from-shell-copy-envs '("LOCAL_WHATSAPP_NUMBER")))
-
+(setq service-directory (concat (getenv "HOME") "/source/services"))
 (setq use-package-always-defer t)
 (setq use-package-always-ensure t)
 (setq use-package-verbose t)
@@ -596,6 +597,17 @@
   (defun bob/magit-message (message)
     (interactive "sCommit message: ")
     (magit-commit-create `("-am" ,message)))
+  
+  (defun fetch-all-git-repos-in-directory (repos-dir)
+    (cl-loop for dir
+          in (directory-files repos-dir)
+          when (and (file-directory-p (format "%s/%s" repos-dir dir))
+                    (member ".git" (directory-files (format "%s/%s" repos-dir dir))))
+          do (run-fetch-in-dir (format "%s/%s" repos-dir dir))))
+
+  (defun run-fetch-in-dir (dir)
+    (setq default-directory dir)
+    (magit-fetch-all-prune))
   :hook
   (before-save-hook . magit-wip-commit-initial-backup)
   :config
