@@ -40,17 +40,12 @@
   :if (window-system)
   :demand
   :config
+  (add-to-list 'exec-path-from-shell-variables "BOB_DIR")
+  (add-to-list 'exec-path-from-shell-variables "WHATSAPP_NUMBER")
+  (add-to-list 'exec-path-from-shell-variables "LOCAL_WHATSAPP_NUMBER")
   (exec-path-from-shell-initialize)
-  ;; (exec-path-from-shell-copy-env "SETUP_DEV_ENV_ON_STARTUP")
-  (setenv "BOB_DIR" (format "%s%s" (getenv "HOME") "/source/bob"))
-  (exec-path-from-shell-copy-envs '("WHATSAPP_NUMBER"))
-  (exec-path-from-shell-copy-envs '("LOCAL_WHATSAPP_NUMBER")))
-(setq service-directory (concat (getenv "HOME") "/source/services"))
-(setq use-package-always-defer t)
-(setq use-package-always-ensure t)
-(setq use-package-verbose t)
-(setq use-package-debug t)
-(setq use-package-compute-statistics t)
+  (setq service-directory (concat (getenv "HOME") "/source/services")))
+
 
 (setq user-login-name "Adam Bobrow"
       make-backup-files nil
@@ -149,12 +144,13 @@
 (use-package doom-themes
   :demand t
   :config
-  ;; (load-theme 'doom-outrun-electric)
-  ;; (load-theme 'doom-monokai-spectrum)
-  ;; (load-theme 'doom-old-hope)
+  ;; (load-theme 'doom-outrun-electric tם1)
+  ;; (load-theme 'doom-monokai-spectrum t)
+  ;; (load-theme 'doom-old-hope t)
   ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
-  (load-theme 'doom-Iosvkem t)
+  ;; (load-theme 'doom-Iosvkem t)
+  (load-theme 'doom-moonlight t)
   (setq doom-themes-treemacs-theme "doom-colors")
   )
 
@@ -232,6 +228,14 @@
 (csetq ediff-window-setup-function 'ediff-setup-windows-plain)
 (csetq ediff-split-window-function 'split-window-horizontally)
 (csetq ediff-diff-options "-w")
+(defun ediff-copy-both-to-C ()
+  (interactive)
+  (ediff-copy-diff ediff-current-difference nil 'C nil
+                   (concat
+                    (ediff-get-region-contents ediff-current-difference 'A ediff-control-buffer)
+                    (ediff-get-region-contents ediff-current-difference 'B ediff-control-buffer))))
+(defun add-d-to-ediff-mode-map () (define-key ediff-mode-map "d" 'ediff-copy-both-to-C))
+(add-hook 'ediff-keymap-setup-hook 'add-d-to-ediff-mode-map)
 
 (use-package basic-keybindigs
   :ensure nil
@@ -307,6 +311,7 @@
 (use-package dap-mode
   :custom
   (dap-auto-configure-features '())
+  (dap-ui-variable-length 80)
   :config
   (require 'dap-node)
   (dap-node-setup)
@@ -347,6 +352,8 @@
 
 (use-package lsp-mode
   :commands lsp
+  :init
+  (setq lsp-disabled-clients '((ts-mode . (eslint)) (js-mode . (eslint))))
   :custom
   (lsp-auto-guess-root nil)
   (lsp-prefer-flymake nil) ; Use flycheck instead of flymake
@@ -581,7 +588,7 @@
   :if (window-system)
   :init
   (setq company-tooltip-align-annotations t)
-  (setq company-minimum-prefix-length 1)
+  (setq company-minimum-prefix-length 0)
   (setq company-idle-delay 0.3)
   (setq company-candidates-cache t)
   :config (global-company-mode 1))
@@ -834,4 +841,5 @@
   :bind (:map origami-mode-map
               ("C-=" . origami-toggle-node)))
 
+(use-package ob-mongo :load-path "./ob-mongo")
 (put 'dired-find-alternate-file 'disabled nil)
