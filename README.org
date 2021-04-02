@@ -1,2 +1,0 @@
-* My Emacs configuration
-** test this header
