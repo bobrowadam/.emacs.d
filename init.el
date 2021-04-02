@@ -841,5 +841,6 @@
   :bind (:map origami-mode-map
               ("C-=" . origami-toggle-node)))
 
-(use-package ob-mongo :load-path "./ob-mongo")
+(use-package ob-mongo :demand :load-path "./ob-mongo")
+
 (put 'dired-find-alternate-file 'disabled nil)
