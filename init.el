@@ -512,7 +512,9 @@
 (use-package paredit
   :hook
   (eval-expression-minibuffer-setup . enable-paredit-mode)
-  (emacs-lisp-mode . enable-paredit-mode))
+  (emacs-lisp-mode . enable-paredit-mode)
+  (slime-mode . enable-paredit-mode)
+  (slime-repl-mode . enable-paredit-mode))
 
 (use-package smartparens
   :init
@@ -535,8 +537,6 @@
               ("M-J" . sp-join-sexp)
               ("M-W" . sp-copy-sexp)))
 
-(use-package bang
-  :bind ("M-!" . bang))
 (use-package yaml-mode)
 (use-package markdown-mode
   :commands (markdown-mode gfm-mode)
@@ -618,6 +618,7 @@
   :hook
   (before-save-hook . magit-wip-commit-initial-backup)
   :config
+  (setq magit-diff-refine-hunk 'all)
   (setq transient-default-level 7)
   (put 'magit-diff-edit-hunk-commit 'disabled nil)
   (transient-append-suffix 'magit-commit
@@ -755,7 +756,7 @@
   (setq web-mode-enable-css-colorization t)
   (setq web-mode-enable-current-element-highlight t)
   (setq web-mode-css-indent-offset 2)
-  (setq web-mode-enable-auto-indentation t)
+  (setq web-mode-enable-auto-indentation nil)
   (setq web-mode-enable-auto-expanding t)
   (setq vetur.validation.template t) ;; For lsp-vue
   (setq lsp-vetur-dev-log-level "debug")
@@ -842,5 +843,26 @@
               ("C-=" . origami-toggle-node)))
 
 (use-package ob-mongo :demand :load-path "./ob-mongo")
+(use-package csv-mode)
+(use-package ace-window
+  :bind ( "C-x o" . ace-window)
+  :config
+  (setq aw-scope 'frame)
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+(use-package slime
+  :config
+  (load (expand-file-name "~/quicklisp/slime-helper.el"))
+  (setq inferior-lisp-program "sbcl")
+  (require 'slime-autoloads)
+  (slime-setup '(slime-fancy slime-company)))
+
+(use-package slime-company
+  :after (slime company)
+  :config (setq slime-company-completion 'fuzzy
+                slime-company-after-completion 'slime-company-just-one-space))
+
+(use-package shell-command+
+  :bind ("M-!" . shell-command+))
 
 (put 'dired-find-alternate-file 'disabled nil)
