@@ -1,4 +1,4 @@
-(require 'package)
+;; (require 'package)
 (setq gc-cons-threshold 100000000)
 
 (add-hook 'emacs-startup-hook
@@ -127,6 +127,7 @@
              '(font . "Roboto Mono 19"))
 
 (use-package doom-modeline
+  :if (window-system)
   :after ivy
   :demand t
   :config
@@ -142,6 +143,7 @@
   (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "#4E4E4E"))))))
 
 (use-package doom-themes
+  :if (window-system)
   :demand t
   :config
   ;; (load-theme 'doom-outrun-electric tם1)
@@ -150,9 +152,9 @@
   ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
   ;; (load-theme 'doom-Iosvkem t)
-  (load-theme 'doom-moonlight t)
-  (setq doom-themes-treemacs-theme "doom-colors")
-  )
+  ;; (load-theme 'doom-moonlight t)
+  (load-theme 'bobs-badger)
+  (setq doom-themes-treemacs-theme "doom-colors"))
 
 (use-package tron-legacy-theme)
 
@@ -483,7 +485,8 @@
           (swiper-isearch . ivy--regex-plus)
           (counsel-ag . ivy--regex-plus)
           (counsel-rg . ivy--regex-plus)
-          (t . ivy-prescient-re-builder))))
+          (t . ivy-prescient-re-builder)
+          )))
 
 (use-package ivy-prescient
   :commands ivy-prescient-mode
@@ -656,7 +659,7 @@
           ,yasnippet-snippets-dir))
   (yas-reload-all))
 
-(use-package org-bullets)
+(use-package org-bullets :if (window-system))
 (use-package org
   :ensure nil
   :if (window-system)
@@ -690,7 +693,7 @@
               ("M-p" . org-metaup)
               ("M-n" . org-metadown)))
 
-(use-package shell-defuns :load-path "./site-lisp" :demand t)
+(use-package shell-defuns :load-path "./site-lisp" :demand t :if (window-system))
 (use-package vterm
   :if (window-system)
   :after shell-defuns
@@ -842,7 +845,7 @@
   :bind (:map origami-mode-map
               ("C-=" . origami-toggle-node)))
 
-(use-package ob-mongo :demand :load-path "./ob-mongo")
+(use-package ob-mongo :demand :load-path "./ob-mongo" :after org)
 (use-package csv-mode)
 (use-package ace-window
   :bind ( "C-x o" . ace-window)
@@ -866,3 +869,4 @@
   :bind ("M-!" . shell-command+))
 
 (put 'dired-find-alternate-file 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
