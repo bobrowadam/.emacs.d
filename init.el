@@ -838,6 +838,7 @@
   ("C-`" . unpop-to-mark-command)
   ("M-`" . jump-to-mark))
 
+(use-package json-mode)
 (use-package jq-format
   :after json-mode)
 
