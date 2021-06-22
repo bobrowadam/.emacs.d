@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: elsalink
+# key: elsalink
+# --
+https://`(s-replace "\n" "" (shell-command-to-string "ipconfig getifaddr en0"))`:9090/internal/login-as?customerToken=$2&redirectTo=home&carryToken=false&incognito=true
