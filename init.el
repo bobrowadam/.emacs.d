@@ -1,4 +1,4 @@
-;; (require 'package)
+(require 'package)
 (setq gc-cons-threshold 100000000)
 
 (add-hook 'emacs-startup-hook
@@ -140,7 +140,8 @@
   (setq doom-modeline-env-rust-executable "rustc")
   (setq find-file-visit-truename t)
   (doom-modeline-mode 1)
-  (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "#4E4E4E"))))))
+  ;; (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "#4E4E4E")))))
+  )
 
 (use-package doom-themes
   :if (window-system)
@@ -153,7 +154,10 @@
   ;; (load-theme 'doom-acario-dark t)
   ;; (load-theme 'doom-Iosvkem t)
   ;; (load-theme 'doom-moonlight t)
-  (load-theme 'bobs-badger)
+  ;; (load-theme 'bobs-badger)
+  ;; (load-theme 'modus-vivendi)
+  ;; (load-theme 'doom-gruvbox)
+  (load-theme 'doom-ir-black)
   (setq doom-themes-treemacs-theme "doom-colors"))
 
 (use-package tron-legacy-theme)
@@ -193,8 +197,8 @@
 (use-package dired-x :ensure nil :defer 1)
 
 (use-package dired-aux
-  :defer 1
   :ensure nil
+  :after (dired)
   :config
   (setq dired-isearch-filenames 'dwim)
   (setq dired-create-destination-dirs 'ask)
@@ -204,7 +208,7 @@
               ("M-s f" . nil)))
 
 (use-package dired-subtree
-  :defer 1
+  :after (dired)
   :ensure t
   :bind (:map dired-mode-map
               ("<tab>" . dired-subtree-toggle)
@@ -266,6 +270,7 @@
   :config (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
 (use-package which-key
+  :demand t
   :if (window-system)
   :config
   (which-key-mode 1))
@@ -352,13 +357,26 @@
   (:map dap-mode-map
         ("C-c d" . dap-hydra)))
 
+(use-package dap-ui
+  :ensure nil
+  :after (dap-mode)
+  :config
+  (setq dap-ui-buffer-configurations
+        `((,dap-ui--locals-buffer . ((side . right) (slot . 1) (window-width . 0.5)))
+          (,dap-ui--expressions-buffer . ((side . right) (slot . 2) (window-width . 0.20)))
+          (,dap-ui--sessions-buffer . ((side . right) (slot . 3) (window-width . 0.20)))
+          (,dap-ui--breakpoints-buffer . ((side . left) (slot . 2) (window-width . ,treemacs-width)))
+          (,dap-ui--debug-window-buffer . ((side . bottom) (slot . 3) (window-width . 0.20)))
+
+          (,dap-ui--repl-buffer . ((side . bottom) (slot . 1) (window-height . 0.45))))))
+
 (use-package lsp-mode
   :commands lsp
   :init
   (setq lsp-disabled-clients '((ts-mode . (eslint)) (js-mode . (eslint))))
   :custom
   (lsp-auto-guess-root nil)
-  (lsp-prefer-flymake nil) ; Use flycheck instead of flymake
+  (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
   (lsp-file-watch-threshold 2000)
   (read-process-output-max (* 1024 1024))
   (lsp-eldoc-hook nil)
@@ -370,7 +388,7 @@
         ("C-c C-r" . lsp-ui-peek-find-references)
         ("M-." . lsp-ui-peek-find-definitions))
   :hook ((js2-mode typescript-mode web-mode
-          c-mode c++-mode rust-mode) . lsp))
+                   c-mode c++-mode rust-mode) . lsp))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -478,7 +496,7 @@
   (setq ivy-use-virtual-buffers t
         ivy-virtual-abbreviate 'full
         ivy-on-del-error-function nil
-        ivy-use-selectable-prompt t
+        ivy-use-selectable-prompt nil
         enable-recursive-minibuffers t
         ivy-re-builders-alist
         '((swiper . ivy--regex-plus)
@@ -493,10 +511,12 @@
   :custom
   (prescient-filter-method '(literal regexp initialism fuzzy))
   (ivy-prescient-retain-classic-highlighting t)
+  (prescient-use-char-folding nil)
   :config
   (prescient-persist-mode t))
 
-(use-package counsel :if (window-system))
+(use-package counsel
+  :if (window-system))
 
 (use-package projectile
   :demand t
@@ -555,7 +575,7 @@
    ("C-<" . 'mc/mark-previous-like-this)))
 
 (use-package anzu
-  :defer 1
+  :demand t
   :if (window-system)
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . anzu-query-replace))
@@ -578,7 +598,6 @@
   :disabled
   :init
   (setq ace-jump-mode-case-fold nil)
-  :defer 5
   :bind
   ("C-c M-c" . ace-jump-mode))
 
@@ -599,7 +618,6 @@
 (use-package inf-mongo)
 
 (use-package whole-line-or-region
-  :defer 5
   :init (whole-line-or-region-global-mode 1))
 
 (use-package magit
@@ -607,13 +625,13 @@
   (defun bob/magit-message (message)
     (interactive "sCommit message: ")
     (magit-commit-create `("-am" ,message)))
-  
+
   (defun fetch-all-git-repos-in-directory (repos-dir)
     (cl-loop for dir
-          in (directory-files repos-dir)
-          when (and (file-directory-p (format "%s/%s" repos-dir dir))
-                    (member ".git" (directory-files (format "%s/%s" repos-dir dir))))
-          do (run-fetch-in-dir (format "%s/%s" repos-dir dir))))
+             in (directory-files repos-dir)
+             when (and (file-directory-p (format "%s/%s" repos-dir dir))
+                       (member ".git" (directory-files (format "%s/%s" repos-dir dir))))
+             do (run-fetch-in-dir (format "%s/%s" repos-dir dir))))
 
   (defun run-fetch-in-dir (dir)
     (setq default-directory dir)
@@ -653,6 +671,7 @@
   (js2-mode . yas-minor-mode-on)
   (typescript-mode . yas-minor-mode-on)
   (web-mode . yas-minor-mode-on)
+  (text-mode . yas-minor-mode-on)
   :config
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
@@ -695,9 +714,9 @@
 
 (use-package shell-defuns :load-path "./site-lisp" :demand t :if (window-system))
 (use-package vterm
+  :demand t
   :if (window-system)
   :after shell-defuns
-  :defer 1
   :config
   (setq vterm-max-scrollback 100000)
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)
@@ -770,7 +789,7 @@
               ("C-c C-t C-m" . web-mode-tag-match)
               ("C-c C-t C-e" . web-mode-tag-end)
               ("C-c C-s" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
-)
+  )
 
 (use-package popup-kill-ring
   :bind ("M-y" . popup-kill-ring))
@@ -798,10 +817,10 @@
   (add-to-list 'tramp-default-proxies-alist
                '("bob$" nil "/sshx:bastion:"))
   (setq remote-file-name-inhibit-cache 3600
-      tramp-completion-reread-directory-timeout nil
-      vc-ignore-dir-regexp (format "%s\\|%s"
-                                   vc-ignore-dir-regexp
-                                   tramp-file-name-regexp))
+        tramp-completion-reread-directory-timeout nil
+        vc-ignore-dir-regexp (format "%s\\|%s"
+                                     vc-ignore-dir-regexp
+                                     tramp-file-name-regexp))
   (setq tramp-histfile-override t)
   ;; Save backup files locally
   ;; from https://stackoverflow.com/a/47021266
@@ -866,8 +885,8 @@
   :config (setq slime-company-completion 'fuzzy
                 slime-company-after-completion 'slime-company-just-one-space))
 
-(use-package shell-command+
-  :bind ("M-!" . shell-command+))
+(use-package dockerfile-mode)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
+(put 'set-goal-column 'disabled nil)
