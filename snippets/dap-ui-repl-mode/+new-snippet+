@@ -2,4 +2,4 @@
 # name: console
 # key: jlog
 # --
-console.log(JSON.stringify($1, null, '    '))
+JSON.stringify($1, null, '    ')
