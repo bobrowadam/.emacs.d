@@ -136,8 +136,8 @@
   (setq doom-modeline-minor-modes nil)
   (setq doom-modeline-lsp t)
   (setq doom-modeline-github t)
-  (setq doom-modeline-env-enable-rust t)
-  (setq doom-modeline-env-rust-executable "rustc")
+  ;; (setq doom-modeline-env-enable-rust t)
+  ;; (setq doom-modeline-env-rust-executable "rustc")
   (setq find-file-visit-truename t)
   (doom-modeline-mode 1)
   ;; (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "#4E4E4E")))))
@@ -147,8 +147,7 @@
   :if (window-system)
   :demand t
   :config
-  ;; (load-theme 'doom-outrun-electric tם1)
-  ;; (load-theme 'doom-monokai-spectrum t)
+  (load-theme 'doom-monokai-spectrum t)
   ;; (load-theme 'doom-old-hope t)
   ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
@@ -157,7 +156,7 @@
   ;; (load-theme 'bobs-badger)
   ;; (load-theme 'modus-vivendi)
   ;; (load-theme 'doom-gruvbox)
-  (load-theme 'doom-ir-black)
+  ;; (load-theme 'doom-ir-black)
   (setq doom-themes-treemacs-theme "doom-colors"))
 
 (use-package tron-legacy-theme)
@@ -638,7 +637,9 @@
     (magit-fetch-all-prune))
   :hook
   (before-save-hook . magit-wip-commit-initial-backup)
+
   :config
+  (remove-hook 'server-switch-hook 'magit-commit-diff)
   (setq magit-diff-refine-hunk 'all)
   (setq transient-default-level 7)
   (put 'magit-diff-edit-hunk-commit 'disabled nil)
