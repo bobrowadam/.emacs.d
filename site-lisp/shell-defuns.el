@@ -34,7 +34,7 @@ Passing a prefix arg 0 will allow adding a custom suffix to the shell buffer nam
 Any other prefis will be used as the suffix itself."
   (interactive "P")
   (-let [suffix (cond ((eq arg 0) (read-string "enter custom suffix: "))
-                      (arg (to-string arg))
+                      (arg (number-to-string arg))
                       (t ""))]
    (if (projectile-project-p)
        (projectile-with-default-dir (projectile-ensure-project (projectile-project-root))

@@ -122,9 +122,9 @@
 ;; Theme and Font
 (setq custom-safe-themes t)
 (setq custom-theme-directory "~/.emacs.d/themes")
-(set-frame-font "Roboto Mono 19")
+(set-frame-font "Roboto Mono 21")
 (add-to-list 'default-frame-alist
-             '(font . "Roboto Mono 19"))
+             '(font . "Roboto Mono 21"))
 
 (use-package doom-modeline
   :if (window-system)
@@ -147,8 +147,8 @@
   :if (window-system)
   :demand t
   :config
-  (load-theme 'doom-monokai-spectrum t)
-  ;; (load-theme 'doom-old-hope t)
+  ;; (load-theme 'doom-monokai-spectrum t)
+  (load-theme 'doom-old-hope t)
   ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
   ;; (load-theme 'doom-Iosvkem t)
@@ -246,7 +246,7 @@
   :ensure nil
   :bind
   ("C-c M-s" . isearch-forward-symbol-at-point)
-  ("M-i" . imenu)
+  ("M-i" . counsel-imenu)
   ("C-x j" . whitespace-cleanup)
   ("C-^" . (lambda () (interactive (delete-indentation -1))))
   ("M-C-h" . backward-kill-sexp)
@@ -284,7 +284,7 @@
 (use-package typescript-mode
   :init
   (defun lsp-ts-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-eslint-fix-all))
+    (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
   :hook
   (typescript-mode . lsp-ts-install-save-hooks)
   (typescript-mode . add-node-modules-path)
@@ -295,7 +295,7 @@
 (use-package js2-mode
   :init
   (defun lsp-js-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-eslint-fix-all))
+    (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
   (js2-mode . add-node-modules-path)
@@ -400,7 +400,7 @@
         ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
         ([remap xref-find-references] . lsp-ui-peek-find-references)
         ("C-c u" . lsp-ui-imenu)
-        ("M-i" . lsp-ui-doc-focus-frame))
+        ("C-c M-i" . lsp-ui-doc-focus-frame))
   (:map lsp-mode-map
         ("M-n" . forward-paragraph)
         ("M-p" . backward-paragraph))
@@ -508,7 +508,7 @@
 (use-package ivy-prescient
   :commands ivy-prescient-mode
   :custom
-  (prescient-filter-method '(literal regexp initialism fuzzy))
+  (prescient-filter-method '(literal initialism prefix fuzzy))
   (ivy-prescient-retain-classic-highlighting t)
   (prescient-use-char-folding nil)
   :config
@@ -574,12 +574,12 @@
    ("C-<" . 'mc/mark-previous-like-this)))
 
 (use-package anzu
-  :demand t
   :if (window-system)
+  :config
+  (global-anzu-mode 1)
   :bind (("C-M-%" . anzu-query-replace-regexp)
          ("M-%" . anzu-query-replace))
-  :config
-  (global-anzu-mode 1))
+  )
 
 (use-package expand-region
   :bind ("M-#" . er/expand-region))
@@ -610,7 +610,7 @@
   :init
   (setq company-tooltip-align-annotations t)
   (setq company-minimum-prefix-length 0)
-  (setq company-idle-delay 0.3)
+  (setq company-idle-delay 0.1)
   (setq company-candidates-cache t)
   :config (global-company-mode 1))
 
@@ -642,6 +642,9 @@
   (remove-hook 'server-switch-hook 'magit-commit-diff)
   (setq magit-diff-refine-hunk 'all)
   (setq transient-default-level 7)
+  (setq magit-commit-show-diff nil
+      magit-revert-buffers 1)
+
   (put 'magit-diff-edit-hunk-commit 'disabled nil)
   (transient-append-suffix 'magit-commit
     "c"
@@ -761,7 +764,7 @@
   ("\\.vue\\'" . web-mode)
   :init
   (defun lsp-web-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-eslint-fix-all))
+    (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
   :hook
   (web-mode . lsp-web-install-save-hooks)
   (web-mode . add-node-modules-path)
@@ -791,9 +794,6 @@
               ("C-c C-t C-e" . web-mode-tag-end)
               ("C-c C-s" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
   )
-
-(use-package popup-kill-ring
-  :bind ("M-y" . popup-kill-ring))
 
 (use-package tramp
   :ensure nil
@@ -874,20 +874,9 @@
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
-(use-package slime
-  :config
-  (load (expand-file-name "~/quicklisp/slime-helper.el"))
-  (setq inferior-lisp-program "sbcl")
-  (require 'slime-autoloads)
-  (slime-setup '(slime-fancy slime-company)))
-
-(use-package slime-company
-  :after (slime company)
-  :config (setq slime-company-completion 'fuzzy
-                slime-company-after-completion 'slime-company-just-one-space))
-
 (use-package dockerfile-mode)
-
+(use-package shell-command+
+  :bind ("M-!" . shell-command+))
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
