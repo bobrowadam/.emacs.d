@@ -206,3 +206,13 @@ Both PATTERN and CONTENTS are matched as regular expressions."
     (- current-time min-to-seconds)))
 
 (defmacro comment (&rest ignore))
+
+(defun get-processes-by-string (daptured-string)
+  (mapcar
+   (lambda (line)
+     (nth 1 (s-split " " line t)))
+   (-filter
+    (lambda (str)
+      (not (string-match-p (regexp-quote "rg") str)))
+    (s-split "\n" (shell-command-to-string (format "ps aux | rg %s" daptured-string)) t))
+   ))
