@@ -224,6 +224,10 @@
   :bind (:map dired-mode-map ("C-c C-r" . dired-rsync)))
 
 (use-package dired-du)
+(use-package dired-sidebar
+  :bind (("C-c C-l" . dired-sidebar-toggle-sidebar))
+  :ensure nil
+  :commands (dired-sidebar-toggle-sidebar))
 
 ;; Ediff setup
 (defmacro csetq (variable value)
@@ -281,6 +285,9 @@
   :after flycheck
   :config (add-hook 'flycheck-mode-hook #'flycheck-posframe-mode))
 
+(use-package rust-mode)
+(use-package cargo-mode)
+
 (use-package typescript-mode
   :init
   (defun lsp-ts-install-save-hooks ()
@@ -291,6 +298,10 @@
   (typescript-mode . origami-mode)
   :config
   (setq typescript-indent-level 2))
+
+(use-package jest-test-mode 
+  :commands jest-test-mode
+  :hook (typescript-mode js-mode typescript-tsx-mode))
 
 (use-package js2-mode
   :init
@@ -387,7 +398,7 @@
         ("C-c C-r" . lsp-ui-peek-find-references)
         ("M-." . lsp-ui-peek-find-definitions))
   :hook ((js2-mode typescript-mode web-mode
-                   c-mode c++-mode rust-mode) . lsp))
+                   c-mode c++-mode rust-mode haskell-mode) . lsp))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -533,20 +544,27 @@
 
 (use-package paredit
   :hook
+  (clojure-mode . enable-paredit-mode)
+  (cider-mode . enable-paredit-mode)
+  :hook
   (eval-expression-minibuffer-setup . enable-paredit-mode)
   (emacs-lisp-mode . enable-paredit-mode)
   (slime-mode . enable-paredit-mode)
-  (slime-repl-mode . enable-paredit-mode))
+  (slime-repl-mode . enable-paredit-mode)
+  :bind
+  (:map paredit-mode-map ("C-'" . sp-rewrap-sexp)))
 
 (use-package smartparens
+  :demand t
   :init
   (setq sp-ignore-modes-list '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup))
   :config
   (require 'smartparens-config)
+  (smartparens-global-mode)
   (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
-  :hook
-  (typescript-mode . smartparens-global-mode)
-  (js2-mode . smartparens-global-mode)
+  ;; :hook
+  ;; (typescript-mode . smartparens-global-mode)
+  ;; (js2-mode . smartparens-global-mode)
   :bind (:map smartparens-mode-map
               ("M-(" . sp-wrap-round)
               ("M-s" . sp-unwrap-sexp)
@@ -610,7 +628,7 @@
   :init
   (setq company-tooltip-align-annotations t)
   (setq company-minimum-prefix-length 0)
-  (setq company-idle-delay 0.1)
+  (setq company-idle-delay 0.3)
   (setq company-candidates-cache t)
   :config (global-company-mode 1))
 
@@ -639,7 +657,6 @@
   (before-save-hook . magit-wip-commit-initial-backup)
 
   :config
-  (remove-hook 'server-switch-hook 'magit-commit-diff)
   (setq magit-diff-refine-hunk 'all)
   (setq transient-default-level 7)
   (setq magit-commit-show-diff nil
@@ -659,7 +676,8 @@
   (setq magit-wip-merge-branch t))
 
 (use-package forge)
-
+(use-package magit-todos
+  :hook (magit-mode . magit-todos-mode))
 (use-package github-review
   :init (setq github-review-fetch-top-level-and-review-comments t))
 
@@ -676,6 +694,7 @@
   (typescript-mode . yas-minor-mode-on)
   (web-mode . yas-minor-mode-on)
   (text-mode . yas-minor-mode-on)
+  (haskell-mode . yas-minor-mode-on)
   :config
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
@@ -792,7 +811,8 @@
               ("C-c C-t C-p" . web-mode-tag-previous)
               ("C-c C-t C-m" . web-mode-tag-match)
               ("C-c C-t C-e" . web-mode-tag-end)
-              ("C-c C-s" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
+              ("C-c C-s" . nil)
+              ("C-c C-l" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
   )
 
 (use-package tramp
@@ -832,6 +852,7 @@
   :bind ("C-c r" . scratch-pop))
 
 (use-package misc-funcs
+  :demand t
   :load-path "./bob-list"
   :ensure nil)
 
@@ -877,6 +898,12 @@
 (use-package dockerfile-mode)
 (use-package shell-command+
   :bind ("M-!" . shell-command+))
+
+(use-package haskell-mode)
+(use-package haskell-snippets)
+(use-package cider :disabled t)
+(use-package clojure-mode :disabled t)
+(use-package sicp)
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
