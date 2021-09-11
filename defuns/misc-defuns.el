@@ -42,10 +42,10 @@
   (browse-url (concat "http://localhost:" (number-to-string port) "/")))
 
 ;; shorthand for interactive lambdas
-(defmacro λ (&rest body)
-  `(lambda ()
-     (interactive)
-     ,@body))
+;; (defmacro λ (&rest body)
+;;   `(lambda ()
+;;      (interactive)
+;;      ,@body))
 
 (global-set-key (kbd "C-x 8 l") (λ (insert "\u03bb")))
 
@@ -216,3 +216,13 @@ Both PATTERN and CONTENTS are matched as regular expressions."
       (not (string-match-p (regexp-quote "rg") str)))
     (s-split "\n" (shell-command-to-string (format "ps aux | rg %s" daptured-string)) t))
    ))
+
+(defun get-processes-by-string (daptured-string)
+  (-let [lines (-filter
+                (lambda (str)
+                  (not (string-match-p (regexp-quote "rg") str)))
+                (s-split "\n" (shell-command-to-string (format "ps aux | rg %s" daptured-string)) t))]
+    (mapcar (lambda (line)
+              (nth 1 (s-split " " line t)))
+            lines
+            )))

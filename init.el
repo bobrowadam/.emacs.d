@@ -1,6 +1,6 @@
 (require 'package)
 (setq gc-cons-threshold 100000000)
-
+(setq debug-on-error t)
 (add-hook 'emacs-startup-hook
           (lambda ()
             (message "Emacs ready in %s with %d garbage collections."
@@ -22,8 +22,6 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(use-package short-lambda
-  :load-path "./site-lisp")
 
 (setq use-package-always-defer t)
 (setq use-package-always-ensure t)
@@ -736,6 +734,8 @@
               ("M-n" . org-metadown)))
 
 (use-package shell-defuns :load-path "./site-lisp" :demand t :if (window-system))
+(use-package short-lambda :load-path "./site-lisp" :demand t)
+
 (use-package vterm
   :demand t
   :if (window-system)
@@ -853,15 +853,15 @@
 
 (use-package misc-funcs
   :demand t
-  :load-path "./bob-list"
+  :load-path "./bob-lisp"
   :ensure nil)
 
-(use-package undo-fu
-  :init
-  (setq undo-fu-allow-undo-in-region t)
-  :bind
-  ("C-/" . undo-fu-only-undo)
-  ("C-?"  . undo-fu-only-redo))
+;; (use-package undo-fu
+;;   :init
+;;   (setq undo-fu-allow-undo-in-region t)
+;;   :bind
+;;   ("C-/" . undo-fu-only-undo)
+;;   ("C-?"  . undo-fu-only-redo))
 
 (use-package avy
   :init (setq avy-case-fold-search nil)
@@ -904,6 +904,7 @@
 (use-package cider :disabled t)
 (use-package clojure-mode :disabled t)
 (use-package sicp)
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)

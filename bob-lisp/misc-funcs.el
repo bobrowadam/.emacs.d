@@ -25,21 +25,21 @@
              (my/deep-contains (car list) element)
              (my/deep-contains (cdr list) element)))))
 
-(defmacro λ (body)
-  "Short lambda version with implicit argument list.
-Arguments are _ _1 _2 ... _1000 and are ordered in ascending order.
-You can use any of those arguments in BODY"
-  (let* ((lambda-args (cons '_ (mapcar (lambda (_)
-                                         (intern (format "_%s" _)))
-                                       (number-sequence 1 1000))))
-         (args (my/unique (-filter
-                           (lambda (arg) (progn arg))
-                           (mapcar (lambda (arg)
-                                     (if (my/deep-contains body arg)
-                                         arg
-                                       nil))
-                                   lambda-args)))))
-    `(lambda ,args ,body)))
+;; (defmacro λ (body)
+;;   "Short lambda version with implicit argument list.
+;; Arguments are _ _1 _2 ... _1000 and are ordered in ascending order.
+;; You can use any of those arguments in BODY"
+;;   (let* ((lambda-args (cons '_ (mapcar (lambda (_)
+;;                                          (intern (format "_%s" _)))
+;;                                        (number-sequence 1 1000))))
+;;          (args (my/unique (-filter
+;;                            (lambda (arg) (progn arg))
+;;                            (mapcar (lambda (arg)
+;;                                      (if (my/deep-contains body arg)
+;;                                          arg
+;;                                        nil))
+;;                                    lambda-args)))))
+;;     `(lambda ,args ,body)))
 
 (defmacro sformat (string)
   "Smart formating a STRING.
@@ -135,6 +135,20 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
       (or (looking-at "[0-9]+")
           (error "No number at point"))
       (replace-match (number-to-string (1- (string-to-number (match-string 0))))))
+
+(defun get-processes-by-string (captured-string)
+  (interactive "sEnter a string to caputre: ")
+  (print (format "%s" (--get-processes-by-string captured-string))))
+
+(defun --get-processes-by-string (captured-string)
+  (-let [lines (-filter
+                (lambda (str)
+                  (not (string-match-p (regexp-quote "rg") str)))
+                (s-split "\n" (shell-command-to-string (format "ps aux | rg %s" captured-string)) t))]
+    (mapcar (lambda (line)
+              (nth 1 (s-split " " line t)))
+            lines
+            )))
 
 (provide 'misc-funcs)
 ;;; misc-funcs.el ends here
