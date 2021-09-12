@@ -1,6 +1,6 @@
 (require 'package)
 (setq gc-cons-threshold 100000000)
-(setq debug-on-error t)
+(setq debug-on-error nil)
 (add-hook 'emacs-startup-hook
           (lambda ()
             (message "Emacs ready in %s with %d garbage collections."
@@ -673,7 +673,8 @@
   (magit-wip-after-save-mode)
   (setq magit-wip-merge-branch t))
 
-(use-package forge)
+(use-package forge
+  :init (setq forge-bug-reference-hooks nil))
 (use-package magit-todos
   :hook (magit-mode . magit-todos-mode))
 (use-package github-review
@@ -734,7 +735,14 @@
               ("M-n" . org-metadown)))
 
 (use-package shell-defuns :load-path "./site-lisp" :demand t :if (window-system))
-(use-package short-lambda :load-path "./site-lisp" :demand t)
+
+(use-package short-lambda :load-path "./site-lisp" :demand t
+  :init
+  (defun insert-λ ()
+    (interactive)
+    (insert "λ"))
+  :bind
+  ("C-x 8 l" . insert-λ))
 
 (use-package vterm
   :demand t
@@ -904,6 +912,20 @@
 (use-package cider :disabled t)
 (use-package clojure-mode :disabled t)
 (use-package sicp)
+(use-package elfeed
+  :init
+  (setq elfeed-feeds
+        '(("https://nomasters.io/index.xml" blog tech)
+          ("https://www.reddit.com/r/listentothis/.rss" music reddit)
+          ("https://usesthis.com/feed.atom")
+          ("https://www.reddit.com/r/emacs/.rss" emacs reddit)
+          ("http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml" news first)
+          ("https://www.haaretz.com/cmlink/1.4605102" news)
+          ("http://notarbut.co/feed/podcast" podcast)
+          ("https://blog.rust-lang.org/feed.xml" programming rust)
+          ("https://www.reddit.com/r/rust/.rss" programming rust)
+          ))
+  :bind ("C-c w" . elfeed))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
