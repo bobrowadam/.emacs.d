@@ -915,15 +915,13 @@
 (use-package elfeed
   :init
   (setq elfeed-feeds
-        '(("https://nomasters.io/index.xml" blog tech)
-          ("https://www.reddit.com/r/listentothis/.rss" music reddit)
-          ("https://usesthis.com/feed.atom")
-          ("https://www.reddit.com/r/emacs/.rss" emacs reddit)
-          ("http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml" news first)
-          ("https://www.haaretz.com/cmlink/1.4605102" news)
+        '(("https://www.reddit.com/r/listentothis/.rss" music reddit)
+          ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
           ("http://notarbut.co/feed/podcast" podcast)
           ("https://blog.rust-lang.org/feed.xml" programming rust)
-          ("https://www.reddit.com/r/rust/.rss" programming rust)
+          ("https://www.reddit.com/r/rust/.rss" programming rust reddit)
+          ("https://www.reddit.com/r/Clojure/.rss" programming clojure reddit)
+          ("https://feed.podbean.com/geekonomy/feed.xml" podcast)
           ))
   :bind ("C-c w" . elfeed))
 
