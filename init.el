@@ -120,9 +120,9 @@
 ;; Theme and Font
 (setq custom-safe-themes t)
 (setq custom-theme-directory "~/.emacs.d/themes")
-(set-frame-font "Roboto Mono 21")
+(set-frame-font "Roboto Mono 23")
 (add-to-list 'default-frame-alist
-             '(font . "Roboto Mono 21"))
+             '(font . "Roboto Mono 23"))
 
 (use-package doom-modeline
   :if (window-system)
@@ -732,7 +732,37 @@
   (org-after-refile-insert . org-save-all-org-buffers)
   :bind (:map org-mode-map
               ("M-p" . org-metaup)
-              ("M-n" . org-metadown)))
+              ("M-n" . org-metadown)
+              ;; ("C-c a" . org-agenda)
+              ;; ("C-c c" . org-capture)
+              ;; ("C-c S" . org-save-all-org-buffers)
+              ("C-c l" . org-store-link)
+              ("M-," . org-mark-ring-goto)
+              ))
+
+(use-package org-roam
+  :init
+  (setq org-roam-graph-viewer "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser")
+  (setq org-roam-v2-ack t)
+  (setq org-roam-directory (concat org-directory "/org-roam"))
+  (setq org-id-locations-file (concat org-directory "/.orgids"))
+  (setq org-roam-completion-everywhere t)
+  (add-to-list 'display-buffer-alist
+                  '("\\*org-roam\\*"
+                    (display-buffer-in-side-window)
+                    (side . right)
+                    (slot . 0)
+                    (window-width . 0.33)
+                    (window-parameters . ((no-other-window . t)
+                                          (no-delete-other-windows . t)))))
+  :bind
+  ;; creates a node if it does not exist, and inserts a link to the node at point:
+  ("C-c n i" . 'org-roam-node-insert)
+  ("C-c n f" . 'org-roam-node-find)
+  ("C-c n c" . 'org-roam-capture)
+  ("C-c n b" . org-roam-buffer-toggle)
+  :config
+  (org-roam-db-autosync-mode))
 
 (use-package shell-defuns :load-path "./site-lisp" :demand t :if (window-system))
 
@@ -909,18 +939,20 @@
 
 (use-package haskell-mode)
 (use-package haskell-snippets)
-(use-package cider :disabled t)
-(use-package clojure-mode :disabled t)
+(use-package cider)
+(use-package clojure-mode)
 (use-package sicp)
+
 (use-package elfeed
   :init
   (setq elfeed-feeds
-        '(("https://www.reddit.com/r/listentothis/.rss" music reddit)
+        '(
+          ;; ("https://www.reddit.com/r/listentothis/.rss" music reddit)
           ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
           ("http://notarbut.co/feed/podcast" podcast)
           ("https://blog.rust-lang.org/feed.xml" programming rust)
-          ("https://www.reddit.com/r/rust/.rss" programming rust reddit)
-          ("https://www.reddit.com/r/Clojure/.rss" programming clojure reddit)
+          ;; ("https://www.reddit.com/r/rust/.rss" programming rust reddit)
+          ;; ("https://www.reddit.com/r/Clojure/.rss" programming clojure reddit)
           ("https://feed.podbean.com/geekonomy/feed.xml" podcast)
           ))
   :bind ("C-c w" . elfeed))

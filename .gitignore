@@ -46,3 +46,4 @@ transient/*
 /eln-cache/
 /.extension/
 /.lsp-eslint-choices
+/org-roam.db
