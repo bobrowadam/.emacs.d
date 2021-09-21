@@ -125,7 +125,6 @@
 
 (use-package doom-modeline
   :if (window-system)
-  :after ivy
   :demand t
   :config
   (setq doom-modeline-height 20)
@@ -248,7 +247,6 @@
   :ensure nil
   :bind
   ("C-c M-s" . isearch-forward-symbol-at-point)
-  ("M-i" . counsel-imenu)
   ("C-x j" . whitespace-cleanup)
   ("C-^" . (lambda () (interactive (delete-indentation -1))))
   ("M-C-h" . backward-kill-sexp)
@@ -485,51 +483,8 @@
             (Template . ,(all-the-icons-material "format_align_left" :height 0.8 :v-adjust -0.15)))
           company-box-icons-alist 'company-box-icons-all-the-icons)))
 
-(use-package ivy
-  :commands ivy-mode
-  :hook (after-init . ivy-mode)
-  :delight ivy-mode
-  :bind (:map ivy-minibuffer-map
-              ("C-j" . ivy-immediate-done)
-              ("RET" . ivy-alt-done))
-  :bind
-  (("M-x" . counsel-M-x)
-   ("C-x C-f" . counsel-find-file)
-   ("C-x C-m" . counsel-mark-ring)
-   ("C-c C-s C-r" . counsel-rg)
-   ("C-c C-s C-s" . swiper)
-   ("C-c C-s C-g" . counsel-search))
-  :config
-  (ivy-prescient-mode t)
-  (setq ivy-use-virtual-buffers t
-        ivy-virtual-abbreviate 'full
-        ivy-on-del-error-function nil
-        ivy-use-selectable-prompt nil
-        enable-recursive-minibuffers t
-        ivy-re-builders-alist
-        '((swiper . ivy--regex-plus)
-          (swiper-isearch . ivy--regex-plus)
-          (counsel-ag . ivy--regex-plus)
-          (counsel-rg . ivy--regex-plus)
-          (t . ivy-prescient-re-builder)
-          )))
-
-(use-package ivy-prescient
-  :commands ivy-prescient-mode
-  :custom
-  (prescient-filter-method '(literal initialism prefix fuzzy))
-  (ivy-prescient-retain-classic-highlighting t)
-  (prescient-use-char-folding nil)
-  :config
-  (prescient-persist-mode t))
-
-(use-package counsel
-  :if (window-system))
-
 (use-package projectile
   :demand t
-  :init
-  (setq projectile-completion-system 'ivy)
   :config
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
   (setq projectile-switch-project-action #'projectile-dired)
@@ -603,8 +558,7 @@
 (use-package ripgrep
   :init (setq wgrep-auto-save-buffer t)
   :bind
-  ("C-c M-r" . ripgrep-regexp)
-  (:map ripgrep-search-mode-map ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)))
+  ("C-c M-r" . ripgrep-regexp))
 
 (use-package deadgrep
   :bind ("C-c C-s C-d" . deadgrep))
