@@ -138,7 +138,7 @@
   ;; (setq doom-modeline-env-rust-executable "rustc")
   (setq find-file-visit-truename t)
   (doom-modeline-mode 1)
-  ;; (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "#4E4E4E")))))
+  (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "gray27")))))
   )
 
 (use-package doom-themes
