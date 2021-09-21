@@ -145,8 +145,9 @@
   :if (window-system)
   :demand t
   :config
+  (load-theme 'doom-ayu-mirage t)
   ;; (load-theme 'doom-monokai-spectrum t)
-  (load-theme 'doom-old-hope t)
+  ;; (load-theme 'doom-old-hope t)
   ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
   ;; (load-theme 'doom-Iosvkem t)
