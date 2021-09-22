@@ -53,8 +53,8 @@
   (setq lsp-completion-provider :capf)
   (setq lsp-idle-delay 0.500)
   (setenv "BOB_DIR" (format "%s%s" (getenv "HOME") "/source/bob"))
-  (exec-path-from-shell-copy-envs '("WHATSAPP_NUMBER"))
-  (exec-path-from-shell-copy-envs '("LOCAL_WHATSAPP_NUMBER"))
+  ;; (exec-path-from-shell-copy-envs '("WHATSAPP_NUMBER"))
+  ;; (exec-path-from-shell-copy-envs '("LOCAL_WHATSAPP_NUMBER"))
   :bind
   (:map lsp-mode-map
         ("C-c C-r" . lsp-find-references)

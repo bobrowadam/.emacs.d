@@ -56,7 +56,7 @@ Any other prefis will be used as the suffix itself."
                                 (equal (with-current-buffer b major-mode) 'js-comint-mode)
                                 ))
                 (mapcar (function buffer-name) (buffer-list))))))
-            (shell-buffer (ivy-completing-read "Shell: " shell-buffers)))
+            (shell-buffer (completing-read "Shell: " shell-buffers)))
       (progn
         (setq bob/last-shell-buffer shell-buffer)
         (switch-to-buffer shell-buffer))

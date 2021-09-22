@@ -32,6 +32,9 @@
 (require 'server)
 (unless (server-running-p)
   (server-start))
+(use-package winner-mode
+  :ensure nil
+  :init (winner-mode 1))
 
 (use-package exec-path-from-shell
   :if (window-system)
@@ -43,7 +46,6 @@
   (exec-path-from-shell-initialize)
   (setq service-directory (concat (getenv "HOME") "/source/services")))
 
-
 (setq user-login-name "Adam Bobrow"
       make-backup-files nil
       enable-recursive-minibuffers t
@@ -53,24 +55,16 @@
       sentence-end-double-space t ; explicitly choose default
       x-select-enable-clipboard t
       set-mark-command-repeat-pop t
-
       history-delete-duplicates t
       comint-input-ignoredups t
-
       view-read-only nil ; all read-only buffers in view-mode
       view-inhibit-help-message t ; don't tell me about it
-
       delete-active-region nil ; just use <delete>
-
       gdb-many-windows t
-
       epa-pinentry-mode 'loopback
       auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc")
-
-      ;; No more damn prompts!
       dired-recursive-deletes 'always
       dired-recursive-copies 'always
-      ;; blink-cursor-blinks 1
       )
 
 (setq initial-scratch-message ";; Oh it's you again :|")
@@ -111,7 +105,6 @@
 ;; delete char and delte word with "C-h" "C-M-h"
 (define-key key-translation-map [?\C-h] [?\C-?])
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
-;; (define-key key-translation-map (kbd "<f9>") (kbd "C-s-h"))
 
 ;; Deal with editing large files:
 (global-so-long-mode 1)
@@ -123,6 +116,7 @@
 (add-to-list 'default-frame-alist
              '(font . "Roboto Mono 23"))
 
+(require 'cl)
 (use-package doom-modeline
   :if (window-system)
   :demand t
@@ -135,9 +129,7 @@
   ;; (setq doom-modeline-env-enable-rust t)
   ;; (setq doom-modeline-env-rust-executable "rustc")
   (setq find-file-visit-truename t)
-  (doom-modeline-mode 1)
-  (custom-theme-set-faces 'user '(ivy-current-match ((t (:extend t :background "gray27")))))
-  )
+  (doom-modeline-mode 1))
 
 (use-package doom-themes
   :if (window-system)
@@ -155,10 +147,6 @@
   ;; (load-theme 'doom-gruvbox)
   ;; (load-theme 'doom-ir-black)
   (setq doom-themes-treemacs-theme "doom-colors"))
-
-(use-package tron-legacy-theme)
-
-(use-package night-owl-theme)
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")
@@ -183,6 +171,125 @@
 ;; Set Emacs C source dir:
 (setq find-function-C-source-directory "~/source/emacs/src")
 
+;; Completions
+(use-package consult
+  :bind (;; C-c bindings (mode-specific-map)
+         ("C-c m" . consult-mode-command)
+         ("C-x r b" . consult-bookmark)
+         ("C-c k" . consult-kmacro)
+         ("C-x M-:" . consult-complex-command) 
+         ("C-x b" . consult-buffer) 
+         ("C-x 4 b" . consult-buffer-other-window) 
+         ("C-x 5 b" . consult-buffer-other-frame) 
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store) 
+         ("C-M-#" . consult-register)
+         ("M-y" . consult-yank-pop)     
+         ("<help> a" . consult-apropos) 
+         ("M-g M-g" . consult-goto-line) 
+         ("M-g o" . consult-outline) 
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ("C-c M-s f" . consult-find)
+         ("C-c M-s F" . consult-locate)
+         ("C-c M-s g" . consult-grep)
+         ("C-c M-s G" . consult-git-grep)
+         ("C-c C-s C-r" . consult-ripgrep)
+         ("C-M-s" . consult-line)
+         ("C-c M-s m" . consult-multi-occur)
+         ("C-c M-s k" . consult-keep-lines)
+         ("C-c M-s e" . consult-isearch)
+         :map isearch-mode-map
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi))
+  :init
+  (setq register-preview-delay 0
+        register-preview-function #'consult-register-format)
+  (advice-add #'register-preview :override #'consult-register-window)
+  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+  :config
+  (consult-customize
+   consult-theme
+   :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-file consult--source-project-file consult--source-bookmark
+   :preview-key (kbd "M-."))
+
+  (setq consult-narrow-key "<")
+  (setq consult-project-root-function
+        (lambda ()
+          (when-let (project (project-current))
+            (car (project-roots project)))))
+  (autoload 'projectile-project-root "projectile")
+  (setq consult-project-root-function #'projectile-project-root)
+)
+
+(use-package selectrum
+  :bind (("C-M-r" . selectrum-repeat)
+         :map selectrum-minibuffer-map
+         ("C-r" . selectrum-select-from-history)
+         :map minibuffer-local-map
+         ("M-h" . backward-kill-word))
+  :custom
+  (selectrum-fix-minibuffer-height t)
+  (selectrum-num-candidates-displayed 7)
+  (selectrum-refine-candidates-function #'orderless-filter)
+  (selectrum-highlight-candidates-function #'orderless-highlight-matches)
+  :custom-face
+  (selectrum-current-candidate ((t (:background "#3a3f5a"))))
+  :init
+  (selectrum-mode 1))
+
+(use-package orderless
+  :init
+  (setq orderless-matching-styles '(orderless)
+        completion-styles '(orderless partial-completion substring)
+        orderless-skip-highlighting (lambda () selectrum-is-active)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles . (partial-completion)))))
+  (savehist-mode 1))
+
+(use-package marginalia
+  :after vertico
+  :custom
+  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+  :init
+  (marginalia-mode))
+
+
+(use-package embark
+  :ensure t
+  :bind
+  (("C-." . embark-act)         
+   ("C-;" . embark-dwim)        
+   ("C-h B" . embark-bindings)) 
+
+  :init
+  
+  (setq prefix-help-command #'embark-prefix-help-command)
+
+  :config
+
+  
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
+
+
+(use-package embark-consult
+  :ensure t
+  :after (embark consult)
+  :demand t ; only necessary if you have the hook below
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+
+;; Dired
 (use-package dired
   :config
   (setq dired-use-ls-dired nil)
@@ -191,7 +298,6 @@
   )
 
 (use-package dired-x :ensure nil :defer 1)
-
 (use-package dired-aux
   :ensure nil
   :after (dired)
@@ -246,7 +352,7 @@
 (use-package basic-keybindigs
   :ensure nil
   :bind
-  ("C-c M-s" . isearch-forward-symbol-at-point)
+  ;; ("C-c M-s" . isearch-forward-symbol-at-point)
   ("C-x j" . whitespace-cleanup)
   ("C-^" . (lambda () (interactive (delete-indentation -1))))
   ("M-C-h" . backward-kill-sexp)
@@ -545,6 +651,7 @@
    ("C-<" . 'mc/mark-previous-like-this)))
 
 (use-package anzu
+  :demand t
   :if (window-system)
   :config
   (global-anzu-mode 1)
@@ -582,7 +689,7 @@
   (setq company-minimum-prefix-length 0)
   (setq company-idle-delay 0.3)
   (setq company-candidates-cache t)
-  :config (global-company-mode 1))
+  (global-company-mode 1))
 
 (use-package inf-mongo)
 
@@ -729,6 +836,7 @@
   ("C-x 8 l" . insert-λ))
 
 (use-package vterm
+  :demand t
   :if (window-system)
   :after shell-defuns
   :config
@@ -847,12 +955,12 @@
   :load-path "./bob-lisp"
   :ensure nil)
 
-;; (use-package undo-fu
-;;   :init
-;;   (setq undo-fu-allow-undo-in-region t)
-;;   :bind
-;;   ("C-/" . undo-fu-only-undo)
-;;   ("C-?"  . undo-fu-only-redo))
+(use-package undo-fu
+  :init
+  (setq undo-fu-allow-undo-in-region t)
+  :bind
+  ("C-/" . undo-fu-only-undo)
+  ("C-?"  . undo-fu-only-redo))
 
 (use-package avy
   :init (setq avy-case-fold-search nil)

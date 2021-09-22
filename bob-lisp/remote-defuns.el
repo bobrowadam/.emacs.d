@@ -132,7 +132,7 @@ sEnter server-name:\s")
                                             (s-contains\? "*eshell" b  t)
                                             (s-contains\? "*sbt*" b  t)))
                             (mapcar (function buffer-name) (buffer-list))))
-            (shell-buffer (ivy-completing-read "Shell: " shell-buffers)))
+            (shell-buffer (completing-read "Shell: " shell-buffers)))
       (switch-to-buffer shell-buffer)
     (message "No Shell bufers exists")))
 
