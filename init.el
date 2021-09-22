@@ -1,4 +1,3 @@
-(require 'package)
 (setq gc-cons-threshold 100000000)
 (setq debug-on-error nil)
 (add-hook 'emacs-startup-hook
@@ -23,6 +22,7 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
+(setq package-native-compile t)
 (setq use-package-always-defer t)
 (setq use-package-always-ensure t)
 (setq use-package-verbose t)
@@ -30,7 +30,6 @@
 (setq use-package-compute-statistics t)
 
 (require 'server)
-(require 'cl-lib)
 (unless (server-running-p)
   (server-start))
 
@@ -776,7 +775,6 @@
   ("C-x 8 l" . insert-λ))
 
 (use-package vterm
-  :demand t
   :if (window-system)
   :after shell-defuns
   :config

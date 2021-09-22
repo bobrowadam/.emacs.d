@@ -58,7 +58,7 @@ not present in STRUCTURE, i.e:
 
 (defun sl--arguments (tree)
   "Collect a list of unique occurences of %, %1, ..., %9, %& in TREE."
-  (let ((args (delete-duplicates
+  (let ((args (cl-delete-duplicates
                (sl--collect-rec tree))))
     (cond ((equal args '(%))
            '(%))
