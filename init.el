@@ -194,7 +194,6 @@
          ("M-g I" . consult-imenu-multi)
          ("C-c M-s f" . consult-find)
          ("C-c M-s F" . consult-locate)
-         ("C-c M-s g" . consult-grep)
          ("C-c M-s G" . consult-git-grep)
          ("C-c C-s C-r" . consult-ripgrep)
          ("C-M-s" . consult-line)
@@ -229,6 +228,34 @@
   (setq consult-project-root-function #'projectile-project-root)
 )
 
+(use-package vertico
+  :disabled t
+  :init
+  (vertico-mode)
+  ;; Grow and shrink the Vertico minibuffer
+  (setq vertico-resize t)
+  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+  (setq vertico-cycle t))
+
+(use-package orderless
+  :disabled t
+  :init
+  (setq completion-styles '(substring orderless)
+        orderless-skip-highlighting (lambda () selectrum-is-active)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+
+(use-package hotfuzz
+  :after selectrum
+  :ensure t
+  :init
+  (hotfuzz-selectrum-mode))
+
+(use-package savehist-mode
+  :ensure nil
+  :init
+  (savehist-mode))
+
 (use-package selectrum
   :bind (("C-M-r" . selectrum-repeat)
          :map selectrum-minibuffer-map
@@ -245,22 +272,12 @@
   :init
   (selectrum-mode 1))
 
-(use-package orderless
-  :init
-  (setq orderless-matching-styles '(orderless)
-        completion-styles '(orderless partial-completion substring)
-        orderless-skip-highlighting (lambda () selectrum-is-active)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles . (partial-completion)))))
-  (savehist-mode 1))
-
 (use-package marginalia
-  :after vertico
+  ;; :after vertico
   :custom
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :init
   (marginalia-mode))
-
 
 (use-package embark
   :ensure t
@@ -270,12 +287,8 @@
    ("C-h B" . embark-bindings)) 
 
   :init
-  
   (setq prefix-help-command #'embark-prefix-help-command)
-
   :config
-
-  
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
