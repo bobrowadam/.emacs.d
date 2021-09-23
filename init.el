@@ -116,7 +116,7 @@
 (add-to-list 'default-frame-alist
              '(font . "Roboto Mono 23"))
 
-(require 'cl)
+(require 'cl-lib)
 (use-package doom-modeline
   :if (window-system)
   :demand t
