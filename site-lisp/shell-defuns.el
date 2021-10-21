@@ -36,10 +36,13 @@ Any other prefis will be used as the suffix itself."
   (-let [suffix (cond ((eq arg 0) (read-string "enter custom suffix: "))
                       (arg (number-to-string arg))
                       (t ""))]
-   (if (projectile-project-p)
-       (projectile-with-default-dir (projectile-ensure-project (projectile-project-root))
-         (bob/vterm-other-window (concat "*SHELL " (projectile-project-name) "* " suffix)))
-     (vterm))))
+    (split-window-sensibly)
+    (other-window 1)
+    (if (projectile-project-p)
+        ;; (projectile-with-default-dir (projectile-ensure-project (projectile-project-root))
+        ;;   (bob/vterm-other-window (concat "*SHELL " (projectile-project-name) "* " suffix)))
+        (projectile-run-vterm)
+      (vterm))))
 
 (defvar bob/last-shell-buffer nil)
 

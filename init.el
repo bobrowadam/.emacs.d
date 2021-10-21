@@ -1,7 +1,8 @@
 (setq gc-cons-threshold 100000000)
 (setq debug-on-error nil)
+
 (add-hook 'emacs-startup-hook
-          (lambda ()
+	  (lambda ()
             (message "Emacs ready in %s with %d garbage collections."
                      (format "%.2f seconds"
                              (float-time
@@ -112,9 +113,11 @@
 ;; Theme and Font
 (setq custom-safe-themes t)
 (setq custom-theme-directory "~/.emacs.d/themes")
-(set-frame-font "Roboto Mono 23")
+(set-frame-font "DaddyTimeMono Nerd Font 21")
+;; (set-frame-font "SauceCodePro Nerd Font 21")
+;; (set-frame-font "Roboto Mono 21")
 (add-to-list 'default-frame-alist
-             '(font . "Roboto Mono 23"))
+             '(font . "DaddyTimeMono Nerd Font 21"))
 
 (require 'cl-lib)
 (use-package doom-modeline
@@ -126,9 +129,9 @@
   (setq doom-modeline-minor-modes nil)
   (setq doom-modeline-lsp t)
   (setq doom-modeline-github t)
+  (setq find-file-visit-truename t)
   ;; (setq doom-modeline-env-enable-rust t)
   ;; (setq doom-modeline-env-rust-executable "rustc")
-  (setq find-file-visit-truename t)
   (doom-modeline-mode 1))
 
 (use-package doom-themes
@@ -190,8 +193,8 @@
          ("M-g o" . consult-outline) 
          ("M-g m" . consult-mark)
          ("M-g k" . consult-global-mark)
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-imenu-multi)
+         ("M-i" . consult-imenu)
+         ("M-g i" . consult-imenu-multi)
          ("C-c M-s f" . consult-find)
          ("C-c M-s F" . consult-locate)
          ("C-c M-s G" . consult-git-grep)
@@ -226,7 +229,16 @@
             (car (project-roots project)))))
   (autoload 'projectile-project-root "projectile")
   (setq consult-project-root-function #'projectile-project-root)
+  (projectile-load-known-projects)
+  (setq my-consult-source-projectile-projects
+        `(:name "Projectile projects"
+                :narrow   ?P
+                :category project
+                :action   ,#'projectile-switch-project-by-name
+                :items    ,projectile-known-projects))
+  (add-to-list 'consult-buffer-sources my-consult-source-projectile-projects 'append)
 )
+(use-package consult-lsp :ensure t)
 
 (use-package vertico
   :disabled t
@@ -256,6 +268,11 @@
   :init
   (savehist-mode))
 
+(use-package recentf-mode
+  :ensure nil
+  :init
+  (recentf-mode 1))
+
 (use-package selectrum
   :bind (("C-M-r" . selectrum-repeat)
          :map selectrum-minibuffer-map
@@ -265,8 +282,8 @@
   :custom
   (selectrum-fix-minibuffer-height t)
   (selectrum-num-candidates-displayed 7)
-  (selectrum-refine-candidates-function #'orderless-filter)
-  (selectrum-highlight-candidates-function #'orderless-highlight-matches)
+  ;; (selectrum-refine-candidates-function #'orderless-filter)
+  ;; (selectrum-highlight-candidates-function #'orderless-highlight-matches)
   :custom-face
   (selectrum-current-candidate ((t (:background "#3a3f5a"))))
   :init
@@ -342,7 +359,6 @@
 (use-package dired-du)
 (use-package dired-sidebar
   :bind (("C-c C-l" . dired-sidebar-toggle-sidebar))
-  :ensure nil
   :commands (dired-sidebar-toggle-sidebar))
 
 ;; Ediff setup
@@ -733,7 +749,6 @@
   (setq transient-default-level 7)
   (setq magit-commit-show-diff nil
       magit-revert-buffers 1)
-
   (put 'magit-diff-edit-hunk-commit 'disabled nil)
   (transient-append-suffix 'magit-commit
     "c"
@@ -822,13 +837,13 @@
   (setq org-id-locations-file (concat org-directory "/.orgids"))
   (setq org-roam-completion-everywhere t)
   (add-to-list 'display-buffer-alist
-                  '("\\*org-roam\\*"
-                    (display-buffer-in-side-window)
-                    (side . right)
-                    (slot . 0)
-                    (window-width . 0.33)
-                    (window-parameters . ((no-other-window . t)
-                                          (no-delete-other-windows . t)))))
+               '("\\*org-roam\\*"
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (slot . 0)
+                 (window-width . 0.33)
+                 (window-parameters . ((no-other-window . t)
+                                       (no-delete-other-windows . t)))))
   :bind
   ;; creates a node if it does not exist, and inserts a link to the node at point:
   ("C-c n i" . 'org-roam-node-insert)
@@ -849,7 +864,6 @@
   ("C-x 8 l" . insert-λ))
 
 (use-package vterm
-  :demand t
   :if (window-system)
   :after shell-defuns
   :config
@@ -1028,8 +1042,17 @@
           ;; ("https://www.reddit.com/r/rust/.rss" programming rust reddit)
           ;; ("https://www.reddit.com/r/Clojure/.rss" programming clojure reddit)
           ("https://feed.podbean.com/geekonomy/feed.xml" podcast)
+          ("https://protesilaos.com/master.xml" programming blog)
           ))
   :bind ("C-c w" . elfeed))
+
+(use-package slime
+  :config
+  (setq inferior-lisp-program "/usr/local/bin/sbcl")
+  (slime-setup '(slime-fancy slime-company)))
+
+(use-package slime-company
+  :after slime)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
