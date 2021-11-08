@@ -511,6 +511,8 @@
 
           (,dap-ui--repl-buffer . ((side . bottom) (slot . 1) (window-height . 0.45))))))
 
+(use-package nodejs-repl)
+
 (use-package lsp-mode
   :commands lsp
   :init
@@ -723,6 +725,7 @@
 (use-package inf-mongo)
 
 (use-package whole-line-or-region
+  :disabled t
   :init (whole-line-or-region-global-mode 1))
 
 (use-package magit
@@ -743,8 +746,10 @@
     (magit-fetch-all-prune))
   :hook
   (before-save-hook . magit-wip-commit-initial-backup)
+  (git-commit-setup . git-commit-turn-on-flyspell)
 
   :config
+  (setq flyspell-issue-message-flag nil)
   (setq magit-diff-refine-hunk 'all)
   (setq transient-default-level 7)
   (setq magit-commit-show-diff nil
@@ -1041,6 +1046,7 @@
           ("https://blog.rust-lang.org/feed.xml" programming rust)
           ;; ("https://www.reddit.com/r/rust/.rss" programming rust reddit)
           ;; ("https://www.reddit.com/r/Clojure/.rss" programming clojure reddit)
+          ("https://danluu.com/atom.xml" programming blog)
           ("https://feed.podbean.com/geekonomy/feed.xml" podcast)
           ("https://protesilaos.com/master.xml" programming blog)
           ))
@@ -1053,6 +1059,16 @@
 
 (use-package slime-company
   :after slime)
+
+(use-package racket-mode)
+
+(use-package racket-xp
+  :after (racket-mode)
+  :ensure nil
+  :hook
+  (racket-mode . (lambda () (racket-xp-mode 1))))
+
+(use-package docker)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
