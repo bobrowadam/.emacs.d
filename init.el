@@ -531,7 +531,7 @@
         ("C-c C-r" . lsp-ui-peek-find-references)
         ("M-." . lsp-ui-peek-find-definitions))
   :hook ((js2-mode typescript-mode web-mode
-                   c-mode c++-mode rust-mode haskell-mode) . lsp))
+                   c-mode c++-mode rust-mode haskell-mode scala-mode) . lsp))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -746,10 +746,8 @@
     (magit-fetch-all-prune))
   :hook
   (before-save-hook . magit-wip-commit-initial-backup)
-  (git-commit-setup . git-commit-turn-on-flyspell)
 
   :config
-  (setq flyspell-issue-message-flag nil)
   (setq magit-diff-refine-hunk 'all)
   (setq transient-default-level 7)
   (setq magit-commit-show-diff nil
@@ -1069,6 +1067,29 @@
   (racket-mode . (lambda () (racket-xp-mode 1))))
 
 (use-package docker)
+(use-package flyspell
+  :ensure nil
+  :hook
+  (prog-mode . flyspell-prog-mode)
+  (git-commit-setup . git-commit-turn-on-flyspell)
+  
+  :config
+  (setq flyspell-issue-message-flag nil))
+
+;; Enable sbt mode for executing sbt commands
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+   (setq sbt:program-options '("-Dsbt.supershell=false"))
+)
+
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
