@@ -804,7 +804,6 @@
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
   (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
-
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -822,15 +821,21 @@
   (org-mode . (lambda () (org-bullets-mode 1)))
   (org-archive . org-save-all-org-buffers)
   (org-after-refile-insert . org-save-all-org-buffers)
-  :bind (:map org-mode-map
-              ("M-p" . org-metaup)
-              ("M-n" . org-metadown)
-              ;; ("C-c a" . org-agenda)
-              ;; ("C-c c" . org-capture)
-              ;; ("C-c S" . org-save-all-org-buffers)
-              ("C-c l" . org-store-link)
-              ("M-," . org-mark-ring-goto)
-              ))
+  :bind
+  ("C-c a" . org-agenda)
+  (:map org-mode-map
+        ("M-p" . org-metaup)
+        ("M-n" . org-metadown)
+        ;; ("C-c c" . org-capture)
+        ;; ("C-c S" . org-save-all-org-buffers)
+        ("C-c l" . org-store-link)
+        ("M-," . org-mark-ring-goto))
+  (:map org-read-date-minibuffer-local-map
+        ("M-f" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-day 1)))))
+        ("M-b" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
+        ("M-p" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-week 1)))))
+        ("M-n" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))
+        ))
 
 (use-package org-roam
   :init
@@ -839,6 +844,7 @@
   (setq org-roam-directory (concat org-directory "/org-roam"))
   (setq org-id-locations-file (concat org-directory "/.orgids"))
   (setq org-roam-completion-everywhere t)
+  (setq org-roam-dailies-directory "journal/")
   (add-to-list 'display-buffer-alist
                '("\\*org-roam\\*"
                  (display-buffer-in-side-window)
@@ -849,12 +855,25 @@
                                        (no-delete-other-windows . t)))))
   :bind
   ;; creates a node if it does not exist, and inserts a link to the node at point:
-  ("C-c n i" . 'org-roam-node-insert)
-  ("C-c n f" . 'org-roam-node-find)
-  ("C-c n c" . 'org-roam-capture)
+  ("C-c n i" . org-roam-node-insert)
+  ("C-c n f" . org-roam-node-find)
+  ("C-c n c" . org-roam-capture)
   ("C-c n b" . org-roam-buffer-toggle)
+  ("C-c n d d" . org-roam-dailies-capture-today)
   :config
   (org-roam-db-autosync-mode))
+
+(use-package org-roam-ui
+  :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 
 (use-package shell-defuns :load-path "./site-lisp" :demand t :if (window-system))
 
