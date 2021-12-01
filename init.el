@@ -1,5 +1,6 @@
 (setq gc-cons-threshold 100000000)
 (setq debug-on-error nil)
+(setq package-enable-at-startup nil)
 
 (add-hook 'emacs-startup-hook
 	  (lambda ()
@@ -18,6 +19,20 @@
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")
         ("melpa-stable" . "https://stable.melpa.org/packages/")))
+
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+(straight-use-package 'el-patch)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -138,9 +153,10 @@
   :if (window-system)
   :demand t
   :config
-  (load-theme 'doom-ayu-mirage t)
+  ;; (load-theme 'doom-ayu-mirage t)
   ;; (load-theme 'doom-monokai-spectrum t)
   ;; (load-theme 'doom-old-hope t)
+  ;; (load-theme 'doom-homage-black)
   ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
   ;; (load-theme 'doom-Iosvkem t)
@@ -149,6 +165,7 @@
   ;; (load-theme 'modus-vivendi)
   ;; (load-theme 'doom-gruvbox)
   ;; (load-theme 'doom-ir-black)
+  (load-theme 'doom-sourcerer)
   (setq doom-themes-treemacs-theme "doom-colors"))
 
 ;; Put backup files neatly away
@@ -255,6 +272,7 @@
   (setq completion-styles '(substring orderless)
         orderless-skip-highlighting (lambda () selectrum-is-active)
         completion-category-defaults nil
+        completion-ignore-case t
         completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package hotfuzz
@@ -457,6 +475,7 @@
   (setq-default js-indent-level 2))
 
 (use-package dap-mode
+  :disabled t
   :custom
   (dap-auto-configure-features '())
   (dap-ui-variable-length 80)
@@ -499,6 +518,7 @@
         ("C-c d" . dap-hydra)))
 
 (use-package dap-ui
+  :disabled t
   :ensure nil
   :after (dap-mode)
   :config
@@ -792,11 +812,61 @@
           ,yasnippet-snippets-dir))
   (yas-reload-all))
 
-(use-package org-bullets :if (window-system))
+(use-package org-bullets
+  :disabled t
+   :if (window-system))
+
+(defvar tb/org-todo-bullet-faces
+    '(("TODO" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
+      ("ISSUE" . (:inherit base-todo-keyword-face :foreground "#FF8580"
+                            :family "github-octicons" :height 160))
+      ("BRANCH" . (:inherit base-todo-keyword-face :foreground "#D58422"
+                            :family "github-octicons"))
+      ("FORK" . (:inherit base-todo-keyword-face :foreground "#D58422"
+                            :family "github-octicons"))
+      ("MR" . (:inherit base-todo-keyword-face :foreground "#C7A941"
+                        :family "github-octicons"))
+      ("MERGED" . (:inherit base-todo-keyword-face :foreground "#75AD18"
+                            :family "github-octicons"))
+      ("GITHUB" . (:inherit base-todo-keyword-face :foreground "#BBBBBB"
+                            :family "github-octicons" :height 160))
+      ("DONE" . (:inherit base-todo-keyword-face :foreground "#75AD18"))
+      ("IDEA" . (:inherit base-todo-keyword-face :foreground "#85AAFF"))
+      ("WRITE" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
+      ("WRITING" . (:inherit base-todo-keyword-face :foreground "#C7A941"))
+          ))
+
+(use-package org-superstar
+  :straight '(org-superstar
+              :fork (:host github
+                           :repo "thibautbenjamin/org-superstar-mode"))
+  :after org
+  :hook (org-mode . org-superstar-mode)
+  :config
+  (set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
+  :custom
+  ;; set the leading bullet to be a space. For alignment purposes I use an em-quad space (U+2001)
+  ;; (org-superstar-headline-bullets-list '(" "))
+  (org-superstar-todo-bullet-alist '(("DONE" . ?✔)
+                                     ("TODO" . ?⌖)
+                                     ("ISSUE" . ?)
+                                     ("BRANCH" . ?)
+                                     ("FORK" . ?)
+                                     ("MR" . ?)
+                                     ("MERGED" . ?)
+                                     ("GITHUB" . ?A)
+                                     ("WRITING" . ?✍)
+                                     ("WRITE" . ?✍)
+                                     ))
+  (org-superstar-special-todo-items t)
+  (org-superstar-leading-bullet " ")
+  (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces))
+
 (use-package org
   :ensure nil
   :if (window-system)
   :init
+  (setq org-pretty-entities t)
   (setq org-loop-over-headlines-in-active-region t)
   (setq calendar-longitude 32.085300)
   (setq calendar-latitude 34.781769)
@@ -804,6 +874,16 @@
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
   (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
+  (setq org-capture-templates
+        `(("t" "entry" entry (file ,(concat org-directory "/beorg/inbox.org")) "* %?\n  %i")))
+  (setq org-agenda-files
+        `(,(concat org-directory "/riseup-google-calendar.org")
+          ,(concat org-directory "/private-google-calendar.org")
+          ,(concat org-directory "/org-roam/20211126120714-inbox.org")
+          ,(concat org-directory "/org-roam/20211126182152-tasks.org")
+          ,(concat org-directory "/org-roam/20211126120120-projects.org")
+          ,(concat org-directory "/org-roam/20211126112747-check_this_up.org")
+          ,(concat org-directory "/org-roam/20211126120630-sometime.org")))
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -818,24 +898,26 @@
   (setq org-babel-js-function-wrapper
         "console.log(require('util').inspect(function(){\n%s\n}(), { depth: 100 }))")
   :hook
-  (org-mode . (lambda () (org-bullets-mode 1)))
+  (org-mode . (lambda () (org-superstar-mode 1)))
   (org-archive . org-save-all-org-buffers)
   (org-after-refile-insert . org-save-all-org-buffers)
   :bind
   ("C-c a" . org-agenda)
+  ("C-c c" . org-capture)
   (:map org-mode-map
         ("M-p" . org-metaup)
         ("M-n" . org-metadown)
         ;; ("C-c c" . org-capture)
         ;; ("C-c S" . org-save-all-org-buffers)
         ("C-c l" . org-store-link)
-        ("M-," . org-mark-ring-goto))
+        ("M-," . org-mark-ring-goto)
+        ("M-F" . org-shiftright)
+        ("M-B" . org-shiftleft))
   (:map org-read-date-minibuffer-local-map
         ("M-f" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-day 1)))))
         ("M-b" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
         ("M-p" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-week 1)))))
-        ("M-n" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))
-        ))
+        ("M-n" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
 
 (use-package org-roam
   :init
@@ -862,6 +944,11 @@
   ("C-c n d d" . org-roam-dailies-capture-today)
   :config
   (org-roam-db-autosync-mode))
+
+(use-package org-roam-bibtex
+  :after org-roam
+  :config
+  (require 'org-ref)) 
 
 (use-package org-roam-ui
   :after org-roam
@@ -1088,8 +1175,10 @@
 (use-package docker)
 (use-package flyspell
   :ensure nil
+  :defer 10
   :hook
   (prog-mode . flyspell-prog-mode)
+  (org-mode . flyspell-mode)
   (git-commit-setup . git-commit-turn-on-flyspell)
   
   :config
@@ -1106,8 +1195,12 @@
    'self-insert-command
    minibuffer-local-completion-map)
    ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
-   (setq sbt:program-options '("-Dsbt.supershell=false"))
-)
+   (setq sbt:program-options '("-Dsbt.supershell=false")))
+
+(use-package darkroom
+  :commands darkroom-mode
+  :config
+  (setq darkroom-text-scale-increase 0))
 
 
 (put 'dired-find-alternate-file 'disabled nil)
