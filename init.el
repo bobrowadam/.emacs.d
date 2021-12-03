@@ -993,17 +993,18 @@
   (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
 (use-package ibuffer
+  :after perspective
   :ensure nil
   :bind ("C-x C-b" . ibuffer)
   :hook
-  (ibuffer-mode . ibuffer-vc-set-filter-groups-by-vc-root)
+  ;; (ibuffer-mode . ibuffer-vc-set-filter-groups-by-vc-root)
+  (ibuffer-mode . (lambda ()
+                    (persp-ibuffer-set-filter-groups)
+                    (unless (eq ibuffer-sorting-mode 'alphabetic)
+                      (ibuffer-do-sort-by-alphabetic))))
   :init
   (setq ibuffer-expert t)
   (setq ibuffer-show-empty-filter-groups nil)
-  (use-package ibuffer-vc
-    :commands (ibuffer-vc-set-filter-groups-by-vc-root)
-    :custom
-    (ibuffer-vc-skip-if-remote 'nil))
   :custom
   (ibuffer-formats
    '((mark modified read-only locked " "
@@ -1016,6 +1017,12 @@
      (mark " "
            (name 16 -1)
            " " filename))))
+
+(use-package ibuffer-vc
+  :disabled t
+  :commands (ibuffer-vc-set-filter-groups-by-vc-root)
+  :custom
+  (ibuffer-vc-skip-if-remote 'nil))
 
 (use-package web-mode
   :mode
@@ -1212,9 +1219,15 @@
 
 (use-package perspective
   :init
-  (persp-mode 1)
+  (persp-mode)
   :custom
-  (persp-initial-frame-name "Main"))
+  (persp-initial-frame-name "Main")
+  (persp-state-default-file (concat user-emacs-directory ".perspective-cache"))
+  :bind (("C-x b" . persp-switch-to-buffer*))
+  :config
+  (persp-state-load persp-state-default-file))
+
+(add-hook 'kill-emacs-hook #'persp-state-save)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
