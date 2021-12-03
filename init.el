@@ -1209,6 +1209,12 @@
   (setq darkroom-text-scale-increase 0))
 
 
+(use-package perspective
+  :init
+  (persp-mode 1)
+  :custom
+  (persp-initial-frame-name "Main"))
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
