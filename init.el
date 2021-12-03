@@ -11,6 +11,7 @@
                      gcs-done)
             ))
 
+(global-hl-line-mode 1)
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (unless (not (file-exists-p custom-file))
   (load custom-file))
