@@ -149,10 +149,13 @@
   ;; (setq doom-modeline-env-rust-executable "rustc")
   (doom-modeline-mode 1))
 
+(use-package immaterial-theme)
+
 (use-package doom-themes
   :if (window-system)
   :demand t
   :config
+  (load-theme 'bob-doom-homage-black t)
   ;; (load-theme 'doom-ayu-mirage t)
   ;; (load-theme 'doom-monokai-spectrum t)
   ;; (load-theme 'doom-old-hope t)
@@ -165,7 +168,7 @@
   ;; (load-theme 'modus-vivendi)
   ;; (load-theme 'doom-gruvbox)
   ;; (load-theme 'doom-ir-black)
-  (load-theme 'doom-sourcerer)
+  ;; (load-theme 'doom-sourcerer)
   (setq doom-themes-treemacs-theme "doom-colors"))
 
 ;; Put backup files neatly away
@@ -817,9 +820,10 @@
    :if (window-system))
 
 (defvar tb/org-todo-bullet-faces
-    '(("TODO" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
+    '(("NEXT" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
+      ("TODO" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
       ("ISSUE" . (:inherit base-todo-keyword-face :foreground "#FF8580"
-                            :family "github-octicons" :height 160))
+                           :family "github-octicons" :height 160))
       ("BRANCH" . (:inherit base-todo-keyword-face :foreground "#D58422"
                             :family "github-octicons"))
       ("FORK" . (:inherit base-todo-keyword-face :foreground "#D58422"
@@ -863,6 +867,7 @@
   (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces))
 
 (use-package org
+  :demand t
   :ensure nil
   :if (window-system)
   :init
