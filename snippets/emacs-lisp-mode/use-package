@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# contributor: Adam bobrow
+# name: use-package
+# key: up
+# --
+(use-package ${1:package-name}
+$0)
