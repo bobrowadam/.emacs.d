@@ -918,7 +918,8 @@
         ("C-c l" . org-store-link)
         ("M-," . org-mark-ring-goto)
         ("M-F" . org-shiftright)
-        ("M-B" . org-shiftleft))
+        ("M-B" . org-shiftleft)
+        ("C-c n r" . org-roam-refile))
   (:map org-read-date-minibuffer-local-map
         ("M-f" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-day 1)))))
         ("M-b" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
