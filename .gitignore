@@ -47,3 +47,4 @@ transient/*
 /.extension/
 /.lsp-eslint-choices
 /org-roam.db
+/straight/
