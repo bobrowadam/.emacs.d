@@ -48,3 +48,4 @@ transient/*
 /.lsp-eslint-choices
 /org-roam.db
 /straight/
+/racket-mode/
