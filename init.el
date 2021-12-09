@@ -282,6 +282,8 @@
 (use-package hotfuzz
   :after selectrum
   :ensure t
+  :custom
+  (completion-ignore-case t)
   :init
   (hotfuzz-selectrum-mode))
 
@@ -822,7 +824,7 @@
 
 (defvar tb/org-todo-bullet-faces
     '(("NEXT" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
-      ("TODO" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
+      ("TODO" . (:inherit base-todo-keyword-face :foreground "#CDCD85853F3F"))
       ("ISSUE" . (:inherit base-todo-keyword-face :foreground "#FF8580"
                            :family "github-octicons" :height 160))
       ("BRANCH" . (:inherit base-todo-keyword-face :foreground "#D58422"
@@ -853,6 +855,7 @@
   ;; set the leading bullet to be a space. For alignment purposes I use an em-quad space (U+2001)
   ;; (org-superstar-headline-bullets-list '(" "))
   (org-superstar-todo-bullet-alist '(("DONE" . ?✔)
+                                     ("NEXT" . ?☞)
                                      ("TODO" . ?⌖)
                                      ("ISSUE" . ?)
                                      ("BRANCH" . ?)
@@ -879,6 +882,12 @@
   (setq org-tree-slide-header nil)
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
+  (setq org-stuck-projects
+        '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER")
+          ""))
+  ;; +LEVEL=3+boss-TODO​="DONE"
+  ;; (setq org-tags-exclude-from-inheritance '("PROJECT"))
+  (setq org-tags-exclude-from-inheritance nil)
   (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
   (setq org-capture-templates
         `(("t" "entry" entry (file ,(concat org-directory "/beorg/inbox.org")) "* %?\n  %i")))
@@ -889,7 +898,8 @@
           ,(concat org-directory "/org-roam/20211126182152-tasks.org")
           ,(concat org-directory "/org-roam/20211126120120-projects.org")
           ,(concat org-directory "/org-roam/20211126112747-check_this_up.org")
-          ,(concat org-directory "/org-roam/20211126120630-sometime.org")))
+          ,(concat org-directory "/org-roam/20211126120630-sometime.org")
+          ,(concat org-directory "/org-roam/20211208225633-reminders.org")))
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -1180,6 +1190,7 @@
   (racket-mode . (lambda () (racket-xp-mode 1))))
 
 (use-package docker)
+(use-package docker-tramp)
 (use-package flyspell
   :ensure nil
   :defer 10

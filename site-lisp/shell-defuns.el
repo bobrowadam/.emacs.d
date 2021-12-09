@@ -36,6 +36,7 @@ Any other prefis will be used as the suffix itself."
   (-let [suffix (cond ((eq arg 0) (read-string "enter custom suffix: "))
                       (arg (number-to-string arg))
                       (t ""))]
+    (delete-other-windows)
     (split-window-sensibly)
     (other-window 1)
     (if (projectile-project-p)
@@ -58,7 +59,7 @@ Any other prefis will be used as the suffix itself."
                                 (equal (with-current-buffer b major-mode) 'shell-mode)
                                 (equal (with-current-buffer b major-mode) 'js-comint-mode)
                                 ))
-                (mapcar (function buffer-name) (buffer-list))))))
+                (flatten-tree (mapcar (λ (buffer-name %1)) (persp-get-buffers)))))))
             (shell-buffer (completing-read "Shell: " shell-buffers)))
       (progn
         (setq bob/last-shell-buffer shell-buffer)
