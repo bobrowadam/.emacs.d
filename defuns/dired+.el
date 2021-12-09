@@ -8188,7 +8188,6 @@ Return buffer position on success, else nil."
           ;; Escape whitespace.  Added per Emacs 24 addition in `unless' code below:
           (when (and (dired-switches-escape-p dired-actual-switches)
                      (diredp-string-match-p "[ \t\n]" search-string))
-            ;; FIXME: fix this for all possible file names (embedded control chars etc).
             ;;        Need to escape everything that `ls -b' escapes.
             (setq search-string  (replace-regexp-in-string " " "\\ "  search-string nil t)
                   search-string  (replace-regexp-in-string "\t" "\\t" search-string nil t)
@@ -8220,7 +8219,6 @@ Return buffer position on success, else nil."
               ;; Escape whitespace.  Sexp added by Emacs 24:
               (when (and (dired-switches-escape-p dired-actual-switches)
                          (diredp-string-match-p "[ \t\n]" search-string))
-                ;; FIXME: fix this for all possible file names (embedded control chars etc).
                 ;;        Need to escape everything that `ls -b' escapes.
                 (setq search-string  (replace-regexp-in-string " " "\\ " search-string nil t)
                       search-string  (replace-regexp-in-string "\t" "\\t" search-string nil t)

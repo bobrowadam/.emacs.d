@@ -23,11 +23,6 @@
 ;;; Commentary:
 
 ;;; Code:
-;; TODO: apply some environment variables like REMOTEHOST, SSH_CONNECTION
-;; TODO: implement command colorize whether the command is exist or not
-;;       (memo use eshell-self-insert-command)
-;; TODO: Apply pwd
-
 (require 'em-prompt)
 (require 'vc-git)
 (require 'magit)
@@ -53,7 +48,6 @@
 (defvar eshell-better-prompt-ordinary-prompt-regex
   (rx (and (1+ (not (in ">#$\t\n")))
            (0+ space) (in ">#$") space)))
-;; TODO: colorize specific internal shell of eshell.
 ;; Example:
 ;;    sudo -i   : root@machine:~#
 ;;    adb shell : shell@mako:/ $
