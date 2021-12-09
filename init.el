@@ -202,9 +202,9 @@
          ("C-x r b" . consult-bookmark)
          ("C-c k" . consult-kmacro)
          ("C-x M-:" . consult-complex-command) 
-         ("C-x b" . consult-buffer) 
-         ("C-x 4 b" . consult-buffer-other-window) 
-         ("C-x 5 b" . consult-buffer-other-frame) 
+         ;; ("C-x b" . consult-buffer) 
+         ;; ("C-x 4 b" . consult-buffer-other-window) 
+         ;; ("C-x 5 b" . consult-buffer-other-frame) 
          ("M-#" . consult-register-load)
          ("M-'" . consult-register-store) 
          ("C-M-#" . consult-register)
@@ -646,6 +646,19 @@
             (Template . ,(all-the-icons-material "format_align_left" :height 0.8 :v-adjust -0.15)))
           company-box-icons-alist 'company-box-icons-all-the-icons)))
 
+
+
+(use-package perspective
+  :demand t
+  :custom
+  (persp-initial-frame-name "Main")
+  :bind (("C-x b" . persp-switch-to-buffer*)
+         ("C-x k" . kill-this-buffer))
+  :config
+  ;; Running `persp-mode' multiple times resets the perspective list...
+  (unless (equal persp-mode t)
+    (persp-mode)))
+
 (use-package projectile
   :demand t
   :config
@@ -1005,15 +1018,13 @@
 (use-package ibuffer
   :ensure nil
   :bind ("C-x C-b" . ibuffer)
-  :hook
-  (ibuffer-mode . ibuffer-vc-set-filter-groups-by-vc-root)
   :init
   (setq ibuffer-expert t)
-  (setq ibuffer-show-empty-filter-groups nil)
-  (use-package ibuffer-vc
-    :commands (ibuffer-vc-set-filter-groups-by-vc-root)
-    :custom
-    (ibuffer-vc-skip-if-remote 'nil))
+  (setq ibuffer-show-empty-filter-groups t)
+  ;; (use-package ibuffer-vc
+  ;;   :commands (ibuffer-vc-set-filter-groups-by-vc-root)
+  ;;   :custom
+  ;;   (ibuffer-vc-skip-if-remote 'nil))
   :custom
   (ibuffer-formats
    '((mark modified read-only locked " "
@@ -1025,7 +1036,12 @@
            " " filename-and-process)
      (mark " "
            (name 16 -1)
-           " " filename))))
+           " " filename)))
+  :hook
+  (ibuffer . (lambda ()
+               (persp-ibuffer-set-filter-groups)
+               (unless (eq ibuffer-sorting-mode 'alphabetic)
+                 (ibuffer-do-sort-by-alphabetic)))))
 
 (use-package web-mode
   :mode
