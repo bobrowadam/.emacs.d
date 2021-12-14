@@ -55,6 +55,8 @@
 
 (use-package exec-path-from-shell
   :if (window-system)
+  :init
+  (setq exec-path-from-shell-arguments nil)
   :demand
   :config
   (add-to-list 'exec-path-from-shell-variables "BOB_DIR")
@@ -84,9 +86,22 @@
       dired-recursive-copies 'always
       )
 
-(setq initial-scratch-message ";; Oh it's you again :|")
-(setq scroll-conservatively 101
-      scroll-margin 2)
+;; (setq initial-major-mode 'org-mode)
+(setq initial-scratch-message ";; Oh it's you again")
+
+;; Vertical Scroll
+(setq scroll-step 1)
+(setq scroll-margin 1)
+(setq scroll-conservatively 101)
+(setq scroll-up-aggressively 0.01)
+(setq scroll-down-aggressively 0.01)
+(setq auto-window-vscroll nil)
+(setq fast-but-imprecise-scrolling nil)
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
+(setq mouse-wheel-progressive-speed nil)
+;; Horizontal Scroll
+(setq hscroll-step 1)
+(setq hscroll-margin 1)
 (setq display-time-day-and-date t)
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
@@ -137,18 +152,19 @@
 
 (require 'cl-lib)
 (use-package doom-modeline
-  :if (window-system)
   :demand t
+  :custom
+  ;; Don't compact font caches during GC. Windows Laggy Issue
+  (inhibit-compacting-font-caches t)
+  (doom-modeline-minor-modes nil)
+  (doom-modeline-icon t)
+  (doom-modeline-major-mode-color-icon t)
+  (doom-modeline-height 15)
+  (doom-modeline-lsp t)
+  (find-file-visit-truename t)
+  (doom-modeline-github t)
   :config
-  (setq doom-modeline-height 20)
-  (setq doom-modeline-bar-width 2)
-  (setq doom-modeline-minor-modes nil)
-  (setq doom-modeline-lsp t)
-  (setq doom-modeline-github t)
-  (setq find-file-visit-truename t)
-  ;; (setq doom-modeline-env-enable-rust t)
-  ;; (setq doom-modeline-env-rust-executable "rustc")
-  (doom-modeline-mode 1))
+  (doom-modeline-mode))
 
 (use-package immaterial-theme)
 
@@ -156,7 +172,7 @@
   :if (window-system)
   :demand t
   :config
-  (load-theme 'bob-doom-homage-black t)
+  ;; (load-theme 'bob-doom-homage-black t)
   ;; (load-theme 'doom-ayu-mirage t)
   ;; (load-theme 'doom-monokai-spectrum t)
   ;; (load-theme 'doom-old-hope t)
@@ -165,7 +181,7 @@
   ;; (load-theme 'doom-acario-dark t)
   ;; (load-theme 'doom-Iosvkem t)
   ;; (load-theme 'doom-moonlight t)
-  ;; (load-theme 'bobs-badger)
+  (load-theme 'bobs-badger t)
   ;; (load-theme 'modus-vivendi)
   ;; (load-theme 'doom-gruvbox)
   ;; (load-theme 'doom-ir-black)
@@ -197,14 +213,16 @@
 
 ;; Completions
 (use-package consult
+  :demand t
+  :after projectile
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c m" . consult-mode-command)
          ("C-x r b" . consult-bookmark)
          ("C-c k" . consult-kmacro)
          ("C-x M-:" . consult-complex-command) 
-         ;; ("C-x b" . consult-buffer) 
-         ;; ("C-x 4 b" . consult-buffer-other-window) 
-         ;; ("C-x 5 b" . consult-buffer-other-frame) 
+         ("C-x b" . consult-buffer) 
+         ("C-x 4 b" . consult-buffer-other-window) 
+         ("C-x 5 b" . consult-buffer-other-frame) 
          ("M-#" . consult-register-load)
          ("M-'" . consult-register-store) 
          ("C-M-#" . consult-register)
@@ -541,8 +559,6 @@
 
 (use-package lsp-mode
   :commands lsp
-  :init
-  (setq lsp-disabled-clients '((ts-mode . (eslint)) (js-mode . (eslint))))
   :custom
   (lsp-auto-guess-root nil)
   (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
@@ -575,7 +591,8 @@
         ("M-n" . forward-paragraph)
         ("M-p" . backward-paragraph))
   :custom
-  (lsp-ui-doc-header t)
+  (lsp-ui-sideline-show-hover nil)
+  (lsp-ui-doc-position 'bottom)
   (lsp-ui-doc-include-signature t)
   (lsp-ui-doc-border (face-foreground 'default))
   (lsp-ui-sideline-enable nil)
@@ -646,25 +663,33 @@
             (Template . ,(all-the-icons-material "format_align_left" :height 0.8 :v-adjust -0.15)))
           company-box-icons-alist 'company-box-icons-all-the-icons)))
 
-
-
 (use-package perspective
   :demand t
+  :after consult
+  :init
+  (defvar consult--source-perspective
+       (list :name     "Perspective"
+             :narrow   ?s
+             :category 'buffer
+             :state    #'consult--buffer-state
+             :default  t
+             :items    #'persp-get-buffer-names))
+  (push consult--source-perspective consult-buffer-sources)
   :custom
   (persp-initial-frame-name "Main")
-  :bind (("C-x b" . persp-switch-to-buffer*)
-         ("C-x k" . kill-this-buffer))
+  :bind ("C-x k" . kill-this-buffer)
   :config
   ;; Running `persp-mode' multiple times resets the perspective list...
   (unless (equal persp-mode t)
     (persp-mode)))
 
 (use-package projectile
-  :demand t
+  :init
+  (projectile-mode 1)
   :config
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
   (setq projectile-switch-project-action #'projectile-dired)
-  (projectile-global-mode 1)
+  ;; (projectile-global-mode 1)
   (unless projectile-known-projects
     (-let ((main-projects-directory (read-directory-name "Please enter main projects directory")))
       (projectile-discover-projects-in-directory main-projects-directory)))
@@ -761,7 +786,8 @@
   (setq company-candidates-cache t)
   (global-company-mode 1))
 
-(use-package inf-mongo)
+(use-package inf-mongo
+   :after org)
 
 (use-package whole-line-or-region
   :disabled t
@@ -799,6 +825,9 @@
   (transient-append-suffix 'magit-file-dispatch
     "p"
     '("P" "Push" magit-push))
+  (transient-append-suffix 'magit-file-dispatch
+    "P"
+    '("F" "Pull" magit-pull))
   (magit-wip-before-change-mode)
   (magit-wip-after-apply-mode)
   (magit-wip-after-save-mode)
@@ -885,6 +914,7 @@
 
 (use-package org
   :demand t
+  :defer 5
   :ensure nil
   :if (window-system)
   :init
@@ -923,9 +953,10 @@
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
   (require 'ob-js)
+  (setenv "NODE_PATH" "/Users/bob/.nvm/versions/node/v12.14.0/lib/node_modules")
   ;; Fix bug in ob-js: https://emacs.stackexchange.com/questions/55690/org-babel-javascript-error
-  (setq org-babel-js-function-wrapper
-        "console.log(require('util').inspect(function(){\n%s\n}(), { depth: 100 }))")
+  ;; (setq org-babel-js-function-wrapper
+  ;;       "console.log(require('util').inspect(function(){\n%s\n}(), { depth: 100 }))")
   :hook
   (org-mode . (lambda () (org-superstar-mode 1)))
   (org-archive . org-save-all-org-buffers)
@@ -1055,7 +1086,7 @@
   :hook
   (web-mode . lsp-web-install-save-hooks)
   (web-mode . add-node-modules-path)
-  ;; (web-mode . eldoc-mode)
+  (web-mode . eldoc-mode)
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
@@ -1155,7 +1186,7 @@
   :bind (:map origami-mode-map
               ("C-=" . origami-toggle-node)))
 
-(use-package ob-mongo :demand :load-path "./ob-mongo" :after org)
+(use-package ob-mongo  :demand t :load-path "./ob-mongo" :after org)
 (use-package csv-mode)
 (use-package ace-window
   :bind ( "C-x o" . ace-window)
@@ -1209,7 +1240,7 @@
 (use-package docker-tramp)
 (use-package flyspell
   :ensure nil
-  :defer 10
+  :defer 5
   :hook
   (prog-mode . flyspell-prog-mode)
   (org-mode . flyspell-mode)
@@ -1235,6 +1266,11 @@
   :commands darkroom-mode
   :config
   (setq darkroom-text-scale-increase 0))
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+(use-package zoom-window :bind ("C-x C-z" . zoom-window-zoom))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
