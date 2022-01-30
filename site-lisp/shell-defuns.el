@@ -51,7 +51,7 @@ Any other prefis will be used as the suffix itself."
   "Jump to a shell buffer."
   (interactive)
   (if-let* ((shell-buffers
-             (bob/drop-current-shell-buffer
+             (bob/drop-buffer
               (set-last-shell-buffer-as-first
                (seq-filter
                 (lambda (b) (or (equal (with-current-buffer b major-mode) 'vterm-mode)
@@ -66,7 +66,23 @@ Any other prefis will be used as the suffix itself."
         (switch-to-buffer shell-buffer))
     (message "No Shell bufers exists")))
 
-(defun bob/drop-current-shell-buffer (buffers)
+(defun bob/magit-buffers ()
+  "Jump to a magit buffer."
+  (interactive)
+  (if-let* ((magit-buffers
+             (bob/drop-buffer
+              (set-last-magit-buffer-as-first
+               (seq-filter
+                (lambda (b) (or (equal (with-current-buffer b major-mode) 'magit-status-mode)))
+                (flatten-tree (mapcar (λ (buffer-name %1)) (persp-get-buffers)))))))
+            (magit-buffer (completing-read "Magit: " magit-buffers)))
+      (progn
+        (setq bob/last-magit-buffer magit-buffer)
+        (switch-to-buffer magit-buffer))
+    (message "No Magit buffers exists")))
+
+
+(defun bob/drop-buffer (buffers)
   (seq-remove (lambda (buf) (cond
                              ((equal buf (buffer-name)) t)))
               buffers))
@@ -75,6 +91,12 @@ Any other prefis will be used as the suffix itself."
   (seq-sort (lambda (a b)
               (equal a bob/last-shell-buffer))
             buffers))
+
+(defun set-last-magit-buffer-as-first (buffers)
+  (seq-sort (lambda (a b)
+              (equal a bob/last-shell-buffer))
+            buffers))
+
 
 (provide 'shell-defuns)
 ;;; shell-defuns.el ends here

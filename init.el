@@ -138,6 +138,8 @@
 (define-key key-translation-map [?\C-h] [?\C-?])
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
 
+(global-unset-key (kbd "s-n"))
+
 ;; Deal with editing large files:
 (global-so-long-mode 1)
 
@@ -167,7 +169,6 @@
   (doom-modeline-mode))
 
 (use-package immaterial-theme)
-
 (use-package doom-themes
   :if (window-system)
   :demand t
@@ -420,6 +421,9 @@
 (defun add-d-to-ediff-mode-map () (define-key ediff-mode-map "d" 'ediff-copy-both-to-C))
 (add-hook 'ediff-keymap-setup-hook 'add-d-to-ediff-mode-map)
 
+(defun bob/kill-this-buffer ()
+  (interactive)
+  (kill-buffer (current-buffer)))
 (use-package basic-keybindigs
   :ensure nil
   :bind
@@ -430,7 +434,7 @@
   ("C-x -" . my/gloden-ratio)
   ("C-x f" . recentf-open-files)
   ("M-o" . other-frame)
-  ("C-x k" . kill-this-buffer)
+  ("C-x k" . bob/kill-this-buffer)
   ("M-SPC" . cycle-spacing)
   ("<s-return>" . toggle-frame-fullscreen))
 
@@ -459,8 +463,14 @@
   :config (add-hook 'flycheck-mode-hook #'flycheck-posframe-mode))
 
 (use-package rust-mode)
+
 (use-package cargo-mode)
 
+(defun npm-run-build ()
+  "Build typescript project on watch mode"
+  (interactive)
+  (when (and (projectile-project-name) (eq major-mode 'typescript-mode))
+   (async-shell-command "npm run build -- -w" (format "%s: TS-COMPILE" (projectile-project-name)))))
 (use-package typescript-mode
   :init
   (defun lsp-ts-install-save-hooks ()
@@ -469,6 +479,7 @@
   (typescript-mode . lsp-ts-install-save-hooks)
   (typescript-mode . add-node-modules-path)
   (typescript-mode . origami-mode)
+  :bind (:map typescript-mode-map ("C-c C-b" . npm-run-build))
   :config
   (setq typescript-indent-level 2))
 
@@ -480,6 +491,7 @@
   :init
   (defun lsp-js-install-save-hooks ()
     (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
+  :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
   (js2-mode . add-node-modules-path)
@@ -537,6 +549,18 @@
          :request "launch"
          :runtimeArgs ["./node_modules/env-setter/src/ssm-entrypoint-local.js"]
          :sourceMaps t))
+  (require 'dap-lldb)
+  (require 'dap-gdb-lldb)
+  ;; installs .extension/vscode
+  (dap-gdb-lldb-setup)
+  (dap-register-debug-template
+   "Rust::LLDB Run Configuration"
+   (list :type "lldb"
+         :request "launch"
+         :name "LLDB::Run"
+	 :gdbpath "rust-lldb"
+         :target nil
+         :cwd nil))
   :bind
   (:map dap-mode-map
         ("C-c d" . dap-hydra)))
@@ -556,16 +580,22 @@
           (,dap-ui--repl-buffer . ((side . bottom) (slot . 1) (window-height . 0.45))))))
 
 (use-package nodejs-repl)
+(use-package nvm)
 
 (use-package lsp-mode
   :commands lsp
   :custom
-  (lsp-auto-guess-root nil)
   (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
   (lsp-file-watch-threshold 2000)
+  (lsp-eslint-auto-fix-on-save t)
   (read-process-output-max (* 1024 1024))
-  (lsp-eldoc-hook nil)
+  ;; (lsp-eldoc-hook nil)
+  (lsp-ui-doc-show-with-cursor t)
   (company-lsp-cache-candidates t)
+  (lsp-eslint-server-command `("/Users/bob/.nvm/versions/node/v16.13.1/bin/node"
+                              ,(f-join lsp-eslint-unzipped-path "extension/server/out/eslintServer.js")
+                              "--stdio"))
+  ;; (lsp-eslint-node "/Users/bob/.nvm/versions/node/v16.13.1/bin/node")
   :bind
   (:map lsp-mode-map
         ("C-c C-f" . lsp-format-buffer)
@@ -668,15 +698,24 @@
   :after consult
   :init
   (defvar consult--source-perspective
-       (list :name     "Perspective"
-             :narrow   ?s
-             :category 'buffer
-             :state    #'consult--buffer-state
-             :default  t
-             :items    #'persp-get-buffer-names))
+    `(:name     "Perspective"
+                :narrow   (?s . "Perspective")
+                :hidden   t
+                :category buffer
+                :face     consult-buffer
+                :history  buffer-name-history
+                :state    ,#'consult--buffer-state
+                :enabled  ,(lambda () consult-project-root-function)
+                :items
+                ,(lambda ()
+                    (consult--buffer-query :sort 'visibility
+                                           :include (persp-get-buffer-names)
+                                           :as #'buffer-name)))
+    "Project buffer candidate source for `consult-buffer'.")
   (push consult--source-perspective consult-buffer-sources)
   :custom
   (persp-initial-frame-name "Main")
+  (persp-state-default-file (concat user-emacs-directory ".persp-state"))
   :bind ("C-x k" . kill-this-buffer)
   :config
   ;; Running `persp-mode' multiple times resets the perspective list...
@@ -757,10 +796,11 @@
 (use-package expand-region
   :bind ("M-#" . er/expand-region))
 
-(use-package ripgrep
-  :init (setq wgrep-auto-save-buffer t)
+(use-package rg
   :bind
-  ("C-c M-r" . ripgrep-regexp))
+  ("C-c M-r" . rg))
+
+(use-package wgrep)
 
 (use-package deadgrep
   :bind ("C-c C-s C-d" . deadgrep))
@@ -811,7 +851,7 @@
     (magit-fetch-all-prune))
   :hook
   (before-save-hook . magit-wip-commit-initial-backup)
-
+  :bind  ("C-c s g" . bob/magit-buffers)
   :config
   (setq magit-diff-refine-hunk 'all)
   (setq transient-default-level 7)
@@ -835,8 +875,7 @@
 
 (use-package forge
   :init (setq forge-bug-reference-hooks nil))
-(use-package magit-todos
-  :hook (magit-mode . magit-todos-mode))
+
 (use-package github-review
   :init (setq github-review-fetch-top-level-and-review-comments t))
 
@@ -854,6 +893,7 @@
   (web-mode . yas-minor-mode-on)
   (text-mode . yas-minor-mode-on)
   (haskell-mode . yas-minor-mode-on)
+  (rust-mode . yas-minor-mode-on)
   :config
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
@@ -918,6 +958,7 @@
   :ensure nil
   :if (window-system)
   :init
+  (setq org-export-with-toc nil)
   (setq org-pretty-entities t)
   (setq org-loop-over-headlines-in-active-region t)
   (setq calendar-longitude 32.085300)
@@ -933,16 +974,18 @@
   (setq org-tags-exclude-from-inheritance nil)
   (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
   (setq org-capture-templates
-        `(("t" "entry" entry (file ,(concat org-directory "/beorg/inbox.org")) "* %?\n  %i")))
+        `(("t" "entry" entry (file ,(concat org-directory "/org-roam/20211126120714-inbox.org")) "* %?\n  %i")))
   (setq org-agenda-files
-        `(,(concat org-directory "/riseup-google-calendar.org")
-          ,(concat org-directory "/private-google-calendar.org")
+        `(
+          ;; ,(concat org-directory "/riseup-google-calendar.org")
+          ;; ,(concat org-directory "/private-google-calendar.org")
           ,(concat org-directory "/org-roam/20211126120714-inbox.org")
           ,(concat org-directory "/org-roam/20211126182152-tasks.org")
           ,(concat org-directory "/org-roam/20211126120120-projects.org")
           ,(concat org-directory "/org-roam/20211126112747-check_this_up.org")
           ,(concat org-directory "/org-roam/20211126120630-sometime.org")
           ,(concat org-directory "/org-roam/20211208225633-reminders.org")))
+  (setq org-deadline-warning-days 3)
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -953,7 +996,8 @@
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
   (require 'ob-js)
-  (setenv "NODE_PATH" "/Users/bob/.nvm/versions/node/v12.14.0/lib/node_modules")
+  (setenv "NODE_PATH" "/Users/bob/.nvm/versions/node/v16.13.1/bin/node")
+  ;; (setenv "NODE_PATH" "/Users/bob/.nvm/versions/node/v12.14.0/lib/node_modules")
   ;; Fix bug in ob-js: https://emacs.stackexchange.com/questions/55690/org-babel-javascript-error
   ;; (setq org-babel-js-function-wrapper
   ;;       "console.log(require('util').inspect(function(){\n%s\n}(), { depth: 100 }))")
@@ -1080,9 +1124,9 @@
   ("\\.cssl\\'" . web-mode)
   ("\\.jsx\\'" . web-mode)
   ("\\.vue\\'" . web-mode)
-  :init
-  (defun lsp-web-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
+  ;; :init
+  ;; (defun lsp-web-install-save-hooks ()
+  ;;   (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
   :hook
   (web-mode . lsp-web-install-save-hooks)
   (web-mode . add-node-modules-path)
@@ -1136,11 +1180,11 @@
                "\\bastion\\'")
   (add-to-list 'tramp-default-proxies-alist
                '("bob$" nil "/sshx:bastion:"))
-  (setq remote-file-name-inhibit-cache 3600
-        tramp-completion-reread-directory-timeout nil
-        vc-ignore-dir-regexp (format "%s\\|%s"
-                                     vc-ignore-dir-regexp
-                                     tramp-file-name-regexp))
+  ;; (setq remote-file-name-inhibit-cache 3600
+  ;;       tramp-completion-reread-directory-timeout nil
+  ;;       vc-ignore-dir-regexp (format "%s\\|%s"
+  ;;                                    vc-ignore-dir-regexp
+  ;;                                    tramp-file-name-regexp))
   (setq tramp-histfile-override t)
   ;; Save backup files locally
   ;; from https://stackoverflow.com/a/47021266
@@ -1271,6 +1315,17 @@
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package zoom-window :bind ("C-x C-z" . zoom-window-zoom))
+(use-package ox-gfm :after org)
+(use-package emojify)
+
+(use-package dirvish
+  :disabled t
+  :init
+  (dirvish-override-dired-mode))
+
+(use-package tree-sitter :disabled t)
+(use-package tree-sitter-langs :disabled t)
+(use-package pdf-tools)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
