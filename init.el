@@ -1006,8 +1006,6 @@
   (org-archive . org-save-all-org-buffers)
   (org-after-refile-insert . org-save-all-org-buffers)
   :bind
-  ("C-c a" . org-agenda)
-  ("C-c c" . org-capture)
   (:map org-mode-map
         ("M-p" . org-metaup)
         ("M-n" . org-metadown)
@@ -1023,6 +1021,16 @@
         ("M-b" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
         ("M-p" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-week 1)))))
         ("M-n" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
+
+(use-package org-agenda
+  :after org
+  :bind
+  ("C-c a" . org-agenda)
+  ("C-c c" . org-capture)
+  (:map org-agenda-mode-map
+        ("M-F" . org-agenda-do-date-later)
+        ("M-B" . org-agenda-do-date-earlier))
+  :ensure nil)
 
 (use-package org-roam
   :init
