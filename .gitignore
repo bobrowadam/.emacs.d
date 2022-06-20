@@ -49,3 +49,6 @@ transient/*
 /org-roam.db
 /straight/
 /racket-mode/
+/ob-mongo/
+/forge-database-v7-20220620-2206.sql
+/info-docs/sly.info

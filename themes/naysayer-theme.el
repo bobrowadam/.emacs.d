@@ -62,6 +62,18 @@
  '(js2-error ((t (:foreground "#ff0000"))))
  '(js2-warning ((t (:foreground "#ffaa00"))))
  '(highlight-numbers-number ((t (:foreground "#7ad0c6"))))
- '(default ((t (:foreground "#d1b897" :background "#062329" :weight normal)))))
+ '(default ((t (:foreground "#d1b897" :background "#062329" :weight normal))))
+ '(doom-modeline-info ((t (:foreground "dark blue" :background "#062329" :weight normal)))))
 
+(custom-theme-set-faces
+ 'naysayer
+ '(company-preview ((t (:foreground "#c5c8c6" ::underline t ))))
+ `(company-preview-common ((t (:inherit company-preview))))
+ `(company-scrollbar-bg ((t (:background "#1d1f21" :foreground "#c5c8c6"))))
+ `(company-scrollbar-fg ((t (:background "#c5c8c6" :foreground "#1d1f21"))))
+ `(company-tooltip ((t (:background "#1d1f21" :foreground "#c5c8c6" ))))
+ `(company-tooltip-common ((((type x)) (:inherit company-tooltip :weight bold)) (t (:inherit company-tooltip))))
+ `(company-tooltip-common-selection ((((type x)) (:inherit company-tooltip-selection :weight bold)) (t (:inherit company-tooltip-selection))))
+ `(company-tooltip-selection ((t (:background "#4F4F4F" :foreground "#1d1f21" ))))
+ `(company-tooltip-annotation ((t (:foreground "gray31" :weight bold)))))
 (provide-theme 'naysayer)

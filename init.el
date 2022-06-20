@@ -8,11 +8,11 @@
                      (format "%.2f seconds"
                              (float-time
                               (time-subtract after-init-time before-init-time)))
-                     gcs-done)
-            ))
+                     gcs-done)))
 
-(global-hl-line-mode 1)
+(global-hl-line-mode nil)
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(setq Info-additional-directory-list `(,(expand-file-name "info-docs" user-emacs-directory)))
 (unless (not (file-exists-p custom-file))
   (load custom-file))
 
@@ -90,8 +90,8 @@
 (setq initial-scratch-message ";; Oh it's you again")
 
 ;; Vertical Scroll
-(setq scroll-step 1)
-(setq scroll-margin 1)
+;; (setq scroll-step 1)
+;; (setq scroll-margin 1)
 (setq scroll-conservatively 101)
 (setq scroll-up-aggressively 0.01)
 (setq scroll-down-aggressively 0.01)
@@ -170,24 +170,43 @@
 
 (use-package immaterial-theme)
 (use-package doom-themes
+  :disabled t
   :if (window-system)
   :demand t
   :config
   ;; (load-theme 'bob-doom-homage-black t)
   ;; (load-theme 'doom-ayu-mirage t)
   ;; (load-theme 'doom-monokai-spectrum t)
-  ;; (load-theme 'doom-old-hope t)
+  (load-theme 'doom-old-hope t)
   ;; (load-theme 'doom-homage-black)
   ;; (load-theme 'doom-oceanic-next t)
   ;; (load-theme 'doom-acario-dark t)
   ;; (load-theme 'doom-Iosvkem t)
   ;; (load-theme 'doom-moonlight t)
-  (load-theme 'bobs-badger t)
+  ;; (load-theme 'bobs-badger t)
+  ;; (load-theme 'naysayer)
   ;; (load-theme 'modus-vivendi)
   ;; (load-theme 'doom-gruvbox)
   ;; (load-theme 'doom-ir-black)
   ;; (load-theme 'doom-sourcerer)
   (setq doom-themes-treemacs-theme "doom-colors"))
+
+(use-package modus-themes
+  :demand t
+  :custom
+  (modus-themes-mode-line '(borderless padded accented))
+  (modus-themes-region '( bg-only))
+  (modus-themes-completions
+   (quote ((t . (extrabold intense background)))))
+  (modus-themes-bold-constructs t)
+  (modus-themes-italic-constructs t)
+  (modus-themes-paren-math ('bold intense))
+  (modus-themes-hl-line nil)
+  (modus-themes-syntax '(alt-syntax yellow-comments green-strings))
+  :config
+  (load-theme 'modus-vivendi))
+
+(use-package gruvbox-theme)
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")
@@ -250,17 +269,17 @@
   (setq register-preview-delay 0
         register-preview-function #'consult-register-format)
   (advice-add #'register-preview :override #'consult-register-window)
-  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+  ;; (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
-  :config
-  (consult-customize
-   consult-theme
-   :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-file consult--source-project-file consult--source-bookmark
-   :preview-key (kbd "M-."))
+  ;; :config
+  ;; (consult-customize
+  ;;  consult-theme
+  ;;  :preview-key '(:debounce 0.2 any)
+  ;;  consult-ripgrep consult-git-grep consult-grep
+  ;;  consult-bookmark consult-recent-file consult-xref
+  ;;  consult--source-project-file consult--source-bookmark
+  ;;  :preview-key (kbd "M-."))
 
   (setq consult-narrow-key "<")
   (setq consult-project-root-function
@@ -276,7 +295,7 @@
                 :category project
                 :action   ,#'projectile-switch-project-by-name
                 :items    ,projectile-known-projects))
-  (add-to-list 'consult-buffer-sources my-consult-source-projectile-projects 'append)
+  ;; (add-to-list 'consult-buffer-sources my-consult-source-projectile-projects 'append)
 )
 (use-package consult-lsp :ensure t)
 
@@ -343,7 +362,7 @@
   :ensure t
   :bind
   (("C-." . embark-act)         
-   ("C-;" . embark-dwim)        
+   ;; ("C-;" . embark-dwim)        
    ("C-h B" . embark-bindings)) 
 
   :init
@@ -549,6 +568,16 @@
          :request "launch"
          :runtimeArgs ["./node_modules/env-setter/src/ssm-entrypoint-local.js"]
          :sourceMaps t))
+  (dap-register-debug-template
+   "ts-node:launch"
+   (list :name "TS Index"
+         :type "node"
+         :request "launch"
+         :args ["${workspaceFolder}/node_modules/env-setter/src/ssm-entrypoint-local.js" "${workspaceFolder}/costa.ts"]
+         :runtimeArgs ["-r" "ts-node/register"]
+         :sourceMaps t
+         :cwd "${workspaceFolder}"
+         :protocol "inspector"))
   (require 'dap-lldb)
   (require 'dap-gdb-lldb)
   ;; installs .extension/vscode
@@ -582,8 +611,11 @@
 (use-package nodejs-repl)
 (use-package nvm)
 
+
 (use-package lsp-mode
   :commands lsp
+  :init
+  (advice-add 'lsp :before (lambda (&rest _args) (eval '(setf (lsp-session-server-id->folders (lsp-session)) (ht)))))
   :custom
   (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
   (lsp-file-watch-threshold 2000)
@@ -593,9 +625,9 @@
   (lsp-ui-doc-show-with-cursor t)
   (company-lsp-cache-candidates t)
   (lsp-eslint-server-command `("/Users/bob/.nvm/versions/node/v16.13.1/bin/node"
-                              ,(f-join lsp-eslint-unzipped-path "extension/server/out/eslintServer.js")
-                              "--stdio"))
-  ;; (lsp-eslint-node "/Users/bob/.nvm/versions/node/v16.13.1/bin/node")
+                               ,(f-join lsp-eslint-unzipped-path "extension/server/out/eslintServer.js")
+                               "--stdio"))
+  (lsp-eslint-node "/Users/bob/.nvm/versions/node/v16.13.1/bin/node")
   :bind
   (:map lsp-mode-map
         ("C-c C-f" . lsp-format-buffer)
@@ -603,7 +635,10 @@
         ("C-c C-r" . lsp-ui-peek-find-references)
         ("M-." . lsp-ui-peek-find-definitions))
   :hook ((js2-mode typescript-mode web-mode
-                   c-mode c++-mode rust-mode haskell-mode scala-mode) . lsp))
+                   c-mode c++-mode rust-mode
+                   svelte-mode
+                   ;; haskell-mode
+                   ) . lsp))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -622,7 +657,7 @@
         ("M-p" . backward-paragraph))
   :custom
   (lsp-ui-sideline-show-hover nil)
-  (lsp-ui-doc-position 'bottom)
+  ;; (lsp-ui-doc-position 'bottom)
   (lsp-ui-doc-include-signature t)
   (lsp-ui-doc-border (face-foreground 'default))
   (lsp-ui-sideline-enable nil)
@@ -632,10 +667,7 @@
   ;; Use lsp-ui-doc-webkit only in GUI
   (if (display-graphic-p)
       (setq lsp-ui-doc-use-webkit t))
-  ;; WORKAROUND Hide mode-line of the lsp-ui-imenu buffer
-  ;; https://github.com/emacs-lsp/lsp-ui/issues/243
-  (defadvice lsp-ui-imenu (after hide-lsp-ui-imenu-mode-line activate)
-    (setq mode-line-format nil)))
+)
 
 (use-package company-box
   :diminish
@@ -694,9 +726,14 @@
           company-box-icons-alist 'company-box-icons-all-the-icons)))
 
 (use-package perspective
-  :demand t
   :after consult
-  :init
+  
+  (push consult--source-perspective consult-buffer-sources)
+  :custom
+  (persp-initial-frame-name "Main")
+  (persp-state-default-file (concat user-emacs-directory ".persp-state"))
+  :bind ("C-x k" . kill-this-buffer)
+  :config
   (defvar consult--source-perspective
     `(:name     "Perspective"
                 :narrow   (?s . "Perspective")
@@ -712,12 +749,6 @@
                                            :include (persp-get-buffer-names)
                                            :as #'buffer-name)))
     "Project buffer candidate source for `consult-buffer'.")
-  (push consult--source-perspective consult-buffer-sources)
-  :custom
-  (persp-initial-frame-name "Main")
-  (persp-state-default-file (concat user-emacs-directory ".persp-state"))
-  :bind ("C-x k" . kill-this-buffer)
-  :config
   ;; Running `persp-mode' multiple times resets the perspective list...
   (unless (equal persp-mode t)
     (persp-mode)))
@@ -728,6 +759,9 @@
   :config
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
   (setq projectile-switch-project-action #'projectile-dired)
+  (setq projectile-enable-caching t)
+  (setq projectile-sort-order 'recentf)
+  ;; (setq projectile-sort-order 'recently-active)
   ;; (projectile-global-mode 1)
   (unless projectile-known-projects
     (-let ((main-projects-directory (read-directory-name "Please enter main projects directory")))
@@ -737,20 +771,22 @@
 
 (use-package paredit
   :hook
-  (clojure-mode . enable-paredit-mode)
-  (cider-mode . enable-paredit-mode)
-  :hook
   (eval-expression-minibuffer-setup . enable-paredit-mode)
   (emacs-lisp-mode . enable-paredit-mode)
+  ;; (clojure-mode . enable-paredit-mode)
+  ;; (cider-mode . enable-paredit-mode)
   (slime-mode . enable-paredit-mode)
   (slime-repl-mode . enable-paredit-mode)
+  (common-lisp-mode . enable-paredit-mode)
+  (lisp-mode . enable-paredit-mode)
   :bind
   (:map paredit-mode-map ("C-'" . sp-rewrap-sexp)))
 
 (use-package smartparens
   :demand t
   :init
-  (setq sp-ignore-modes-list '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup))
+  (setq sp-ignore-modes-list
+        '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode))
   :config
   (require 'smartparens-config)
   (smartparens-global-mode)
@@ -779,10 +815,12 @@
   :init (setq markdown-command "pandoc"))
 
 (use-package multiple-cursors
+  :disabled t
   :if (window-system)
   :bind
   (("C->" . 'mc/mark-next-like-this)
-   ("C-<" . 'mc/mark-previous-like-this)))
+   ("C-<" . mc/mark-previous-like-this)
+   ("C-M-," . mc/mark-pop)))
 
 (use-package anzu
   :demand t
@@ -892,7 +930,8 @@
   (typescript-mode . yas-minor-mode-on)
   (web-mode . yas-minor-mode-on)
   (text-mode . yas-minor-mode-on)
-  (haskell-mode . yas-minor-mode-on)
+  (lisp-mode . yas-minor-mode-on)
+  ;; (haskell-mode . yas-minor-mode-on)
   (rust-mode . yas-minor-mode-on)
   :config
   (setq yas-snippet-dirs
@@ -900,9 +939,11 @@
           ,yasnippet-snippets-dir))
   (yas-reload-all))
 
+(use-package common-lisp-snippets)
+
 (use-package org-bullets
   :disabled t
-   :if (window-system))
+  :if (window-system))
 
 (defvar tb/org-todo-bullet-faces
     '(("NEXT" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
@@ -954,7 +995,7 @@
 
 (use-package org
   :demand t
-  :defer 5
+  ;; :defer 5
   :ensure nil
   :if (window-system)
   :init
@@ -967,8 +1008,7 @@
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
   (setq org-stuck-projects
-        '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER")
-          ""))
+        '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER") ""))
   ;; +LEVEL=3+boss-TODO​="DONE"
   ;; (setq org-tags-exclude-from-inheritance '("PROJECT"))
   (setq org-tags-exclude-from-inheritance nil)
@@ -1098,33 +1138,60 @@
   (:map vterm-mode-map ("C-c C-j" . vterm-copy-mode))
   (:map vterm-copy-mode-map ("C-c C-j" . vterm-copy-mode)))
 
+(defun ibuffer-filter-by-prog-mode  ()
+  (ibuffer-filter-by-derived-mode 'prog-mode))
+
+(defun short--file-path (file-path)
+  (s-prepend "/" (s-join "/" (-take-last 4 (s-split "/" file-path)))))
+
 (use-package ibuffer
+  :demand
   :ensure nil
   :bind ("C-x C-b" . ibuffer)
   :init
-  (setq ibuffer-expert t)
-  (setq ibuffer-show-empty-filter-groups t)
-  ;; (use-package ibuffer-vc
-  ;;   :commands (ibuffer-vc-set-filter-groups-by-vc-root)
-  ;;   :custom
-  ;;   (ibuffer-vc-skip-if-remote 'nil))
+  (define-ibuffer-column short-file-name (:name Testing-Define-Column :inline true)
+    (if-let ((root-dir (cdr (ibuffer-vc-root (current-buffer))))
+             (visiting-file-name (buffer-file-name)))
+        (short--file-path (s-replace (expand-file-name root-dir) "" visiting-file-name))
+      (or (buffer-file-name) "")))
+  (define-ibuffer-column size-h
+    (:name "Size" :inline t)
+    (cond
+     ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
+     ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
+     (t (format "%8d" (buffer-size)))))
   :custom
+  (ibuffer-expert t)
+  (ibuffer-show-empty-filter-groups nil)
   (ibuffer-formats
-   '((mark modified read-only locked " "
-           (name 35 35 :left :elide)
+   '((mark modified read-only vc-status-mini " "
+           (short-file-name))
+     (mark modified read-only vc-status-mini " "
+           (name 18 18 :left :elide)
            " "
-           (size 9 -1 :right)
+           (size-h 9 -1 :right)
            " "
            (mode 16 16 :left :elide)
-           " " filename-and-process)
-     (mark " "
-           (name 16 -1)
-           " " filename)))
+           " "
+           filename-and-process)))
+  (ibuffer-filter-group-name-face 'font-lock-doc-face)
   :hook
   (ibuffer . (lambda ()
-               (persp-ibuffer-set-filter-groups)
-               (unless (eq ibuffer-sorting-mode 'alphabetic)
-                 (ibuffer-do-sort-by-alphabetic)))))
+               (ibuffer-auto-mode)
+               (ibuffer-vc-set-filter-groups-by-vc-root)
+               (ibuffer-filter-by-prog-mode)
+               (unless (eq ibuffer-sorting-mode 'recency)
+                 (ibuffer-do-sort-by-recency)))))
+
+(use-package all-the-icons-ibuffer
+  :disabled t
+  :init (all-the-icons-ibuffer-mode 1))
+
+(use-package ibuffer-vc
+  :demand
+  :commands (ibuffer-vc-set-filter-groups-by-vc-root)
+  :custom
+  (ibuffer-vc-skip-if-remote t))
 
 (use-package web-mode
   :mode
@@ -1132,9 +1199,10 @@
   ("\\.cssl\\'" . web-mode)
   ("\\.jsx\\'" . web-mode)
   ("\\.vue\\'" . web-mode)
-  ;; :init
-  ;; (defun lsp-web-install-save-hooks ()
-  ;;   (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
+  ;; ("\\.svelte\\'" . web-mode)
+  :init
+  (defun lsp-web-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
   :hook
   (web-mode . lsp-web-install-save-hooks)
   (web-mode . add-node-modules-path)
@@ -1166,6 +1234,13 @@
               ("C-c C-l" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
   )
 
+(use-package svelte-mode
+  :disabled t
+  :bind
+  (:map svelte-mode-map
+        ("C-M-f" . sgml-skip-tag-forward)
+        ("C-M-b" . sgml-skip-tag-backward)))
+
 (use-package tramp
   :ensure nil
   :init (setq tramp-verbose 6)
@@ -1188,16 +1263,17 @@
                "\\bastion\\'")
   (add-to-list 'tramp-default-proxies-alist
                '("bob$" nil "/sshx:bastion:"))
-  ;; (setq remote-file-name-inhibit-cache 3600
-  ;;       tramp-completion-reread-directory-timeout nil
-  ;;       vc-ignore-dir-regexp (format "%s\\|%s"
-  ;;                                    vc-ignore-dir-regexp
-  ;;                                    tramp-file-name-regexp))
+  (setq remote-file-name-inhibit-cache 3600
+        tramp-completion-reread-directory-timeout nil
+        vc-ignore-dir-regexp (format "%s\\|%s"
+                                     vc-ignore-dir-regexp
+                                     tramp-file-name-regexp))
   (setq tramp-histfile-override t)
   ;; Save backup files locally
   ;; from https://stackoverflow.com/a/47021266
   (add-to-list 'backup-directory-alist
-               (cons tramp-file-name-regexp "/tmp/emacs-backup/")))
+               (cons tramp-file-name-regexp "/tmp/emacs-backup/"))
+)
 
 (use-package scratch-pop
   :bind ("C-c r" . scratch-pop))
@@ -1208,6 +1284,7 @@
   :ensure nil)
 
 (use-package undo-fu
+  :disabled t
   :init
   (setq undo-fu-allow-undo-in-region t)
   :bind
@@ -1220,7 +1297,11 @@
   ("C-c M-d" . avy-goto-char-in-line)
   ("C-c M-c" . avy-goto-word-1))
 
-(use-package highlight-indent-guides)
+(use-package highlight-indent-guides
+  :init
+  (setq highlight-indent-guides-method 'character
+        highlight-indent-guides-responsive 'top)
+  :hook (prog-mode . highlight-indent-guides-mode))
 
 (use-package edit-funcs
   :if (window-system)
@@ -1250,10 +1331,10 @@
 (use-package shell-command+
   :bind ("M-!" . shell-command+))
 
-(use-package haskell-mode)
-(use-package haskell-snippets)
-(use-package cider)
-(use-package clojure-mode)
+(use-package haskell-mode :disabled t)
+(use-package haskell-snippets :disabled t)
+(use-package cider :disabled t)
+(use-package clojure-mode :disabled t)
 (use-package sicp)
 
 (use-package elfeed
@@ -1273,16 +1354,30 @@
   :bind ("C-c w" . elfeed))
 
 (use-package slime
+  :disabled t
   :config
   (setq inferior-lisp-program "/usr/local/bin/sbcl")
   (slime-setup '(slime-fancy slime-company)))
 
 (use-package slime-company
+  :disabled t
   :after slime)
 
-(use-package racket-mode)
+(use-package sly
+  :init
+  (setq inferior-lisp-program "/usr/local/bin/sbcl")
+  :hook
+  (sly-mode . (lambda ()
+     (unless (sly-connected-p)
+       (save-excursion (sly))))))
+
+(use-package sly-asdf)
+(use-package sly-quicklisp)
+
+(use-package racket-mode :disabled t)
 
 (use-package racket-xp
+  :disabled t
   :after (racket-mode)
   :ensure nil
   :hook
@@ -1291,8 +1386,8 @@
 (use-package docker)
 (use-package docker-tramp)
 (use-package flyspell
+  :bind  (:map flyspell-mode-map ("C-;" . nil))
   :ensure nil
-  :defer 5
   :hook
   (prog-mode . flyspell-prog-mode)
   (org-mode . flyspell-mode)
@@ -1303,6 +1398,7 @@
 
 ;; Enable sbt mode for executing sbt commands
 (use-package sbt-mode
+  :disabled t
   :commands sbt-start sbt-command
   :config
   ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
@@ -1334,7 +1430,20 @@
 (use-package tree-sitter :disabled t)
 (use-package tree-sitter-langs :disabled t)
 (use-package pdf-tools)
+(use-package hcl-mode
+  :mode
+  ("\\.dsl\\'" . hcl-mode))
+
+(use-package iedit
+  :bind ("C-;" . iedit-mode))
+
+(use-package grammarly)
+(use-package flycheck-grammarly)
+(use-package prettier)
+(use-package pandoc-mode)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
+(put 'upcase-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)

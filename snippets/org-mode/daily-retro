@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: daily retro
+# key: retro
+# --
+
+* `(format-time-string "%a %b %d %G" (current-time))`
+- [ ]  Does the squad knows what I was working on today?
+- [ ] Was I able to finish an assigment that was due for today? if Not, notify all concerns
+- [ ] What are my commitments for this week? if I dont know, find out!
+- [ ] Am I going to finish all of this week commitments? if not, notify all concerns

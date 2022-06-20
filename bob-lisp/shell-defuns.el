@@ -72,5 +72,10 @@ Any other prefis will be used as the suffix itself."
               (equal a bob/last-shell-buffer))
             buffers))
 
+(defun import-customer (customer-id)
+  (interactive "N")
+  (-let [default-directory (format "%s/source/services/catapult" (getenv "HOME"))]
+    (message (shell-command-to-string (format "npm run import-customer %s" customer-id)))))
+
 (provide 'shell-defuns)
 ;;; shell-defuns.el ends here

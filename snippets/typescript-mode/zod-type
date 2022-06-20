@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: zod-type
+# key: zt
+# --
+
+export type ${1:enumerate} = z.infer<typeof $1>;
