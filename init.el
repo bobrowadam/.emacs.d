@@ -151,7 +151,7 @@
   (doom-modeline-icon t)
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-height 15)
-  (doom-modeline-lsp t)
+  ;; (doom-modeline-lsp t)
   (find-file-visit-truename t)
   (doom-modeline-github t)
   :config
@@ -600,6 +600,16 @@
 (use-package nodejs-repl)
 (use-package nvm)
 
+(use-package eglot
+  :disabled t
+  :config
+  (add-to-list 'eglot-server-programs '(web-mode "vls"))
+  ;; (add-hook web-mode-hook #'eglot-ensure)
+  :hook ((js2-mode typescript-mode web-mode
+                   c-mode c++-mode rust-mode
+                   svelte-mode
+                   ;; haskell-mode
+                   ) . eglot-ensure))
 
 (use-package lsp-mode
   :commands lsp
@@ -622,7 +632,9 @@
         ("C-c C-f" . lsp-format-buffer)
         ("C-c C-n" . lsp-rename)
         ("C-c C-r" . lsp-ui-peek-find-references)
-        ("M-." . lsp-ui-peek-find-definitions))
+        ("M-." . lsp-ui-peek-find-definitions)
+        ("M-n" . forward-paragraph)
+        ("M-p" . backward-paragraph))
   :hook ((js2-mode typescript-mode web-mode
                    c-mode c++-mode rust-mode
                    svelte-mode
@@ -630,6 +642,7 @@
                    ) . lsp))
 
 (use-package lsp-ui
+  :disabled t
   :after lsp-mode
   :commands lsp-ui-mode
   :custom-face
@@ -641,9 +654,7 @@
         ([remap xref-find-references] . lsp-ui-peek-find-references)
         ("C-c u" . lsp-ui-imenu)
         ("C-c M-i" . lsp-ui-doc-focus-frame))
-  (:map lsp-mode-map
-        ("M-n" . forward-paragraph)
-        ("M-p" . backward-paragraph))
+
   :custom
   (lsp-ui-sideline-show-hover nil)
   ;; (lsp-ui-doc-position 'bottom)
