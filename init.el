@@ -760,7 +760,7 @@
   :config
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
   (setq projectile-switch-project-action #'projectile-dired)
-  (setq projectile-enable-caching t)
+  (setq projectile-enable-caching nil)
   (setq projectile-sort-order 'recentf)
   ;; (setq projectile-sort-order 'recently-active)
   ;; (projectile-global-mode 1)
