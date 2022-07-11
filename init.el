@@ -3,7 +3,7 @@
 (setq package-enable-at-startup nil)
 
 (add-hook 'emacs-startup-hook
-	  (lambda ()
+          (lambda ()
             (message "Emacs ready in %s with %d garbage collections."
                      (format "%.2f seconds"
                              (float-time
@@ -228,17 +228,17 @@
          ("C-c m" . consult-mode-command)
          ("C-x r b" . consult-bookmark)
          ("C-c k" . consult-kmacro)
-         ("C-x M-:" . consult-complex-command) 
-         ("C-x b" . consult-buffer) 
-         ("C-x 4 b" . consult-buffer-other-window) 
-         ("C-x 5 b" . consult-buffer-other-frame) 
+         ("C-x M-:" . consult-complex-command)
+         ("C-x b" . consult-buffer)
+         ("C-x 4 b" . consult-buffer-other-window)
+         ("C-x 5 b" . consult-buffer-other-frame)
          ("M-#" . consult-register-load)
-         ("M-'" . consult-register-store) 
+         ("M-'" . consult-register-store)
          ("C-M-#" . consult-register)
-         ("M-y" . consult-yank-pop)     
-         ("<help> a" . consult-apropos) 
-         ("M-g M-g" . consult-goto-line) 
-         ("M-g o" . consult-outline) 
+         ("M-y" . consult-yank-pop)
+         ("<help> a" . consult-apropos)
+         ("M-g M-g" . consult-goto-line)
+         ("M-g o" . consult-outline)
          ("M-g m" . consult-mark)
          ("M-g k" . consult-global-mark)
          ("M-i" . consult-imenu)
@@ -350,9 +350,9 @@
 (use-package embark
   :ensure t
   :bind
-  (("C-." . embark-act)         
-   ;; ("C-;" . embark-dwim)        
-   ("C-h B" . embark-bindings)) 
+  (("C-." . embark-act)
+   ;; ("C-;" . embark-dwim)
+   ("C-h B" . embark-bindings))
 
   :init
   (setq prefix-help-command #'embark-prefix-help-command)
@@ -491,7 +491,7 @@
   :config
   (setq typescript-indent-level 2))
 
-(use-package jest-test-mode 
+(use-package jest-test-mode
   :commands jest-test-mode
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
@@ -576,7 +576,7 @@
    (list :type "lldb"
          :request "launch"
          :name "LLDB::Run"
-	 :gdbpath "rust-lldb"
+         :gdbpath "rust-lldb"
          :target nil
          :cwd nil))
   :bind
@@ -727,7 +727,7 @@
 
 (use-package perspective
   :after consult
-  
+
   (push consult--source-perspective consult-buffer-sources)
   :custom
   (persp-initial-frame-name "Main")
@@ -1016,15 +1016,15 @@
   (setq org-capture-templates
         `(("t" "entry" entry (file ,(concat org-directory "/org-roam/20211126120714-inbox.org")) "* %?\n  %i")))
   (setq org-agenda-files
-        `(
+        (list
           ;; ,(concat org-directory "/riseup-google-calendar.org")
           ;; ,(concat org-directory "/private-google-calendar.org")
-          ,(concat org-directory "/org-roam/20211126120714-inbox.org")
-          ,(concat org-directory "/org-roam/20211126182152-tasks.org")
-          ,(concat org-directory "/org-roam/20211126120120-projects.org")
-          ,(concat org-directory "/org-roam/20211126112747-check_this_up.org")
-          ,(concat org-directory "/org-roam/20211126120630-sometime.org")
-          ,(concat org-directory "/org-roam/20211208225633-reminders.org")))
+          (concat org-directory "/org-roam/20211126120714-inbox.org")
+          (concat org-directory "/org-roam/20211126182152-tasks.org")
+          (concat org-directory "/org-roam/20211126120120-projects.org")
+          (concat org-directory "/org-roam/20211126112747-check_this_up.org")
+          (concat org-directory "/org-roam/20211126120630-sometime.org")
+          (concat org-directory "/org-roam/20211208225633-reminders.org")))
   (setq org-deadline-warning-days 3)
   :config
   (org-babel-do-load-languages
