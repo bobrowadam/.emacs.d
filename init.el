@@ -1102,7 +1102,7 @@
 (use-package org-roam-bibtex
   :after org-roam
   :config
-  (require 'org-ref)) 
+  (require 'org-ref))
 
 (use-package org-roam-ui
   :after org-roam
@@ -1154,7 +1154,7 @@
     (if-let ((root-dir (cdr (ibuffer-vc-root (current-buffer))))
              (visiting-file-name (buffer-file-name)))
         (short--file-path (s-replace (expand-file-name root-dir) "" visiting-file-name))
-      (or (buffer-file-name) "")))
+      (or (buffer-file-name) (buffer-name))))
   (define-ibuffer-column size-h
     (:name "Size" :inline t)
     (cond
@@ -1393,7 +1393,7 @@
   (prog-mode . flyspell-prog-mode)
   (org-mode . flyspell-mode)
   (git-commit-setup . git-commit-turn-on-flyspell)
-  
+
   :config
   (setq flyspell-issue-message-flag nil))
 
