@@ -375,6 +375,7 @@
   :config
   (setq dired-use-ls-dired nil)
   (setq dired-listing-switches "-alh")
+  :hook (dired-mode . (lambda () (dired-hide-details-mode 1)))
   :ensure nil
   )
 
