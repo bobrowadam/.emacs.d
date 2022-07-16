@@ -90,7 +90,7 @@
 (setq initial-scratch-message ";; Oh it's you again")
 
 ;; Vertical Scroll
-(pixel-scroll-precision-mode)
+(pixel-scroll-precision-mode t)
 (setq display-time-day-and-date t)
 (setq display-time-24hr-format t)
 (setq display-time-default-load-average nil)
@@ -1428,8 +1428,31 @@
   :init
   (dirvish-override-dired-mode))
 
-(use-package tree-sitter :disabled t)
-(use-package tree-sitter-langs :disabled t)
+(use-package tree-sitter
+  :ensure t
+  :config
+  ;; activate tree-sitter on any buffer containing code for which it has a parser available
+  (global-tree-sitter-mode)
+  ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
+  ;; by switching on and off
+  :hook (tree-sitter-after-on-hook .  #'tree-sitter-hl-mode))
+
+(use-package tree-sitter-langs
+  :ensure t
+  :demand t
+  :after tree-sitter)
+
+(use-package tsi
+  :demand t
+  :after tree-sitter
+  :straight '(tsi :type git :host github :repo "orzechowskid/tsi.el")
+  :commands (tsi-typescript-mode tsi-json-mode tsi-css-mode)
+  :hook
+  (typescript-mode . tsi-typescript-mode)
+  (json-mode . tsi-typescript-mode)
+  (css-mode . tsi-typescript-mode)
+  (scss-mode . tsi-typescript-mode))
+
 (use-package pdf-tools)
 (use-package hcl-mode
   :mode

@@ -52,3 +52,5 @@ transient/*
 /ob-mongo/
 /forge-database-v7-20220620-2206.sql
 /info-docs/sly.info
+/*scratch*
+/forge-database-v8-20220626-1439.sql
