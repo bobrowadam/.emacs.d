@@ -24,8 +24,6 @@ smex-items
 anaconda-mode/
 transient/*
 /.lsp-session-v1
-/bookmarks
-/scratch-backup.el
 /.org-id-locations
 /.undo-tree-history
 /logview-cache.extmap

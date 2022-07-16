@@ -1,0 +1,93 @@
+;;;; Emacs Bookmark Format Version 1;;;; -*- coding: utf-8-emacs; mode: lisp-data -*-
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("use"
+ (filename . "~/source/services/elsa/src/pages/responsive-pages/authenticated/navigation-pages/cashflow-app/insights/MonthlySavingInsight.vue")
+ (front-context-string . "            wind")
+ (rear-context-string . "s.closePopup();\n")
+ (position . 1379))
+("docker-ubuntu/test-app"
+ (filename . "/docker:festive_euler:/root/source/test-app/")
+ (front-context-string)
+ (rear-context-string . "7M Apr 22 12:38 ")
+ (position . 387))
+("recipes.org"
+ (filename . "~/Dropbox/orgzly/recipes.org")
+ (front-context-string . "#+RESULTS:\n: Hid")
+ (rear-context-string)
+ (position . 1))
+("Org Manual"
+ (front-context-string . "\nThe Org Manual\n")
+ (rear-context-string . "ion,  Up: (dir)\n")
+ (position . 930)
+ (filename . "/usr/local/Cellar/emacs-head@28/28.0.50_1/share/info/emacs/org")
+ (info-node . "Top")
+ (handler . Info-bookmark-jump))
+("org-roam"
+ (filename . "~/Dropbox/orgzly/org-roam/")
+ (front-context-string . "20210915185218-i")
+ (rear-context-string . "0B Sep 15 22:20 ")
+ (position . 237))
+("org-capture-last-stored"
+ (filename . "~/Dropbox/orgzly/org-roam/20220630235235-northgard.org")
+ (front-context-string . "\n* Basic build f")
+ (rear-context-string . "itle: Northgard\n")
+ (position . 87)
+ (last-modified 25278 3371 978119 0))
+("defuns"
+ (filename . "~/.emacs.d/defuns/")
+ (front-context-string . "misc-defuns.el\n ")
+ (rear-context-string . "0K Feb 10  2021 ")
+ (position . 871))
+("weight.org"
+ (filename . "~/Dropbox/nutrition/weight.org")
+ (front-context-string . "* weight\n| <2017")
+ (rear-context-string)
+ (position . 1))
+("type-writes.org"
+ (filename . "~/Dropbox/riseup/type-writes.org")
+ (front-context-string . "* <2021-02-07 Su")
+ (rear-context-string)
+ (position . 1))
+("usefull-stuff.org"
+ (filename . "~/Dropbox/riseup/docs/usefull-stuff.org")
+ (front-context-string . "* run catapult: ")
+ (rear-context-string . "&incognito=true\n")
+ (position . 557))
+("mongo-sripts.org"
+ (filename . "~/Dropbox/riseup/org-scripts/mongo-sripts.org")
+ (front-context-string . "#+begin_example\n")
+ (rear-context-string . "src\n\n#+RESULTS:\n")
+ (position . 273879))
+("todo-scratch.org"
+ (filename . "~/Dropbox/orgzly/todo-scratch.org")
+ (front-context-string . "** Calvin - Depl")
+ (rear-context-string . "g done message \n")
+ (position . 74))
+("riseup"
+ (filename . "~/Dropbox/riseup/")
+ (front-context-string . ".ssh\n  -rw-r--r-")
+ (rear-context-string . "2B Apr 21  2020 ")
+ (position . 226))
+("recepies.org"
+ (filename . "~/Dropbox/orgzly/recepies.org")
+ (front-context-string . "#+RESULTS:\n: Hid")
+ (rear-context-string)
+ (position . 1))
+("services"
+ (filename . "~/source/services/")
+ (front-context-string . "..\n  drwxr-xr-x ")
+ (rear-context-string . "1K Feb  5 12:46 ")
+ (position . 177))
+("rest_clients"
+ (filename . "~/Dropbox/riseup/rest_clients/")
+ (front-context-string . "asana.client\n  -")
+ (rear-context-string . "0B May  5  2020 ")
+ (position . 242))
+("init.el"
+ (filename . "~/.emacs.d/init.el")
+ (front-context-string . "(require 'packag")
+ (rear-context-string)
+ (position . 1))
+)
