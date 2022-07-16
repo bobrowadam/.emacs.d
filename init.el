@@ -1471,3 +1471,4 @@
 (put 'set-goal-column 'disabled nil)
 (put 'upcase-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
+(put 'magit-clean 'disabled nil)
