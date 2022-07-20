@@ -3,4 +3,5 @@
 # key: zt
 # --
 
-export type ${1:enumerate} = z.infer<typeof $1>;
+export const ${1:enumerate} = $2;
+export type $1 = z.infer<typeof $1>;
