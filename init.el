@@ -70,6 +70,7 @@
       make-backup-files nil
       enable-recursive-minibuffers t
       inhibit-splash-screen t
+      inhibit-startup-message t
       require-final-newline nil
       truncate-partial-width-windows 80
       sentence-end-double-space t ; explicitly choose default
@@ -112,7 +113,6 @@
 
 (global-subword-mode t)
 (global-superword-mode -1)
-(setq inhibit-startup-message t)
 (setq ring-bell-function 'ignore
       visible-bell nil)
 (setq-default indent-tabs-mode nil)
@@ -614,7 +614,14 @@
 (use-package lsp-mode
   :commands lsp
   :init
+  (setq node-version "18.5.0")
+  (setq fnm-dir (cadr (s-split "=" (cl-find-if
+                               (lambda (s) (s-starts-with-p "FNM_DIR" s))
+                               (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
+  (setq fnm-node (concat fnm-dir
+                         "/node-versions/v" node-version "/installation/bin/node"))
   (advice-add 'lsp :before (lambda (&rest _args) (eval '(setf (lsp-session-server-id->folders (lsp-session)) (ht)))))
+  ;; (setq fnm-node "/Users/bob/Library/Application\ Support/fnm/node-versions/v18.5.0/installation/bin/node")
   :custom
   (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
   (lsp-file-watch-threshold 2000)
@@ -756,6 +763,15 @@
 
 (use-package projectile
   :init
+  (defun sort--buffers-by-file-modtime (buffer-names)
+    (sort buffer-names
+          (lambda (b1 b2)
+            (time-less-p
+             (file-attribute-modification-time (file-attributes (buffer-file-name (get-buffer b2))))
+             (file-attribute-modification-time (file-attributes (buffer-file-name (get-buffer b1))))))))
+  (setq projectile-buffers-filter-function
+        (lambda (all-buffers)
+          (sort--buffers-by-file-modtime all-buffers)))
   (projectile-mode 1)
   :config
   (add-to-list 'projectile-globally-ignored-directories "node_modules")
@@ -763,10 +779,9 @@
   (setq projectile-enable-caching nil)
   (setq projectile-sort-order 'recentf)
   ;; (setq projectile-sort-order 'recently-active)
-  ;; (projectile-global-mode 1)
   (unless projectile-known-projects
-    (-let ((main-projects-directory (read-directory-name "Please enter main projects directory")))
-      (projectile-discover-projects-in-directory main-projects-directory)))
+    (-let ((main-projects-directory (or service-directory (read-directory-name "Please enter main projects directory"))))
+      (projectile-discover-projects-in-directory main-projects-directory 1)))
   :bind
   (:map projectile-mode-map ("C-c p" . projectile-command-map)))
 
