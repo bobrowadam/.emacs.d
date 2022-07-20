@@ -1,6 +1,7 @@
 (setq gc-cons-threshold 100000000)
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
+(require 'cl-lib)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
@@ -83,8 +84,7 @@
       epa-pinentry-mode 'loopback
       auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc")
       dired-recursive-deletes 'always
-      dired-recursive-copies 'always
-      )
+      dired-recursive-copies 'always)
 
 ;; (setq initial-major-mode 'org-mode)
 (setq initial-scratch-message ";; Oh it's you again")
@@ -107,7 +107,7 @@
   (scroll-bar-mode -1)
   (tooltip-mode -1))
 
-(set-default 'cursor-type  '(bar . 10))
+(set-default 'cursor-type  '(bar . 3))
 (blink-cursor-mode 0)
 
 (global-subword-mode t)
@@ -141,7 +141,6 @@
 (add-to-list 'default-frame-alist
              '(font . "DaddyTimeMono Nerd Font 21"))
 
-(require 'cl-lib)
 (use-package doom-modeline
   :demand t
   :custom
@@ -624,16 +623,17 @@
   ;; (lsp-eldoc-hook nil)
   (lsp-ui-doc-show-with-cursor t)
   (company-lsp-cache-candidates t)
-  (lsp-eslint-server-command `("/Users/bob/.nvm/versions/node/v16.13.1/bin/node"
+  (fnm-node "/Users/bob/Library/Application\ Support/fnm/node-versions/v18.5.0/installation/bin/node")
+  (lsp-eslint-server-command `(,fnm-node
                                ,(f-join lsp-eslint-unzipped-path "extension/server/out/eslintServer.js")
                                "--stdio"))
-  (lsp-eslint-node "/Users/bob/.nvm/versions/node/v16.13.1/bin/node")
+  (lsp-eslint-node fnm-node)
   :bind
   (:map lsp-mode-map
         ("C-c C-f" . lsp-format-buffer)
         ("C-c C-n" . lsp-rename)
         ("C-c C-r" . lsp-ui-peek-find-references)
-        ("M-." . lsp-ui-peek-find-definitions)
+        ("M-." . lsp-find-definition)
         ("M-n" . forward-paragraph)
         ("M-p" . backward-paragraph))
   :hook ((js2-mode typescript-mode web-mode
