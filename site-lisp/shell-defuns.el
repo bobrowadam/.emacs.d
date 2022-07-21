@@ -2,8 +2,6 @@
 ;;; Commentary:
 ;; Functions for shell actions
 ;;; Code:
-(require 'dash)
-(require 'subr-x)
 
 (defun get-dir-name (&optional path)
   "Get the current directly name on PATH."
@@ -40,8 +38,6 @@ Any other prefis will be used as the suffix itself."
     (split-window-sensibly)
     (other-window 1)
     (if (projectile-project-p)
-        ;; (projectile-with-default-dir (projectile-ensure-project (projectile-project-root))
-        ;;   (bob/vterm-other-window (concat "*SHELL " (projectile-project-name) "* " suffix)))
         (projectile-run-vterm)
       (vterm))))
 
@@ -86,8 +82,8 @@ Any other prefis will be used as the suffix itself."
 
 
 (defun bob/drop-buffer (buffers)
-  (seq-remove (lambda (buf) (cond
-                             ((equal buf (buffer-name)) t)))
+  (seq-remove (lambda (buf)
+                (cond ((equal buf (buffer-name)) t)))
               buffers))
 
 (defun set-last-shell-buffer-as-first (buffers)
@@ -103,7 +99,7 @@ Any other prefis will be used as the suffix itself."
 (defun import-customer (customer-id)
   (interactive "N")
   (-let [default-directory (format "%s/source/services/catapult" (getenv "HOME"))]
-    (message (shell-command-to-string (format "npm run import-customer %s" customer-id)))))
+    (async-shell-command (format "npm run import-customer %s" customer-id))))
 
 (provide 'shell-defuns)
 ;;; shell-defuns.el ends here

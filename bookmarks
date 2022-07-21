@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("use"
+(("modules"
+ (filename . "~/.emacs.d/modules/")
+ (front-context-string . "appearance.el\n  ")
+ (rear-context-string . "2B Jul 21 10:24 ")
+ (position . 181)
+ (last-modified 25305 26525 580351 0))
+("use"
  (filename . "~/source/services/elsa/src/pages/responsive-pages/authenticated/navigation-pages/cashflow-app/insights/MonthlySavingInsight.vue")
  (front-context-string . "            wind")
  (rear-context-string . "s.closePopup();\n")

@@ -10,7 +10,6 @@
  '(doom-modeline-lsp t)
  '(doom-modeline-major-mode-color-icon t nil nil "Customized with use-package doom-modeline")
  '(doom-modeline-minor-modes nil nil nil "Customized with use-package doom-modeline")
- '(doom-modeline-mode t)
  '(flyspell-auto-correct-binding [(control 59)])
  '(global-company-mode t)
  '(highlight-changes-colors '("#EF5350" "#7E57C2"))
