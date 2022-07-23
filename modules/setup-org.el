@@ -100,7 +100,7 @@
   (set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
   :custom
   ;; set the leading bullet to be a space. For alignment purposes I use an em-quad space (U+2001)
-  (org-superstar-headline-bullets-list '(" "))
+  (org-superstar-headline-bullets-list '("❍"  9673 9675 10040 10047))
   (org-superstar-todo-bullet-alist '(("DONE" . ?✔)
                                      ("NEXT" . ?☞)
                                      ("TODO" . ?⌖)
@@ -114,8 +114,9 @@
                                      ("WRITE" . ?✍)
                                      ))
   (org-superstar-special-todo-items t)
-  (org-superstar-leading-bullet " ")
-  (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces))
+  (org-superstar-leading-bullet "░")
+  (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces)
+  (org-hide-leading-stars nil))
 
 (use-package org-agenda
   :after org
