@@ -113,7 +113,6 @@
         fnm-npm)
   (setenv "NODE_PATH" fnm-node)
   (advice-add 'lsp :before (lambda (&rest _args) (eval '(setf (lsp-session-server-id->folders (lsp-session)) (ht)))))
-  ;; (setq fnm-node "/Users/bob/Library/Application\ Support/fnm/node-versions/v18.5.0/installation/bin/node")
   :custom
   (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
   (lsp-file-watch-threshold 2000)
@@ -121,7 +120,7 @@
   (read-process-output-max (* 1024 1024))
   ;; (lsp-eldoc-hook nil)
   (lsp-ui-doc-show-with-cursor t)
-  (company-lsp-cache-candidates t)
+  ;; (company-lsp-cache-candidates t)
   (lsp-eslint-server-command `(,fnm-node
                                ,(f-join lsp-eslint-unzipped-path "extension/server/out/eslintServer.js")
                                "--stdio"))
