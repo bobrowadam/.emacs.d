@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("modules"
+(("appearance.el"
+ (filename . "~/.emacs.d/modules/appearance.el")
+ (front-context-string . "(setq custom-saf")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 25308 1751 127602 0))
+("modules"
  (filename . "~/.emacs.d/modules/")
  (front-context-string . "appearance.el\n  ")
  (rear-context-string . "2B Jul 21 10:24 ")

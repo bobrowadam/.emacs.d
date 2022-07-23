@@ -145,12 +145,6 @@
   ("C-c M-d" . avy-goto-char-in-line)
   ("C-c M-c" . avy-goto-word-1))
 
-(use-package highlight-indent-guides
-  :init
-  (setq highlight-indent-guides-method 'character
-        highlight-indent-guides-responsive 'top)
-  :hook (prog-mode . highlight-indent-guides-mode))
-
 (use-package json-mode)
 (use-package jq-format
   :after json-mode)
