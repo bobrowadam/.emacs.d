@@ -174,7 +174,7 @@
 (use-package  ob-mongo
   :ensure nil
   :demand t
-  :load-path "../ob-mongo"
+  :load-path "ob-mongo"
   :after org)
 
 (use-package ox-gfm :after org)

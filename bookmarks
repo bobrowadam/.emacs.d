@@ -2,7 +2,30 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("appearance.el"
+(("*xwidget-webkit: riseup*"
+ (position . 35)
+ (last-modified 25314 6817 685150 0)
+ (page . "https://www.google.com/search?q=%D7%9C%D7%A9%D7%9C%D7%95%D7%98+%D7%91%D7%94%D7%95%D7%A6%D7%90%D7%95%D7%AA+%D7%95%D7%9C%D7%94%D7%AA%D7%97%D7%99%D7%9C+%D7%9C%D7%97%D7%A1%D7%95%D7%9A+%7C+riseup%7C+%D7%99%D7%A9%D7%A8%D7%90%D7%9C+%28https%3A%2F%2Fwww.riseup.co.il%2F%29")
+ (handler . xwidget-webkit-bookmark-jump-handler))
+("source"
+ (filename . "~/source/")
+ (front-context-string . ".DS_Store\n  drwx")
+ (rear-context-string . "0K Jul 13 15:59 ")
+ (position . 174)
+ (last-modified 25309 22696 675510 0))
+(".emacs.d"
+ (filename . "~/.emacs.d/")
+ (front-context-string . "init.el\n  drwxr-")
+ (rear-context-string . "0K Jul 23 17:20 ")
+ (position . 1133)
+ (last-modified 25309 17032 815151 0))
+("prog.el"
+ (filename . "~/.emacs.d/modules/prog.el")
+ (front-context-string . "(use-package add")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 25308 30072 45407 0))
+("appearance.el"
  (filename . "~/.emacs.d/modules/appearance.el")
  (front-context-string . "(setq custom-saf")
  (rear-context-string)
@@ -42,11 +65,11 @@
  (rear-context-string . "0B Sep 15 22:20 ")
  (position . 237))
 ("org-capture-last-stored"
- (filename . "~/Dropbox/orgzly/org-roam/20220630235235-northgard.org")
- (front-context-string . "\n* Basic build f")
- (rear-context-string . "itle: Northgard\n")
- (position . 87)
- (last-modified 25278 3371 978119 0))
+ (filename . "~/Dropbox/orgzly/org-roam/20220727120815-savings_monitoring.org")
+ (front-context-string . "\n* Buisiness SLA")
+ (rear-context-string . "ings Monitoring\n")
+ (position . 96)
+ (last-modified 25313 1229 855456 0))
 ("defuns"
  (filename . "~/.emacs.d/defuns/")
  (front-context-string . "misc-defuns.el\n ")

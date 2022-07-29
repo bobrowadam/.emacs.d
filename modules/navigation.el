@@ -63,11 +63,11 @@
                (ibuffer-auto-mode)
                (ibuffer-vc-set-filter-groups-by-vc-root)
                (ibuffer-filter-by-prog-mode)
+               (all-the-icons-ibuffer-mode)
                (unless (eq ibuffer-sorting-mode 'recency)
                  (ibuffer-do-sort-by-recency)))))
 
 (use-package all-the-icons-ibuffer
-  :disabled t
   :init (all-the-icons-ibuffer-mode 1))
 
 (use-package ibuffer-vc
@@ -359,4 +359,89 @@
 (use-package deadgrep
   :bind ("C-c C-s C-d" . deadgrep))
 
+(use-package xwwp
+  :ensure nil
+  :load-path "./xwwp"
+  :commands (xwwp))
+
+(use-package xwwp-ace
+  :ensure nil
+  :after xwwp
+  :load-path "./xwwp"
+  :bind (:map xwidget-webkit-mode-map
+              ("t" . xwwp-ace-toggle)))
+
+(use-package xwwp-follow-link
+  :ensure nil
+  :after xwwp
+  :load-path "./xwwp"
+  :init
+  (setq xwwp-follow-link-completion-system 'default)
+  :commands (xwwp)
+  :bind (:map xwidget-webkit-mode-map
+              ("v" . xwwp-follow-link)))
+
+(use-package avy
+  :init (setq avy-case-fold-search nil)
+  :bind
+  ("C-c M-d" . avy-goto-char-in-line)
+  ("C-c M-c" . avy-goto-word-1))
+
+(use-package ace-window
+  :bind ( "C-x o" . ace-window)
+  :config
+  (setq aw-scope 'frame)
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+(use-package tramp
+  :ensure nil
+  :init (setq tramp-verbose 6)
+  :config
+  (setq tramp-password-prompt-regexp
+        (concat
+         "^.*"
+         (regexp-opt
+          '("passphrase" "Passphrase"
+            ;; English
+            "password" "Verification code"
+            ;; Deutsch
+            "passwort" "Passwort"
+            ;; Français
+            "mot de passe" "Mot de passe")
+          t)
+         ".*:\0? *"))
+  (setq tramp-default-method "ssh")
+  (add-to-list 'tramp-restricted-shell-hosts-alist
+               "\\bastion\\'")
+  (add-to-list 'tramp-default-proxies-alist
+               '("bob$" nil "/sshx:bastion:"))
+  (setq remote-file-name-inhibit-cache 3600
+        tramp-completion-reread-directory-timeout nil
+        vc-ignore-dir-regexp (format "%s\\|%s"
+                                     vc-ignore-dir-regexp
+                                     tramp-file-name-regexp))
+  (setq tramp-histfile-override t)
+  ;; Save backup files locally
+  ;; from https://stackoverflow.com/a/47021266
+  (add-to-list 'backup-directory-alist
+               (cons tramp-file-name-regexp "/tmp/emacs-backup/")))
+
+(use-package docker)
+(use-package docker-tramp)
+
+(use-package elfeed
+  :init
+  (setq elfeed-feeds
+        '(
+          ;; ("https://www.reddit.com/r/listentothis/.rss" music reddit)
+          ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
+          ("http://notarbut.co/feed/podcast" podcast)
+          ("https://blog.rust-lang.org/feed.xml" programming rust)
+          ;; ("https://www.reddit.com/r/rust/.rss" programming rust reddit)
+          ;; ("https://www.reddit.com/r/Clojure/.rss" programming clojure reddit)
+          ("https://danluu.com/atom.xml" programming blog)
+          ("https://feed.podbean.com/geekonomy/feed.xml" podcast)
+          ("https://protesilaos.com/master.xml" programming blog)
+          ))
+  :bind ("C-c w" . elfeed))
 (provide 'navigation)

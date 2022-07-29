@@ -11,20 +11,29 @@
  '(doom-modeline-major-mode-color-icon t nil nil "Customized with use-package doom-modeline")
  '(doom-modeline-minor-modes nil nil nil "Customized with use-package doom-modeline")
  '(flyspell-auto-correct-binding [(control 59)])
- ;; '(highlight-changes-colors '("#EF5350" "#7E57C2"))
- '(ignored-local-variable-values '((Base . 10) (Package . CL-USER) (Syntax . COMMON-LISP)))
+ '(ignored-local-variable-values
+   '((mmm-classes . elisp-js)
+     (eval mmm-add-group 'elisp-js
+           '((elisp-rawjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp--js \"" :back "\" js--")
+             (elisp-defjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp-js-def .*\12.*\"\"\12" :back "\")\12")))
+     (Base . 10)
+     (Package . CL-USER)
+     (Syntax . COMMON-LISP)))
  '(lsp-restart 'ignore)
  '(lsp-vetur-dev-log-level "DEBUG" t)
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
  '(org-agenda-files nil)
  '(package-selected-packages
-   '(org-superstar darkroom org-roam-bibtex writeroom-mode org-roam-ui sbt-mode lsp-metals flyspell node-repl racket-mode slime projectile org-notify restclient consult-lsp hotfuzz affe savehist-mode selectrum vertico embark-consult embark marginalia consult org-roam forge elfeed jest-test jest-test-mode haskell-snippets typed-clojure-mode cider lsp-haskell haskell-mode dired-sidebar cargo-mode rust-mode magit-todos-mode magit-todos terraform-mode immaterial-theme docker-file dockerfile-mode string-inflection elm-mode js-doc orderless emacs esup shell-command+ lsp-eslint csv-mode dap-mode doom-modeline all-the-icons lsp-ui lsp-mode origami origami-mode night-owl-theme ibuffer-vc popup-kill-ring flycheck-posframe flycheck-postframe acme-theme abyss-theme scratch-pop undo-fu vlf literate-calc-mode docker yaml-mode emojify web-mode add-node-modules-path vterm try control-mode zoom-window flycheck-rust cargo multiple-cursors anzu expand-region yasnippet-snippets wgrep deadgrep ripgrep ob-restclient org-bullets ox-gfm ox-pandoc jest ts-comint typescript-mode jq-format json-mode nodejs-repl js2-mode lsp-origami highlight-indent-guides sicp whole-line-or-region diff-hl git-timemachine github-review magit smex ibuffer-projectile inf-mongo smartparens paredit golden-ratio tron-legacy-theme doom-themes flycheck exec-path-from-shell which-key dired-du dired-rsync diredfl dired-subtree dash use-package))
+   '(org-superstar darkroom org-roam-bibtex writeroom-mode org-roam-ui sbt-mode flyspell node-repl racket-mode slime projectile org-notify restclient consult-lsp hotfuzz affe savehist-mode selectrum vertico embark-consult embark marginalia consult org-roam forge elfeed jest-test jest-test-mode haskell-snippets typed-clojure-mode cider lsp-haskell haskell-mode dired-sidebar cargo-mode rust-mode magit-todos-mode magit-todos terraform-mode immaterial-theme docker-file dockerfile-mode string-inflection elm-mode js-doc orderless emacs esup shell-command+ lsp-eslint csv-mode doom-modeline all-the-icons lsp-ui lsp-mode origami origami-mode night-owl-theme ibuffer-vc popup-kill-ring flycheck-posframe flycheck-postframe acme-theme abyss-theme scratch-pop undo-fu vlf literate-calc-mode docker yaml-mode emojify web-mode add-node-modules-path vterm try control-mode zoom-window flycheck-rust cargo multiple-cursors anzu expand-region yasnippet-snippets wgrep deadgrep ripgrep ob-restclient org-bullets ox-gfm ox-pandoc jest ts-comint typescript-mode jq-format json-mode nodejs-repl js2-mode lsp-origami highlight-indent-guides sicp whole-line-or-region diff-hl git-timemachine github-review magit smex ibuffer-projectile inf-mongo smartparens paredit golden-ratio tron-legacy-theme doom-themes flycheck exec-path-from-shell which-key dired-du dired-rsync diredfl dired-subtree dash use-package))
  '(pos-tip-background-color "#FFF9DC")
  '(pos-tip-foreground-color "#011627")
  '(proced-format 'verbose)
  '(safe-local-variable-values
-   '((whitespace-style quote
+   '((eval mmm-add-group 'elisp-js
+           '((elisp-rawjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp--js \"" :back "\" js--")
+             (elisp-defjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp-defjs .*\12.*\"\"\12" :back "\")\12")))
+     (whitespace-style quote
                        (face trailing empty tabs))
      (whitespace-action)
      (Syntax . ANSI-Common-Lisp)

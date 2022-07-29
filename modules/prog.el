@@ -139,33 +139,6 @@
                    ;; haskell-mode
                    ) . lsp))
 
-(use-package lsp-ui
-  :disabled t
-  :after lsp-mode
-  :commands lsp-ui-mode
-  :custom-face
-  (lsp-ui-doc-background ((t (:background nil))))
-  (lsp-ui-doc-header ((t (:inherit (font-lock-string-face italic)))))
-  :bind
-  (:map lsp-ui-mode-map
-        ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
-        ([remap xref-find-references] . lsp-ui-peek-find-references)
-        ("C-c u" . lsp-ui-imenu)
-        ("C-c M-i" . lsp-ui-doc-focus-frame))
-
-  :custom
-  (lsp-ui-sideline-show-hover nil)
-  ;; (lsp-ui-doc-position 'bottom)
-  (lsp-ui-doc-include-signature t)
-  (lsp-ui-doc-border (face-foreground 'default))
-  (lsp-ui-sideline-enable nil)
-  (lsp-ui-sideline-ignore-duplicate t)
-  (lsp-ui-sideline-show-code-actions nil)
-  :config
-  ;; Use lsp-ui-doc-webkit only in GUI
-  (if (display-graphic-p)
-      (setq lsp-ui-doc-use-webkit t)))
-
 (use-package paredit
   :hook
   (eval-expression-minibuffer-setup . enable-paredit-mode)
@@ -263,5 +236,37 @@
   (json-mode . tsi-typescript-mode)
   (css-mode . tsi-typescript-mode)
   (scss-mode . tsi-typescript-mode))
+
+(use-package json-mode)
+(use-package jq-format
+  :after json-mode)
+
+(use-package origami
+  :bind (:map origami-mode-map
+              ("C-=" . origami-toggle-node)))
+
+(use-package haskell-mode :disabled t)
+(use-package haskell-snippets :disabled t)
+(use-package cider :disabled t)
+(use-package clojure-mode :disabled t)
+
+(use-package sly
+  :init
+  (setq inferior-lisp-program "/usr/local/bin/sbcl")
+  :hook
+  (sly-mode . (lambda ()
+     (unless (sly-connected-p)
+       (save-excursion (sly))))))
+
+(use-package sly-asdf
+  :disabled t)
+(use-package sly-quicklisp
+  :disabled t)
+
+(use-package hcl-mode
+  :mode
+  ("\\.dsl\\'" . hcl-mode))
+
+(use-package pandoc-mode)
 
 (provide 'prog)

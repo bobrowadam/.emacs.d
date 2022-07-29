@@ -21,7 +21,6 @@
       dired-recursive-deletes 'always
       dired-recursive-copies 'always
       initial-scratch-message ";; Oh it's you again"
-      pixel-scroll-precision-mode t
       display-time-day-and-date t
       display-time-24hr-format t
       display-time-default-load-average nil
@@ -31,6 +30,7 @@
       ring-bell-function 'ignore
       visible-bell nil)
 
+(pixel-scroll-precision-mode 1)
 (unless (not (file-exists-p custom-file))
   (load custom-file))
 
@@ -110,5 +110,7 @@
 
 (use-package emojify)
 (use-package zoom-window :bind ("C-x C-z" . zoom-window-zoom))
+(use-package iedit
+  :bind ("C-;" . iedit-mode))
 
 (provide 'basic-settings)

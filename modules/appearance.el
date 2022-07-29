@@ -34,4 +34,7 @@
   :demand t
   :config (mood-line-mode))
 
+(use-package all-the-icons
+  :if (display-graphic-p))
+
 (provide 'appearance)

@@ -43,6 +43,20 @@
   :bind
   ("C-x 8 l" . insert-λ))
 
-(setq initial-major-mode 'fundamental-mode)
+(setq initial-major-mode 'lisp-interaction-mode)
 
+(use-package utils
+  :demand t
+  :load-path "./site-lisp"
+  :ensure nil)
+
+(use-package edit-funcs
+  :if (window-system)
+  :load-path "./site-lisp"
+  :bind
+  ("C-`" . unpop-to-mark-command)
+  ("M-`" . jump-to-mark))
+
+(use-package scratch-pop
+  :bind ("C-c r" . scratch-pop))
 (provide 'startup)
