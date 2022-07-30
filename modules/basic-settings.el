@@ -28,7 +28,8 @@
       custom-file (expand-file-name "custom.el" user-emacs-directory)
       Info-additional-directory-list `(,(expand-file-name "info-docs" user-emacs-directory))
       ring-bell-function 'ignore
-      visible-bell nil)
+      visible-bell nil
+      enable-local-variables :safe)
 
 (pixel-scroll-precision-mode 1)
 (unless (not (file-exists-p custom-file))

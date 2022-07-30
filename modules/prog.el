@@ -98,7 +98,6 @@
 (use-package lsp-mode
   :commands lsp
   :init
-
   (setenv "LSP_USE_PLISTS" "true")
   (setq lsp-use-plists t)
   (setq node-version "18.5.0")
@@ -139,16 +138,19 @@
                    ;; haskell-mode
                    ) . lsp))
 
+(defadvice enable-paredit-mode (after disable-company activate)
+  (smartparens-mode -1))
+
 (use-package paredit
   :hook
   (eval-expression-minibuffer-setup . enable-paredit-mode)
   (emacs-lisp-mode . enable-paredit-mode)
-  ;; (clojure-mode . enable-paredit-mode)
-  ;; (cider-mode . enable-paredit-mode)
   (slime-mode . enable-paredit-mode)
   (slime-repl-mode . enable-paredit-mode)
   (common-lisp-mode . enable-paredit-mode)
   (lisp-mode . enable-paredit-mode)
+  (lisp-data-mode . enable-paredit-mode)
+  (eshell-mode  . enable-paredit-mode)
   :bind
   (:map paredit-mode-map ("C-'" . sp-rewrap-sexp)))
 
