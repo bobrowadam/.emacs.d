@@ -65,11 +65,11 @@
  (rear-context-string . "0B Sep 15 22:20 ")
  (position . 237))
 ("org-capture-last-stored"
- (filename . "~/Dropbox/orgzly/org-roam/20220727120815-savings_monitoring.org")
- (front-context-string . "\n* Buisiness SLA")
- (rear-context-string . "ings Monitoring\n")
- (position . 96)
- (last-modified 25313 1229 855456 0))
+ (filename . "~/Dropbox/orgzly/org-roam/20220730235324-intermittent_fasting.org")
+ (front-context-string . "\n\n* Day 0 starti")
+ (rear-context-string . "mittent Fasting\n")
+ (position . 98)
+ (last-modified 25317 41327 422355 0))
 ("defuns"
  (filename . "~/.emacs.d/defuns/")
  (front-context-string . "misc-defuns.el\n ")
