@@ -90,10 +90,6 @@
           ))
 
 (use-package org-superstar
-  ;; :disabled t
-  ;; :straight '(org-superstar
-  ;;             :fork (:host github
-  ;;                          :repo "thibautbenjamin/org-superstar-mode"))
   :after org
   :hook (org-mode . org-superstar-mode)
   :config

@@ -188,7 +188,7 @@
   (web-mode . yas-minor-mode-on)
   (text-mode . yas-minor-mode-on)
   (lisp-mode . yas-minor-mode-on)
-  ;; (haskell-mode . yas-minor-mode-on)
+  (inf-mongo-mode . yas-minor-mode-on)
   (rust-mode . yas-minor-mode-on)
   :config
   (setq yas-snippet-dirs
@@ -227,17 +227,6 @@
   :ensure t
   :demand t
   :after tree-sitter)
-
-(use-package tsi
-  :demand t
-  :after tree-sitter
-  :straight '(tsi :type git :host github :repo "orzechowskid/tsi.el")
-  :commands (tsi-typescript-mode tsi-json-mode tsi-css-mode)
-  :hook
-  (typescript-mode . tsi-typescript-mode)
-  (json-mode . tsi-typescript-mode)
-  (css-mode . tsi-typescript-mode)
-  (scss-mode . tsi-typescript-mode))
 
 (use-package json-mode)
 (use-package jq-format

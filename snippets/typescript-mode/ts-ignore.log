@@ -2,4 +2,4 @@
 # name: ts-ignore
 # key: ignore
 # --
-// @ts-ignore
+// @ts-expect-error
