@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: Deploy
-# key: deploy
-# --
-Deploying \`$1\` (reviewed by $2) - $3

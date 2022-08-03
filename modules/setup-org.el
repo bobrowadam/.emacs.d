@@ -4,7 +4,7 @@
   :if (window-system)
   :init
   (setq org-export-with-toc nil)
-  (setq org-pretty-entities t)
+  (setq org-pretty-entities nil)
   (setq org-loop-over-headlines-in-active-region t)
   (setq calendar-longitude 32.085300)
   (setq calendar-latitude 34.781769)
@@ -36,7 +36,7 @@
    '((emacs-lisp . t)
      (js . t)
      (shell . t)))
-  (add-to-list 'org-src-lang-modes '("tsx" .t ypescript))
+  (add-to-list 'org-src-lang-modes '("tsx" . typescript))
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
   (require 'ob-js)
@@ -49,12 +49,13 @@
   (org-archive . org-save-all-org-buffers)
   (org-after-refile-insert . org-save-all-org-buffers)
   :bind
+  ("C-c l" . org-store-link)
   (:map org-mode-map
         ("M-p" . org-metaup)
         ("M-n" . org-metadown)
         ;; ("C-c c" . org-capture)
         ;; ("C-c S" . org-save-all-org-buffers)
-        ("C-c l" . org-store-link)
+
         ("M-," . org-mark-ring-goto)
         ("M-F" . org-shiftright)
         ("M-B" . org-shiftleft)

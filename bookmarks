@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("*xwidget-webkit: riseup*"
+(("setup-magit.el"
+ (filename . "~/.emacs.d/modules/setup-magit.el")
+ (front-context-string . "(defun bob/magit")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 25322 9259 17972 0))
+("*xwidget-webkit: riseup*"
  (position . 35)
  (last-modified 25314 6817 685150 0)
  (page . "https://www.google.com/search?q=%D7%9C%D7%A9%D7%9C%D7%95%D7%98+%D7%91%D7%94%D7%95%D7%A6%D7%90%D7%95%D7%AA+%D7%95%D7%9C%D7%94%D7%AA%D7%97%D7%99%D7%9C+%D7%9C%D7%97%D7%A1%D7%95%D7%9A+%7C+riseup%7C+%D7%99%D7%A9%D7%A8%D7%90%D7%9C+%28https%3A%2F%2Fwww.riseup.co.il%2F%29")
