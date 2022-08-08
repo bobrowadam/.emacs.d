@@ -26,8 +26,19 @@
   :config
   (setq typescript-indent-level 2))
 
+(defvar *npx-dir* )
 (use-package jest-test-mode
+  :init
+  (setq node-12-version "12.22.12")
+  (setq fnm-12-dir (s-replace " " "" (cadr (s-split "=" (cl-find-if
+                                        (lambda (s) (s-starts-with-p "FNM_DIR" s))
+                                        (s-split "\n" (shell-command-to-string "eval \"$(fnm env --use-on-cd)\"; env | rg FNM")))))))
+  (setq npx-path (concat fnm-12-dir
+                         "/node-versions/v" node-12-version "/installation/bin/npx"))
   :commands jest-test-mode
+  :custom
+  (jest-test-command-string (concat npx-path " %s jest %s %s"))
+  ;; (jest-test-npx-options '("--node-options=\"--inspect-brk\""))
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
 (use-package js2-mode
