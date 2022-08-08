@@ -18,12 +18,12 @@
   (setq org-tags-exclude-from-inheritance nil)
   (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
   (setq org-capture-templates
-        `(("t" "entry" entry (file ,(concat org-directory "/org-roam/20211126120714-inbox.org")) "* %?\n  %i")))
+        `(("t" "entry" entry (file ,(concat org-directory "/org-roam/20220806140803-inbox.org")) "* %?\n  %i")))
   (setq org-agenda-files
         (list
           ;; ,(concat org-directory "/riseup-google-calendar.org")
           ;; ,(concat org-directory "/private-google-calendar.org")
-          (concat org-directory "/org-roam/20211126120714-inbox.org")
+          (concat org-directory "/org-roam/20220806140803-inbox.org")
           (concat org-directory "/org-roam/20211126182152-tasks.org")
           (concat org-directory "/org-roam/20211126120120-projects.org")
           (concat org-directory "/org-roam/20211126112747-check_this_up.org")
