@@ -26,11 +26,13 @@
         magit-commit-show-diff nil
         magit-revert-buffers 1
         magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+  (magit-toggle-verbose-refresh)
 
   (put 'magit-diff-edit-hunk-commit 'disabled nil)
 
   ;; This is for making Emacs OK with defining the following variable locally per Repo
   (put 'magit-status-sections-hook 'safe-local-variable #'listp)
+  (put 'magit-display-buffer-function 'safe-local-variable #'functionp)
   (transient-append-suffix 'magit-commit
     "c"
     '("m" "Quick commit using minibuffer for commit message." bob/magit-message))
@@ -51,28 +53,9 @@
 (use-package gh-notify
   :commands (gh-notify))
 
-(use-package github-review
-  :after forge
-  :bind
-  (:map magit-mode-map ("C-c g r" . github-review-forge-pr-at-point))
-  (:map diff-mode-map ("C-c g s" . my/github-review-kill-suggestion))
-
-  :config
-  (setq github-review-fetch-top-level-and-review-comments t)
-  (defun my/github-review-kill-suggestion ()
-    ;; kill a region of diff+ as a review suggestion template
-    (interactive)
-    (setq deactivate-mark t)
-    (let ((s-region
-           (buffer-substring-no-properties
-            (region-beginning)
-            (region-end))))
-      (kill-new
-       (format "# ```suggestion\n%s\n# ```\n"
-               (replace-regexp-in-string "^\\+" "# " s-region))))))
-
-(use-package git-timemachine)
 (use-package diff-hl
   :init (global-diff-hl-mode))
+
+(use-package denote)
 
 (provide 'setup-magit)
