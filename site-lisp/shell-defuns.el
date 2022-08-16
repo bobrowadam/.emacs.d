@@ -25,6 +25,21 @@ use USER-SHELL-NAME for buffer name"
   (let ((shell-name (format "*SHELL*::%s" (upcase (abbreviate-file-name default-directory)))))
     (bob/vterm-other-window shell-name)))
 
+(defun bob/project-vterm ()
+  "Start Vterm in the current project's root directory.
+If a buffer already exists for running Vterm in the project's root,
+switch to it.  Otherwise, create a new Vterm buffer.
+With \\[universal-argument] prefix arg, create a new Vterm buffer even
+if one already exists."
+  (interactive)
+  (defvar vterm-buffer-name)
+  (let* ((default-directory (project-root (project-current t)))
+         (vterm-buffer-name (project-prefixed-buffer-name "vterm"))
+         (vterm-buffer (get-buffer vterm-buffer-name)))
+    (if (and vterm-buffer (not current-prefix-arg))
+        (pop-to-buffer vterm-buffer (bound-and-true-p display-comint-buffer-action))
+      (vterm t))))
+
 (defun bob/projectile-run-vterm (&optional arg)
   "Invoke `shell' in the project's root.
 Switch to the project specific shell buffer if it already exists.
@@ -37,8 +52,8 @@ Any other prefis will be used as the suffix itself."
     (delete-other-windows)
     (split-window-sensibly)
     (other-window 1)
-    (if (projectile-project-p)
-        (projectile-run-vterm)
+    (if (project-current)
+        (bob/project-vterm)
       (vterm))))
 
 (defvar bob/last-shell-buffer nil)
@@ -55,6 +70,7 @@ Any other prefis will be used as the suffix itself."
                                 (equal (with-current-buffer b major-mode) 'shell-mode)
                                 (equal (with-current-buffer b major-mode) 'js-comint-mode)
                                 (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
+                                (equal (with-current-buffer b major-mode) 'comint-mode)
                                 ))
                 (mapcar (function buffer-name) (buffer-list))
                 ;; (flatten-tree (mapcar (λ (buffer-name %1)) (persp-get-buffers)))

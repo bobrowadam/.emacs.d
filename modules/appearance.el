@@ -14,7 +14,7 @@
   (modus-themes-bold-constructs t)
   (modus-themes-italic-constructs t)
   (modus-themes-paren-math ('bold intense))
-  (modus-themes-hl-line t)
+  (modus-themes-hl-line (quote (accented)))
   (modus-themes-syntax '(alt-syntax yellow-comments green-strings))
   :config
   (load-theme 'modus-vivendi))

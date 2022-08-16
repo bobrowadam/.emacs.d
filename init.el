@@ -4,6 +4,7 @@
 
 (add-hook 'emacs-startup-hook
           (lambda ()
+            (setq gc-cons-threshold 800000)
             (message "Emacs ready in %s with %d garbage collections."
                      (format "%.2f seconds"
                              (float-time
@@ -19,7 +20,7 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(setq package-native-compile nil)
+(setq package-native-compile t)
 (setq use-package-always-defer t)
 (setq use-package-always-ensure t)
 (setq use-package-verbose t)

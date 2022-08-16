@@ -18,6 +18,7 @@
 
 (use-package dirvish
   :ensure t
+  :after (dired)
   :custom
   (dirvish-quick-access-entries
    '(("h" "~/"                          "Home")
@@ -32,7 +33,6 @@
   (dirvish-hide-details nil)
   :init
   ;; Let Dirvish take over Dired globally
-  (dirvish-override-dired-mode)
   (setq dirvish-attributes '(all-the-icons collapse subtree-state vc-state))
   (dirvish-define-preview exa (file)
     "Use `exa' to generate directory preview."
@@ -42,6 +42,8 @@
   (add-to-list 'dirvish-preview-dispatchers 'exa)
 
   :config
+  (dirvish-override-dired-mode)
+  (require 'dirvish-fd)
   (dirvish-peek-mode)
   
   ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above

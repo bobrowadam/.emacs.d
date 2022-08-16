@@ -1,5 +1,6 @@
 (use-package add-node-modules-path)
 (use-package flycheck)
+
 (use-package flycheck-posframe
   :ensure t
   :after flycheck
@@ -12,8 +13,12 @@
 (defun npm-run-build ()
   "Build typescript project on watch mode"
   (interactive)
-  (when (and (projectile-project-name) (eq major-mode 'typescript-mode))
-   (async-shell-command "npm run build -- -w" (format "%s: TS-COMPILE" (projectile-project-name)))))
+  (when (and (project-current) (eq major-mode 'typescript-mode))
+    (let ((default-directory (project-root (project-current t)))
+          (comint-scroll-to-bottom-on-input t)
+          (comint-scroll-to-bottom-on-output t)
+          (comint-process-echoes t))
+      (compilation-start "npm run build -- -w" t))))
 (use-package typescript-mode
   :init
   (defun lsp-ts-install-save-hooks ()
@@ -109,6 +114,8 @@
 (use-package lsp-mode
   :commands lsp
   :init
+  ;; if using company for completion remove this:
+  (setq lsp-completion-provider :none)
   (setenv "LSP_USE_PLISTS" "true")
   (setq lsp-use-plists t)
   (setq node-version "18.5.0")
@@ -128,9 +135,7 @@
   (lsp-file-watch-threshold 2000)
   (lsp-eslint-auto-fix-on-save t)
   (read-process-output-max (* 1024 1024))
-  ;; (lsp-eldoc-hook nil)
-  (lsp-ui-doc-show-with-cursor t)
-  ;; (company-lsp-cache-candidates t)
+  (lsp-eldoc-hook nil)
   (lsp-eslint-server-command `(,fnm-node
                                ,(f-join lsp-eslint-unzipped-path "extension/server/out/eslintServer.js")
                                "--stdio"))
@@ -149,7 +154,7 @@
                    ;; haskell-mode
                    ) . lsp))
 
-(defadvice enable-paredit-mode (after disable-company activate)
+(defadvice enable-paredit-mode (after activate)
   (smartparens-mode -1))
 
 (use-package paredit
@@ -226,13 +231,10 @@
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package tree-sitter
-  :ensure t
-  :config
-  ;; activate tree-sitter on any buffer containing code for which it has a parser available
-  (global-tree-sitter-mode)
-  ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
-  ;; by switching on and off
-  :hook (tree-sitter-after-on-hook .  #'tree-sitter-hl-mode))
+  :hook ((js2-mode typescript-mode
+                   c-mode c++-mode rust-mode
+                   ) . tree-sitter-hl-mode)
+  :ensure t)
 
 (use-package tree-sitter-langs
   :ensure t

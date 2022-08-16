@@ -1,5 +1,4 @@
 (use-package org
-  :demand t
   :ensure nil
   :if (window-system)
   :init
@@ -170,7 +169,6 @@
 
 (use-package  ob-mongo
   :ensure nil
-  :demand t
   :load-path "ob-mongo"
   :after org)
 

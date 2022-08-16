@@ -1,27 +1,3 @@
-(use-package projectile
-  :init
-  (defun sort--buffers-by-file-modtime (buffer-names)
-    (sort buffer-names
-          (lambda (b1 b2)
-            (time-less-p
-             (file-attribute-modification-time (file-attributes (buffer-file-name (get-buffer b2))))
-             (file-attribute-modification-time (file-attributes (buffer-file-name (get-buffer b1))))))))
-  (setq projectile-buffers-filter-function
-        (lambda (all-buffers)
-          (sort--buffers-by-file-modtime all-buffers)))
-  (projectile-mode 1)
-  :config
-  (add-to-list 'projectile-globally-ignored-directories "node_modules")
-  (setq projectile-switch-project-action #'projectile-dired)
-  (setq projectile-enable-caching nil)
-  (setq projectile-sort-order 'recentf)
-  ;; (setq projectile-sort-order 'recently-active)
-  (unless projectile-known-projects
-    (-let ((main-projects-directory (or service-directory (read-directory-name "Please enter main projects directory"))))
-      (projectile-discover-projects-in-directory main-projects-directory 1)))
-  :bind
-  (:map projectile-mode-map ("C-c p" . projectile-command-map)))
-
 (defun ibuffer-filter-by-prog-mode  ()
   (ibuffer-filter-by-derived-mode 'prog-mode))
 
@@ -77,8 +53,6 @@
   (ibuffer-vc-skip-if-remote t))
 
 (use-package consult
-  :demand t
-  :after projectile
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c m" . consult-mode-command)
          ("C-x r b" . consult-bookmark)
@@ -113,34 +87,34 @@
   (setq register-preview-delay 0
         register-preview-function #'consult-register-format)
   (advice-add #'register-preview :override #'consult-register-window)
-  ;; (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
-  ;; :config
-  ;; (consult-customize
-  ;;  consult-theme
-  ;;  :preview-key '(:debounce 0.2 any)
-  ;;  consult-ripgrep consult-git-grep consult-grep
-  ;;  consult-bookmark consult-recent-file consult-xref
-  ;;  consult--source-project-file consult--source-bookmark
-  ;;  :preview-key (kbd "M-."))
 
-  (setq consult-narrow-key "<")
-  (setq consult-project-root-function
-        (lambda ()
-          (when-let (project (project-current))
-            (car (project-roots project)))))
-  (autoload 'projectile-project-root "projectile")
-  (setq consult-project-root-function #'projectile-project-root)
-  (projectile-load-known-projects)
-  (setq my-consult-source-projectile-projects
-        `(:name "Projectile projects"
-                :narrow   ?P
-                :category project
-                :action   ,#'projectile-switch-project-by-name
-                :items    ,projectile-known-projects))
-  ;; (add-to-list 'consult-buffer-sources my-consult-source-projectile-projects 'append)
+  (setq consult-narrow-key "<"))
+
+(use-package consult-project-extra
+  :bind
+  (("C-x p f" . consult-project-extra-find)
+   ("C-x p o" . consult-project-extra-find-other-window)))
+
+(use-package project
+  :ensure nil
+  :bind
+  (("C-x p s" . bob/project-vterm)
+   ("C-x p m"  . magit-project-status))
+  :init
+  (setq project-switch-commands
+        '((consult-project-extra-find "Find file")
+          (project-find-dir "Find directory")
+          (bob/project-vterm "Vterm")
+          (magit-project-status "Magit")))
+  (unless (project-known-project-roots)
+    (message "No project file found, indexing projects")
+    (progn
+      (project-remember-projects-under "~/source/services")
+      (project-remember-projects-under "~/source")))
   )
+
 (use-package consult-lsp :ensure t)
 
 (use-package hotfuzz
@@ -209,16 +183,16 @@
 (use-package corfu
   ;; Optional customizations
   :custom
-  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
-  ;; (corfu-separator ?\s)          ;; Orderless field separator
-  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
-  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+  (corfu-separator ?\s)          ;; Orderless field separator
+  (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  (corfu-preview-current nil)    ;; Disable current candidate preview
+  (corfu-preselect-first nil)    ;; Disable candidate preselection
+  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  (corfu-echo-documentation nil) ;; Disable documentation in the echo area
+  (corfu-scroll-margin 5)        ;; Use scroll margin
 
   ;; Enable Corfu only for certain modes.
   :hook ((prog-mode . corfu-mode)
@@ -228,24 +202,24 @@
   ;; This is recommended since Dabbrev can be used globally (M-/).
   ;; See also `corfu-excluded-modes'.
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  (defun corfu-enable-in-minibuffer ()
+    "Enable Corfu in the minibuffer if `completion-at-point' is bound."
+    (when (where-is-internal #'completion-at-point (list (current-local-map)))
+      ;; (setq-local corfu-auto nil) Enable/disable auto completion
+      (corfu-mode 1)))
 
-(defun corfu-enable-in-minibuffer ()
-  "Enable Corfu in the minibuffer if `completion-at-point' is bound."
-  (when (where-is-internal #'completion-at-point (list (current-local-map)))
-    ;; (setq-local corfu-auto nil) Enable/disable auto completion
-    (corfu-mode 1)))
-(add-hook 'minibuffer-setup-hook #'corfu-enable-in-minibuffer)
+  (defun corfu-send-shell (&rest _)
+    "Send completion candidate when inside comint/eshell."
+    (cond
+     ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
+      (eshell-send-input))
+     ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
+      (comint-send-input))))
 
-(defun corfu-send-shell (&rest _)
-  "Send completion candidate when inside comint/eshell."
-  (cond
-   ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
-    (eshell-send-input))
-   ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
-    (comint-send-input))))
-
-(advice-add #'corfu-insert :after #'corfu-send-shell)
+  (advice-add #'corfu-insert :after #'corfu-send-shell)
+  :hook
+  (minibuffer-setup . corfu-enable-in-minibuffer))
 
 (use-package dabbrev
   :ensure nil

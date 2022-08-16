@@ -32,6 +32,8 @@
       enable-local-variables :safe)
 
 (pixel-scroll-precision-mode 1)
+(setq scroll-conservatively 101)
+
 (unless (not (file-exists-p custom-file))
   (load custom-file))
 

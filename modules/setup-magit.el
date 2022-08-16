@@ -25,7 +25,9 @@
         transient-default-level 7
         magit-commit-show-diff nil
         magit-revert-buffers 1
-        magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+        magit-display-buffer-function #'magit-display-buffer-traditional
+        ;; #'magit-display-buffer-fullframe-status-v1
+        )
   (magit-toggle-verbose-refresh)
 
   (put 'magit-diff-edit-hunk-commit 'disabled nil)
