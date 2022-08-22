@@ -1,5 +1,6 @@
 ;; Dired
 (use-package dired
+  :demand t
   :config
   (setq dired-use-ls-dired nil)
   ;; (setq dired-listing-switches "-alh")
@@ -17,8 +18,9 @@
   :bind (:map dired-mode-map ("C-c C-r" . dired-rsync)))
 
 (use-package dirvish
-  :ensure t
+  :demand t
   :after (dired)
+  :ensure t
   :custom
   (dirvish-quick-access-entries
    '(("h" "~/"                          "Home")
@@ -34,18 +36,16 @@
   :init
   ;; Let Dirvish take over Dired globally
   (setq dirvish-attributes '(all-the-icons collapse subtree-state vc-state))
-  (dirvish-define-preview exa (file)
-    "Use `exa' to generate directory preview."
-    :require ("exa") ; tell Dirvish to check if we have the executable
-    (when (file-directory-p file) ; we only interest in directories here
-      `(shell . ("exa" "--color=always" "-al" ,file))))
-  (add-to-list 'dirvish-preview-dispatchers 'exa)
-
   :config
-  (dirvish-override-dired-mode)
   (require 'dirvish-fd)
-  (dirvish-peek-mode)
-  
+  (dirvish-define-preview exa (file)
+                          "Use `exa' to generate directory preview."
+                          :require ("exa") ; tell Dirvish to check if we have the executable
+                          (when (file-directory-p file) ; we only interest in directories here
+                            `(shell . ("exa" "--color=always" "-al" ,file))))
+  (add-to-list 'dirvish-preview-dispatchers 'exa)
+  (dirvish-override-dired-mode)
+    (dirvish-peek-mode)
   ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
   (setq dired-dwim-target t)
   (setq delete-by-moving-to-trash t)
@@ -71,7 +71,7 @@
    ("M-e" . dirvish-emerge-menu)
    ("M-j" . dirvish-fd-jump)))
 
-;; Ediff setup
+;; setup
 (defmacro csetq (variable value)
   `(funcall (or (get ',variable 'custom-set)
                 'set-default)

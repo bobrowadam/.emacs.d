@@ -6,8 +6,12 @@
 
 (use-package ibuffer
   :ensure nil
-  :bind ("C-x C-b" . ibuffer)
-  :init
+  :bind
+  ("C-x C-b" . ibuffer)
+  ("C-x p I" . project-ibuffer)
+
+  :config
+  (require 'project-ibuffer)
   (define-ibuffer-column short-file-name (:name Testing-Define-Column :inline true)
     (if-let ((root-dir (cdr (ibuffer-vc-root (current-buffer))))
              (visiting-file-name (buffer-file-name)))
@@ -57,7 +61,6 @@
          ("C-c m" . consult-mode-command)
          ("C-x r b" . consult-bookmark)
          ("C-c k" . consult-kmacro)
-         ("C-x M-:" . consult-complex-command)
          ("C-x b" . consult-buffer)
          ("C-x 4 b" . consult-buffer-other-window)
          ("C-x 5 b" . consult-buffer-other-frame)
@@ -72,13 +75,9 @@
          ("M-g k" . consult-global-mark)
          ("M-i" . consult-imenu)
          ("M-g i" . consult-imenu-multi)
-         ("C-c M-s f" . consult-find)
-         ("C-c M-s F" . consult-locate)
-         ("C-c M-s G" . consult-git-grep)
-         ("C-c C-s C-r" . consult-ripgrep)
+         ("M-g C-g" . consult-git-grep)
+         ("M-g r" . consult-ripgrep)
          ("C-M-s" . consult-line)
-         ("C-c M-s m" . consult-multi-occur)
-         ("C-c M-s k" . consult-keep-lines)
          ("C-c M-s e" . consult-isearch)
          :map isearch-mode-map
          ("M-s l" . consult-line)
@@ -101,19 +100,20 @@
   :ensure nil
   :bind
   (("C-x p s" . bob/project-vterm)
-   ("C-x p m"  . magit-project-status))
+   ("C-x p m"  . magit-project-status)
+   ("C-x p C-m"  . project-dired))
   :init
   (setq project-switch-commands
         '((consult-project-extra-find "Find file")
-          (project-find-dir "Find directory")
+          (project-dired "Find directory")
           (bob/project-vterm "Vterm")
-          (magit-project-status "Magit")))
+          (magit-project-status "Magit")
+          (consult-ripgrep "Grep" "g")))
   (unless (project-known-project-roots)
     (message "No project file found, indexing projects")
     (progn
       (project-remember-projects-under "~/source/services")
-      (project-remember-projects-under "~/source")))
-  )
+      (project-remember-projects-under "~/source"))))
 
 (use-package consult-lsp :ensure t)
 
@@ -326,12 +326,12 @@
 
 (use-package rg
   :bind
-  ("C-c M-r" . rg))
+  ("M-g d" . rg))
 
 (use-package wgrep)
 
 (use-package deadgrep
-  :bind ("C-c C-s C-d" . deadgrep))
+  :bind ("M-g D" . deadgrep))
 
 (use-package xwwp
   :ensure nil
