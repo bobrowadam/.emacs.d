@@ -108,7 +108,8 @@
           (project-dired "Find directory")
           (bob/project-vterm "Vterm")
           (magit-project-status "Magit")
-          (consult-ripgrep "Grep" "g")))
+          (consult-ripgrep "Grep" "g")
+          (project-ibuffer "Ibuffer" "b")))
   (unless (project-known-project-roots)
     (message "No project file found, indexing projects")
     (progn

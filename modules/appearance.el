@@ -6,24 +6,24 @@
 
 (use-package modus-themes
   :demand t
+  :init
+  (modus-themes-load-themes)
   :custom
   (modus-themes-mode-line '(borderless padded accented))
   (modus-themes-region '( bg-only))
-  (modus-themes-completions
-   (quote ((t . (extrabold intense background)))))
   (modus-themes-bold-constructs t)
   (modus-themes-italic-constructs t)
   (modus-themes-paren-math ('bold intense))
   (modus-themes-hl-line (quote (accented)))
   (modus-themes-syntax '(alt-syntax yellow-comments green-strings))
   :config
-  (load-theme 'modus-vivendi))
+  (modus-themes-load-vivendi))
 
 (use-package highlight-indent-guides
   :config
   (setq highlight-indent-guides-method 'fill
         highlight-indent-guides-responsive 'top
-        highlight-indent-guides-auto-enabled nil)
+        highlight-indent-guides-auto-enabled t)
   (set-face-background 'highlight-indent-guides-odd-face "gray11")
   (set-face-background 'highlight-indent-guides-even-face "gray7")
   (set-face-foreground 'highlight-indent-guides-character-face "gray5")

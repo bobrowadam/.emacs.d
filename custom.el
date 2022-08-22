@@ -20,7 +20,7 @@
      (Package . CL-USER)
      (Syntax . COMMON-LISP)))
  '(lsp-restart 'ignore)
- '(lsp-vetur-dev-log-level "DEBUG" t)
+ '(lsp-vetur-dev-log-level "DEBUG")
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
  '(org-agenda-files nil)
@@ -83,8 +83,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(doom-modeline-project-dir ((t (:inherit bold))))
- '(lsp-ui-doc-background ((t (:background nil))))
- '(lsp-ui-doc-header ((t (:inherit (font-lock-string-face italic)))))
- '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor"))))
- '(selectrum-current-candidate ((t (:background "#3a3f5a")))))
+ '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))

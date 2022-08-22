@@ -77,11 +77,11 @@
  (rear-context-string . "0B Sep 15 22:20 ")
  (position . 237))
 ("org-capture-last-stored"
- (filename . "~/Dropbox/orgzly/org-roam/20220806140803-inbox.org")
- (front-context-string . "* Schedule with ")
- (rear-context-string . "---------------\n")
- (position . 521)
- (last-modified 25338 24016 791795 0))
+ (filename . "~/Dropbox/orgzly/org-roam/20220817132100-recipes.org")
+ (front-context-string . "\n* Pan Pizza Dou")
+ (rear-context-string . "+title: recipes\n")
+ (position . 85)
+ (last-modified 25340 49464 678992 0))
 ("defuns"
  (filename . "~/.emacs.d/defuns/")
  (front-context-string . "misc-defuns.el\n ")
