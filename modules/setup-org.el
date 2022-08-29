@@ -34,7 +34,8 @@
    'org-babel-load-languages
    '((emacs-lisp . t)
      (js . t)
-     (shell . t)))
+     (shell . t)
+     (mongo . t)))
   (add-to-list 'org-src-lang-modes '("tsx" . typescript))
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))

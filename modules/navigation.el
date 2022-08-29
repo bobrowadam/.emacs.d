@@ -1,61 +1,3 @@
-(defun ibuffer-filter-by-prog-mode  ()
-  (ibuffer-filter-by-derived-mode 'prog-mode))
-
-(defun short--file-path (file-path)
-  (s-prepend "/" (s-join "/" (-take-last 4 (s-split "/" file-path)))))
-
-(use-package ibuffer
-  :ensure nil
-  :bind
-  ("C-x C-b" . ibuffer)
-  ("C-x p I" . project-ibuffer)
-
-  :config
-  (require 'project-ibuffer)
-  (define-ibuffer-column short-file-name (:name Testing-Define-Column :inline true)
-    (if-let ((root-dir (cdr (ibuffer-vc-root (current-buffer))))
-             (visiting-file-name (buffer-file-name)))
-        (short--file-path (s-replace (expand-file-name root-dir) "" visiting-file-name))
-      (or (buffer-file-name) (buffer-name))))
-  (define-ibuffer-column size-h
-    (:name "Size" :inline t)
-    (cond
-     ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
-     ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
-     (t (format "%8d" (buffer-size)))))
-  :custom
-  (ibuffer-expert t)
-  (ibuffer-show-empty-filter-groups nil)
-  (ibuffer-formats
-   '((mark modified read-only vc-status-mini " "
-           (short-file-name))
-     (mark modified read-only vc-status-mini " "
-           (name 18 18 :left :elide)
-           " "
-           (size-h 9 -1 :right)
-           " "
-           (mode 16 16 :left :elide)
-           " "
-           filename-and-process)))
-  (ibuffer-filter-group-name-face 'font-lock-doc-face)
-  :hook
-  (ibuffer . (lambda ()
-               (ibuffer-auto-mode)
-               (ibuffer-vc-set-filter-groups-by-vc-root)
-               (ibuffer-filter-by-prog-mode)
-               (all-the-icons-ibuffer-mode)
-               (unless (eq ibuffer-sorting-mode 'recency)
-                 (ibuffer-do-sort-by-recency)))))
-
-(use-package all-the-icons-ibuffer
-  :init (all-the-icons-ibuffer-mode 1))
-
-(use-package ibuffer-vc
-  :demand
-  :commands (ibuffer-vc-set-filter-groups-by-vc-root)
-  :custom
-  (ibuffer-vc-skip-if-remote t))
-
 (use-package consult
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c m" . consult-mode-command)
@@ -107,8 +49,8 @@
         '((consult-project-extra-find "Find file")
           (project-dired "Find directory")
           (bob/project-vterm "Vterm")
-          (magit-project-status "Magit")
-          (consult-ripgrep "Grep" "g")
+          (magit-project-status "Magit" "g")
+          (consult-ripgrep "Grep" "r")
           (project-ibuffer "Ibuffer" "b")))
   (unless (project-known-project-roots)
     (message "No project file found, indexing projects")
@@ -147,8 +89,6 @@
   (selectrum-num-candidates-displayed 7)
   ;; (selectrum-refine-candidates-function #'orderless-filter)
   ;; (selectrum-highlight-candidates-function #'orderless-highlight-matches)
-  :custom-face
-  (selectrum-current-candidate ((t (:background "#3a3f5a"))))
   :init
   (selectrum-mode 1))
 

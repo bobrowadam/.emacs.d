@@ -52,9 +52,6 @@
 (use-package forge
   :init (setq forge-bug-reference-hooks nil))
 
-(use-package gh-notify
-  :commands (gh-notify))
-
 (use-package diff-hl
   :init (global-diff-hl-mode))
 

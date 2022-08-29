@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("notes"
+(("moud"
+ (filename . "~/source/services/elsa/")
+ (front-context-string . ".gitignore\n  drw")
+ (rear-context-string . "84 Jun 22 10:03 ")
+ (position . 614)
+ (last-modified 25354 26352 493624 0))
+("notes"
  (filename . "~/Documents/notes/")
  (front-context-string . "20220805T235642-")
  (rear-context-string . "15 Aug  5 23:56 ")
@@ -77,11 +83,11 @@
  (rear-context-string . "0B Sep 15 22:20 ")
  (position . 237))
 ("org-capture-last-stored"
- (filename . "~/Dropbox/orgzly/org-roam/20220817132100-recipes.org")
- (front-context-string . "\n* Pan Pizza Dou")
- (rear-context-string . "+title: recipes\n")
- (position . 85)
- (last-modified 25340 49464 678992 0))
+ (filename . "~/Dropbox/orgzly/org-roam/20220806140803-inbox.org")
+ (front-context-string . "* Check \"among u")
+ (rear-context-string . "---------------\n")
+ (position . 521)
+ (last-modified 25347 23916 192769 0))
 ("defuns"
  (filename . "~/.emacs.d/defuns/")
  (front-context-string . "misc-defuns.el\n ")

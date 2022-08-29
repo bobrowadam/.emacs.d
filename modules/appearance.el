@@ -9,6 +9,7 @@
   :init
   (modus-themes-load-themes)
   :custom
+  (modus-themes-vivendi-color-overrides '((bg-main . "gray8")))
   (modus-themes-mode-line '(borderless padded accented))
   (modus-themes-region '( bg-only))
   (modus-themes-bold-constructs t)
@@ -24,10 +25,6 @@
   (setq highlight-indent-guides-method 'fill
         highlight-indent-guides-responsive 'top
         highlight-indent-guides-auto-enabled t)
-  (set-face-background 'highlight-indent-guides-odd-face "gray11")
-  (set-face-background 'highlight-indent-guides-even-face "gray7")
-  (set-face-foreground 'highlight-indent-guides-character-face "gray5")
-
   :hook (prog-mode . highlight-indent-guides-mode))
 
 (use-package mood-line
