@@ -38,16 +38,27 @@
   (setq dirvish-attributes '(all-the-icons collapse subtree-state vc-state))
   :config
   (defun dirvish-find-entry-ad (&optional entry)
-    "Find file in dirvish buffer.
+    "Find ENTRY in current dirvish session.
 ENTRY can be a filename or a string with format of
 `dirvish-fd-bufname' used to query or create a `fd' result
 buffer, it defaults to filename under the cursor when it is nil."
     (let* ((entry (or entry (dired-get-filename nil t)))
-           (dv (or (dirvish-curr) (user-error "Not in a dirvish session")))
-           (buffer (dirvish--find-entry dv entry)))
+           (buffer (dirvish--find-entry entry)))
       (if buffer
           (dirvish-with-no-dedication (switch-to-buffer buffer))
-        (find-file entry))))
+        (let* ((ext (downcase (or (file-name-extension entry) "")))
+               (file (expand-file-name entry))
+               (process-connection-type nil)
+               (ex (cl-loop
+                    for (exts . (cmd . args)) in dirvish-open-with-programs
+                    thereis (and (not (dirvish-prop :remote))
+                                 (executable-find cmd)
+                                 (member ext exts)
+                                 (append (list cmd) args)))))
+          (if ex (apply #'start-process "" nil "nohup"
+                        (cl-substitute file "%f" ex :test 'string=))
+            (when-let ((dv (dirvish-curr))) (funcall (dv-on-file-open dv) dv))
+            (find-file file))))))
   (require 'dirvish-fd)
   (dirvish-define-preview exa (file)
                           "Use `exa' to generate directory preview."
@@ -59,9 +70,10 @@ buffer, it defaults to filename under the cursor when it is nil."
     "Use `bat' to generate directory preview."
     :require ("bat") ; tell Dirvish to check if we have the executable
     (when (not (file-directory-p file)) ; we only interest in directories here
-      `(shell . ("bat" "--color=always" "--decorations=always" ,file))))
+      `(shell . ("bat" "--color=always" "--decorations=always" "--paging=never",file))))
+  
   (add-to-list 'dirvish-preview-dispatchers 'bat)
-
+  (car dirvish-preview-dispatchers)
   (dirvish-override-dired-mode)
     (dirvish-peek-mode)
   ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
