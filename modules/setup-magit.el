@@ -45,9 +45,13 @@
   (transient-append-suffix 'magit-file-dispatch
     "P"
     '("F" "Pull" magit-pull))
-  ;; (setq magit-status-sections-hook
-  ;;       '(magit-insert-unpushed-to-pushremote magit-insert-untracked-files magit-insert-unstaged-changes magit-insert-staged-changes))
-)
+  (setq magit-status-sections-hook '(magit-insert-status-headers
+                                    magit-insert-unpushed-to-pushremote
+                                    magit-insert-untracked-files
+                                    magit-insert-unstaged-changes
+                                    magit-insert-staged-changes
+                                    magit-insert-stashes
+                                    )))
 
 (use-package forge
   :init (setq forge-bug-reference-hooks nil))
