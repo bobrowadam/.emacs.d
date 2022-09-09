@@ -272,6 +272,10 @@
      (unless (sly-connected-p)
        (save-excursion (sly))))))
 
+(use-package sly-repl-ansi-color
+  :after (sly)
+  :init (push 'sly-repl-ansi-color sly-contribs))
+
 (use-package sly-asdf
   :disabled t)
 (use-package sly-quicklisp
