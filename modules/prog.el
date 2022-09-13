@@ -132,6 +132,7 @@
   (setenv "NODE_PATH" fnm-node)
   ;; (advice-add 'lsp :before (lambda (&rest _args) (eval '(setf (lsp-session-server-id->folders (lsp-session)) (ht)))))
   (setq lsp-eldoc-render-all t)
+  (setq lsp-log-io t)
   (setq lsp-clients-typescript-log-verbosity "verbose")
   :custom
   (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
