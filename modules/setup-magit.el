@@ -45,20 +45,26 @@
   (transient-append-suffix 'magit-file-dispatch
     "P"
     '("F" "Pull" magit-pull))
-  (setq magit-status-sections-hook '(magit-insert-status-headers
+  (setq magit-status-sections-hook '(
+                                     ;; magit-insert-status-headers
                                     magit-insert-unpushed-to-pushremote
                                     magit-insert-untracked-files
                                     magit-insert-unstaged-changes
                                     magit-insert-staged-changes
-                                    magit-insert-stashes
+                                    ;; magit-insert-stashes
+                                    ;; forge-insert-pullreqs
+                                    ;; forge-insert-issues
                                     )))
 
 (use-package forge
   :init (setq forge-bug-reference-hooks nil))
 
 (use-package diff-hl
-  :init (global-diff-hl-mode))
+  :config (global-diff-hl-mode))
 
 (use-package denote)
+(use-package vc
+  :ensure nil
+  :bind ("C-x v p" . vc-pull))
 
 (provide 'setup-magit)
