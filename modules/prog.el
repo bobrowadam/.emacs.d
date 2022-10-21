@@ -27,12 +27,14 @@
           (comint-scroll-to-bottom-on-output t)
           (comint-process-echoes t))
       (compilation-start "npm run build -- -w" t))))
+
 (use-package typescript-mode
-  :init
-  (defun lsp-ts-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
   :hook
-  (typescript-mode . lsp-ts-install-save-hooks)
+  (before-save . (lambda ()
+                   (when
+                       (and (eq 'typescript-mode major-mode)
+                            (bound-and-true-p lsp-mode))
+                     (lsp-eslint-apply-all-fixes))))
   (typescript-mode . add-node-modules-path)
   (typescript-mode . origami-mode)
   (typescript-mode . eldoc-mode)
@@ -40,31 +42,21 @@
   :config
   (setq typescript-indent-level 2))
 
-(defvar *npx-dir* )
 (use-package jest-test-mode
   :init
-  (setq node-12-version "12.22.12")
-  (setq fnm-12-dir (s-replace " " "" (cadr (s-split "=" (cl-find-if
-                                        (lambda (s) (s-starts-with-p "FNM_DIR" s))
-                                        (s-split "\n" (shell-command-to-string "eval \"$(fnm env --use-on-cd)\"; env | rg FNM")))))))
-  (setq npx-path (concat fnm-12-dir
-                         "/node-versions/v" node-12-version "/installation/bin/npx"))
   :commands jest-test-mode
-  :custom
-  (jest-test-command-string (concat npx-path " %s jest %s %s"))
-  ;; (jest-test-npx-options '("--node-options=\"--inspect-brk\""))
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
 (use-package js2-mode
   :init
-  (defun lsp-js-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
-  :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
+  (before-save . (lambda ()
+                   (when
+                       (and (eq 'js2-mode major-mode)
+                            (bound-and-true-p lsp-mode))
+                     (lsp-eslint-apply-all-fixes))))
   (js2-mode . add-node-modules-path)
-  (js2-mode . lsp-js-install-save-hooks)
-  (js2-mode . lsp-deferred)
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
@@ -84,12 +76,12 @@
   ("\\.cssl\\'" . web-mode)
   ("\\.jsx\\'" . web-mode)
   ("\\.vue\\'" . web-mode)
-  ;; ("\\.svelte\\'" . web-mode)
-  :init
-  (defun lsp-web-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-eslint-apply-all-fixes))
   :hook
-  (web-mode . lsp-web-install-save-hooks)
+  (before-save . (lambda ()
+                   (when
+                       (and (eq 'web-mode major-mode)
+                            (bound-and-true-p lsp-mode))
+                     (lsp-eslint-apply-all-fixes))))
   (web-mode . add-node-modules-path)
   (web-mode . eldoc-mode)
   :config
@@ -121,44 +113,25 @@
 (use-package nodejs-repl)
 
 (use-package lsp-mode
+  :disabled t
   :commands lsp
   :init
   ;; if using company for completion remove this:
   (setq lsp-completion-provider :none)
   (setenv "LSP_USE_PLISTS" "true")
-  (setq lsp-use-plists t)
-  (setq node-version "18.5.0")
-  (setq fnm-dir (cadr (s-split "=" (cl-find-if
-                               (lambda (s) (s-starts-with-p "FNM_DIR" s))
-                               (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
-  (setq fnm-node (concat fnm-dir
-                         "/node-versions/v" node-version "/installation/bin/node"))
-  (setq fnm-npm (concat fnm-dir
-                         "/node-versions/v" node-version "/installation/bin/npm"))
-  (setq lsp-clients-typescript-npm-location
-        fnm-npm)
-  (setenv "NODE_PATH" fnm-node)
-  ;; (advice-add 'lsp :before (lambda (&rest _args) (eval '(setf (lsp-session-server-id->folders (lsp-session)) (ht)))))
+  (setq lsp-use-plists nil)
   (setq lsp-eldoc-render-all t)
   (setq lsp-log-io t)
   (setq lsp-clients-typescript-log-verbosity "verbose")
+  (setq lsp-typescript-tsserver-log "verbose")
+  (setq lsp-typescript-tsserver-trace "verbose")
   :custom
   (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
   (lsp-file-watch-threshold 2000)
   (lsp-eslint-auto-fix-on-save t)
   (read-process-output-max (* 1024 1024))
-  (lsp-eldoc-hook nil)
-  (lsp-eslint-server-command `(,fnm-node
-                               ,(f-join lsp-eslint-unzipped-path "extension/server/out/eslintServer.js")
-                               "--stdio"))
-  (lsp-eslint-node fnm-node)
-  (lsp-javascript-display-enum-member-value-hints t)
-  ;; (lsp-javascript-display-inlay-hints t)
-  ;; (lsp-javascript-display-parameter-name-hints-when-argument-matches-name t)
-  ;; (lsp-javascript-display-parameter-type-hints t)
-  ;; (lsp-javascript-display-property-declaration-type-hints t)
-  ;; (lsp-javascript-display-return-type-hints t)
-  ;; (lsp-javascript-display-variable-type-hints t)
+  ;; (lsp-eldoc-hook nil)
+  ;; (lsp-javascript-display-enum-member-value-hints t)
   :bind
   (:map lsp-mode-map
         ("C-c C-f" . lsp-format-buffer)
@@ -169,9 +142,77 @@
         ("M-p" . backward-paragraph))
   :hook ((js2-mode typescript-mode web-mode
                    c-mode c++-mode rust-mode
-                   svelte-mode
-                   ;; haskell-mode
-                   ) . lsp))
+                   ) . lsp-deferred))
+
+(use-package lsp-ui
+  :after (lsp-mode)
+  :init
+  (setq lsp-ui-sideline-enable nil)
+  :hook ((js2-mode typescript-mode web-mode
+                   c-mode c++-mode rust-mode
+                   ) . lsp-ui-mode)
+  ;; :bind
+  ;; (:map lsp-mode-map
+  ;;       (""))
+  )
+
+(use-package eglot
+  :init
+  ;; (setq node-version "18.9.0")
+  ;; (setq fnm-dir (cadr (s-split "=" (cl-find-if
+  ;;                              (lambda (s) (s-starts-with-p "FNM_DIR" s))
+  ;;                              (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
+  ;; (setq fnm-node (concat fnm-dir
+  ;;                        "/node-versions/v" node-version "/installation/bin/node"))
+  ;; (setq fnm-npm (concat fnm-dir
+  ;;                        "/node-versions/v" node-version "/installation/bin/npm"))
+  ;; (setq lsp-clients-typescript-npm-location
+  ;;       fnm-npm)
+  ;; (setenv "NODE_PATH" fnm-node)
+  ;; (add-to-list 'eglot-server-programs
+  ;;              `((js-mode typescript-mode)
+  ;;                                . (,fnm-node "typescript-language-server" "--stdio")))
+  (cl-defmethod project-root ((project (head eglot-project)))
+    (cdr project))
+  :bind
+  (:map eglot-mode-map
+        ("C-c C-f" . eglot-format)
+        ("C-c C-n" . eglot-rename)
+        ("M-." . eglot-find-typeDefinition)
+        ("M-n" . forward-paragraph)
+        ("M-p" . backward-paragraph)
+        ("C-c !" . consult-flymake)
+        ("C-c C-a" . eglot-code-actions))
+  :hook ((js2-mode typescript-mode web-mode
+                   ) . eglot-ensure))
+
+(defun eslint-fix ()
+  "Format the current file with ESLint."
+  (interactive)
+  (unless buffer-file-name
+    (error "ESLint requires a file-visiting buffer"))
+  (when (buffer-modified-p)
+    (if (y-or-n-p (format "Save file %s? " buffer-file-name))
+        (save-buffer)
+      (error "ESLint may only be run on an unmodified buffer")))
+
+  (let* ((default-directory (project-root (project-current t)))
+        (eslint-fix-executable "eslint")
+        (eslint (executable-find eslint-fix-executable))
+        (options (list "--fix" buffer-file-name)))
+    (unless eslint
+      (error "Executable ‘%s’ not found" eslint-fix-executable))
+    (apply #'call-process eslint nil "*ESLint Errors*" nil options)
+    (revert-buffer t t t)))
+
+(use-package flymake-eslint
+  :hook
+  (typescript-mode . (lambda () (setq flymake-eslint-project-root (project-root (project-current t)))))
+  (typescript-mode . flymake-eslint-enable)
+  (js2-mode . (lambda () (setq flymake-eslint-project-root (project-root (project-current t)))))
+  (js2-mode . (lambda () (progn
+                           (print "before flymake-eslint-enable")
+                           (flymake-eslint-enable)))))
 
 (defadvice enable-paredit-mode (after activate)
   (smartparens-mode -1))
@@ -265,6 +306,7 @@
   :after json-mode)
 
 (use-package origami
+  :demand t
   :bind (:map origami-mode-map
               ("C-=" . origami-toggle-node)))
 
@@ -296,4 +338,28 @@
 
 (use-package pandoc-mode)
 
+(use-package lsp-bridge
+  :disabled t
+  :ensure nil
+  :load-path "~/source/lsp-bridge/"
+  :init
+  (setq lsp-bridge-enable-log t)
+  :bind
+  (:map lsp-bridge-mode-map
+        ("C-c C-f" . lsp-bridge-code-format)
+        ("C-c C-n" . lsp-bridge-rename)
+        ("M-." . lsp-bridge-find-def)
+        ("M-," . lsp-bridge-return-from-def)
+        ("C-c C-r" . lsp-bridge-find-references)
+        ("M-n" . forward-paragraph)
+        ("M-p" . backward-paragraph)
+        ("C-c !" . consult-flymake)
+        ("C-c C-a" . lsp-bridge-code-action)
+        ("C-c C-d" . lsp-bridge-lookup-documentation)
+        ("C->" . lsp-bridge-popup-documentation-scroll-up)
+        ("C-<" . lsp-bridge-popup-documentation-scroll-down))
+  :hook ((js2-mode typescript-mode web-mode
+                   ) . lsp-bridge-mode))
+
+;; (require 'lsp-bridge)
 (provide 'prog)
