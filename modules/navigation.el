@@ -59,18 +59,13 @@
       (project-remember-projects-under "~/source"))))
 
 (use-package consult-lsp :ensure t)
-
-(use-package hotfuzz
-  :after selectrum
-  :ensure t
-  :custom
-  (completion-ignore-case t)
-  :init
-  (hotfuzz-selectrum-mode))
-
-(use-package savehist-mode
+(use-package savehist
   :ensure nil
   :init
+  (setq savehist-file (locate-user-emacs-file "savehist"))
+  (setq history-length 10000)
+  (setq history-delete-duplicates t)
+  (setq savehist-save-minibuffer-history t)
   (savehist-mode))
 
 (use-package recentf-mode
@@ -79,6 +74,7 @@
   (recentf-mode 1))
 
 (use-package selectrum
+  :disabled t
   :bind (("C-M-r" . selectrum-repeat)
          :map selectrum-minibuffer-map
          ("C-r" . selectrum-select-from-history)
@@ -92,8 +88,38 @@
   :init
   (selectrum-mode 1))
 
+(use-package orderless
+  :init
+  (setq orderless-component-separator " +")
+  (setq orderless-matching-styles
+        '(orderless-prefixes
+           orderless-flex orderless-regexp))
+  (setq completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion))))
+  (setq completion-styles '(basic orderless)))
+
+(use-package hotfuzz
+  :disabled t
+  :after vertico
+  :ensure t
+  :custom
+  (completion-ignore-case t)
+  :init
+  (hotfuzz-vertico-mode)
+  (setq completion-styles '(basic orderless)))
+
+(use-package vertico
+  :demand t
+  :init
+  (setq vertico-scroll-margin 0)
+  (setq vertico-count 10)
+  (setq vertico-resize nil)
+  (setq vertico-cycle t)
+  :config
+  (vertico-mode 1))
+
 (use-package marginalia
-  ;; :after vertico
+  :after vertico
   :custom
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :init
@@ -136,8 +162,8 @@
   (corfu-scroll-margin 5)        ;; Use scroll margin
 
   ;; Enable Corfu only for certain modes.
-  :hook ((prog-mode . corfu-mode)
-         (vterm-mode . corfu-mode))
+  ;; :hook ((prog-mode . corfu-mode)
+  ;;        (vterm-mode . corfu-mode))
 
   ;; Recommended: Enable Corfu globally.
   ;; This is recommended since Dabbrev can be used globally (M-/).
@@ -162,30 +188,60 @@
   :hook
   (minibuffer-setup . corfu-enable-in-minibuffer))
 
-(use-package dabbrev
-  :ensure nil
-  ;; Swap M-/ and C-M-/
-  :bind (("M-/" . dabbrev-completion)
-         ("C-M-/" . dabbrev-expand))
-  ;; Other useful Dabbrev configurations.
-  :custom
-  (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+(use-package cape
+  :init
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  ;; (add-to-list 'completion-at-point-functions #'cape-history)
+  ;; (add-to-list 'completion-at-point-functions #'cape-keyword)
+  ;;(add-to-list 'completion-at-point-functions #'cape-tex)
+  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+  ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+  ;;(add-to-list 'completion-at-point-functions #'cape-line))
+  )
+
+  (use-package dabbrev
+    :ensure nil
+    ;; Swap M-/ and C-M-/
+    :bind (("M-/" . dabbrev-completion)
+           ("C-M-/" . dabbrev-expand))
+    ;; Other useful Dabbrev configurations.
+    :custom
+    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 
 ;; A few more useful configurations...
+
 (use-package emacs
   :ensure nil
   :init
-  ;; TAB cycle if there are only few candidates
-  (setq completion-cycle-threshold 3)
+  ;; Add prompt indicator to `completing-read-multiple'.
+  ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+  (defun crm-indicator (args)
+    (cons (format "[CRM%s] %s"
+                  (replace-regexp-in-string
+                   "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                   crm-separator)
+                  (car args))
+          (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-  ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
-  ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+  ;; Do not allow the cursor in the minibuffer prompt
+  (setq minibuffer-prompt-properties
+        '(read-only t cursor-intangible t face minibuffer-prompt))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+  ;; Vertico commands are hidden in normal buffers.
   (setq read-extended-command-predicate
         #'command-completion-default-include-p)
 
-  ;; Enable indentation+completion using the TAB key.
-  ;; `completion-at-point' is often bound to M-TAB.
-  (setq tab-always-indent 'complete))
+  ;; Enable recursive minibuffers
+  (setq enable-recursive-minibuffers t))
 
 (use-package company
   :disabled t
@@ -273,28 +329,6 @@
 
 (use-package deadgrep
   :bind ("M-g D" . deadgrep))
-
-(use-package xwwp
-  :ensure nil
-  :load-path "./xwwp"
-  :commands (xwwp))
-
-(use-package xwwp-ace
-  :ensure nil
-  :after xwwp
-  :load-path "./xwwp"
-  :bind (:map xwidget-webkit-mode-map
-              ("t" . xwwp-ace-toggle)))
-
-(use-package xwwp-follow-link
-  :ensure nil
-  :after xwwp
-  :load-path "./xwwp"
-  :init
-  (setq xwwp-follow-link-completion-system 'default)
-  :commands (xwwp)
-  :bind (:map xwidget-webkit-mode-map
-              ("v" . xwwp-follow-link)))
 
 (use-package avy
   :init (setq avy-case-fold-search nil)

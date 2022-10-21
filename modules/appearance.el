@@ -10,6 +10,7 @@
   (modus-themes-load-themes)
   :custom
   (modus-themes-vivendi-color-overrides '((bg-main . "gray8")))
+  (modus-themes-operandi-color-overrides '((bg-main . "blanched almond")))
   (modus-themes-mode-line '(borderless padded accented))
   (modus-themes-region '( bg-only))
   (modus-themes-bold-constructs t)
@@ -19,6 +20,8 @@
   (modus-themes-syntax '(alt-syntax yellow-comments green-strings))
   :config
   (modus-themes-load-vivendi))
+
+(use-package ef-themes)
 
 (use-package highlight-indent-guides
   :config
