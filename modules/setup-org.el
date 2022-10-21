@@ -1,4 +1,5 @@
 (use-package org
+  :demand t
   :ensure nil
   :if (window-system)
   :init
@@ -15,19 +16,20 @@
   ;; +LEVEL=3+boss-TODO​="DONE"
   ;; (setq org-tags-exclude-from-inheritance '("PROJECT"))
   (setq org-tags-exclude-from-inheritance nil)
-  (setq org-directory (concat (getenv "HOME") "/Dropbox/orgzly"))
+  (setq org-directory (concat (getenv "HOME") "/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/"))
   (setq org-capture-templates
-        `(("t" "entry" entry (file ,(concat org-directory "/org-roam/20220806140803-inbox.org")) "* %?\n  %i")))
+        `(("t" "entry" entry (file ,(concat org-directory "20220806140803-inbox.org")) "* %?\n  %i")))
   (setq org-agenda-files
         (list
           ;; ,(concat org-directory "/riseup-google-calendar.org")
           ;; ,(concat org-directory "/private-google-calendar.org")
-          (concat org-directory "/org-roam/20220806140803-inbox.org")
-          (concat org-directory "/org-roam/20211126182152-tasks.org")
-          (concat org-directory "/org-roam/20211126120120-projects.org")
-          (concat org-directory "/org-roam/20211126112747-check_this_up.org")
-          (concat org-directory "/org-roam/20211126120630-sometime.org")
-          (concat org-directory "/org-roam/20211208225633-reminders.org")))
+          (concat org-directory "20220806140803-inbox.org")
+          (concat org-directory "20211126182152-tasks.org")
+          (concat org-directory "20211126120120-projects.org")
+          (concat org-directory "20211126112747-check_this_up.org")
+          (concat org-directory "20211126120630-sometime.org")
+          (concat org-directory "20211208225633-reminders.org")
+          (concat org-directory "20221019183852-asana_tasks.org")))
   (setq org-deadline-warning-days 3)
   :config
   (org-babel-do-load-languages
@@ -36,7 +38,7 @@
      (js . t)
      (shell . t)
      (mongo . t)))
-  (add-to-list 'org-src-lang-modes '("tsx" . typescript))
+  (add-to-list 'org-src-lang-modes '("ts" . typescript))
   (custom-set-faces
    '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
   (require 'ob-js)
@@ -129,12 +131,12 @@
   :init
   (setq org-roam-graph-viewer "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser")
   (setq org-roam-v2-ack t)
-  (setq org-roam-directory (concat org-directory "/org-roam"))
-  (setq org-id-locations-file (concat org-directory "/.orgids"))
+  (setq org-roam-directory org-directory)
+  (setq org-id-locations-file (concat org-directory ".orgids"))
   (setq org-roam-completion-everywhere t)
   (setq org-roam-dailies-directory "journal/")
   (add-to-list 'display-buffer-alist
-               '("\\*org-roam\\*"
+               `(,org-directory
                  (display-buffer-in-side-window)
                  (side . right)
                  (slot . 0)
@@ -170,6 +172,7 @@
 
 (use-package  ob-mongo
   :ensure nil
+  :after org
   :load-path "ob-mongo"
   :after org)
 
