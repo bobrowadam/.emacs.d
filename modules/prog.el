@@ -10,6 +10,14 @@
 
 (use-package cargo-mode)
 
+(use-package fancy-compilation
+  :config
+  (setq fancy-compilation-term "xterm-256color")
+  :commands (fancy-compilation-mode))
+
+(with-eval-after-load 'compile
+  (fancy-compilation-mode))
+
 (defun npm-run-build ()
   "Build typescript project on watch mode"
   (interactive)
