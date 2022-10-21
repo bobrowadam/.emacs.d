@@ -2,7 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("moud"
+(("org-dir"
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/")
+ (front-context-string . "20211126182152-t")
+ (rear-context-string . "12 Oct 18 00:09 ")
+ (position . 1566)
+ (last-modified 25423 2231 921847 0))
+("org-capture-last-stored"
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20221019183852-asana_tasks.org")
+ (front-context-string)
+ (rear-context-string . "le: asana-tasks\n")
+ (position . 89)
+ (last-modified 25424 6679 183642 0))
+("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")
  (rear-context-string . "84 Jun 22 10:03 ")
@@ -66,10 +78,11 @@
  (rear-context-string . "7M Apr 22 12:38 ")
  (position . 387))
 ("recipes.org"
- (filename . "~/Dropbox/orgzly/recipes.org")
- (front-context-string . "#+RESULTS:\n: Hid")
- (rear-context-string)
- (position . 1))
+ (filename . "~/org-roam.bak/org-roam/20220817132100-recipes.org")
+ (front-context-string . "   - 20 grams ol")
+ (rear-context-string . "unsalted butter\n")
+ (position . 309)
+ (last-modified 25409 30756 933667 0))
 ("Org Manual"
  (front-context-string . "\nThe Org Manual\n")
  (rear-context-string . "ion,  Up: (dir)\n")
@@ -77,64 +90,49 @@
  (filename . "/usr/local/Cellar/emacs-head@28/28.0.50_1/share/info/emacs/org")
  (info-node . "Top")
  (handler . Info-bookmark-jump))
-("org-roam"
- (filename . "~/Dropbox/orgzly/org-roam/")
- (front-context-string . "20210915185218-i")
- (rear-context-string . "0B Sep 15 22:20 ")
- (position . 237))
-("org-capture-last-stored"
- (filename . "~/Dropbox/orgzly/org-roam/20220806140803-inbox.org")
- (front-context-string . "* Check \"among u")
- (rear-context-string . "---------------\n")
- (position . 521)
- (last-modified 25347 23916 192769 0))
 ("defuns"
  (filename . "~/.emacs.d/defuns/")
  (front-context-string . "misc-defuns.el\n ")
  (rear-context-string . "0K Feb 10  2021 ")
  (position . 871))
 ("weight.org"
- (filename . "~/Dropbox/nutrition/weight.org")
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/weight.org")
  (front-context-string . "* weight\n| <2017")
  (rear-context-string)
- (position . 1))
+ (position . 1)
+ (last-modified 25402 34411 779139 0))
 ("type-writes.org"
- (filename . "~/Dropbox/riseup/type-writes.org")
+ (filename . "~/Google Drive//riseup/type-writes.org")
  (front-context-string . "* <2021-02-07 Su")
  (rear-context-string)
  (position . 1))
 ("usefull-stuff.org"
- (filename . "~/Dropbox/riseup/docs/usefull-stuff.org")
+ (filename . "~/Google Drive//riseup/docs/usefull-stuff.org")
  (front-context-string . "* run catapult: ")
  (rear-context-string . "&incognito=true\n")
  (position . 557))
 ("mongo-sripts.org"
- (filename . "~/Dropbox/riseup/org-scripts/mongo-sripts.org")
+ (filename . "~/Google Drive//riseup/org-scripts/mongo-sripts.org")
  (front-context-string . "#+begin_example\n")
  (rear-context-string . "src\n\n#+RESULTS:\n")
  (position . 273879))
 ("todo-scratch.org"
- (filename . "~/Dropbox/orgzly/todo-scratch.org")
+ (filename . "~/Google Drive//orgzly/todo-scratch.org")
  (front-context-string . "** Calvin - Depl")
  (rear-context-string . "g done message \n")
  (position . 74))
 ("riseup"
- (filename . "~/Dropbox/riseup/")
+ (filename . "~/Google Drive//riseup/")
  (front-context-string . ".ssh\n  -rw-r--r-")
  (rear-context-string . "2B Apr 21  2020 ")
  (position . 226))
-("recepies.org"
- (filename . "~/Dropbox/orgzly/recepies.org")
- (front-context-string . "#+RESULTS:\n: Hid")
- (rear-context-string)
- (position . 1))
 ("services"
  (filename . "~/source/services/")
  (front-context-string . "..\n  drwxr-xr-x ")
  (rear-context-string . "1K Feb  5 12:46 ")
  (position . 177))
 ("rest_clients"
- (filename . "~/Dropbox/riseup/rest_clients/")
+ (filename . "~/Google Drive//riseup/rest_clients/")
  (front-context-string . "asana.client\n  -")
  (rear-context-string . "0B May  5  2020 ")
  (position . 242))

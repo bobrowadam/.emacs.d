@@ -4,12 +4,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(compilation-message-face 'default)
- '(doom-modeline-github t nil nil "Customized with use-package doom-modeline")
- '(doom-modeline-height 15 nil nil "Customized with use-package doom-modeline")
- '(doom-modeline-icon t nil nil "Customized with use-package doom-modeline")
- '(doom-modeline-lsp t)
- '(doom-modeline-major-mode-color-icon t nil nil "Customized with use-package doom-modeline")
- '(doom-modeline-minor-modes nil nil nil "Customized with use-package doom-modeline")
+ '(eglot-autoshutdown t)
  '(flyspell-auto-correct-binding [(control 59)])
  '(ignored-local-variable-values
    '((mmm-classes . elisp-js)
@@ -19,8 +14,6 @@
      (Base . 10)
      (Package . CL-USER)
      (Syntax . COMMON-LISP)))
- '(lsp-restart 'ignore)
- '(lsp-vetur-dev-log-level "DEBUG")
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
  '(org-agenda-files nil)
@@ -83,4 +76,5 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(eglot-highlight-symbol-face ((t (:inherit bold :underline t))))
  '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
