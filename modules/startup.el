@@ -1,8 +1,8 @@
-(require 'dash)
-(require 's)
-(require 'subr-x)
-(require 'cl-lib)
-(require 'server)
+(use-package dash :demand t)
+(use-package s :demand t)
+(use-package subr-x :demand t)
+(use-package cl-lib :demand t)
+(use-package server :demand t)
 
 (unless (server-running-p)
   (server-start))
@@ -44,6 +44,9 @@
   ("C-x 8 l" . insert-λ))
 
 (setq initial-major-mode 'lisp-interaction-mode)
+
+(use-package request)
+(use-package plz)
 
 (use-package utils
   :demand t

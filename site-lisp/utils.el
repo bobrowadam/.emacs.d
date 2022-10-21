@@ -90,7 +90,8 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
 (defun kill-inspect-process ()
   (interactive)
   (-let ((process (--get-processes-by-string "inspect")))
-    (shell-command (format "kill %s" (s-join " " process)) "output")))
+    (when process
+      (shell-command (format "kill %s" (s-join " " process)) "output"))))
 
 (provide 'utils)
 ;;; utils.el ends here

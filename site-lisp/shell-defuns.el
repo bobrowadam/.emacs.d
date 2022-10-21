@@ -12,22 +12,23 @@
 (defun bob/vterm-other-window (&optional buffer-name)
   "Create a new vterm buffer with BUFFER-NAME."
   (let ((buffer buffer-name))
-    (unless (get-buffer buffer)
-        (generate-new-buffer buffer)
-     (with-current-buffer buffer
-       (vterm-mode)))
-    (pop-to-buffer buffer)))
+    (if (get-buffer buffer)
+        (pop-to-buffer buffer)
+      (progn
+        (split-window-sensibly)
+        (other-window 1)
+        (vterm buffer-name)))))
 
 (defun bob/vterm (&optional user-shell-name)
   "Open shell on current project with.
 use USER-SHELL-NAME for buffer name"
   (interactive)
-  (let ((shell-name (format "*SHELL*::%s" (upcase (abbreviate-file-name default-directory)))))
+  (let ((shell-name (format "*shell* %s" (abbreviate-file-name default-directory))))
     (bob/vterm-other-window shell-name)))
 
 (defun bob/project-vterm ()
   "Start Vterm in the current project's root directory.
-If a buffer already exists for running Vterm in the project's root,
+If a buffer already exists, running Vterm in the project's root,
 switch to it.  Otherwise, create a new Vterm buffer.
 With \\[universal-argument] prefix arg, create a new Vterm buffer even
 if one already exists."
