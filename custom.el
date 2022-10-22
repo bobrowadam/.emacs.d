@@ -16,7 +16,6 @@
      (Syntax . COMMON-LISP)))
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
- '(org-agenda-files nil)
  '(pos-tip-background-color "#FFF9DC")
  '(pos-tip-foreground-color "#011627")
  '(proced-format 'verbose)
