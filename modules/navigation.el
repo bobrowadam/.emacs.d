@@ -393,4 +393,9 @@
           ("https://protesilaos.com/master.xml" programming blog)
           ))
   :bind ("C-c w" . elfeed))
+
+(use-package control-mode
+  :init
+  (control-mode-default-setup))
+
 (provide 'navigation)
