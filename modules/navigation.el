@@ -376,7 +376,7 @@
                (cons tramp-file-name-regexp "/tmp/emacs-backup/")))
 
 (use-package docker)
-(use-package docker-tramp)
+(use-package tramp-container :ensure nil)
 
 (use-package elfeed
   :init
