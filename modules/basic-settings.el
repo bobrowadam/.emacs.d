@@ -89,7 +89,7 @@
       kept-new-versions 5    ; keep some new versions
       kept-old-versions 2)   ; and some old ones, too
 
-(add-to-list 'prog-mode-hook #'linum-mode)
+(add-to-list 'prog-mode-hook #'display-line-numbers-mode)
 (setq linum-format "%4d  ")
 
 ;; Set Emacs C source dir:
