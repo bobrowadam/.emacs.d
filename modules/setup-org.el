@@ -1,5 +1,11 @@
+(use-package  ob-mongo
+  :demand t
+  :ensure nil
+  :load-path "./ob-mongo")
+
 (use-package org
   :demand t
+  :after ob-mongo
   :ensure nil
   :if (window-system)
   :init
@@ -9,27 +15,19 @@
   (setq calendar-longitude 32.085300)
   (setq calendar-latitude 34.781769)
   (setq org-tree-slide-header nil)
+  (setq org-enforce-todo-dependencies t)
   (setq org-todo-keywords
         '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
   (setq org-stuck-projects
         '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER") ""))
   ;; +LEVEL=3+boss-TODO​="DONE"
-  ;; (setq org-tags-exclude-from-inheritance '("PROJECT"))
-  (setq org-tags-exclude-from-inheritance nil)
+  (setq org-tags-exclude-from-inheritance '("project"))
   (setq org-directory (concat (getenv "HOME") "/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/"))
   (setq org-capture-templates
         `(("t" "entry" entry (file ,(concat org-directory "20220806140803-inbox.org")) "* %?\n  %i")))
-  (setq org-agenda-files
-        (list
-          ;; ,(concat org-directory "/riseup-google-calendar.org")
-          ;; ,(concat org-directory "/private-google-calendar.org")
-          (concat org-directory "20220806140803-inbox.org")
-          (concat org-directory "20211126182152-tasks.org")
-          (concat org-directory "20211126120120-projects.org")
-          (concat org-directory "20211126112747-check_this_up.org")
-          (concat org-directory "20211126120630-sometime.org")
-          (concat org-directory "20211208225633-reminders.org")
-          (concat org-directory "20221019183852-asana_tasks.org")))
+  ;; (require 'org-habit)
+  ;; (setq org-habit-graph-column 70)
+  ;; (add-to-list 'org-modules 'habits)
   (setq org-deadline-warning-days 3)
   :config
   (org-babel-do-load-languages
@@ -37,10 +35,13 @@
    '((emacs-lisp . t)
      (js . t)
      (shell . t)
-     (mongo . t)))
+     (mongo . t)
+     )
+   )
   (add-to-list 'org-src-lang-modes '("ts" . typescript))
-  (custom-set-faces
-   '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
+
+  ;; (custom-set-faces
+  ;;  '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
   (require 'ob-js)
 
   ;; Fix bug in ob-js: https://emacs.stackexchange.com/questions/55690/org-babel-javascript-error
@@ -67,6 +68,10 @@
         ("M-b" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
         ("M-p" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-week 1)))))
         ("M-n" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
+
+(use-package package-name
+  :after (org-roam)
+  :load-path "./modules")
 
 (use-package org-bullets
   :if (window-system))
@@ -128,6 +133,7 @@
   :ensure nil)
 
 (use-package org-roam
+  :after (org)
   :init
   (setq org-roam-graph-viewer "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser")
   (setq org-roam-v2-ack t)
@@ -151,6 +157,8 @@
   ("C-c n b" . org-roam-buffer-toggle)
   ("C-c n d d" . org-roam-dailies-capture-today)
   :config
+  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+
   (org-roam-db-autosync-mode))
 
 (use-package org-roam-bibtex
@@ -170,11 +178,10 @@
         org-roam-ui-update-on-save t
         org-roam-ui-open-on-start t))
 
-(use-package  ob-mongo
-  :ensure nil
-  :after org
-  :load-path "ob-mongo"
-  :after org)
+(use-package setup-org-roam
+  :after (org)
+  :demand t
+  :ensure nil)
 
 (use-package ox-gfm :after org)
 

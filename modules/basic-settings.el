@@ -31,7 +31,9 @@
       visible-bell nil
       enable-local-variables :safe)
 
-(pixel-scroll-precision-mode 1)
+(when (boundp 'pixel-qscroll-precision-mode)
+  (pixel-qscroll-precision-mode 1))
+
 (setq scroll-conservatively 101)
 
 (unless (not (file-exists-p custom-file))
@@ -116,5 +118,6 @@
 (use-package zoom-window :bind ("C-x C-z" . zoom-window-zoom))
 (use-package iedit
   :bind ("C-;" . iedit-mode))
+
 
 (provide 'basic-settings)

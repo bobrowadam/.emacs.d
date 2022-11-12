@@ -1,4 +1,6 @@
-alias kub kubectl
-alias em find-file $1
-alias ll ls -l $1
+alias pk eshell-up-peek
+alias up eshell-up
 alias ccache sudo killall -HUP mDNSResponder
+alias ll ls -l $1
+alias em find-file $1
+alias kub kubectl

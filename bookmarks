@@ -9,11 +9,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20221019183852-asana_tasks.org")
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20221106100012-herzel_11.org")
  (front-context-string)
- (rear-context-string . "le: asana-tasks\n")
- (position . 89)
- (last-modified 25424 6679 183642 0))
+ (rear-context-string . "itle: herzel-11\n")
+ (position . 87)
+ (last-modified 25447 27034 858091 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")
@@ -83,13 +83,6 @@
  (rear-context-string . "unsalted butter\n")
  (position . 309)
  (last-modified 25409 30756 933667 0))
-("Org Manual"
- (front-context-string . "\nThe Org Manual\n")
- (rear-context-string . "ion,  Up: (dir)\n")
- (position . 930)
- (filename . "/usr/local/Cellar/emacs-head@28/28.0.50_1/share/info/emacs/org")
- (info-node . "Top")
- (handler . Info-bookmark-jump))
 ("defuns"
  (filename . "~/.emacs.d/defuns/")
  (front-context-string . "misc-defuns.el\n ")

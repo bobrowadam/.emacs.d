@@ -25,3 +25,9 @@
 (use-package shell-command+
   :bind ("M-!" . shell-command+))
 (provide 'setup-shell)
+
+
+(use-package aweshell
+  :demand t
+  :load-path "~/source/aweshell"
+  :bind ("C-!" . aweshell-toggle))

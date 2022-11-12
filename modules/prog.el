@@ -36,7 +36,6 @@
                             (bound-and-true-p lsp-mode))
                      (lsp-eslint-apply-all-fixes))))
   (typescript-mode . add-node-modules-path)
-  (typescript-mode . origami-mode)
   (typescript-mode . eldoc-mode)
   :bind (:map typescript-mode-map ("C-c C-b" . npm-run-build))
   :config
@@ -60,7 +59,6 @@
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
-  (js2-mode . origami-mode)
   :bind (:map js2-mode-map
               ("C-<tab>" . js2-indent-bounce)
               ("C-c C-s" . nil)
@@ -178,41 +176,42 @@
   (:map eglot-mode-map
         ("C-c C-f" . eglot-format)
         ("C-c C-n" . eglot-rename)
-        ("M-." . eglot-find-typeDefinition)
         ("M-n" . forward-paragraph)
         ("M-p" . backward-paragraph)
         ("C-c !" . consult-flymake)
         ("C-c C-a" . eglot-code-actions))
-  :hook ((js2-mode typescript-mode web-mode
-                   ) . eglot-ensure))
-
-(defun eslint-fix ()
-  "Format the current file with ESLint."
-  (interactive)
-  (unless buffer-file-name
-    (error "ESLint requires a file-visiting buffer"))
-  (when (buffer-modified-p)
-    (if (y-or-n-p (format "Save file %s? " buffer-file-name))
-        (save-buffer)
-      (error "ESLint may only be run on an unmodified buffer")))
-
-  (let* ((default-directory (project-root (project-current t)))
-        (eslint-fix-executable "eslint")
-        (eslint (executable-find eslint-fix-executable))
-        (options (list "--fix" buffer-file-name)))
-    (unless eslint
-      (error "Executable ‘%s’ not found" eslint-fix-executable))
-    (apply #'call-process eslint nil "*ESLint Errors*" nil options)
-    (revert-buffer t t t)))
+  :hook ((js2-mode typescript-mode web-mode) . eglot-ensure))
 
 (use-package flymake-eslint
+  :demand t
+  :init
+  (defun eslint-fix ()
+    "Format the current file with ESLint."
+    (interactive)
+    (unless buffer-file-name
+      (error "ESLint requires a file-visiting buffer"))
+    (when (buffer-modified-p)
+      (if (y-or-n-p (format "Save file %s? " buffer-file-name))
+          (save-buffer)
+        (error "ESLint may only be run on an unmodified buffer")))
+
+    (let* ((default-directory (project-root (project-current t)))
+           (eslint-fix-executable "eslint")
+           (eslint (executable-find eslint-fix-executable))
+           (options (list "--fix" buffer-file-name)))
+      (unless eslint
+        (error "Executable ‘%s’ not found" eslint-fix-executable))
+      (apply #'call-process eslint nil "*ESLint Errors*" nil options)
+      (revert-buffer t t t)))
   :hook
-  (typescript-mode . (lambda () (setq flymake-eslint-project-root (project-root (project-current t)))))
-  (typescript-mode . flymake-eslint-enable)
-  (js2-mode . (lambda () (setq flymake-eslint-project-root (project-root (project-current t)))))
-  (js2-mode . (lambda () (progn
-                           (print "before flymake-eslint-enable")
-                           (flymake-eslint-enable)))))
+  (typescript-mode . (lambda ()
+                       (progn
+                         (setq flymake-eslint-project-root (project-root (project-current t)))
+                         (flymake-eslint-enable))))
+  (js2-mode . (lambda ()
+                (progn
+                  (setq flymake-eslint-project-root (project-root (project-current t)))
+                  (flymake-eslint-enable)))))
 
 (defadvice enable-paredit-mode (after activate)
   (smartparens-mode -1))
@@ -307,6 +306,8 @@
 
 (use-package origami
   :demand t
+  :hook
+  (prog-mode . origami-mode)
   :bind (:map origami-mode-map
               ("C-=" . origami-toggle-node)))
 
@@ -318,6 +319,8 @@
 (use-package sly
   :init
   (setq inferior-lisp-program "/usr/local/bin/sbcl")
+  :bind (:map sly-editing-mode-map
+              ("C-c M-c" . avy-goto-word-1))
   :hook
   (sly-mode . (lambda ()
      (unless (sly-connected-p)
@@ -361,5 +364,4 @@
   :hook ((js2-mode typescript-mode web-mode
                    ) . lsp-bridge-mode))
 
-;; (require 'lsp-bridge)
 (provide 'prog)

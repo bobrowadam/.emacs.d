@@ -5,11 +5,10 @@
              '(font . "DaddyTimeMono Nerd Font 21"))
 
 (use-package modus-themes
-  :demand t
   :init
   (modus-themes-load-themes)
   :custom
-  (modus-themes-vivendi-color-overrides '((bg-main . "gray8")))
+  (modus-themes-vivendi-color-overrides '((bg-main . "gray11")))
   (modus-themes-operandi-color-overrides '((bg-main . "blanched almond")))
   (modus-themes-mode-line '(borderless padded accented))
   (modus-themes-region '( bg-only))
@@ -17,11 +16,12 @@
   (modus-themes-italic-constructs t)
   (modus-themes-paren-math ('bold intense))
   (modus-themes-hl-line (quote (accented)))
-  (modus-themes-syntax '(alt-syntax yellow-comments green-strings))
-  :config
-  (modus-themes-load-vivendi))
+  (modus-themes-syntax '(alt-syntax yellow-comments green-strings)))
 
-(use-package ef-themes)
+(use-package ef-themes
+  :demand t
+  :config
+  (ef-themes-select 'ef-bio))
 
 (use-package highlight-indent-guides
   :config

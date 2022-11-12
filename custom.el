@@ -4,6 +4,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(compilation-message-face 'default)
+ '(datetime-timezone 'Israel)
  '(eglot-autoshutdown t)
  '(flyspell-auto-correct-binding [(control 59)])
  '(ignored-local-variable-values
@@ -58,15 +59,6 @@
      (cider-clojure-cli-global-options . "-A:fig")
      (haskell-process-use-ghci . t)
      (haskell-indent-spaces . 4)))
- '(warning-suppress-types
-   '((org-element-cache)
-     (org-element-cache)
-     (use-package)
-     (modus-themes)
-     (org-roam)
-     (lsp-mode)
-     (comp)
-     (comp)))
  '(weechat-color-list
    '(unspecified "#011627" "#010F1D" "#DC2E29" "#EF5350" "#D76443" "#F78C6C" "#D8C15E" "#FFEB95" "#5B8FFF" "#82AAFF" "#AB69D7" "#C792EA" "#AFEFE2" "#7FDBCA" "#D6DEEB" "#FFFFFF"))
  '(zoom-window-mode-line-color "DarkBlue"))
