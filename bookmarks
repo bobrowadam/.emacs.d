@@ -9,11 +9,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20221106100012-herzel_11.org")
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20221114223617-assana_tasks.org")
  (front-context-string)
- (rear-context-string . "itle: herzel-11\n")
- (position . 87)
- (last-modified 25447 27034 858091 0))
+ (rear-context-string . "e: assana-tasks\n")
+ (position . 90)
+ (last-modified 25458 42692 716124 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")

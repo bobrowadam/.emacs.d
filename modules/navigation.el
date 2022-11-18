@@ -55,8 +55,8 @@
   (unless (project-known-project-roots)
     (message "No project file found, indexing projects")
     (progn
-      (project-remember-projects-under "~/source/services")
-      (project-remember-projects-under "~/source"))))
+      (project-remember-projects-under "~/source/services" t)
+      (project-remember-projects-under "~/source/common-lisp/" t))))
 
 (use-package consult-lsp :ensure t)
 (use-package savehist
@@ -160,6 +160,7 @@
   (corfu-on-exact-match nil)     ;; Configure handling of exact matches
   (corfu-echo-documentation nil) ;; Disable documentation in the echo area
   (corfu-scroll-margin 5)        ;; Use scroll margin
+  (corfu-auto-prefix 2)
 
   ;; Enable Corfu only for certain modes.
   ;; :hook ((prog-mode . corfu-mode)

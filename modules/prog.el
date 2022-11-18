@@ -178,6 +178,8 @@
         ("C-c C-n" . eglot-rename)
         ("M-n" . forward-paragraph)
         ("M-p" . backward-paragraph)
+        ("M-." . xref-find-definitions)
+        ("M-?" . xref-find-references)
         ("C-c !" . consult-flymake)
         ("C-c C-a" . eglot-code-actions))
   :hook ((js2-mode typescript-mode web-mode) . eglot-ensure))
@@ -317,6 +319,7 @@
 (use-package clojure-mode :disabled t)
 
 (use-package sly
+  :demand t
   :init
   (setq inferior-lisp-program "/usr/local/bin/sbcl")
   :bind (:map sly-editing-mode-map

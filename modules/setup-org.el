@@ -25,10 +25,7 @@
   (setq org-directory (concat (getenv "HOME") "/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/"))
   (setq org-capture-templates
         `(("t" "entry" entry (file ,(concat org-directory "20220806140803-inbox.org")) "* %?\n  %i")))
-  ;; (require 'org-habit)
-  ;; (setq org-habit-graph-column 70)
-  ;; (add-to-list 'org-modules 'habits)
-  (setq org-deadline-warning-days 3)
+  (setq org-deadline-warning-days 1)
   :config
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -68,6 +65,13 @@
         ("M-b" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
         ("M-p" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-week 1)))))
         ("M-n" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
+
+(use-package org-habit
+  :demand t
+  :after (org)
+  :ensure nil
+  :init (setq org-habit-graph-column 70)
+  (add-to-list 'org-modules 'habits))
 
 (use-package package-name
   :after (org-roam)
