@@ -50,6 +50,7 @@
                                      magit-insert-untracked-files
                                      magit-insert-unstaged-changes
                                      magit-insert-staged-changes
+                                     ;; magit-insert-tags-header
                                      ;; magit-insert-stashes
                                      ;; forge-insert-pullreqs
                                      ;; forge-insert-issues
@@ -59,6 +60,7 @@
   :init (setq forge-bug-reference-hooks nil))
 
 (use-package diff-hl
+  :demand t
   :config (global-diff-hl-mode))
 
 (use-package denote)

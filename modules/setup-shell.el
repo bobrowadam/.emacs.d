@@ -1,6 +1,11 @@
 (use-package inf-mongo
   :after startup
-  :after org)
+  :hook
+  (inf-mongo-mode-hook . (lambda ()
+                      (progn
+                        (setq comint-input-ring-file-name "~/.dbshell")
+                        (setq-local comint-input-history-ignore "\\(^#\\)\\|\\(^INFMONGO.+\\)")
+                        (comint-read-input-ring 'silent)))))
 
 (use-package shell-defuns
   :after startup

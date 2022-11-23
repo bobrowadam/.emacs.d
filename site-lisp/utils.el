@@ -84,8 +84,7 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
                 (s-split "\n" (shell-command-to-string (format "ps aux | rg %s" captured-string)) t))]
     (mapcar (lambda (line)
               (nth 1 (s-split " " line t)))
-            lines
-            )))
+            lines)))
 
 (defun kill-inspect-process ()
   (interactive)

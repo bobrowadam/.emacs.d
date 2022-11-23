@@ -2,18 +2,24 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-dir"
+(("elpa"
+ (filename . "~/.emacs.d/elpa/")
+ (front-context-string . "ace-window-20220")
+ (rear-context-string . "56 Nov 12 11:11 ")
+ (position . 169)
+ (last-modified 25470 41185 538685 0))
+("org-dir"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/")
  (front-context-string . "20211126182152-t")
  (rear-context-string . "12 Oct 18 00:09 ")
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20221114223617-assana_tasks.org")
- (front-context-string)
- (rear-context-string . "e: assana-tasks\n")
- (position . 90)
- (last-modified 25458 42692 716124 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
+ (front-context-string . "* Make sure mong")
+ (rear-context-string . "the next field.\n")
+ (position . 659)
+ (last-modified 25470 342 404291 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")

@@ -61,10 +61,14 @@
         ("M-B" . org-shiftleft)
         ("C-c n r" . org-roam-refile))
   (:map org-read-date-minibuffer-local-map
-        ("M-f" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-day 1)))))
-        ("M-b" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
-        ("M-p" . (lambda () (interactive (org-eval-in-calendar '(calendar-backward-week 1)))))
-        ("M-n" . (lambda () (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
+        ("M-f" . (lambda ()
+                   (interactive (org-eval-in-calendar '(calendar-forward-day 1)))))
+        ("M-b" . (lambda ()
+                   (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
+        ("M-p" . (lambda ()
+                   (interactive (org-eval-in-calendar '(calendar-backward-week 1)))))
+        ("M-n" . (lambda ()
+                   (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
 
 (use-package org-habit
   :demand t
@@ -98,8 +102,7 @@
       ("DONE" . (:inherit base-todo-keyword-face :foreground "#75AD18"))
       ("IDEA" . (:inherit base-todo-keyword-face :foreground "#85AAFF"))
       ("WRITE" . (:inherit base-todo-keyword-face :foreground "#FF8580"))
-      ("WRITING" . (:inherit base-todo-keyword-face :foreground "#C7A941"))
-          ))
+      ("WRITING" . (:inherit base-todo-keyword-face :foreground "#C7A941"))))
 
 (use-package org-superstar
   :after org

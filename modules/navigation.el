@@ -58,7 +58,6 @@
       (project-remember-projects-under "~/source/services" t)
       (project-remember-projects-under "~/source/common-lisp/" t))))
 
-(use-package consult-lsp :ensure t)
 (use-package savehist
   :ensure nil
   :init
@@ -72,21 +71,6 @@
   :ensure nil
   :init
   (recentf-mode 1))
-
-(use-package selectrum
-  :disabled t
-  :bind (("C-M-r" . selectrum-repeat)
-         :map selectrum-minibuffer-map
-         ("C-r" . selectrum-select-from-history)
-         :map minibuffer-local-map
-         ("M-h" . backward-kill-word))
-  :custom
-  (selectrum-fix-minibuffer-height t)
-  (selectrum-num-candidates-displayed 7)
-  ;; (selectrum-refine-candidates-function #'orderless-filter)
-  ;; (selectrum-highlight-candidates-function #'orderless-highlight-matches)
-  :init
-  (selectrum-mode 1))
 
 (use-package orderless
   :init

@@ -30,11 +30,11 @@
 
 (use-package typescript-mode
   :hook
-  (before-save . (lambda ()
-                   (when
-                       (and (eq 'typescript-mode major-mode)
-                            (bound-and-true-p lsp-mode))
-                     (lsp-eslint-apply-all-fixes))))
+  ;; (before-save . (lambda ()
+  ;;                  (when
+  ;;                      (and (eq 'typescript-mode major-mode)
+  ;;                           (bound-and-true-p lsp-mode))
+  ;;                    (lsp-eslint-apply-all-fixes))))
   (typescript-mode . add-node-modules-path)
   (typescript-mode . eldoc-mode)
   :bind (:map typescript-mode-map ("C-c C-b" . npm-run-build))
@@ -50,11 +50,11 @@
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
-  (before-save . (lambda ()
-                   (when
-                       (and (eq 'js2-mode major-mode)
-                            (bound-and-true-p lsp-mode))
-                     (lsp-eslint-apply-all-fixes))))
+  ;; (before-save . (lambda ()
+  ;;                  (when
+  ;;                      (and (eq 'js2-mode major-mode)
+  ;;                           (bound-and-true-p lsp-mode))
+  ;;                    (lsp-eslint-apply-all-fixes))))
   (js2-mode . add-node-modules-path)
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
@@ -75,11 +75,11 @@
   ("\\.jsx\\'" . web-mode)
   ("\\.vue\\'" . web-mode)
   :hook
-  (before-save . (lambda ()
-                   (when
-                       (and (eq 'web-mode major-mode)
-                            (bound-and-true-p lsp-mode))
-                     (lsp-eslint-apply-all-fixes))))
+  ;; (before-save . (lambda ()
+  ;;                  (when
+  ;;                      (and (eq 'web-mode major-mode)
+  ;;                           (bound-and-true-p lsp-mode))
+  ;;                    (lsp-eslint-apply-all-fixes))))
   (web-mode . add-node-modules-path)
   (web-mode . eldoc-mode)
   :config
@@ -98,7 +98,7 @@
   (setq web-mode-enable-auto-indentation nil)
   (setq web-mode-enable-auto-expanding t)
   (setq vetur.validation.template t) ;; For lsp-vue
-  (setq lsp-vetur-dev-log-level "debug")
+  ;; (setq lsp-vetur-dev-log-level "debug")
   :bind (:map web-mode-map
               ("C-c C-t C-n" . web-mode-tag-next)
               ("C-c C-t C-p" . web-mode-tag-previous)
@@ -108,51 +108,12 @@
               ("C-c C-l" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
   )
 
-(use-package nodejs-repl)
-
-(use-package lsp-mode
-  :disabled t
-  :commands lsp
-  :init
-  ;; if using company for completion remove this:
-  (setq lsp-completion-provider :none)
-  (setenv "LSP_USE_PLISTS" "true")
-  (setq lsp-use-plists nil)
-  (setq lsp-eldoc-render-all t)
-  (setq lsp-log-io t)
-  (setq lsp-clients-typescript-log-verbosity "verbose")
-  (setq lsp-typescript-tsserver-log "verbose")
-  (setq lsp-typescript-tsserver-trace "verbose")
-  :custom
-  (lsp-prefer-flymake nil)           ; Use flycheck instead of flymake
-  (lsp-file-watch-threshold 2000)
-  (lsp-eslint-auto-fix-on-save t)
-  (read-process-output-max (* 1024 1024))
-  ;; (lsp-eldoc-hook nil)
-  ;; (lsp-javascript-display-enum-member-value-hints t)
-  :bind
-  (:map lsp-mode-map
-        ("C-c C-f" . lsp-format-buffer)
-        ("C-c C-n" . lsp-rename)
-        ("C-c C-r" . lsp-ui-peek-find-references)
-        ("M-." . lsp-find-definition)
-        ("M-n" . forward-paragraph)
-        ("M-p" . backward-paragraph))
-  :hook ((js2-mode typescript-mode web-mode
-                   c-mode c++-mode rust-mode
-                   ) . lsp-deferred))
-
-(use-package lsp-ui
-  :after (lsp-mode)
-  :init
-  (setq lsp-ui-sideline-enable nil)
-  :hook ((js2-mode typescript-mode web-mode
-                   c-mode c++-mode rust-mode
-                   ) . lsp-ui-mode)
-  ;; :bind
-  ;; (:map lsp-mode-map
-  ;;       (""))
-  )
+(use-package nodejs-repl
+  :hook
+  (nodejs-repl-mode . (lambda ()
+                             (progn
+                               (setq comint-input-ring-file-name "~/.node_repl_history")
+                               (comint-read-input-ring 'silent)))))
 
 (use-package eglot
   :init
@@ -203,7 +164,7 @@
            (options (list "--fix" buffer-file-name)))
       (unless eslint
         (error "Executable ‘%s’ not found" eslint-fix-executable))
-      (apply #'call-process eslint nil "*ESLint Errors*" nil options)
+      (apply #'call-process eslint nil 0 nil options)
       (revert-buffer t t t)))
   :hook
   (typescript-mode . (lambda ()
@@ -311,7 +272,8 @@
   :hook
   (prog-mode . origami-mode)
   :bind (:map origami-mode-map
-              ("C-=" . origami-toggle-node)))
+              ("C-=" . origami-recursively-toggle-node)
+              ("C-+" . origami-toggle-all-nodes)))
 
 (use-package haskell-mode :disabled t)
 (use-package haskell-snippets :disabled t)
@@ -343,28 +305,5 @@
   ("\\.dsl\\'" . hcl-mode))
 
 (use-package pandoc-mode)
-
-(use-package lsp-bridge
-  :disabled t
-  :ensure nil
-  :load-path "~/source/lsp-bridge/"
-  :init
-  (setq lsp-bridge-enable-log t)
-  :bind
-  (:map lsp-bridge-mode-map
-        ("C-c C-f" . lsp-bridge-code-format)
-        ("C-c C-n" . lsp-bridge-rename)
-        ("M-." . lsp-bridge-find-def)
-        ("M-," . lsp-bridge-return-from-def)
-        ("C-c C-r" . lsp-bridge-find-references)
-        ("M-n" . forward-paragraph)
-        ("M-p" . backward-paragraph)
-        ("C-c !" . consult-flymake)
-        ("C-c C-a" . lsp-bridge-code-action)
-        ("C-c C-d" . lsp-bridge-lookup-documentation)
-        ("C->" . lsp-bridge-popup-documentation-scroll-up)
-        ("C-<" . lsp-bridge-popup-documentation-scroll-down))
-  :hook ((js2-mode typescript-mode web-mode
-                   ) . lsp-bridge-mode))
 
 (provide 'prog)

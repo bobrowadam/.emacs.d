@@ -31,8 +31,8 @@
       visible-bell nil
       enable-local-variables :safe)
 
-(when (boundp 'pixel-qscroll-precision-mode)
-  (pixel-qscroll-precision-mode 1))
+(when (boundp 'pixel-scroll-precision-mode)
+  (pixel-scroll-precision-mode 1))
 
 (setq scroll-conservatively 101)
 

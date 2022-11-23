@@ -49,9 +49,5 @@
   (interactive)
   (set-mark-command 1))
 
-(defun insert-λ ()
-  (interactive)
-  (insert "λ"))
-
 (provide 'edit-funcs)
 ;;; edit-funcs.el ends here
