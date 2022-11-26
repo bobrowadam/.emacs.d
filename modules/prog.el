@@ -30,11 +30,6 @@
 
 (use-package typescript-mode
   :hook
-  ;; (before-save . (lambda ()
-  ;;                  (when
-  ;;                      (and (eq 'typescript-mode major-mode)
-  ;;                           (bound-and-true-p lsp-mode))
-  ;;                    (lsp-eslint-apply-all-fixes))))
   (typescript-mode . add-node-modules-path)
   (typescript-mode . eldoc-mode)
   :bind (:map typescript-mode-map ("C-c C-b" . npm-run-build))
@@ -50,11 +45,6 @@
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
-  ;; (before-save . (lambda ()
-  ;;                  (when
-  ;;                      (and (eq 'js2-mode major-mode)
-  ;;                           (bound-and-true-p lsp-mode))
-  ;;                    (lsp-eslint-apply-all-fixes))))
   (js2-mode . add-node-modules-path)
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
@@ -75,11 +65,6 @@
   ("\\.jsx\\'" . web-mode)
   ("\\.vue\\'" . web-mode)
   :hook
-  ;; (before-save . (lambda ()
-  ;;                  (when
-  ;;                      (and (eq 'web-mode major-mode)
-  ;;                           (bound-and-true-p lsp-mode))
-  ;;                    (lsp-eslint-apply-all-fixes))))
   (web-mode . add-node-modules-path)
   (web-mode . eldoc-mode)
   :config
@@ -97,16 +82,13 @@
   (setq web-mode-css-indent-offset 2)
   (setq web-mode-enable-auto-indentation nil)
   (setq web-mode-enable-auto-expanding t)
-  (setq vetur.validation.template t) ;; For lsp-vue
-  ;; (setq lsp-vetur-dev-log-level "debug")
   :bind (:map web-mode-map
               ("C-c C-t C-n" . web-mode-tag-next)
               ("C-c C-t C-p" . web-mode-tag-previous)
               ("C-c C-t C-m" . web-mode-tag-match)
               ("C-c C-t C-e" . web-mode-tag-end)
               ("C-c C-s" . nil)
-              ("C-c C-l" . nil)) ;; Unbind insert snippet so deadgrep C-c C-s C-d will work
-  )
+              ("C-c C-l" . nil)))
 
 (use-package nodejs-repl
   :hook
@@ -116,6 +98,7 @@
                                (comint-read-input-ring 'silent)))))
 
 (use-package eglot
+  :demand t
   :init
   ;; (setq node-version "18.9.0")
   ;; (setq fnm-dir (cadr (s-split "=" (cl-find-if
@@ -141,14 +124,11 @@
         ("M-p" . backward-paragraph)
         ("M-." . xref-find-definitions)
         ("M-?" . xref-find-references)
-        ("C-c !" . consult-flymake)
         ("C-c C-a" . eglot-code-actions))
-  :hook ((js2-mode typescript-mode web-mode) . eglot-ensure))
+  :hook
+  ((js2-mode typescript-mode web-mode) . eglot-ensure))
 
-(use-package flymake-eslint
-  :demand t
-  :init
-  (defun eslint-fix ()
+(defun eslint-fix ()
     "Format the current file with ESLint."
     (interactive)
     (unless buffer-file-name
@@ -166,15 +146,31 @@
         (error "Executable ‘%s’ not found" eslint-fix-executable))
       (apply #'call-process eslint nil 0 nil options)
       (revert-buffer t t t)))
+
+(use-package flymake
+  :demand t
   :hook
-  (typescript-mode . (lambda ()
-                       (progn
-                         (setq flymake-eslint-project-root (project-root (project-current t)))
-                         (flymake-eslint-enable))))
-  (js2-mode . (lambda ()
-                (progn
-                  (setq flymake-eslint-project-root (project-root (project-current t)))
-                  (flymake-eslint-enable)))))
+  (typescript-mode . flymake-mode)
+  (js2-mode . flymake-mode)
+  :bind (:map flymake-mode-map
+              ("C-c !" . flymake-show-buffer-diagnostics)))
+
+
+(defun enable-flymake-after-eglot ()
+  (progn
+    (setq flymake-eslint-project-root (project-root (project-current t)))
+    (setq temp-before-hook eglot-managed-mode-hook)
+    (add-hook 'eglot-managed-mode-hook
+              (lambda ()
+                (flymake-eslint-enable)
+                (setq eglot-managed-mode-hook temp-before-hook)))))
+
+(use-package flymake-eslint
+  :after (eglot)
+  :demand t
+  :hook
+  (typescript-mode . enable-flymake-after-eglot)
+  (js2-mode . enable-flymake-after-eglot))
 
 (defadvice enable-paredit-mode (after activate)
   (smartparens-mode -1))
@@ -297,8 +293,14 @@
 
 (use-package sly-asdf
   :disabled t)
+
 (use-package sly-quicklisp
   :disabled t)
+
+(use-package slite
+  :after (sly)
+  :ensure nil
+  :load-path "~/common-lisp/slite/")
 
 (use-package hcl-mode
   :mode
