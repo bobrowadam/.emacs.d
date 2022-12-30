@@ -67,6 +67,8 @@
 ;; delete char and delte word with "C-h" "C-M-h"
 (define-key key-translation-map [?\C-h] [?\C-?])
 (define-key key-translation-map (kbd "<f1>") (kbd "C-h"))
+;; And also in Hebrew
+(define-key key-translation-map [?\C-י] [?\C-?])
 (global-unset-key (kbd "s-n"))
 
 ;; Deal with editing large files:

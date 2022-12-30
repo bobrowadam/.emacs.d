@@ -8,20 +8,14 @@
   :init
   (modus-themes-load-themes)
   :custom
-  (modus-themes-vivendi-color-overrides '((bg-main . "gray11")))
-  (modus-themes-operandi-color-overrides '((bg-main . "blanched almond")))
-  (modus-themes-mode-line '(borderless padded accented))
-  (modus-themes-region '( bg-only))
-  (modus-themes-bold-constructs t)
-  (modus-themes-italic-constructs t)
-  (modus-themes-paren-math ('bold intense))
-  (modus-themes-hl-line (quote (accented)))
-  (modus-themes-syntax '(alt-syntax yellow-comments green-strings)))
+  (modus-themes-vivendi-color-overrides '((bg-main . "#191a1b")))
+  :config
+  (modus-themes-load-vivendi))
 
 (use-package ef-themes
-  :demand t
+  :disabled t
   :config
-  (ef-themes-select 'ef-bio))
+  (ef-themes-select 'ef-autumn))
 
 (use-package highlight-indent-guides
   :config
@@ -30,9 +24,23 @@
         highlight-indent-guides-auto-enabled t)
   :hook (prog-mode . highlight-indent-guides-mode))
 
-(use-package mood-line
+;; (use-package mood-line
+;;   :demand t
+;;   :config (mood-line-mode))
+
+(use-package moody
   :demand t
-  :config (mood-line-mode))
+  :config
+  (setq x-underline-at-descent-line t)
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode)
+  (moody-replace-eldoc-minibuffer-message-function))
+
+(use-package minions
+  :demand t
+  :config
+  (minions-mode 1))
+
 
 (use-package all-the-icons
   :if (display-graphic-p))

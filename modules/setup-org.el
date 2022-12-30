@@ -5,8 +5,8 @@
 
 (use-package org
   :demand t
-  :after ob-mongo
-  :ensure nil
+  ;; :after ob-mongo
+  :ensure t
   :if (window-system)
   :init
   (setq org-export-with-toc nil)
@@ -71,9 +71,8 @@
                    (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
 
 (use-package org-habit
-  :demand t
-  :after (org)
   :ensure nil
+  :demand t
   :init (setq org-habit-graph-column 70)
   (add-to-list 'org-modules 'habits))
 

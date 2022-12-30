@@ -32,11 +32,13 @@ You can escape '$' with '\\' as prefix.
   "Format ELEMENT to string."
   (format "%s" element))
 
-(defmacro measure-time (&rest body)
-  "Measure the time it takes to evaluate BODY."
-  `(let ((time (current-time)))
-     ,@body
-     (message "%.06f" (float-time (time-since time)))))
+(defmacro time (&rest body)
+  `(let ((time (current-time))
+         (res ,@body))
+     (progn
+       (message (format "Eval time for %s is %.06f" ',@body
+                        (float-time (time-since time))))
+       res)))
 
 (defun gen-tags (n)
   (interactive)

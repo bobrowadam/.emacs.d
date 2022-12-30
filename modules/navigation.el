@@ -146,10 +146,6 @@
   (corfu-scroll-margin 5)        ;; Use scroll margin
   (corfu-auto-prefix 2)
 
-  ;; Enable Corfu only for certain modes.
-  ;; :hook ((prog-mode . corfu-mode)
-  ;;        (vterm-mode . corfu-mode))
-
   ;; Recommended: Enable Corfu globally.
   ;; This is recommended since Dabbrev can be used globally (M-/).
   ;; See also `corfu-excluded-modes'.
@@ -322,7 +318,9 @@
   ("C-c M-c" . avy-goto-word-1))
 
 (use-package ace-window
-  :bind ( "C-x o" . ace-window)
+  :bind 
+  ( "C-x o" . ace-window)
+  ( "M-o" . ace-window)
   :config
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
@@ -380,7 +378,32 @@
   :bind ("C-c w" . elfeed))
 
 (use-package control-mode
+  :disabled t
   :init
   (control-mode-default-setup))
+
+
+(defun my-god-mode-update-mode-line ()
+  (cond
+   (god-local-mode
+    (set-face-attribute 'mode-line nil
+                        :foreground "#604000"
+                        :background "#fff29a")
+    (set-face-attribute 'mode-line-inactive nil
+                        :foreground "#3f3000"
+                        :background "#fff3da"))
+   (t
+    (set-face-attribute 'mode-line nil
+			:foreground "#0a0a0a"
+			:background "#d7d7d7")
+    (set-face-attribute 'mode-line-inactive nil
+			:foreground "#404148"
+			:background "#efefef"))))
+
+;; This mode is similar to "control-mode" but more opinionated
+(use-package god-mode
+  :init
+  :bind ("C-z" . god-mode-all)
+  :hook (post-command-hook . #'my-god-mode-update-mode-line))
 
 (provide 'navigation)

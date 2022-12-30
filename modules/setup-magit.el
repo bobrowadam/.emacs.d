@@ -59,6 +59,10 @@
 (use-package forge
   :init (setq forge-bug-reference-hooks nil))
 
+(use-package github-review
+  :after magit
+  :ensure nil)
+
 (use-package diff-hl
   :demand t
   :config (global-diff-hl-mode))

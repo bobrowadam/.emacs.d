@@ -99,21 +99,13 @@
 
 (use-package eglot
   :demand t
-  :init
-  ;; (setq node-version "18.9.0")
-  ;; (setq fnm-dir (cadr (s-split "=" (cl-find-if
-  ;;                              (lambda (s) (s-starts-with-p "FNM_DIR" s))
-  ;;                              (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
-  ;; (setq fnm-node (concat fnm-dir
-  ;;                        "/node-versions/v" node-version "/installation/bin/node"))
-  ;; (setq fnm-npm (concat fnm-dir
-  ;;                        "/node-versions/v" node-version "/installation/bin/npm"))
-  ;; (setq lsp-clients-typescript-npm-location
-  ;;       fnm-npm)
-  ;; (setenv "NODE_PATH" fnm-node)
-  ;; (add-to-list 'eglot-server-programs
-  ;;              `((js-mode typescript-mode)
-  ;;                                . (,fnm-node "typescript-language-server" "--stdio")))
+  :config
+  ;; (setenv "NODE_PATH" "/Users/bob/Library/Application Support/fnm/node-versions/v18.12.0/installation/lib/node_modules/")
+  (add-to-list 'eglot-server-programs
+               `((js-mode typescript-mode)
+                                 . ("typescript-language-server" "--stdio")))
+  (add-to-list 'eglot-server-programs
+               `((web-mode) . ("vls" "--stdio")))
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
   :bind
@@ -127,6 +119,23 @@
         ("C-c C-a" . eglot-code-actions))
   :hook
   ((js2-mode typescript-mode web-mode) . eglot-ensure))
+
+(use-package flymake
+  :demand t
+  :hook
+  (typescript-mode . flymake-mode)
+  (js2-mode . flymake-mode)
+  :bind (:map flymake-mode-map
+              ("C-c !" . flymake-show-buffer-diagnostics)))
+
+(defun enable-flymake-after-eglot ()
+  (progn
+    (setq flymake-eslint-project-root (project-root (project-current t)))
+    (setq temp-before-hook eglot-managed-mode-hook)
+    (add-hook 'eglot-managed-mode-hook
+              (lambda ()
+                (flymake-eslint-enable)
+                (setq eglot-managed-mode-hook temp-before-hook)))))
 
 (defun eslint-fix ()
     "Format the current file with ESLint."
@@ -147,28 +156,14 @@
       (apply #'call-process eslint nil 0 nil options)
       (revert-buffer t t t)))
 
-(use-package flymake
-  :demand t
-  :hook
-  (typescript-mode . flymake-mode)
-  (js2-mode . flymake-mode)
-  :bind (:map flymake-mode-map
-              ("C-c !" . flymake-show-buffer-diagnostics)))
-
-
-(defun enable-flymake-after-eglot ()
-  (progn
-    (setq flymake-eslint-project-root (project-root (project-current t)))
-    (setq temp-before-hook eglot-managed-mode-hook)
-    (add-hook 'eglot-managed-mode-hook
-              (lambda ()
-                (flymake-eslint-enable)
-                (setq eglot-managed-mode-hook temp-before-hook)))))
 
 (use-package flymake-eslint
   :after (eglot)
   :demand t
   :hook
+  (after-save . (lambda ()
+                  (cond ((eq major-mode 'typescript-mode) (eslint-fix))
+                        ((eq major-mode 'js2-mode) (eslint-fix)))))
   (typescript-mode . enable-flymake-after-eglot)
   (js2-mode . enable-flymake-after-eglot))
 
@@ -177,14 +172,14 @@
 
 (use-package paredit
   :hook
-  (eval-expression-minibuffer-setup . enable-paredit-mode)
+  ;; (eval-expression-minibuffer-setup . enable-paredit-mode)
   (emacs-lisp-mode . enable-paredit-mode)
   (slime-mode . enable-paredit-mode)
   (slime-repl-mode . enable-paredit-mode)
   (common-lisp-mode . enable-paredit-mode)
   (lisp-mode . enable-paredit-mode)
   (lisp-data-mode . enable-paredit-mode)
-  (eshell-mode  . enable-paredit-mode)
+  ;; (eshell-mode  . enable-paredit-mode)
   :bind
   (:map paredit-mode-map ("C-'" . sp-rewrap-sexp)))
 
@@ -246,6 +241,7 @@
   :if (window-system))
 
 (use-package rainbow-delimiters
+  :disabled t
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package tree-sitter
@@ -307,5 +303,6 @@
   ("\\.dsl\\'" . hcl-mode))
 
 (use-package pandoc-mode)
+(use-package git-link)
 
 (provide 'prog)
