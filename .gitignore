@@ -56,3 +56,4 @@ transient/*
 /multisession/
 /project
 /savehist
+/.riseup-repos-cache.el
