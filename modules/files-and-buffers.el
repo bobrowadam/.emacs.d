@@ -8,6 +8,10 @@
   (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
+;; (use-package all-the-icons-dired
+;;   :after (dired)
+;;   :hook (dired-mode . all-the-icons-dired-mode))
+
 (use-package diredfl
   :hook
   (dired-mode . diredfl-mode))
@@ -21,6 +25,8 @@
   :demand t
   :after (dired)
   :ensure t
+  :init
+  (setq dirvish-emacs-bin (expand-file-name (concat (file-name-as-directory invocation-directory) invocation-name)))
   :custom
   (dirvish-quick-access-entries
    '(("h" "~/"                          "Home")
@@ -61,10 +67,10 @@ buffer, it defaults to filename under the cursor when it is nil."
             (find-file file))))))
   (require 'dirvish-fd)
   (dirvish-define-preview exa (file)
-                          "Use `exa' to generate directory preview."
-                          :require ("exa") ; tell Dirvish to check if we have the executable
-                          (when (file-directory-p file) ; we only interest in directories here
-                            `(shell . ("exa" "--color=always" "-al" ,file))))
+    "Use `exa' to generate directory preview."
+    :require ("exa") ; tell Dirvish to check if we have the executable
+    (when (file-directory-p file) ; we only interest in directories here
+      `(shell . ("exa" "--color=always" "-al" ,file))))
   (add-to-list 'dirvish-preview-dispatchers 'exa)
   (dirvish-define-preview bat (file)
     "Use `bat' to generate directory preview."
@@ -75,7 +81,7 @@ buffer, it defaults to filename under the cursor when it is nil."
   (add-to-list 'dirvish-preview-dispatchers 'bat)
   (car dirvish-preview-dispatchers)
   (dirvish-override-dired-mode)
-    (dirvish-peek-mode)
+  (dirvish-peek-mode)
   ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
   (setq dired-dwim-target t)
   (setq delete-by-moving-to-trash t)
@@ -160,51 +166,52 @@ buffer, it defaults to filename under the cursor when it is nil."
   ("C-x p I" . project-ibuffer))
 
 (use-package ibuffer
-  :ensure nil
+  :demand t
   :bind
   ("C-x C-b" . ibuffer)
 
-
-  :config
-  (define-ibuffer-column short-file-name (:name Testing-Define-Column :inline true)
-    (if-let ((root-dir (cdr (ibuffer-vc-root (current-buffer))))
-             (visiting-file-name (buffer-file-name)))
-        (short--file-path (s-replace (expand-file-name root-dir) "" visiting-file-name))
-      (or (buffer-file-name) (buffer-name))))
-  (define-ibuffer-column size-h
-    (:name "Size" :inline t)
-    (cond
-     ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
-     ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
-     (t (format "%8d" (buffer-size)))))
+  ;; :config
+  ;; (define-ibuffer-column short-file-name (:name Testing-Define-Column :inline true)
+  ;;   (if-let (((cdr (ibuffer-vc-root (current-buffer))))
+  ;;            (visiting-file-name (buffer-file-name)))
+  ;;       (short--file-path (s-replace (expand-file-name (project-root (project-current t))) "" visiting-file-name))
+  ;;     (or (buffer-file-name) (buffer-name))))
+  ;; (define-ibuffer-column size-h
+  ;;   (:name "Size" :inline t)
+  ;;   (cond
+  ;;    ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
+  ;;    ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
+  ;;    (t (format "%8d" (buffer-size)))))
   :custom
   (ibuffer-expert t)
   (ibuffer-show-empty-filter-groups nil)
-  (ibuffer-formats
-   '((mark modified read-only vc-status-mini " "
-           (short-file-name))
-     (mark modified read-only vc-status-mini " "
-           (name 18 18 :left :elide)
-           " "
-           (size-h 9 -1 :right)
-           " "
-           (mode 16 16 :left :elide)
-           " "
-           filename-and-process)))
+  ;; (ibuffer-formats
+  ;;  '((mark modified read-only vc-status-mini " "
+  ;;          (short-file-name))
+  ;;    (mark modified read-only vc-status-mini " "
+  ;;          (name 18 18 :left :elide)
+  ;;          " "
+  ;;          (size-h 9 -1 :right)
+  ;;          " "
+  ;;          (mode 16 16 :left :elide)
+  ;;          " "
+  ;;          filename-and-process)))
   (ibuffer-filter-group-name-face 'font-lock-doc-face)
   :hook
   (ibuffer . (lambda ()
                (ibuffer-auto-mode)
-               (ibuffer-vc-set-filter-groups-by-vc-root)
+               ;; (ibuffer-vc-set-filter-groups-by-vc-root)
                (ibuffer-filter-by-prog-mode)
                (all-the-icons-ibuffer-mode)
                (unless (eq ibuffer-sorting-mode 'recency)
-                 (ibuffer-do-sort-by-recency)))))
+                 (ibuffer-do-sort-by-recency))))
+)
 
 (use-package all-the-icons-ibuffer
   :init (all-the-icons-ibuffer-mode 1))
 
 (use-package ibuffer-vc
+  :disabled t
   :demand
   :commands (ibuffer-vc-set-filter-groups-by-vc-root)
   :custom

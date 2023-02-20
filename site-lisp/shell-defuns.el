@@ -116,7 +116,7 @@ Any other prefis will be used as the suffix itself."
 (defun import-customer (customer-id)
   (interactive "N")
   (-let [default-directory (format "%s/source/services/catapult" (getenv "HOME"))]
-    (async-shell-command (format "npm run import-customer %s" customer-id))))
+    (async-shell-command (format "%s run import-customer %s" fnm-npm customer-id))))
 
 (provide 'shell-defuns)
 ;;; shell-defuns.el ends here

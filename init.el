@@ -1,3 +1,4 @@
+(package-initialize)
 (setq gc-cons-threshold 100000000)
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
@@ -46,13 +47,18 @@
   :demand t
   :load-path "./modules")
 
+(use-package completions
+  :after startup
+  :demand t
+  :load-path "./modules")
+
 (use-package files-and-buffers
   :after startup
   :demand t
   :load-path "./modules")
 
 (use-package prog
-  :after startup
+  :after (startup completions)
   :demand t
   :load-path "./modules")
 
@@ -72,6 +78,11 @@
   :load-path "./modules")
 
 (use-package sicp)
+
+(use-package riseup-helpers
+  :demand t
+  :ensure nil
+  :after (startup magit))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)

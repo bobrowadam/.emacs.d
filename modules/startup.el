@@ -1,6 +1,6 @@
 (use-package dash :demand t)
 (use-package s :demand t)
-(use-package subr-x :demand t)
+;; (use-package subr-x :demand t)
 (use-package cl-lib :demand t)
 (use-package server :demand t)
 
@@ -39,6 +39,7 @@
 (setq service-directory (concat (getenv "HOME") "/source/services"))
 
 (use-package exec-path-from-shell
+  :ensure t
   :if (window-system)
   :demand t
   :config
@@ -49,7 +50,9 @@
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-setenv "PATH" (s-join ":" (list (getenv "PATH") fnm-node-path)))
   (exec-path-from-shell-setenv "NODE_PATH"
-                               (s-concat fnm-dir "/node-versions/v18.12.0/installation/lib/node_modules")))
+                               (format "%s/node-versions/%s/installation/lib/node_modules"
+                                       fnm-dir
+                                       default-node-version)))
 
 (use-package short-lambda
   :load-path "./site-lisp"
@@ -66,7 +69,7 @@
 (use-package request)
 (use-package plz)
 
-(use-package utils
+(use-package bobs-utils
   :demand t
   :load-path "./site-lisp"
   :ensure nil)
@@ -80,4 +83,5 @@
 
 (use-package scratch-pop
   :bind ("C-c r" . scratch-pop))
+
 (provide 'startup)

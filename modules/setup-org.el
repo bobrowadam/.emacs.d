@@ -1,7 +1,7 @@
 (use-package  ob-mongo
   :demand t
   :ensure nil
-  :load-path "./ob-mongo")
+  :load-path "~/source/ob-mongo/")
 
 (use-package org
   :demand t
@@ -74,7 +74,7 @@
   :ensure nil
   :demand t
   :init (setq org-habit-graph-column 70)
-  (add-to-list 'org-modules 'habits))
+  (add-to-list 'org-modules 'ol-habits))
 
 (use-package package-name
   :after (org-roam)
@@ -139,6 +139,7 @@
   :ensure nil)
 
 (use-package org-roam
+  :demand t
   :after (org)
   :init
   (setq org-roam-graph-viewer "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser")
@@ -164,7 +165,6 @@
   ("C-c n d d" . org-roam-dailies-capture-today)
   :config
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-
   (org-roam-db-autosync-mode))
 
 (use-package org-roam-bibtex

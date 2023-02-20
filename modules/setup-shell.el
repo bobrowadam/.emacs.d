@@ -14,9 +14,9 @@
   :demand t)
 
 (use-package vterm
-  :after startup
+  :demand t
+  :after (startup shell-defuns)
   :if (window-system)
-  :after shell-defuns
   :config
   (setq vterm-max-scrollback 100000)
   (define-key vterm-mode-map [remap whole-line-or-region-yank] #'vterm-yank)

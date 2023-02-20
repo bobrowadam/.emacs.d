@@ -18,7 +18,7 @@
 (with-eval-after-load 'compile
   (fancy-compilation-mode))
 
-(defun npm-run-build ()
+(defun run-build ()
   "Build typescript project on watch mode"
   (interactive)
   (when (and (project-current) (eq major-mode 'typescript-mode))
@@ -29,12 +29,13 @@
       (compilation-start "npm run build -- -w" t))))
 
 (use-package typescript-mode
+  :demand t
   :hook
   (typescript-mode . add-node-modules-path)
   (typescript-mode . eldoc-mode)
   :bind (:map typescript-mode-map ("C-c C-b" . npm-run-build))
   :config
-  (setq typescript-indent-level 2))
+  (setq-default typescript-indent-level 2))
 
 (use-package jest-test-mode
   :init
@@ -42,6 +43,7 @@
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
 (use-package js2-mode
+  :demand t
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
@@ -100,12 +102,16 @@
 (use-package eglot
   :demand t
   :config
-  ;; (setenv "NODE_PATH" "/Users/bob/Library/Application Support/fnm/node-versions/v18.12.0/installation/lib/node_modules/")
+  (setenv "NODE_PATH" "/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/lib/node_modules")
   (add-to-list 'eglot-server-programs
                `((js-mode typescript-mode)
-                                 . ("typescript-language-server" "--stdio")))
+                                 . ("/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/bin/typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
-               `((web-mode) . ("vls" "--stdio")))
+               `((web-mode) . ("/Users/bob/Library/Caches/fnm_multishells/77292_1674653900807/bin/vls" "--stdio")))
+  ;; (add-to-list 'eglot-server-programs '(web-mode . ("/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/bin/vue-language-server" "--stdio"
+  ;;                                                   ;; :initializationOptions
+  ;;                                                   ;; (:typescript (:tsdk "node_modules/typescript/lib"))
+  ;;                                                   )))
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
   :bind
@@ -128,9 +134,14 @@
   :bind (:map flymake-mode-map
               ("C-c !" . flymake-show-buffer-diagnostics)))
 
+(defun set-eslint-executable ()
+  (when
+   (setq flymake-eslint-executable-name)))
+
 (defun enable-flymake-after-eglot ()
   (progn
     (setq flymake-eslint-project-root (project-root (project-current t)))
+    (setq flymake-eslint-executable-name (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
     (setq temp-before-hook eglot-managed-mode-hook)
     (add-hook 'eglot-managed-mode-hook
               (lambda ()
@@ -148,8 +159,8 @@
         (error "ESLint may only be run on an unmodified buffer")))
 
     (let* ((default-directory (project-root (project-current t)))
-           (eslint-fix-executable "eslint")
-           (eslint (executable-find eslint-fix-executable))
+           ;; (eslint-fix-executable "eslint")
+           (eslint (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
            (options (list "--fix" buffer-file-name)))
       (unless eslint
         (error "Executable ‘%s’ not found" eslint-fix-executable))
@@ -232,7 +243,8 @@
   :commands (markdown-mode gfm-mode)
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode))
+         ("\\.markdown\\'" . markdown-mode)
+         ("\\.mess\\'" . markdown-mode))
   :init (setq markdown-command "pandoc"))
 
 (use-package restclient
@@ -275,7 +287,7 @@
 (use-package sly
   :demand t
   :init
-  (setq inferior-lisp-program "/usr/local/bin/sbcl")
+  (setq inferior-lisp-program "sbcl")
   :bind (:map sly-editing-mode-map
               ("C-c M-c" . avy-goto-word-1))
   :hook
@@ -304,5 +316,14 @@
 
 (use-package pandoc-mode)
 (use-package git-link)
+
+(use-package chatgpt
+  :disabled t
+  :straight (:host github :repo "joshcho/ChatGPT.el" :files ("dist" "*.el"))
+  :init
+  (require 'python)
+  (setq python-interpreter "python3")
+  (setq chatgpt-repo-path "~/.emacs.d/straight/repos/ChatGPT.el/")
+  :bind ("C-c q" . chatgpt-query))
 
 (provide 'prog)

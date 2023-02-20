@@ -1,16 +1,17 @@
 (setq custom-safe-themes t)
 (setq custom-theme-directory (concat user-emacs-directory "themes"))
-(set-frame-font "DaddyTimeMono Nerd Font 21")
+(set-frame-font "DaddyTimeMono Nerd Font 19")
 (add-to-list 'default-frame-alist
-             '(font . "DaddyTimeMono Nerd Font 21"))
+             '(font . "DaddyTimeMono Nerd Font 19"))
 
 (use-package modus-themes
-  :init
-  (modus-themes-load-themes)
-  :custom
-  (modus-themes-vivendi-color-overrides '((bg-main . "#191a1b")))
+  :demand t
   :config
-  (modus-themes-load-vivendi))
+  (setq modus-vivendi-palette-overridesd
+      '((fg-main "#333333")
+        (comment red-faint)
+        (keyword cyan-cooler)))
+  (load-theme 'modus-vivendi :no-confim))
 
 (use-package ef-themes
   :disabled t

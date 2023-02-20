@@ -16,8 +16,6 @@
   :bind
   ("C-x g" . magit-status)
   ("C-c s g" . bob/magit-buffers)
-  :custom
-  (magit-git-executable "/usr/local/bin/git")
   :init
   (use-package with-editor :ensure t)
   :config
@@ -57,6 +55,7 @@
                                      )))
 
 (use-package forge
+  :after magit
   :init (setq forge-bug-reference-hooks nil))
 
 (use-package github-review
@@ -71,5 +70,7 @@
 (use-package vc
   :ensure nil
   :bind ("C-x v p" . vc-pull))
+
+(use-package git-timemachine)
 
 (provide 'setup-magit)

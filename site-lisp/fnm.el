@@ -40,33 +40,31 @@
 
 (defvar fnm-node (concat fnm-node-path
                        "/node"))
+
 (defvar fnm-npm (concat fnm-dir
                       "/node-versions/" default-node-version "/installation/bin/npm"))
+
+(defvar fnm-node-modules (concat fnm-dir
+                      "/node-versions/" default-node-version "/installation/lib/node_modules"))
+
 (defvar lsp-clients-typescript-npm-location
         fnm-npm)
 
 
 (defun fnm-node-path (node-version)
-  (format "%s/bin/node"
-          (let ((exports (split-string (shell-command-to-string (format "zsh; eval \"$(fnm env --use-on-cd)\; fnm use %s; $(print fnm env)\""
-                                                                        node-version))
-                                       "\n")))
-            (when (node--version-is-not-installed-p (car exports))
+  (let ((node-path-request (split-string (shell-command-to-string (format "zsh; eval \"$(fnm env --use-on-cd)\; fnm use %s; which node\""
+                                                                          node-version))
+                                         "\n")))
+            (when (s-starts-with-p "error" (car node-path-request))
               (error "Node version %s is not currently installed by FNM" node-version))
-            (loop for export in exports
-                  for env = (s-split "=" (s-chop-prefix "export " export))
-                  when (equal (car env) "FNM_MULTISHELL_PATH")
-                  return (s-replace "\"" "" (cadr env))))))
+            (cadr node-path-request)))
 
 (defun node--version-is-not-installed-p (fnm-env-string)
   (s-contains? "is not currently installed" fnm-env-string))
 
-(fnm-node-path 18)"/Users/bob/Library/Caches/fnm_multishells/44633_1672357307514/bin/node"
-(fnm-node-path 12)"/Users/bob/Library/Caches/fnm_multishells/44874_1672357329659/bin/node"
-(fnm-node-path 8)
-(fnm-node-path 123)
-
+(defun fnm-use (node-version)
+  (cond ((equal major-mode 'eshell-mode)
+         (eshell/alias "node" (fnm-node-path node-version) "$1"))))
 
 (provide 'fnm)
-
 ;;; fnm.el ends here

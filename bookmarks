@@ -2,7 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("elpa"
+(("riseup-exercise"
+ (filename . "~/source/riseup-exercise/")
+ (front-context-string . "README.md\n  -rw-")
+ (rear-context-string . "58 Jul 24  2022 ")
+ (position . 175)
+ (last-modified 25567 28604 494248 0))
+("rest-clients"
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/riseup/rest-clients/")
+ (front-context-string . "chat-gpt.client\n")
+ (rear-context-string . "58 Jan 13 01:06 ")
+ (position . 232)
+ (last-modified 25536 37484 96143 0))
+("elpa"
  (filename . "~/.emacs.d/elpa/")
  (front-context-string . "ace-window-20220")
  (rear-context-string . "56 Nov 12 11:11 ")
@@ -16,10 +28,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
- (front-context-string . "* use zod-mongo'")
- (rear-context-string . "remove eslintci\n")
- (position . 658)
- (last-modified 25504 42591 376272 0))
+ (front-context-string . "* call aquatech\n")
+ (rear-context-string . "t-unit all over\n")
+ (position . 451)
+ (last-modified 25586 20482 41326 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")
@@ -130,11 +142,6 @@
  (front-context-string . "..\n  drwxr-xr-x ")
  (rear-context-string . "1K Feb  5 12:46 ")
  (position . 177))
-("rest_clients"
- (filename . "~/Google Drive//riseup/rest_clients/")
- (front-context-string . "asana.client\n  -")
- (rear-context-string . "0B May  5  2020 ")
- (position . 242))
 ("init.el"
  (filename . "~/.emacs.d/init.el")
  (front-context-string . "(require 'packag")

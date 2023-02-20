@@ -1,9 +1,11 @@
 (use-package vulpea
+  :after org-roam
   :demand t
   ;; hook into org-roam-db-autosync-mode you wish to enable
   ;; persistence of meta values (see respective section in README to
   ;; find out what meta means)
-  :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable)))
+  ;; :hook ((org-roam-db-autosync-mode . vulpea-db-autosync-enable))
+)
 
 (defun vulpea-project-p ()
   "Return non-nil if current buffer has any todo entry.
