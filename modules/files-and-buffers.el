@@ -200,18 +200,16 @@ buffer, it defaults to filename under the cursor when it is nil."
   :hook
   (ibuffer . (lambda ()
                (ibuffer-auto-mode)
-               ;; (ibuffer-vc-set-filter-groups-by-vc-root)
+               (ibuffer-vc-set-filter-groups-by-vc-root)
                (ibuffer-filter-by-prog-mode)
                (all-the-icons-ibuffer-mode)
                (unless (eq ibuffer-sorting-mode 'recency)
-                 (ibuffer-do-sort-by-recency))))
-)
+                 (ibuffer-do-sort-by-recency)))))
 
 (use-package all-the-icons-ibuffer
   :init (all-the-icons-ibuffer-mode 1))
 
 (use-package ibuffer-vc
-  :disabled t
   :demand
   :commands (ibuffer-vc-set-filter-groups-by-vc-root)
   :custom

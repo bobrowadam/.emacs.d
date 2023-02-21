@@ -1,12 +1,13 @@
-(defun browse-riseup-git-project ()
-    "Browse a riseup git repositary using the current known project for completion"
-    (interactive)
+(defun browse-riseup-git-project (&optional project)
+  "Browse a riseup git repositary using the current known project for completion"
+  (interactive)
+  (let ((current-project-name (or project (car (last (cl-remove-if #'seq-empty-p
+                                                                   (s-split "/"
+                                                                            (completing-read "select riseup repo"
+                                                                                             (get--project-names project--list)))))))))
     (browse-url (format "http://github.com/riseupil/%s"
-                        (car (last (cl-remove-if #'seq-empty-p
-                                                 (s-split "/"
-                                                          (completing-read "select riseup repo"
-                                                                           (get--project-names project--list)))))))
-                t))
+                        current-project-name)
+                t)))
 
 (defun get--project-names (projects-paths)
   (mapcar (lambda (project-path)
@@ -55,5 +56,14 @@ This is used for 'clone-riseup-repo'")
 (defun save--riseup-repo-names-to-cache (file-name)
   (with-temp-file file-name
     (insert (to-string (get-all-riseup-repos)))))
+
+(defun import-customer (customer-id)
+  (interactive "N")
+  (-let [default-directory (format "%s/source/catapult" (getenv "HOME"))]
+    (async-shell-command (format "%s %s %s"
+                                 (fnm-node-path "18")
+                                 "./node_modules/env-setter/src/ssm-entrypoint-local.js local.js"
+                                 "customer-import-locally"
+                              customer-id))))
 
 (provide 'riseup-helpers)

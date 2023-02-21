@@ -38,6 +38,10 @@
   (("C-x p f" . consult-project-extra-find)
    ("C-x p o" . consult-project-extra-find-other-window)))
 
+(defun browse-current-project ()
+  (interactive)
+  (browse-riseup-git-project (project-name (project-current))))
+
 (use-package project
   :ensure nil
   :bind
@@ -51,7 +55,8 @@
           (bob/project-vterm "Vterm")
           (magit-project-status "Magit" "g")
           (consult-ripgrep "Grep" "r")
-          (project-ibuffer "Ibuffer" "b")))
+          (project-ibuffer "Ibuffer" "b")
+          (browse-current-project "Browse" "B")))
   (unless (project-known-project-roots)
     (message "No project file found, indexing projects")
     (progn

@@ -32,7 +32,7 @@
 ;;; Code:
 
 
-(defun project-name (&optional project)
+(defun project--name (&optional project)
  (let  ((pr (or project (project-root (project-current))))) 
   (file-name-nondirectory (directory-file-name pr))))
 
@@ -62,7 +62,7 @@
   (let* ((pr-current (project-current))
          (pr-root (and pr-current (project-root pr-current))))
    (if pr-root
-       (ibuffer nil (format "*%s Buffers*" (project-name))
+       (ibuffer nil (format "*%s Buffers*" (project--name))
                 (list (cons 'project-files pr-root)))
      (message "project-ibuffer: Not in known project"))))
 
