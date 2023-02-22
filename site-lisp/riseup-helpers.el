@@ -60,7 +60,7 @@ This is used for 'clone-riseup-repo'")
 (defun import-customer (customer-id)
   (interactive "N")
   (-let [default-directory (format "%s/source/catapult" (getenv "HOME"))]
-    (async-shell-command (format "%s %s %s"
+    (async-shell-command (format "%s %s %s %s"
                                  (fnm-node-path "18")
                                  "./node_modules/env-setter/src/ssm-entrypoint-local.js local.js"
                                  "customer-import-locally"

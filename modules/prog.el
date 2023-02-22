@@ -18,7 +18,7 @@
 (with-eval-after-load 'compile
   (fancy-compilation-mode))
 
-(defun run-build ()
+(defun npm-run-build ()
   "Build typescript project on watch mode"
   (interactive)
   (when (and (project-current) (eq major-mode 'typescript-mode))
@@ -26,7 +26,7 @@
           (comint-scroll-to-bottom-on-input t)
           (comint-scroll-to-bottom-on-output t)
           (comint-process-echoes t))
-      (compilation-start "npm run build -- -w" t))))
+      (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" (fnm-node-path "18")) t))))
 
 (use-package typescript-mode
   :demand t

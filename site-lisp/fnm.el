@@ -31,15 +31,15 @@
 ;;; Code:
 
 (defvar default-node-version
-  "The defined default FNM node version"
-      (car (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; node -v"))))
+  (car (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; node -v")))
+  "The defined default FNM node version")
 
 (defvar fnm-dir (cadr (s-split "=" (cl-find-if
                                     (lambda (s) (s-starts-with-p "FNM_DIR" s))
                                     (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
 
-(defvar fnm-node (concat fnm-node-path
-                       "/node"))
+;; (defvar fnm-node (concat fnm-node-path
+;;                        "/node"))
 
 (defvar fnm-npm (concat fnm-dir
                       "/node-versions/" default-node-version "/installation/bin/npm"))
@@ -67,6 +67,15 @@
               (error "Node version %s is not currently installed by FNM" node-version))
             (cadr node-path-request)))
 
+(defun fnm-nodemon-path (node-version)
+  (let ((node-path-request (split-string (shell-command-to-string (format "zsh; eval \"$(fnm env --use-on-cd)\; fnm use %s; which nodemon\""
+                                                                          node-version))
+                                         "\n")))
+    (when (s-starts-with-p "error" (car node-path-request))
+      (error "Node version %s is not currently installed by FNM" node-version))
+    (cadr node-path-request)))
+
+
 (defun node--version-is-not-installed-p (fnm-env-string)
   (s-contains? "is not currently installed" fnm-env-string))
 
@@ -76,3 +85,17 @@
 
 (provide 'fnm)
 ;;; fnm.el ends here
+
+
+;; (setq default-node-version
+;;       (car (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; node -v"))))
+;; (setq fnm-dir (cadr (s-split "=" (cl-find-if
+;;                                   (lambda (s) (s-starts-with-p "FNM_DIR" s))
+;;                                   (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
+;; (setq fnm-node-path (concat fnm-dir
+;;                             "/node-versions/" default-node-version "/installation/bin"))
+
+;; (setq fnm-node (concat fnm-node-path
+;;                        "/node"))
+;; (setq fnm-npm (concat fnm-dir
+;;                       "/node-versions/" default-node-version "/installation/bin/npm"))

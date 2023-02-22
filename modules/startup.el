@@ -3,6 +3,10 @@
 ;; (use-package subr-x :demand t)
 (use-package cl-lib :demand t)
 (use-package server :demand t)
+(use-package fnm
+  :load-path "./site-lisp"
+  :ensure nil
+  :demand t)
 
 (unless (server-running-p)
   (server-start))
@@ -21,20 +25,9 @@
   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'el-patch)
 
-(setq default-node-version
-      (car (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; node -v"))))
-(setq fnm-dir (cadr (s-split "=" (cl-find-if
-                                  (lambda (s) (s-starts-with-p "FNM_DIR" s))
-                                  (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
-(setq fnm-node-path (concat fnm-dir
-                            "/node-versions/" default-node-version "/installation/bin"))
 
-(setq fnm-node (concat fnm-node-path
-                       "/node"))
-(setq fnm-npm (concat fnm-dir
-                      "/node-versions/" default-node-version "/installation/bin/npm"))
 (setq lsp-clients-typescript-npm-location
-        fnm-npm)
+        (fnm-npm-path "18"))
 
 (setq service-directory (concat (getenv "HOME") "/source/services"))
 
@@ -48,11 +41,9 @@
   (add-to-list 'exec-path-from-shell-variables "LOCAL_WHATSAPP_NUMBER")
   (setq exec-path-from-shell-arguments nil)  
   (exec-path-from-shell-initialize)
-  (exec-path-from-shell-setenv "PATH" (s-join ":" (list (getenv "PATH") fnm-node-path)))
-  (exec-path-from-shell-setenv "NODE_PATH"
-                               (format "%s/node-versions/%s/installation/lib/node_modules"
-                                       fnm-dir
-                                       default-node-version)))
+  (exec-path-from-shell-setenv "PATH" (s-join ":" (list (getenv "PATH")
+                                                        (s-replace-regexp "node$" "" (fnm-node-path default-node-version)))))
+  (exec-path-from-shell-setenv "NODE_PATH" (fnm-node-path default-node-version)))
 
 (use-package short-lambda
   :load-path "./site-lisp"
