@@ -1,11 +1,13 @@
 (use-package  ob-mongo
   :demand t
   :ensure nil
+  :custom
+  (ob-mongo:default-mongo-executable "mongosh")
   :load-path "~/source/ob-mongo/")
 
 (use-package org
   :demand t
-  ;; :after ob-mongo
+  :after ob-mongo
   :ensure t
   :if (window-system)
   :init
