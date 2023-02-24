@@ -2,7 +2,7 @@
   :demand t
   :ensure nil
   :custom
-  (ob-mongo:default-mongo-executable "mongosh")
+  (ob-mongo:default-mongo-executable "mongo")
   :load-path "~/source/ob-mongo/")
 
 (use-package org

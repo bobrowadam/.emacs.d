@@ -77,7 +77,7 @@ buffer, it defaults to filename under the cursor when it is nil."
     :require ("bat") ; tell Dirvish to check if we have the executable
     (when (not (file-directory-p file)) ; we only interest in directories here
       `(shell . ("bat" "--color=always" "--decorations=always" "--paging=never",file))))
-  
+
   (add-to-list 'dirvish-preview-dispatchers 'bat)
   (car dirvish-preview-dispatchers)
   (dirvish-override-dired-mode)
@@ -107,22 +107,26 @@ buffer, it defaults to filename under the cursor when it is nil."
    ("M-e" . dirvish-emerge-menu)
    ("M-j" . dirvish-fd)))
 
-;; setup
 (defmacro csetq (variable value)
   `(funcall (or (get ',variable 'custom-set)
                 'set-default)
             ',variable ,value))
-(csetq ediff-window-setup-function 'ediff-setup-windows-plain)
-(csetq ediff-split-window-function 'split-window-horizontally)
-(csetq ediff-diff-options "-w")
+
 (defun ediff-copy-both-to-C ()
   (interactive)
   (ediff-copy-diff ediff-current-difference nil 'C nil
                    (concat
                     (ediff-get-region-contents ediff-current-difference 'A ediff-control-buffer)
                     (ediff-get-region-contents ediff-current-difference 'B ediff-control-buffer))))
-(defun add-d-to-ediff-mode-map () (define-key ediff-mode-map "d" 'ediff-copy-both-to-C))
-(add-hook 'ediff-keymap-setup-hook 'add-d-to-ediff-mode-map)
+(defun add-d-to-ediff-mode-map ()
+    (define-key ediff-mode-map "d" 'ediff-copy-both-to-C))
+
+(use-package ediff
+  :custom
+  (ediff-window-setup-function 'ediff-setup-windows-plain)
+  (ediff-split-window-function 'split-window-horizontally)
+  (ediff-diff-options "-w")
+  :hook (ediff-keymap-setup . #'add-d-to-ediff-mode-map))
 
 (defun bob/kill-this-buffer ()
   (interactive)

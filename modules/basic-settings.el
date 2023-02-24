@@ -108,13 +108,35 @@
 (use-package flyspell
   :bind  (:map flyspell-mode-map ("C-;" . nil))
   :ensure nil
-  :hook
-  (prog-mode . flyspell-prog-mode)
-  (org-mode . flyspell-mode)
-  (git-commit-setup . git-commit-turn-on-flyspell)
+  ;; :hook
+  ;; (prog-mode . flyspell-mode)
+  ;; (org-mode . flyspell-mode)
+  ;; (git-commit-setup . git-commit-turn-on-flyspell
+  ;; :config
+  ;; (setq flyspell-issue-message-flag nil)
+)
 
+(use-package wucuo
+  :demand t
+  :custom
+  ;; (wucuo-modes-whose-predicate-ignored '(typescript-mode))
+  (wucuo-personal-font-faces-to-check '(tree-sitter-hl-face:string
+                                        tree-sitter-hl-face:comment
+                                        tree-sitter-hl-face:constant
+                                        tree-sitter-hl-face:function
+                                        tree-sitter-hl-face:variable
+                                        git-commit-summary))
   :config
-  (setq flyspell-issue-message-flag nil))
+  (setq ispell-program-name "aspell")
+  ;; You could add extra option "--camel-case" for camel case code spell checking if Aspell 0.60.8+ is installed
+  ;; @see https://github.com/redguardtoo/emacs.d/issues/796
+  (setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US" "--run-together" "--run-together-limit=16" "--camel-case"))
+  :hook
+  (prog-mode . wucuo-start)
+  (text-mode . wucuo-start)
+  (git-commit-setup . wucuo-start))
+
+
 
 (use-package emojify)
 (use-package zoom-window :bind ("C-x C-z" . zoom-window-zoom))
