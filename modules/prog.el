@@ -28,6 +28,26 @@
           (comint-process-echoes t))
       (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" (fnm-node-path "18")) t))))
 
+(defun npm-install-project (&optional force)
+  "NPM install in project.
+If FORCE is non-nil, delete the 'package-lock.json' and 'node_modules' directories and verify NPM cache
+before running 'npm install'."
+  (interactive "P")
+  (let* ((default-directory (project-root (project-current t)))
+         (project-node-version (read-file ".nvmrc"))
+         (local-npm-executable (fnm-npm-path project-node-version)))
+    (message "local NPM executable version is %s" (bobs-shell-comand-to-string local-npm-executable "-v"))
+    (when force
+      (message "removing package-lock.json")
+      (unwind-protect (delete-file (concat default-directory "package-lock.json")))
+      (message "removing node_modules")
+      (unwind-protect (delete-directory (concat default-directory "node_modules") t))
+      (message "verifying NPM's cache")
+      (apply #'call-process local-npm-executable nil 0 nil '("verify")))
+    (start-process "npm-install" "*npm-install-output*" local-npm-executable "install")
+    (split-window-horizontally)
+    (switch-to-buffer (get-buffer "*npm-install-output*"))))
+
 (use-package typescript-mode
   :demand t
   :hook

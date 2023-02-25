@@ -113,5 +113,10 @@ Any other prefis will be used as the suffix itself."
               (equal a bob/last-shell-buffer))
             buffers))
 
+(defun bobs-shell-comand-to-string (command args)
+  "Execute command and retrieve the output as string"
+  (s-trim (with-output-to-string
+            (call-process command nil standard-output nil args))))
+
 (provide 'shell-defuns)
 ;;; shell-defuns.el ends here
