@@ -292,12 +292,30 @@ before running 'npm install'."
   :after json-mode)
 
 (use-package origami
+  :disabled t
   :demand t
   :hook
   (prog-mode . origami-mode)
   :bind (:map origami-mode-map
               ("C-=" . origami-recursively-toggle-node)
               ("C-+" . origami-toggle-all-nodes)))
+
+(use-package ts-fold
+  :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
+  :init
+  :hook ((js2-mode typescript-mode
+                   c-mode c++-mode rust-mode) . ts-fold-mode)
+  :bind (:map ts-fold-mode
+              ("C-=" . ts-fold-toggle)
+              ("C-+" . ts-fold-open-recursively)))
+
+(use-package outline
+  :ensure nil
+  :hook ((emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode lisp-interaction-mode) . outline-minor-mode)
+  :bind (:map outline-minor-mode-map
+              ("C-=" . outline-cycle)
+              ("C-+" . outline-show-all)))
+
 
 (use-package haskell-mode :disabled t)
 (use-package haskell-snippets :disabled t)
