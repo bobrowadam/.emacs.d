@@ -1,9 +1,9 @@
 (defun browse-riseup-git-project (&optional project)
-  "Browse a riseup git repositary using the current known project for completion"
+  "Browse a riseup git repository using the current known project for completion"
   (interactive)
   (let ((current-project-name (or project (car (last (cl-remove-if #'seq-empty-p
                                                                    (s-split "/"
-                                                                            (completing-read "select riseup repo"
+                                                                            (completing-read "select riseup repo:\n"
                                                                                              (get--project-names project--list)))))))))
     (browse-url (format "http://github.com/riseupil/%s"
                         current-project-name)
@@ -47,7 +47,7 @@ This is used for 'clone-riseup-repo'")
   (interactive "P")
   (when (car refresh-cache)
     (save--riseup-repo-names-to-cache riseup-repos-cache-path))
-  (let ((selected-repo (completing-read "select riseup repo"
+  (let ((selected-repo (completing-read "select riseup repository\n"
                                         (read-file riseup-repos-cache-path))))
     (magit-clone-internal (format "%s/%s.git" "git@github.com:riseupil" selected-repo)
                           service-directory
@@ -65,5 +65,45 @@ This is used for 'clone-riseup-repo'")
                                  "./node_modules/env-setter/src/ssm-entrypoint-local.js local.js"
                                  "customer-import-locally"
                               customer-id))))
+
+(defun browse-customer (&optional project)
+  "Browse riseup customer in mamadmin"
+  (interactive)
+  (let ((customer-id (read-number "Enter customer:\n")))
+    (browse-url (format "https://mamadmin.riseup.co.il/#/home/customer/%s/"
+                        customer-id)
+                t)))
+
+(defun browse-data-dog-customer (&optional project)
+  "Browse riseup customer in mamadmin"
+  (interactive)
+  (let ((customer-id (read-number "Enter customer:\n")))
+    (browse-url (format "https://riseup.datadoghq.com/logs?querycustomerid=%s&additional_filters=%%d5B%%7B%%7D%%5D&agg_q=%%40customerId&analyticsOptions=%%5B%%22bars%%22%%2C%%22dog_classic%%22%%2Cnull%%2Cnull%%5D&cols=host%%2Cservice%%2C%%40customerId&index=&messageDisplay=inline&saved-view-id=74419&stream_sort=time%%2Cdesc&viz=stream&live=true"
+                        customer-id)
+                t)))
+
+(defun browse-data-dog-text (&optional project)
+  "Browse riseup customer in mamadmin"
+  (interactive)
+  (let ((query-text (read-string "Enter text:\n")))
+    (browse-url (format "https://riseup.datadoghq.com/logs?query=%s&additional_filters=%%d5B%%7B%%7D%%5D&agg_q=%%40customerId&analyticsOptions=%%5B%%22bars%%22%%2C%%22dog_classic%%22%%2Cnull%%2Cnull%%5D&cols=host%%2Cservice%%2C%%40customerId&index=&messageDisplay=inline&saved-view-id=74419&stream_sort=time%%2Cdesc&viz=stream&live=true"
+                        query-text)
+                t)))
+(defun browse-data-dog-service (&optional project)
+  "Browse riseup customer in mamadmin"
+  (interactive)
+  (let ((service-name (read-string "Enter service name:\n")))
+    (browse-url (format "https://riseup.datadoghq.com/logs?query=%%40service%%3A%s&additional_filters=%%5B%%7B%%7D%%5D&cols=%%40event.msgText%%2C%%40event.customerId%%2C%%40params&index=%%2A&messageDisplay=inline&stream_sort=time%%2Cdesc&viz=stream&from_ts=1678359905559&to_ts=1678363505559&live=true"
+                        service-name)
+                t)))
+
+(transient-define-prefix data-dog-jump ()
+  "Search in data dog"
+  ["Data Dog Jump"
+   [("c " "Customer" browse-data-dog-customer)]
+   [("s " "Service" browse-data-dog-service)]
+   [("t " "Text" browse-data-dog-text)]])
+
+(bind-key "C-c C-d" 'data-dog-jump)
 
 (provide 'riseup-helpers)
