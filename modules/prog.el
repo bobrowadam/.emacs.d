@@ -192,9 +192,9 @@ before running 'npm install'."
   :after (eglot)
   :demand t
   :hook
-  (after-save . (lambda ()
-                  (cond ((eq major-mode 'typescript-mode) (eslint-fix))
-                        ((eq major-mode 'js2-mode) (eslint-fix)))))
+  ;; (after-save . (lambda ()
+  ;;                 (cond ((eq major-mode 'typescript-mode) (eslint-fix))
+  ;;                       ((eq major-mode 'js2-mode) (eslint-fix)))))
   (typescript-mode . enable-flymake-after-eglot)
   (js2-mode . enable-flymake-after-eglot))
 
