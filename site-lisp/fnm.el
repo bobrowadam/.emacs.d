@@ -38,9 +38,6 @@
                                     (lambda (s) (s-starts-with-p "FNM_DIR" s))
                                     (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
 
-;; (defvar fnm-node (concat fnm-node-path
-;;                        "/node"))
-
 (defvar fnm-npm (concat fnm-dir
                       "/node-versions/" default-node-version "/installation/bin/npm"))
 

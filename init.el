@@ -1,4 +1,4 @@
-(package-initialize)
+;; (package-initialize)
 (setq gc-cons-threshold 100000000)
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)

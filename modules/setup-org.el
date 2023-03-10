@@ -78,10 +78,6 @@
   :init (setq org-habit-graph-column 70)
   (add-to-list 'org-modules 'ol-habits))
 
-(use-package package-name
-  :after (org-roam)
-  :load-path "./modules")
-
 (use-package org-bullets
   :if (window-system))
 
@@ -132,6 +128,9 @@
 
 (use-package org-agenda
   :after org
+  :init
+  (setq org-agenda-custom-commands
+           '(("b" tags "+OngoingBugs")))
   :bind
   ("C-c a" . org-agenda)
   ("C-c c" . org-capture)
@@ -140,11 +139,17 @@
         ("M-B" . org-agenda-do-date-earlier))
   :ensure nil)
 
+;; (use-package emacsql-sqlite-builtin
+;;   :demand t
+;;   :init
+;;   (setq org-roam-database-connector 'sqlite-builtin))
+
 (use-package org-roam
   :demand t
-  :after (org)
+  ;; :after (emacsql-sqlite-builtin)
   :init
-  (setq org-roam-graph-viewer "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser")
+  ;; (setq org-roam-graph-viewer "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser")
+  (setq org-roam-graph-viewer "/Applications/Arc.app/Contents/MacOS/Arc")
   (setq org-roam-v2-ack t)
   (setq org-roam-directory org-directory)
   (setq org-id-locations-file (concat org-directory ".orgids"))
@@ -168,11 +173,6 @@
   :config
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode))
-
-(use-package org-roam-bibtex
-  :after org-roam
-  :config
-  (require 'org-ref))
 
 (use-package org-roam-ui
   :after org-roam

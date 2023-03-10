@@ -27,11 +27,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20230224174617-riseup_event_source.org")
- (front-context-string)
- (rear-context-string . "up-event-source\n")
- (position . 97)
- (last-modified 25592 56267 871115 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
+ (front-context-string . "* make cl-asana ")
+ (rear-context-string . "---------------\n")
+ (position . 426)
+ (last-modified 25608 27633 321153 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")
