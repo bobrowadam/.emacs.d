@@ -193,4 +193,9 @@
 
 (use-package ox-gfm :after org)
 
+(use-package ekg
+  :custom
+  (ekg-db-file "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/triplets.db")
+  :bind (([f11] . ekg-capture)))
+
 (provide 'setup-org)
