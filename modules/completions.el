@@ -5,13 +5,13 @@
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-separator ?\s)          ;; Orderless field separator
   (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  (corfu-quit-no-match t)      ;; Never quit, even if there is no match
   (corfu-preview-current t)    ;; Disable current candidate preview
   (corfu-preselect-first nil)    ;; Disable candidate preselection
-  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  (corfu-on-exact-match 'insert)     ;; Configure handling of exact matches
   (corfu-echo-documentation t) ;; Disable documentation in the echo area
   (corfu-scroll-margin 8)        ;; Use scroll margin
-  (corfu-auto-prefix 0)
+  (corfu-auto-prefix 2)
 
   ;; Recommended: Enable Corfu globally.
   ;; This is recommended since Dabbrev can be used globally (M-/).
