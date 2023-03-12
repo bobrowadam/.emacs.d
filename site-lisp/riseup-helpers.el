@@ -66,11 +66,19 @@ This is used for 'clone-riseup-repo'")
                                  "customer-import-locally"
                               customer-id))))
 
-(defun browse-customer (&optional project)
+(defun browse-customer-in-mamadmin (&optional project)
   "Browse riseup customer in mamadmin"
   (interactive)
   (let ((customer-id (read-number "Enter customer:\n")))
     (browse-url (format "https://mamadmin.riseup.co.il/#/home/customer/%s/"
+                        customer-id)
+                t)))
+
+(defun browse-customer-merge-in-mamadmin (&optional project)
+  "Browse riseup customer in mamadmin"
+  (interactive)
+  (let ((customer-id (read-number "Enter customer:\n")))
+    (browse-url (format "https://mamadmin.riseup.co.il/#/home/customer/%s/data"
                         customer-id)
                 t)))
 
@@ -104,6 +112,18 @@ This is used for 'clone-riseup-repo'")
    [("s " "Service" browse-data-dog-service)]
    [("t " "Text" browse-data-dog-text)]])
 
-(bind-key "C-c C-d" 'data-dog-jump)
+(transient-define-prefix mamadmin-jump ()
+  "Search in data dog"
+  ["Mamadmin Customer"
+   [("c " "Customer Home" browse-customer-in-mamadmin)]
+   [("m " "Customer Merge Screen" browse-customer-merge-in-mamadmin)]])
+
+(transient-define-prefix riseup-actions ()
+  "Search in data dog"
+  ["Data Dog Jump"
+   [("m " "Mamadmin Actions" mamadmin-jump)]
+   [("d " "Data Dog Actions" data-dog-jump)]])
+
+(bind-key "C-c C-d" 'riseup-actions)
 
 (provide 'riseup-helpers)
