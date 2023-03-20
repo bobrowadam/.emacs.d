@@ -49,7 +49,6 @@ before running 'npm install'."
     (switch-to-buffer (get-buffer "*npm-install-output*"))))
 
 (use-package typescript-mode
-  :demand t
   :hook
   (typescript-mode . add-node-modules-path)
   (typescript-mode . eldoc-mode)
@@ -60,10 +59,11 @@ before running 'npm install'."
 (use-package jest-test-mode
   :init
   :commands jest-test-mode
+  :custom
+  (jest-test-command-string (format "%s %%s ./node_modules/.bin/jest %%s %%s" (fnm-node-path "18")))
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
 (use-package js2-mode
-  :demand t
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
@@ -110,7 +110,8 @@ before running 'npm install'."
               ("C-c C-t C-m" . web-mode-tag-match)
               ("C-c C-t C-e" . web-mode-tag-end)
               ("C-c C-s" . nil)
-              ("C-c C-l" . nil)))
+              ("C-c C-l" . nil)
+              ("C-c C-d" . nil)))
 
 (use-package nodejs-repl
   :hook
@@ -120,7 +121,6 @@ before running 'npm install'."
                                (comint-read-input-ring 'silent)))))
 
 (use-package eglot
-  :demand t
   :config
   (setenv "NODE_PATH" "/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/lib/node_modules")
   (add-to-list 'eglot-server-programs
@@ -147,7 +147,6 @@ before running 'npm install'."
   ((js2-mode typescript-mode web-mode) . eglot-ensure))
 
 (use-package flymake
-  :demand t
   :hook
   (typescript-mode . flymake-mode)
   (js2-mode . flymake-mode)
@@ -168,29 +167,27 @@ before running 'npm install'."
                 (flymake-eslint-enable)
                 (setq eglot-managed-mode-hook temp-before-hook)))))
 
-(defun eslint-fix ()
-    "Format the current file with ESLint."
-    (interactive)
-    (unless buffer-file-name
-      (error "ESLint requires a file-visiting buffer"))
-    (when (buffer-modified-p)
-      (if (y-or-n-p (format "Save file %s? " buffer-file-name))
-          (save-buffer)
-        (error "ESLint may only be run on an unmodified buffer")))
+;; (defun eslint-fix ()
+;;     "Format the current file with ESLint."
+;;     (interactive)
+;;     (unless buffer-file-name
+;;       (error "ESLint requires a file-visiting buffer"))
+;;     (when (buffer-modified-p)
+;;       (if (y-or-n-p (format "Save file %s? " buffer-file-name))
+;;           (save-buffer)
+;;         (error "ESLint may only be run on an unmodified buffer")))
 
-    (let* ((default-directory (project-root (project-current t)))
-           ;; (eslint-fix-executable "eslint")
-           (eslint (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
-           (options (list "--fix" buffer-file-name)))
-      (unless eslint
-        (error "Executable ‘%s’ not found" eslint-fix-executable))
-      (apply #'call-process eslint nil 0 nil options)
-      (revert-buffer t t t)))
-
+;;     (let* ((default-directory (project-root (project-current t)))
+;;            ;; (eslint-fix-executable "eslint")
+;;            (eslint (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
+;;            (options (list "--fix" buffer-file-name)))
+;;       (unless eslint
+;;         (error "Executable ‘%s’ not found" eslint-fix-executable))
+;;       (apply #'call-process eslint nil 0 nil options)
+;;       (revert-buffer t t t)))
 
 (use-package flymake-eslint
   :after (eglot)
-  :demand t
   :hook
   ;; (after-save . (lambda ()
   ;;                 (cond ((eq major-mode 'typescript-mode) (eslint-fix))
@@ -284,21 +281,11 @@ before running 'npm install'."
 
 (use-package tree-sitter-langs
   :ensure t
-  :demand t
   :after tree-sitter)
 
 (use-package json-mode)
 (use-package jq-format
   :after json-mode)
-
-(use-package origami
-  :disabled t
-  :demand t
-  :hook
-  (prog-mode . origami-mode)
-  :bind (:map origami-mode-map
-              ("C-=" . origami-recursively-toggle-node)
-              ("C-+" . origami-toggle-all-nodes)))
 
 (use-package ts-fold
   :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
@@ -323,7 +310,6 @@ before running 'npm install'."
 (use-package clojure-mode :disabled t)
 
 (use-package sly
-  :demand t
   :init
   (setq inferior-lisp-program "sbcl")
   :bind (:map sly-editing-mode-map
