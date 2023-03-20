@@ -86,7 +86,7 @@ This is used for 'clone-riseup-repo'")
   "Browse riseup customer in mamadmin"
   (interactive)
   (let ((customer-id (read-number "Enter customer:\n")))
-    (browse-url (format "https://riseup.datadoghq.com/logs?querycustomerid=%s&additional_filters=%%d5B%%7B%%7D%%5D&agg_q=%%40customerId&analyticsOptions=%%5B%%22bars%%22%%2C%%22dog_classic%%22%%2Cnull%%2Cnull%%5D&cols=host%%2Cservice%%2C%%40customerId&index=&messageDisplay=inline&saved-view-id=74419&stream_sort=time%%2Cdesc&viz=stream&live=true"
+    (browse-url (format "https://riseup.datadoghq.com/logs?query=customerId%%3A%s"
                         customer-id)
                 t)))
 
@@ -94,14 +94,14 @@ This is used for 'clone-riseup-repo'")
   "Browse riseup customer in mamadmin"
   (interactive)
   (let ((query-text (read-string "Enter text:\n")))
-    (browse-url (format "https://riseup.datadoghq.com/logs?query=%s&additional_filters=%%d5B%%7B%%7D%%5D&agg_q=%%40customerId&analyticsOptions=%%5B%%22bars%%22%%2C%%22dog_classic%%22%%2Cnull%%2Cnull%%5D&cols=host%%2Cservice%%2C%%40customerId&index=&messageDisplay=inline&saved-view-id=74419&stream_sort=time%%2Cdesc&viz=stream&live=true"
+    (browse-url (format "https://riseup.datadoghq.com/logs?query=%s"
                         query-text)
                 t)))
 (defun browse-data-dog-service (&optional project)
   "Browse riseup customer in mamadmin"
   (interactive)
   (let ((service-name (read-string "Enter service name:\n")))
-    (browse-url (format "https://riseup.datadoghq.com/logs?query=%%40service%%3A%s&additional_filters=%%5B%%7B%%7D%%5D&cols=%%40event.msgText%%2C%%40event.customerId%%2C%%40params&index=%%2A&messageDisplay=inline&stream_sort=time%%2Cdesc&viz=stream&from_ts=1678359905559&to_ts=1678363505559&live=true"
+    (browse-url (format "https://riseup.datadoghq.com/logs?query=%%40service%%3A%s"
                         service-name)
                 t)))
 
