@@ -124,6 +124,6 @@ This is used for 'clone-riseup-repo'")
    [("m " "Mamadmin Actions" mamadmin-jump)]
    [("d " "Data Dog Actions" data-dog-jump)]])
 
-(bind-key "C-c C-d" 'riseup-actions)
+(bind-key "C-c J" 'riseup-actions)
 
 (provide 'riseup-helpers)
