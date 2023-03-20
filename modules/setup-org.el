@@ -34,9 +34,7 @@
    '((emacs-lisp . t)
      (js . t)
      (shell . t)
-     (mongo . t)
-     )
-   )
+     (mongo . t)))
   (add-to-list 'org-src-lang-modes '("ts" . typescript))
 
   ;; (custom-set-faces
@@ -128,6 +126,8 @@
 
 (use-package org-agenda
   :after org
+  :custom
+  (org-agenda-span 1)
   :init
   (setq org-agenda-custom-commands
            '(("b" tags "+OngoingBugs")))
@@ -176,7 +176,7 @@
 
 (use-package org-roam-ui
   :after org-roam
-  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         normally we'd recommend hooking org-ui after org-roam, but since org-roam does not have
   ;;         a hookable mode anymore, you're advised to pick something yourself
   ;;         if you don't care about startup time, use
   ;;  :hook (after-init . org-roam-ui-mode)
@@ -194,6 +194,7 @@
 (use-package ox-gfm :after org)
 
 (use-package ekg
+  :demand t
   :custom
   (ekg-db-file "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/triplets.db")
   :bind (([f11] . ekg-capture)))
