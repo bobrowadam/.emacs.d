@@ -6,7 +6,6 @@
  '(compilation-message-face 'default)
  '(datetime-timezone 'Israel)
  '(eglot-autoshutdown t)
- '(flyspell-auto-correct-binding [(control 59)])
  '(ignored-local-variable-values
    '((mmm-classes . elisp-js)
      (eval mmm-add-group 'elisp-js

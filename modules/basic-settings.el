@@ -108,7 +108,9 @@
   (which-key-mode 1))
 
 (use-package flyspell
-  :bind  (:map flyspell-mode-map ("C-;" . nil))
+  :bind  (:map flyspell-mode-map
+               ("C-;" . nil)
+               ("C-." . nil))
   :ensure nil
   ;; :hook
   ;; (prog-mode . flyspell-mode)

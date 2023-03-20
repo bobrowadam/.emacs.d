@@ -88,15 +88,6 @@
         completion-category-overrides '((file (styles partial-completion))))
   (setq completion-styles '(basic orderless)))
 
-(use-package hotfuzz
-  :disabled t
-  :after vertico
-  :ensure t
-  :custom
-  (completion-ignore-case t)
-  :init
-  (hotfuzz-vertico-mode)
-  (setq completion-styles '(basic orderless)))
 
 (use-package vertico
   :demand t
