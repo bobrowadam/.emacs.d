@@ -199,4 +199,25 @@
   (ekg-db-file "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/triplets.db")
   :bind (([f11] . ekg-capture)))
 
+(defun parse-verb-response-to-alist ()
+  (when verb-parse-json-to-alist
+    (progn (erase-buffer)
+           (insert (pp-to-string (json-parse-string (slot-value verb-http-response :body)
+                                                    :object-type 'alist
+                                                    :array-type 'list
+                                                    :null-object 'nil)))
+           (verb-response-body-mode +1))))
+
+(use-package verb
+  :after (org)
+  :mode ("\\.org\\'" . org-mode)
+  :init
+  (setq verb-parse-json-to-alist t)
+  (setq verb-post-response-hook 'parse-verb-response-to-alist)
+  :config 
+  (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((verb . t))))
+
 (provide 'setup-org)
