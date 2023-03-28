@@ -100,7 +100,8 @@ This is used for 'clone-riseup-repo'")
 (defun browse-data-dog-service (&optional project)
   "Browse riseup customer in mamadmin"
   (interactive)
-  (let ((service-name (read-string "Enter service name:\n")))
+  (let ((service-name (completing-read "Enter service name:\n"
+                                        (read-file riseup-repos-cache-path))))
     (browse-url (format "https://riseup.datadoghq.com/logs?query=%%40service%%3A%s"
                         service-name)
                 t)))
