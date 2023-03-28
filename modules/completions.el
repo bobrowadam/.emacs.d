@@ -1,6 +1,9 @@
 (use-package corfu
   ;; Optional customizations
   :custom
+  (tab-always-indent 'complete)
+  (completion-cycle-threshold 1)
+  (corfu-auto-delay 0.2)
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-separator ?\s)          ;; Orderless field separator
