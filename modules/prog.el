@@ -26,7 +26,11 @@
           (comint-scroll-to-bottom-on-input t)
           (comint-scroll-to-bottom-on-output t)
           (comint-process-echoes t))
-      (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" (fnm-node-path "18")) t))))
+      (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" (fnm-node-path "18"))
+                         t (lambda (current-major-mode)
+                             (format "%s -- %s"
+                                     current-major-mode
+                                     (get-dir-name (nth 2 (project-current)))))))))
 
 (defun npm-install-project (&optional force)
   "NPM install in project.
