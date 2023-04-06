@@ -341,13 +341,4 @@ before running 'npm install'."
 (use-package pandoc-mode)
 (use-package git-link)
 
-(use-package chatgpt
-  :disabled t
-  :straight (:host github :repo "joshcho/ChatGPT.el" :files ("dist" "*.el"))
-  :init
-  (require 'python)
-  (setq python-interpreter "python3")
-  (setq chatgpt-repo-path "~/.emacs.d/straight/repos/ChatGPT.el/")
-  :bind ("C-c q" . chatgpt-query))
-
 (provide 'prog)

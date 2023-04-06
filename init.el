@@ -84,6 +84,21 @@
   :ensure nil
   :after (startup magit))
 
+(use-package gptel
+  :config
+  (setq gptel-api-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
+  (setq gptel-default-mode #'org-mode)
+  (setq gptel-model "gpt-3.5-turbo-0301"))
+
+(use-package gpt
+  :ensure nil
+  :load-path "~/source/gpt.el"
+  :init
+  (setq python-interpreter "python3.11")
+  (setq gpt-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
+  (setq gpt-openai-engine "gpt-3.5-turbo")
+  :bind
+  ("M-C-g" . gpt-dwim))
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
