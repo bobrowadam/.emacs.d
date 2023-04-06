@@ -171,31 +171,28 @@ before running 'npm install'."
                 (flymake-eslint-enable)
                 (setq eglot-managed-mode-hook temp-before-hook)))))
 
-;; (defun eslint-fix ()
-;;     "Format the current file with ESLint."
-;;     (interactive)
-;;     (unless buffer-file-name
-;;       (error "ESLint requires a file-visiting buffer"))
-;;     (when (buffer-modified-p)
-;;       (if (y-or-n-p (format "Save file %s? " buffer-file-name))
-;;           (save-buffer)
-;;         (error "ESLint may only be run on an unmodified buffer")))
+(defun eslint-fix ()
+    "Format the current file with ESLint."
+    (interactive)
+    (unless buffer-file-name
+      (error "ESLint requires a file-visiting buffer"))
+    (when (buffer-modified-p)
+      (if (y-or-n-p (format "Save file %s? " buffer-file-name))
+          (save-buffer)
+        (error "ESLint may only be run on an unmodified buffer")))
 
-;;     (let* ((default-directory (project-root (project-current t)))
-;;            ;; (eslint-fix-executable "eslint")
-;;            (eslint (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
-;;            (options (list "--fix" buffer-file-name)))
-;;       (unless eslint
-;;         (error "Executable ‘%s’ not found" eslint-fix-executable))
-;;       (apply #'call-process eslint nil 0 nil options)
-;;       (revert-buffer t t t)))
+    (let* ((default-directory (project-root (project-current t)))
+           ;; (eslint-fix-executable "eslint")
+           (eslint (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
+           (options (list "--fix" buffer-file-name)))
+      (unless eslint
+        (error "Executable ‘%s’ not found" eslint-fix-executable))
+      (apply #'call-process eslint nil 0 nil options)
+      (revert-buffer nil t t)))
 
 (use-package flymake-eslint
   :after (eglot)
   :hook
-  ;; (after-save . (lambda ()
-  ;;                 (cond ((eq major-mode 'typescript-mode) (eslint-fix))
-  ;;                       ((eq major-mode 'js2-mode) (eslint-fix)))))
   (typescript-mode . enable-flymake-after-eglot)
   (js2-mode . enable-flymake-after-eglot))
 
