@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: print-value
+# key: pv
+# --
+print(f"#-------------------------------------#\n${1:enumerate}:\n{$1}")
