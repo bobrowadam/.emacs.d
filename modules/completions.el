@@ -68,7 +68,6 @@
 
 (use-package codeium
   :disabled t
-  :demand t
   :load-path "~/source/codeium.el/"
   :init
   (setq codeium/metadata/api_key (exec-path-from-shell-copy-env "CODEIUM_API_KEY"))
@@ -83,7 +82,7 @@
                                    (list (cape-super-capf #'codeium-completion-at-point
                                                           #'lsp-completion-at-point)))))
   :config
-  (setq use-dialog-box nil)
+  (setq use-dialog-box t)
   (setq codeium-mode-line-enable
         (lambda (api) (not (memq api '(CancelRequest Heartbeat AcceptCompletion)))))
   (add-to-list 'mode-line-format '(:eval (car-safe codeium-mode-line)) t))
