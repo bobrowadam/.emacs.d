@@ -148,7 +148,7 @@ before running 'npm install'."
         ("M-?" . xref-find-references)
         ("C-c C-a" . eglot-code-actions))
   :hook
-  ((js2-mode typescript-mode web-mode) . eglot-ensure))
+  ((js2-mode typescript-mode web-mode python-mode) . eglot-ensure))
 
 (use-package flymake
   :hook
