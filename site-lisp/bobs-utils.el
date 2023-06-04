@@ -1,8 +1,12 @@
+(defun assocdr (key alist)
+  "Return the cdr of the cons whose car is KEY in ALIST."
+  (cdr (assoc key alist)))
+
 (defun read-file (file-name)
   "Return the contents of FILE-NAME as a lisp data type."
-  (read (with-temp-buffer
-        (insert-file-contents file-name)
-        (buffer-string))))
+  (with-temp-buffer
+    (insert-file-contents file-name)
+    (read (buffer-string))))
 
 (defun random-alnum ()
   (let* ((alnum "abcdefghijklmnopqrstuvwxyz0123456789")
@@ -83,9 +87,9 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
 
 (defun get-processes-by-string (captured-string)
   (interactive "sEnter a string to caputre: ")
-  (print (format "%s" (--get-processes-by-string captured-string))))
+  (print (format "%s" (get--processes-by-string captured-string))))
 
-(defun --get-processes-by-string (captured-string)
+(defun get--processes-by-string (captured-string)
   (-let [lines (-filter
                 (lambda (str)
                   (not (string-match-p (regexp-quote "rg") str)))
@@ -96,10 +100,23 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
 
 (defun kill-inspect-process ()
   (interactive)
-  (-let ((process (--get-processes-by-string "inspect")))
-    (when process
-      (progn (message "found inspect processes: %s, killing them now" process)
-             (shell-command (format "kill %s" (s-join " " process)) "output")))))
+  (-let ((process (get--processes-by-string "inspect")))
+    (if process
+      (progn (message "Found inspect processes: %s, killing them now" process)
+             (shell-command (format "kill %s" (s-join " " process))))
+      (message "No inspect processes found"))))
+
+(defun run-cl-asana (arg)
+  "Run cl-asana to update the local org-asana file."
+  (interactive "P")
+  (let ((proc (start-process "cl-asana" "*cl-asana-output*" "~/source/common-lisp/cl-asana/cl-asana")))
+    (when arg
+      (set-process-sentinel proc #'display-output-process-sentinel))))
+
+(defun display-output-process-sentinel (process event)
+  "Display the buffer containing PROCESS output when it finishes."
+  (when (memq (process-status process) '(exit signal))
+    (pop-to-buffer (process-buffer process) t t)
+    (message "Process %s %s" process event)))
 
 (provide 'bobs-utils)
-;;; utils.el ends here

@@ -43,7 +43,8 @@
 
 (setq-default
  indent-tabs-mode nil
- cursor-type  '(bar . 4))
+ ;; cursor-type  '(bar . 4)
+)
 
 (display-time)
 (display-battery-mode)
@@ -147,5 +148,16 @@
 (use-package iedit
   :bind ("C-;" . iedit-mode))
 
+;; On my mac I accidentally zoomed in and out with my palm
+(global-unset-key (kbd "C-<wheel-up>"))
+(global-unset-key (kbd "C-<wheel-down>"))
+
+;; Map movement keys to Hebrew letters:
+(global-set-key (kbd "C-כ") 'forward-char)
+(global-set-key (kbd "C-נ") 'backward-char)
+(global-set-key (kbd "C-מ") 'next-line)
+(global-set-key (kbd "C-פ") 'previous-line)
+(global-set-key (kbd "C-ש") 'beginning-of-line)
+(global-set-key (kbd "C-ק") 'end-of-line)
 
 (provide 'basic-settings)

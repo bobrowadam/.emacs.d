@@ -1,7 +1,7 @@
-;; (package-initialize)
 (setq gc-cons-threshold 100000000)
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
+(setq lexical-binding t)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
@@ -85,6 +85,7 @@
   :after (startup magit))
 
 (use-package gptel
+  :demand t
   :config
   (setq gptel-api-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
   (setq gptel-default-mode #'org-mode)
@@ -99,6 +100,12 @@
   (setq gpt-openai-engine "gpt-3.5-turbo")
   :bind
   ("M-C-g" . gpt-dwim))
+
+(use-package breadcrumb-mode
+  :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb"))
+
+(use-package string-inflection)
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)

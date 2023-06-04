@@ -130,7 +130,8 @@
   (org-agenda-span 1)
   :init
   (setq org-agenda-custom-commands
-           '(("b" tags "+OngoingBugs")))
+           '(("b" tags "+OngoingBugs")
+             ("n" "Todo next" ((todo "NEXT")))))
   :bind
   ("C-c a" . org-agenda)
   ("C-c c" . org-capture)
@@ -201,19 +202,23 @@
 
 (defun parse-verb-response-to-alist ()
   (when verb-parse-json-to-alist
-    (progn (erase-buffer)
-           (insert (pp-to-string (json-parse-string (slot-value verb-http-response :body)
-                                                    :object-type 'alist
-                                                    :array-type 'list
-                                                    :null-object 'nil)))
-           (verb-response-body-mode +1))))
+    (let ((response (slot-value verb-http-response :body)))
+      (condition-case err
+          (progn
+            (erase-buffer)
+            (insert (pp-to-string (json-parse-string response
+                                                     :object-type 'alist
+                                                     :array-type 'list
+                                                     :null-object 'nil)))
+            (verb-response-body-mode +1))
+        (json-parse-error response)))))
 
 (use-package verb
   :after (org)
   :mode ("\\.org\\'" . org-mode)
   :init
-  (setq verb-parse-json-to-alist t)
-  (setq verb-post-response-hook 'parse-verb-response-to-alist)
+  (setq verb-parse-json-to-alist nil)
+  ;; (setq verb-post-response-hook 'parse-verb-response-to-alist)
   :config 
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
   (org-babel-do-load-languages

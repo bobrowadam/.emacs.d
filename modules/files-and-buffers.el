@@ -3,8 +3,8 @@
   :ensure nil
   :demand t
   :config
+  (setq dired-listing-switches "-lah")
   (setq dired-use-ls-dired nil)
-  ;; (setq dired-listing-switches "-alh")
   (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 

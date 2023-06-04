@@ -1,3 +1,7 @@
+;;; riseup-helpers.el ---  -*- lexical-binding: t -*-
+(require 'cl)
+(require 'ghub)
+
 (defun browse-riseup-git-project (&optional project)
   "Browse a riseup git repository using the current known project for completion"
   (interactive)
@@ -82,29 +86,46 @@ This is used for 'clone-riseup-repo'")
                         customer-id)
                 t)))
 
-(defun browse-data-dog-customer (&optional project)
-  "Browse riseup customer in mamadmin"
+(defun browse-data-dog-dwim ()
+  "Browse Data Dog.
+When entering a service name, look for the service.
+When entering a number, look for a customerId.
+Else, just look for the given string."
   (interactive)
-  (let ((customer-id (read-number "Enter customer:\n")))
-    (browse-url (format "https://riseup.datadoghq.com/logs?query=customerId%%3A%s"
-                        customer-id)
-                t)))
+  (let* ((riseup-repos (read-file riseup-repos-cache-path))
+         (query-string (completing-read "Enter datadog query:\n"
+                                        riseup-repos)))
+    (let ((generated-datadog-url (cond ((-contains-p riseup-repos (intern query-string))
+                                        (format "https://riseup.datadoghq.com/logs?query=%%40service%%3A%s" query-string))
+                                       ((s-numeric-p query-string)
+                                        (format "https://riseup.datadoghq.com/logs?query=@customerId%%3A%s"
+                                                (string-to-number query-string)))
+                                       (t (format "https://riseup.datadoghq.com/logs?query=%s" query-string)))))
+      (browse-url generated-datadog-url t))))
 
-(defun browse-data-dog-text (&optional project)
-  "Browse riseup customer in mamadmin"
+(defun run-customer-version ()
+  "Run a riseup customer version locally"
   (interactive)
-  (let ((query-text (read-string "Enter text:\n")))
-    (browse-url (format "https://riseup.datadoghq.com/logs?query=%s"
-                        query-text)
-                t)))
-(defun browse-data-dog-service (&optional project)
-  "Browse riseup customer in mamadmin"
-  (interactive)
-  (let ((service-name (completing-read "Enter service name:\n"
-                                        (read-file riseup-repos-cache-path))))
-    (browse-url (format "https://riseup.datadoghq.com/logs?query=%%40service%%3A%s"
-                        service-name)
-                t)))
+  (let ((customer-id (read-number "Enter customer id:\n")))
+    (request "http://host.docker.internal:4030/dev/trigger-version-update"
+      :method "POST"
+      :data (json-encode
+             `((customerId . ,customer-id)
+               (user . ((name . "bob")))))
+      :headers '(("Content-Type" . "application/json"))
+      :parser 'json-read
+      :success (cl-function
+                (lambda (&key response &allow-other-keys)
+                  (message "response: %S" response)
+                  (message "Version request for customer %s finished with status code %s"
+                           customer-id
+                           (request-response-status-code response))))
+
+      :error (cl-function
+              (lambda (&key error-thrown &allow-other-keys)
+                (error "error when running version for customer %S. Error: %S"
+                       customer-id
+                       error-thrown))))))
 
 (transient-define-prefix data-dog-jump ()
   "Search in data dog"
@@ -113,18 +134,43 @@ This is used for 'clone-riseup-repo'")
    [("s " "Service" browse-data-dog-service)]
    [("t " "Text" browse-data-dog-text)]])
 
-(transient-define-prefix mamadmin-jump ()
-  "Search in data dog"
-  ["Mamadmin Customer"
+(transient-define-prefix customer-actions ()
+  "Customer actions"
+  ["Customer functions"
+   [("v " "Run customer's version" run-customer-version)]
    [("c " "Customer Home" browse-customer-in-mamadmin)]
-   [("m " "Customer Merge Screen" browse-customer-merge-in-mamadmin)]])
+   [("m " "Customer Merge Screen" browse-customer-merge-in-mamadmin)]
+   [("I " "Import customer from prod" import-customer)]])
 
 (transient-define-prefix riseup-actions ()
-  "Search in data dog"
-  ["Data Dog Jump"
-   [("m " "Mamadmin Actions" mamadmin-jump)]
-   [("d " "Data Dog Actions" data-dog-jump)]])
+  "Run Riseup actions"
+  ["Riseup actions"
+   [("m " "Customer Actions" customer-actions)]
+   [("d " "Data Dog DWIM" browse-data-dog-dwim)]
+   [("s " "Search for service by port number" search-for-riseup-service-by-port)]])
 
 (bind-key "C-c J" 'riseup-actions)
+
+(defconst *general-env* "/Users/bob/source/bob/config_mgmt/local/general.env")
+(defun map--env-file-to-port->service (file-name)
+  "Returns an Alist of ((<port-number> . <service-name>))"
+    (let ((env-file-content (to-string (read-file file-name))))
+     (mapcar (lambda (service-name=port)
+               (cl-destructuring-bind (service port) (s-split "=" service-name=port)
+                 (cons port (s-replace "_PORT" "" service))))
+             (-filter (lambda (line) (s-contains? "PORT" line))
+                      (s-split "\n" env-file-content)))))
+
+(defun search-for-riseup-service-by-port ()
+  "Search a riseup service by port number."
+  (interactive)
+  (let* ((port-to-service-map (map--env-file-to-port->service *general-env*))
+         (port-names (mapcar (lambda (service-to-port)
+                                  (car service-to-port))
+                                port-to-service-map))
+         (service-port (completing-read "Choose a port to search for:\n" port-names)))
+    (message "Service for port %s is %s"
+             service-port
+             (cdr (assoc service-port port-to-service-map)))))
 
 (provide 'riseup-helpers)

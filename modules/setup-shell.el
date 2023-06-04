@@ -1,5 +1,7 @@
 (use-package inf-mongo
   :after startup
+  :demand t
+  :load-path "~/source/inf-mongo/"
   :hook
   (inf-mongo-mode-hook . (lambda ()
                       (progn

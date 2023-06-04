@@ -1,6 +1,5 @@
 (use-package dash :demand t)
 (use-package s :demand t)
-;; (use-package subr-x :demand t)
 (use-package cl-lib :demand t)
 (use-package server :demand t)
 (use-package fnm
