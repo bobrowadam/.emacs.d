@@ -148,7 +148,7 @@ before running 'npm install'."
         ("M-?" . xref-find-references)
         ("C-c C-a" . eglot-code-actions))
   :hook
-  ((js2-mode typescript-mode web-mode python-mode) . eglot-ensure))
+  ((js2-mode typescript-mode web-mode python-mode zig-mode) . eglot-ensure))
 
 (use-package flymake
   :hook
@@ -157,19 +157,14 @@ before running 'npm install'."
   :bind (:map flymake-mode-map
               ("C-c !" . flymake-show-buffer-diagnostics)))
 
-(defun set-eslint-executable ()
-  (when
-   (setq flymake-eslint-executable-name)))
-
 (defun enable-flymake-after-eglot ()
-  (progn
-    (setq flymake-eslint-project-root (project-root (project-current t)))
-    (setq flymake-eslint-executable-name (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
-    (setq temp-before-hook eglot-managed-mode-hook)
-    (add-hook 'eglot-managed-mode-hook
-              (lambda ()
-                (flymake-eslint-enable)
-                (setq eglot-managed-mode-hook temp-before-hook)))))
+  (progn (setq flymake-eslint-project-root (project-root (project-current t)))
+         (setq flymake-eslint-executable-name (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
+         (setq temp-before-hook eglot-managed-mode-hook)
+         (add-hook 'eglot-managed-mode-hook
+                   (lambda ()
+                     (flymake-eslint-enable)
+                     (setq eglot-managed-mode-hook nil)))))
 
 (defun eslint-fix ()
     "Format the current file with ESLint."
@@ -194,7 +189,8 @@ before running 'npm install'."
   :after (eglot)
   :hook
   (typescript-mode . enable-flymake-after-eglot)
-  (js2-mode . enable-flymake-after-eglot))
+  (js2-mode . enable-flymake-after-eglot)
+  (web-mode . enable-flymake-after-eglot))
 
 (defadvice enable-paredit-mode (after activate)
   (smartparens-mode -1))
@@ -275,9 +271,7 @@ before running 'npm install'."
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package tree-sitter
-  :hook ((js2-mode typescript-mode
-                   c-mode c++-mode rust-mode
-                   ) . tree-sitter-hl-mode)
+  :hook ((js2-mode typescript-mode c-mode c++-mode rust-mode json-mode) . tree-sitter-hl-mode)
   :ensure t)
 
 (use-package tree-sitter-langs
@@ -342,4 +336,11 @@ before running 'npm install'."
 (use-package pandoc-mode)
 (use-package git-link)
 
+
+(use-package copilot
+  :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+  :ensure t
+  :hook ((prog-mode git-commit-mode) . (lambda () (copilot-mode 1)))
+  :bind (:map copilot-completion-map
+              ("C-<tab>" . copilot-accept-completion)))
 (provide 'prog)

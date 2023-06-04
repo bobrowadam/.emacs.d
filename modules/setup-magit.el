@@ -72,4 +72,18 @@
 
 (use-package git-timemachine)
 
+(defun create-github-repo ()
+  "Create a new Github repo using the Github API."
+  (interactive)
+  (let ((repo-name (read-string "Repo name: "))
+        (repo-description (read-string "Repo description: "))
+        (repo-homepage (read-string "Repo homepage: "))
+        (is-repo-private (yes-or-no-p "Is Repo private: "))
+        (repo-is_template (yes-or-no-p "Is Repo is_template: ")))
+    (ghub-post "/user/repos" (list  :name repo-name
+                                    :description repo-description
+                                    :homepage repo-homepage
+                                    :private is-repo-private
+                                    :is_template repo-is_template))))
+
 (provide 'setup-magit)
