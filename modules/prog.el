@@ -131,7 +131,7 @@ before running 'npm install'."
                `((js-mode typescript-mode)
                                  . ("/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/bin/typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
-               `((web-mode) . ("/Users/bob/Library/Caches/fnm_multishells/77292_1674653900807/bin/vls" "--stdio")))
+               `((web-mode) ,(concat fnm-node-modules "/vls/bin/vls")  "--stdio"))
   ;; (add-to-list 'eglot-server-programs '(web-mode . ("/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/bin/vue-language-server" "--stdio"
   ;;                                                   ;; :initializationOptions
   ;;                                                   ;; (:typescript (:tsdk "node_modules/typescript/lib"))

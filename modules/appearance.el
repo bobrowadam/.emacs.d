@@ -4,6 +4,10 @@
 (add-to-list 'default-frame-alist
              '(font . "DaddyTimeMono Nerd Font 19"))
 
+(use-package material-theme
+  :demand t
+  :config (load-theme 'material :no-confirm))
+
 (use-package modus-themes
   :demand t
   :config
@@ -11,7 +15,8 @@
       '((fg-main "#333333")
         (comment red-faint)
         (keyword cyan-cooler)))
-  (load-theme 'modus-vivendi :no-confim))
+  ;; (load-theme 'modus-vivendi :no-confim)
+)
 
 (use-package ef-themes
   :disabled t
