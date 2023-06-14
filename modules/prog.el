@@ -21,16 +21,25 @@
 (defun npm-run-build ()
   "Build typescript project on watch mode"
   (interactive)
-  (when (and (project-current) (eq major-mode 'typescript-mode))
+  (when (and (project-current)
+             (or (eq major-mode 'typescript-mode)
+                 (eq major-mode 'comint-mode)))
     (let ((default-directory (project-root (project-current t)))
           (comint-scroll-to-bottom-on-input t)
           (comint-scroll-to-bottom-on-output t)
-          (comint-process-echoes t))
-      (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" (fnm-node-path "18"))
-                         t (lambda (current-major-mode)
-                             (format "%s -- %s"
-                                     current-major-mode
-                                     (get-dir-name (nth 2 (project-current)))))))))
+          (comint-process-echoes t)
+          (compilation-buffer-name (format "TS-COMPILE -- %s"
+                                           (get-dir-name (nth 2 (project-current))))))
+      (cond ((and (eq major-mode 'typescript-mode)
+                  (car (memq (get-buffer compilation-buffer-name)
+                             (buffer-list))))
+             (switch-to-buffer (get-buffer compilation-buffer-name)))
+            ((and (eq major-mode 'comint-mode)
+                  (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
+             (switch-to-prev-buffer))
+            (t
+             (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" (fnm-node-path "18"))
+                                t (lambda (mode) compilation-buffer-name)))))))
 
 (defun npm-install-project (&optional force)
   "NPM install in project.
@@ -56,7 +65,10 @@ before running 'npm install'."
   :hook
   (typescript-mode . add-node-modules-path)
   (typescript-mode . eldoc-mode)
-  :bind (:map typescript-mode-map ("C-c C-b" . npm-run-build))
+  :bind
+  (:map typescript-mode-map ("C-c C-b" . npm-run-build))
+  (:map comint-mode-map ("C-c C-b" . npm-run-build))
+
   :config
   (setq-default typescript-indent-level 2))
 
@@ -336,11 +348,11 @@ before running 'npm install'."
 (use-package pandoc-mode)
 (use-package git-link)
 
-
 (use-package copilot
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
   :hook ((prog-mode git-commit-mode) . (lambda () (copilot-mode 1)))
   :bind (:map copilot-completion-map
               ("C-<tab>" . copilot-accept-completion)))
+
 (provide 'prog)

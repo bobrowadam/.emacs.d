@@ -45,7 +45,8 @@
 (use-package project
   :ensure nil
   :bind
-  (("C-x p s" . bob/project-vterm)
+  (("C-x p w" . project-switch-to-open-project)
+   ("C-x p s" . bob/project-vterm)
    ("C-x p m"  . magit-project-status)
    ("C-x p C-m"  . project-dired))
   :init

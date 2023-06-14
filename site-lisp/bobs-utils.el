@@ -110,13 +110,37 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
   "Run cl-asana to update the local org-asana file."
   (interactive "P")
   (let ((proc (start-process "cl-asana" "*cl-asana-output*" "~/source/common-lisp/cl-asana/cl-asana")))
-    (when arg
-      (set-process-sentinel proc #'display-output-process-sentinel))))
+    (set-process-sentinel proc (run-cl-asana-sentinel arg))))
 
-(defun display-output-process-sentinel (process event)
+(defun run-cl-asana-sentinel (&optional arg)
   "Display the buffer containing PROCESS output when it finishes."
-  (when (memq (process-status process) '(exit signal))
-    (pop-to-buffer (process-buffer process) t t)
+  (lambda (process event)
+    (when (and (boundp 'arg)
+               (memq (process-status process) '(exit signal)))
+      (pop-to-buffer (process-buffer process) t t))
     (message "Process %s %s" process event)))
+
+(defun project-switch-to-open-project (dir)
+  "\"Switch\" to another ACTIVE project by running an Emacs command.
+The available commands are presented as a dispatch menu
+made from `project-switch-commands'.
+
+When called in a program, it will use the project corresponding
+to directory DIR."
+  (interactive (list (completing-read "Choose a project: " (get-active-projects))))
+  (let ((command (if (symbolp project-switch-commands)
+                     project-switch-commands
+                   (project--switch-project-command))))
+    (let ((project-current-directory-override dir))
+      (call-interactively command))))
+
+(defun get-active-projects ()
+  (delq nil
+        (mapcar 
+         (lambda (directory)
+           (let ((project (project-current nil (car directory))))
+             (when (and project (project-buffers project))
+                 (car directory))))
+         project--list)))
 
 (provide 'bobs-utils)

@@ -211,7 +211,20 @@ buffer, it defaults to filename under the cursor when it is nil."
                  (ibuffer-do-sort-by-recency)))))
 
 (use-package all-the-icons-ibuffer
-  :init (all-the-icons-ibuffer-mode 1))
+  :init (all-the-icons-ibuffer-mode 1)
+  :custom (all-the-icons-ibuffer-formats '((mark modified read-only locked " "
+                                                 (icon 2 2)
+                                                 (name 16 -1 :left)
+                                                 " " filename-and-process+)
+                                           (mark modified read-only locked " "
+                                                 (icon 2 2)
+                                                 (name 18 18 :left :elide)
+                                                 " "
+                                                 (size-h 9 -1 :right)
+                                                 " "
+                                                 (mode+ 16 16 :left :elide)
+                                                 " " filename-and-process+)
+                                           )))
 
 (use-package ibuffer-vc
   :demand

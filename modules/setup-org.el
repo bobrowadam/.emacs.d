@@ -135,6 +135,7 @@
   :bind
   ("C-c a" . org-agenda)
   ("C-c c" . org-capture)
+  ("C-c s a" . run-cl-asana)
   (:map org-agenda-mode-map
         ("M-F" . org-agenda-do-date-later)
         ("M-B" . org-agenda-do-date-earlier))
@@ -217,8 +218,8 @@
   :after (org)
   :mode ("\\.org\\'" . org-mode)
   :init
-  (setq verb-parse-json-to-alist nil)
-  ;; (setq verb-post-response-hook 'parse-verb-response-to-alist)
+  (setq verb-parse-json-to-alist t)
+  (setq verb-post-response-hook 'parse-verb-response-to-alist)
   :config 
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
   (org-babel-do-load-languages

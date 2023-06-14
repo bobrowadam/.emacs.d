@@ -1,15 +1,17 @@
 (defun bob/magit-message (message)
     (interactive "sCommit message: ")
     (magit-commit-create `("-am" ,message)))
-  (defun fetch-all-git-repos-in-directory (repos-dir)
-    (cl-loop for dir
-             in (directory-files repos-dir)
-             when (and (file-directory-p (format "%s/%s" repos-dir dir))
-                       (member ".git" (directory-files (format "%s/%s" repos-dir dir))))
-             do (run-fetch-in-dir (format "%s/%s" repos-dir dir))))
-  (defun run-fetch-in-dir (dir)
-    (setq default-directory dir)
-    (magit-fetch-all-prune))
+
+(defun fetch-all-git-repos-in-directory (repos-dir)
+  (cl-loop for dir
+           in (directory-files repos-dir)
+           when (and (file-directory-p (format "%s/%s" repos-dir dir))
+                     (member ".git" (directory-files (format "%s/%s" repos-dir dir))))
+           do (run-fetch-in-dir (format "%s/%s" repos-dir dir))))
+
+(defun run-fetch-in-dir (dir)
+  (setq default-directory dir)
+  (magit-fetch-all-prune))
 
 (use-package magit
   :ensure t
@@ -84,6 +86,8 @@
                                     :description repo-description
                                     :homepage repo-homepage
                                     :private is-repo-private
-                                    :is_template repo-is_template))))
+                                    :is_template repo-is_template))
+    (magit-remote-add "origin" (format "git@github.com:bobrowadam/%s.git" repo-name))
+    (magit-push-current-to-pushremote '("-u" "origin" (magit-get-current-branch)))))
 
 (provide 'setup-magit)
