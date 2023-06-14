@@ -34,10 +34,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
- (front-context-string . "* Send meitav th")
- (rear-context-string . "5-13 Sat 19:06]\n")
- (position . 742)
- (last-modified 25696 47012 407383 0))
+ (front-context-string . "* Stop using sly")
+ (rear-context-string . "---------------\n")
+ (position . 426)
+ (last-modified 25727 39103 243138 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")
