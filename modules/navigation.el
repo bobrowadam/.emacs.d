@@ -81,10 +81,10 @@
 
 (use-package orderless
   :init
+  (setq completion-ignore-case t)
   (setq orderless-component-separator " +")
   (setq orderless-matching-styles
-        '(orderless-prefixes
-           orderless-flex orderless-regexp))
+        '(orderless-literal orderless-flex))
   (setq completion-category-defaults nil
         completion-category-overrides '((file (styles partial-completion))))
   (setq completion-styles '(basic orderless)))
