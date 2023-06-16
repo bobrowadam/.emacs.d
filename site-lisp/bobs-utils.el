@@ -127,20 +127,28 @@ made from `project-switch-commands'.
 
 When called in a program, it will use the project corresponding
 to directory DIR."
-  (interactive (list (completing-read "Choose a project: " (get-active-projects))))
+  (interactive (list (completing-read "Choose a project: " (get--active-projects))))
   (let ((command (if (symbolp project-switch-commands)
                      project-switch-commands
                    (project--switch-project-command))))
     (let ((project-current-directory-override dir))
       (call-interactively command))))
 
-(defun get-active-projects ()
-  (delq nil
-        (mapcar 
-         (lambda (directory)
-           (let ((project (project-current nil (car directory))))
-             (when (and project (project-buffers project))
-                 (car directory))))
-         project--list)))
+(defun get--active-projects ()
+  "Return a list of projects that are associated with the open buffers."
+  (remove-if-not 'identity
+           (mapcar
+            #'project--buffer
+            (buffer-list))))
+
+(defun project--buffer (buffer)
+  (let ((buffer-file (buffer-file-name buffer)))
+    (when buffer-file
+      (let ((default-directory (file-name-directory buffer-file)))
+        (when (project-current)
+          (project-name (project-current)))))))
+
 
 (provide 'bobs-utils)
+
+(nth 2 (buffer-list))
