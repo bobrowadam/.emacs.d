@@ -33,6 +33,10 @@
 
   (setq consult-narrow-key "<"))
 
+(use-package iserach
+  :ensure nil
+  :init (setq isearch-lazy-count t))
+
 (use-package consult-project-extra
   :bind
   (("C-x p f" . consult-project-extra-find)
@@ -227,6 +231,7 @@
           company-box-icons-alist 'company-box-icons-all-the-icons)))
 
 (use-package anzu
+  :disabled t
   :if (window-system)
   :demand t
   :config
