@@ -102,7 +102,8 @@
   ("M-C-g" . gpt-dwim))
 
 (use-package breadcrumb-mode
-  :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb"))
+  :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb")
+  :hook (prog-mode . breadcrumb-local-mode) )
 
 (use-package string-inflection)
 
