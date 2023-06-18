@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("riseup-helpers.el"
+(("bobs-utils.el"
+ (filename . "~/.emacs.d/site-lisp/bobs-utils.el")
+ (front-context-string . "(defun assocdr (")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 25740 11305 386872 0))
+("riseup-helpers.el"
  (filename . "~/.emacs.d/site-lisp/riseup-helpers.el")
  (front-context-string . "(defun browse-ri")
  (rear-context-string)
@@ -91,11 +97,6 @@
  (rear-context-string . "2B Jul 21 10:24 ")
  (position . 181)
  (last-modified 25305 26525 580351 0))
-("use"
- (filename . "~/source/services/elsa/src/pages/responsive-pages/authenticated/navigation-pages/cashflow-app/insights/MonthlySavingInsight.vue")
- (front-context-string . "            wind")
- (rear-context-string . "s.closePopup();\n")
- (position . 1379))
 ("docker-ubuntu/test-app"
  (filename . "/docker:festive_euler:/root/source/test-app/")
  (front-context-string)
