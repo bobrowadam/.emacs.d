@@ -355,5 +355,7 @@ before running 'npm install'."
   :bind (:map copilot-completion-map
               ("C-<tab>" . copilot-accept-completion)))
 
+(use-package cider)
+(use-package clojure-mode)
 
 (provide 'prog)
