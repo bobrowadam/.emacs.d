@@ -195,12 +195,6 @@
 
 (use-package ox-gfm :after org)
 
-(use-package ekg
-  :demand t
-  :custom
-  (ekg-db-file "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/triplets.db")
-  :bind (([f11] . ekg-capture)))
-
 (defun parse-verb-response-to-alist ()
   (when verb-parse-json-to-alist
     (let ((response (slot-value verb-http-response :body)))
