@@ -3,7 +3,10 @@
 ;; Author: Adam Bobrow
 ;; Maintainer: Adam Bobrow
 ;; Version: version
-;; Package-Requires: (dependencies)
+;; Package-Requires: ((s)
+;;                    (cl)
+;;                    (eshell))
+
 ;; Homepage: homepage
 ;; Keywords: keywords
 
@@ -29,25 +32,16 @@
 ;; commentary
 
 ;;; Code:
-
-(defvar default-node-version
-  (car (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; node -v")))
-  "The defined default FNM node version")
+(require 's)
+(require 'cl)
+(require 'eshell)
 
 (defvar fnm-dir (cadr (s-split "=" (cl-find-if
                                     (lambda (s) (s-starts-with-p "FNM_DIR" s))
                                     (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
 
-(defvar fnm-npm (concat fnm-dir
-                      "/node-versions/" default-node-version "/installation/bin/npm"))
-
-(defvar fnm-node-modules (concat fnm-dir
-                      "/node-versions/" default-node-version "/installation/lib/node_modules"))
-
-(defvar lsp-clients-typescript-npm-location
-        fnm-npm)
-
 (defun fnm-npm-path (node-version)
+  "Return the path to the npm binary for the given NODE-VERSION."
   (let ((node-path-request (split-string (shell-command-to-string (format "zsh; eval \"$(fnm env --use-on-cd)\; fnm use %s; which npm\""
                                                                           node-version))
                                          "\n")))
@@ -56,6 +50,7 @@
             (car (last (remove "" node-path-request)))))
 
 (defun fnm-node-path (node-version)
+  "Return the node path to the given NODE-VERSION."
   (let ((node-path-request (split-string (shell-command-to-string (format "zsh; eval \"$(fnm env --use-on-cd)\; fnm use %s; which node\""
                                                                           node-version))
                                          "\n")))
@@ -64,6 +59,7 @@
             (car (last (remove "" node-path-request)))))
 
 (defun fnm-nodemon-path (node-version)
+  "Return the path to the nodemon binary for the given NODE-VERSION."
   (let ((node-path-request (split-string (shell-command-to-string (format "zsh; eval \"$(fnm env --use-on-cd)\; fnm use %s; which nodemon\""
                                                                           node-version))
                                          "\n")))
@@ -71,27 +67,38 @@
       (error "Node version %s is not currently installed by FNM" node-version))
     (cadr node-path-request)))
 
-
 (defun node--version-is-not-installed-p (fnm-env-string)
+  "Return t if the given FNM-ENV-STRING indicates that the node version is not installed."
   (s-contains? "is not currently installed" fnm-env-string))
 
+(defun fnm-node-bin-path (node-version)
+  "Return the bin path the given NODE-VERSION."
+  (s-replace "/node" "" (fnm-node-path node-version)))
+
+(defun fnm-node-modules-path (node-version)
+  "Return the node modules path for the given NODE-VERSION."
+  (s-replace "/bin/node" "/lib/node_modules/" (fnm-node-path node-version)))
+
+;;;###autoload
 (defun fnm-use (node-version)
-  (cond ((equal major-mode 'eshell-mode)
-         (eshell/alias "node" (fnm-node-path node-version) "$1"))))
+  "Use the given NODE-VERSION.
+This function will set the node version to the given NODE-VERSION
+and update the PATH variable to include the path to the node binary."
+  (interactive (list (completing-read "sNode version: " (get-available-fnm-node-versions))))
+  (setenv "PATH" (concat (fnm-node-bin-path node-version)
+                         ":"
+                         (s-join ":" (remove-if
+                           (lambda (s) (s-contains-p "fnm_multishells" s))
+                           (s-split ":" (getenv "PATH"))))))
+  (setenv "NODE_PATH" (fnm-node-modules-path node-version))
+  (message "Now using node version %s" node-version))
+
+(defun get-available-fnm-node-versions ()
+  "Return a list of available fnm node versions."
+  (remove-if 'nil
+             (mapcar 
+              (lambda (s) (nth 1 (s-match "\\(v.+?\\)\\( default\\|$\\)" s)))
+              (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\; fnm list;\"")))))
 
 (provide 'fnm)
 ;;; fnm.el ends here
-
-
-;; (setq default-node-version
-;;       (car (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; node -v"))))
-;; (setq fnm-dir (cadr (s-split "=" (cl-find-if
-;;                                   (lambda (s) (s-starts-with-p "FNM_DIR" s))
-;;                                   (s-split "\n" (shell-command-to-string "zsh; eval \"$(fnm env --use-on-cd)\"; env | rg FNM"))))))
-;; (setq fnm-node-path (concat fnm-dir
-;;                             "/node-versions/" default-node-version "/installation/bin"))
-
-;; (setq fnm-node (concat fnm-node-path
-;;                        "/node"))
-;; (setq fnm-npm (concat fnm-dir
-;;                       "/node-versions/" default-node-version "/installation/bin/npm"))

@@ -39,10 +39,7 @@
   (add-to-list 'exec-path-from-shell-variables "WHATSAPP_NUMBER")
   (add-to-list 'exec-path-from-shell-variables "LOCAL_WHATSAPP_NUMBER")
   (setq exec-path-from-shell-arguments nil)  
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-setenv "PATH" (s-join ":" (list (getenv "PATH")
-                                                        (s-replace-regexp "node$" "" (fnm-node-path default-node-version)))))
-  (exec-path-from-shell-setenv "NODE_PATH" (fnm-node-path default-node-version)))
+  (exec-path-from-shell-initialize))
 
 (use-package short-lambda
   :load-path "./site-lisp"

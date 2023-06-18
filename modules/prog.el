@@ -48,16 +48,16 @@ before running 'npm install'."
   (interactive "P")
   (let* ((default-directory (project-root (project-current t)))
          (project-node-version (read-file ".nvmrc"))
-         (local-npm-executable (fnm-npm-path project-node-version)))
-    (message "local NPM executable version is %s" (bobs-shell-comand-to-string local-npm-executable "-v"))
+         (fnm-use project-node-version))
+    (message "local NPM executable version is %s" (bobs-shell-comand-to-string "npm" "-v"))
     (when force
       (message "removing package-lock.json")
       (unwind-protect (delete-file (concat default-directory "package-lock.json")))
       (message "removing node_modules")
       (unwind-protect (delete-directory (concat default-directory "node_modules") t))
       (message "verifying NPM's cache")
-      (apply #'call-process local-npm-executable nil 0 nil '("verify")))
-    (start-process "npm-install" "*npm-install-output*" local-npm-executable "install")
+      (apply #'call-process "node" nil 0 nil '("verify")))
+    (start-process "npm-install" "*npm-install-output*" "npm" "install")
     (split-window-horizontally)
     (switch-to-buffer (get-buffer "*npm-install-output*"))))
 
@@ -354,5 +354,6 @@ before running 'npm install'."
   :hook ((prog-mode git-commit-mode) . (lambda () (copilot-mode 1)))
   :bind (:map copilot-completion-map
               ("C-<tab>" . copilot-accept-completion)))
+
 
 (provide 'prog)

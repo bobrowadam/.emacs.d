@@ -146,7 +146,7 @@ to directory DIR."
     (when buffer-file
       (let ((default-directory (file-name-directory buffer-file)))
         (when (project-current)
-          (project-name (project-current)))))))
+          (project-root (project-current)))))))
 
 
 (provide 'bobs-utils)
