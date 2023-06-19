@@ -1,5 +1,5 @@
 ;;; riseup-helpers.el ---  -*- lexical-binding: t -*-
-(require 'cl)
+(require 'cl-lib)
 (require 'ghub)
 
 (defun browse-riseup-git-project (&optional project)
@@ -63,12 +63,12 @@ This is used for 'clone-riseup-repo'")
 
 (defun import-customer (customer-id)
   (interactive "N")
-  (-let [default-directory (format "%s/source/catapult" (getenv "HOME"))]
-    (async-shell-command (format "%s %s %s %s"
-                                 (fnm-node-path "18")
-                                 "./node_modules/env-setter/src/ssm-entrypoint-local.js local.js"
-                                 "customer-import-locally"
-                              customer-id))))
+  (with-temporary-node-version
+   "12"
+   (let ((default-directory (format "%s/source/services/catapult" (getenv "HOME")))) 
+     (async-shell-command (format "npm run import-customer %s" customer-id)
+                          "*import-customer-output-buffer*"
+                          "*import-customer-error-buffer*"))))
 
 (defun browse-customer-in-mamadmin (&optional project)
   "Browse riseup customer in mamadmin"
