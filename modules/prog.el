@@ -21,16 +21,14 @@
 (defun npm-run-build ()
   "Build typescript project on watch mode"
   (interactive)
-  (when (and (project-current)
-             (or (eq major-mode 'typescript-mode)
-                 (eq major-mode 'comint-mode)))
+  (when (is--typescript-project)
     (let ((default-directory (project-root (project-current t)))
           (comint-scroll-to-bottom-on-input t)
           (comint-scroll-to-bottom-on-output t)
           (comint-process-echoes t)
           (compilation-buffer-name (format "TS-COMPILE -- %s"
                                            (get-dir-name (nth 2 (project-current))))))
-      (cond ((and (eq major-mode 'typescript-mode)
+      (cond ((and (not (eq major-mode 'comint-mode))
                   (car (memq (get-buffer compilation-buffer-name)
                              (buffer-list))))
              (switch-to-buffer (get-buffer compilation-buffer-name)))
@@ -38,18 +36,60 @@
                   (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
              (switch-to-prev-buffer))
             (t
-             (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" (fnm-node-path "18"))
-                                t (lambda (mode) compilation-buffer-name)))))))
+             (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" "node")
+                                t (lambda (mode)
+                                    compilation-buffer-name)))))))
+
+(defun get--available-inspect-port ()
+  (if-let (inspect-processes (get--inspect-processes-port))
+      (1+ (car (-sort '> inspect-processes)))
+    9229))
+
+(defun get--inspect-processes-port ()
+ (cl-remove-if-not 'identity
+  (mapcar
+   (lambda (process)
+     (if-let ((match (s-match "inspect=\\([0-9]+\\)" (nth 2 (process-command process)))))
+         (string-to-number (cadr match))))
+   (cl-remove-if-not
+    (lambda (p) (s-contains? "comint" (process-name p)))
+    (process-list)))))
+
+(defun npm-run (&optional debug-mode)
+  "Debug typescript project on watch mode"
+  (interactive "P")
+  (let ((default-directory (project-root (project-current t)))
+        (comint-scroll-to-bottom-on-input t)
+        (comint-scroll-to-bottom-on-output t)
+        (comint-process-echoes t)
+        (compilation-buffer-name (format "TS-COMPILE -- %s"
+                                         (get-dir-name (nth 2 (project-current))))))
+    (cond ((and (eq major-mode 'typescript-mode)
+                (car (memq (get-buffer compilation-buffer-name)
+                           (buffer-list))))
+           (switch-to-buffer (get-buffer compilation-buffer-name)))
+          ((and (eq major-mode 'comint-mode)
+                (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
+           (switch-to-prev-buffer))
+          (t
+           (with-temporary-node-version
+               (let ((compilation-command (if debug-mode
+                                              (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
+                                                      (get--available-inspect-port)
+                                                      (project-name (project-current)))
+                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2  -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
+                                                    (project-name (project-current))))))
+                 (compilation-start compilation-command
+                                    t (lambda (mode)
+                                        compilation-buffer-name))))))))
 
 (defun npm-install-project (&optional force)
   "NPM install in project.
 If FORCE is non-nil, delete the 'package-lock.json' and 'node_modules' directories and verify NPM cache
 before running 'npm install'."
   (interactive "P")
-  (let* ((default-directory (project-root (project-current t)))
-         (project-node-version (read-file ".nvmrc"))
-         (fnm-use project-node-version))
-    (message "local NPM executable version is %s" (bobs-shell-comand-to-string "npm" "-v"))
+  (let* ((default-directory (project-root (project-current t))))
+    (message "local NPM executable version is %s" (s-trim-right (shell-command-to-string "npm -v")))
     (when force
       (message "removing package-lock.json")
       (unwind-protect (delete-file (concat default-directory "package-lock.json")))
@@ -57,7 +97,8 @@ before running 'npm install'."
       (unwind-protect (delete-directory (concat default-directory "node_modules") t))
       (message "verifying NPM's cache")
       (apply #'call-process "node" nil 0 nil '("verify")))
-    (start-process "npm-install" "*npm-install-output*" "npm" "install")
+    (with-temporary-node-version
+        (start-process "npm-install" "*npm-install-output*" "npm" "install"))
     (split-window-horizontally)
     (switch-to-buffer (get-buffer "*npm-install-output*"))))
 
@@ -65,8 +106,12 @@ before running 'npm install'."
   :hook
   (typescript-mode . add-node-modules-path)
   (typescript-mode . eldoc-mode)
+  (typescript-mode . fnm-use)
   :bind
   (:map typescript-mode-map ("C-c C-b" . npm-run-build))
+  (:map dired-mode-map ("C-c C-b" . npm-run-build))
+  (:map magit-mode-map ("C-c C-b" . npm-run-build))
+  (:map typescript-mode-map ("C-c C-r" . npm-run))
   (:map comint-mode-map ("C-c C-b" . npm-run-build))
 
   :config
@@ -76,8 +121,17 @@ before running 'npm install'."
   :init
   :commands jest-test-mode
   :custom
-  (jest-test-command-string (format "%s %%s ./node_modules/.bin/jest %%s %%s" (fnm-node-path "18")))
+  (jest-test-command-string (format "%s %%s ./node_modules/.bin/jest %%s %%s" "node"))
   :hook (typescript-mode js-mode typescript-tsx-mode))
+
+(defun jest-set-config-file ()
+  (interactive)
+  "Ask the user to choose a jest config file from the project root"
+  (if-let ((config-file (completing-read "Choose a jest config file: "
+                                       (directory-files (project-root (project-current))
+                                                        nil
+                                                        "jest"))))
+    (add-to-list 'jest-test-options (format "-c=%s" config-file))))
 
 (use-package js2-mode
   :init
@@ -138,16 +192,11 @@ before running 'npm install'."
 
 (use-package eglot
   :config
-  (setenv "NODE_PATH" "/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/lib/node_modules")
   (add-to-list 'eglot-server-programs
                `((js-mode typescript-mode)
-                                 . ("/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/bin/typescript-language-server" "--stdio")))
+                                 . ("typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
-               `((web-mode) ,(concat fnm-node-modules "/vls/bin/vls")  "--stdio"))
-  ;; (add-to-list 'eglot-server-programs '(web-mode . ("/Users/bob/Library/Application Support/fnm/node-versions/v18.13.0/installation/bin/vue-language-server" "--stdio"
-  ;;                                                   ;; :initializationOptions
-  ;;                                                   ;; (:typescript (:tsdk "node_modules/typescript/lib"))
-  ;;                                                   )))
+               `((web-mode) "vls"  "--stdio"))
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
   :bind
@@ -349,6 +398,7 @@ before running 'npm install'."
 (use-package git-link)
 
 (use-package copilot
+  :after fnm
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
   :hook ((prog-mode git-commit-mode) . (lambda () (copilot-mode 1)))

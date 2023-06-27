@@ -52,7 +52,7 @@ This is used for 'clone-riseup-repo'")
   (when (car refresh-cache)
     (save--riseup-repo-names-to-cache riseup-repos-cache-path))
   (let ((selected-repo (completing-read "select riseup repository\n"
-                                        (read-file riseup-repos-cache-path))))
+                                        (read (read-file riseup-repos-cache-path)))))
     (magit-clone-internal (format "%s/%s.git" "git@github.com:riseupil" selected-repo)
                           service-directory
                           nil)))
@@ -92,7 +92,7 @@ When entering a service name, look for the service.
 When entering a number, look for a customerId.
 Else, just look for the given string."
   (interactive)
-  (let* ((riseup-repos (read-file riseup-repos-cache-path))
+  (let* ((riseup-repos (read (read-file riseup-repos-cache-path)))
          (query-string (completing-read "Enter datadog query:\n"
                                         riseup-repos)))
     (let ((generated-datadog-url (cond ((-contains-p riseup-repos (intern query-string))
@@ -172,5 +172,14 @@ Else, just look for the given string."
     (message "Service for port %s is %s"
              service-port
              (cdr (assoc service-port port-to-service-map)))))
+
+(defun is--typescript-project ()
+  "Returns true when project has an NPM build script for typescript"
+  (if-let* ((project (project-current))
+            (default-directory (project-root project))
+            (package-json (json-parse-string (read-file "package.json")
+                                             :object-type 'alist)))
+      (s-matches-p (assocdr 'build (assocdr 'scripts package-json))
+               "./node_modules/typescript/bin/tsc")))
 
 (provide 'riseup-helpers)

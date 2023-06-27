@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("bobs-utils.el"
+(("files-and-buffers.el"
+ (filename . "~/.emacs.d/modules/files-and-buffers.el")
+ (front-context-string . ";; Dired\n(use-pa")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 25749 62194 917946 0))
+("bobs-utils.el"
  (filename . "~/.emacs.d/site-lisp/bobs-utils.el")
  (front-context-string . "(defun assocdr (")
  (rear-context-string)
@@ -40,10 +46,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
- (front-context-string . "* Stop using sly")
+ (front-context-string)
  (rear-context-string . "---------------\n")
  (position . 426)
- (last-modified 25727 39103 243138 0))
+ (last-modified 25747 52950 393407 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")

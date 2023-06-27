@@ -2,10 +2,6 @@
 (use-package s :demand t)
 (use-package cl-lib :demand t)
 (use-package server :demand t)
-(use-package fnm
-  :load-path "./site-lisp"
-  :ensure nil
-  :demand t)
 
 (unless (server-running-p)
   (server-start))
@@ -24,22 +20,25 @@
   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'el-patch)
 
-
-(setq lsp-clients-typescript-npm-location
-        (fnm-npm-path "18"))
-
 (setq service-directory (concat (getenv "HOME") "/source/services"))
 
 (use-package exec-path-from-shell
   :ensure t
-  :if (window-system)
   :demand t
+  :if (window-system)
   :config
   (add-to-list 'exec-path-from-shell-variables "BOB_DIR")
   (add-to-list 'exec-path-from-shell-variables "WHATSAPP_NUMBER")
   (add-to-list 'exec-path-from-shell-variables "LOCAL_WHATSAPP_NUMBER")
   (setq exec-path-from-shell-arguments nil)  
   (exec-path-from-shell-initialize))
+
+(use-package fnm
+  :after (exec-path-from-shell)
+  :demand t
+  :config (fnm-use)
+  :load-path "~/source/fnm.el"
+  :ensure nil)
 
 (use-package short-lambda
   :load-path "./site-lisp"

@@ -59,3 +59,4 @@ transient/*
 /.riseup-repos-cache.el
 /org-persist/
 /codeium/codeium_language_server
+/chatgpt/

@@ -6,7 +6,7 @@
   "Return the contents of FILE-NAME as a lisp data type."
   (with-temp-buffer
     (insert-file-contents file-name)
-    (read (buffer-string))))
+    (buffer-string)))
 
 (defun random-alnum ()
   (let* ((alnum "abcdefghijklmnopqrstuvwxyz0123456789")
@@ -136,7 +136,7 @@ to directory DIR."
 
 (defun get--active-projects ()
   "Return a list of projects that are associated with the open buffers."
-  (remove-if-not 'identity
+  (cl-remove-if-not 'identity
            (mapcar
             #'project--buffer
             (buffer-list))))
@@ -147,7 +147,6 @@ to directory DIR."
       (let ((default-directory (file-name-directory buffer-file)))
         (when (project-current)
           (project-root (project-current)))))))
-
 
 (provide 'bobs-utils)
 

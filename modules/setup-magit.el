@@ -88,6 +88,6 @@
                                     :private is-repo-private
                                     :is_template repo-is_template))
     (magit-remote-add "origin" (format "git@github.com:bobrowadam/%s.git" repo-name))
-    (magit-push-current-to-pushremote '("-u" "origin" (magit-get-current-branch)))))
+    (magit-push-current-to-pushremote `("-u" "origin" ,(magit-get-current-branch)))))
 
 (provide 'setup-magit)

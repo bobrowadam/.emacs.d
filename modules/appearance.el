@@ -5,23 +5,20 @@
              '(font . "DaddyTimeMono Nerd Font 19"))
 
 (use-package material-theme
-  :demand t
+  :disabled t
   :config (load-theme 'material :no-confirm))
 
 (use-package modus-themes
-  :demand t
   :config
   (setq modus-vivendi-palette-overridesd
       '((fg-main "#333333")
         (comment red-faint)
-        (keyword cyan-cooler)))
-  ;; (load-theme 'modus-vivendi :no-confim)
-)
+        (keyword cyan-cooler))))
 
 (use-package ef-themes
-  :disabled t
+  :demand t
   :config
-  (ef-themes-select 'ef-autumn))
+  (ef-themes-select 'ef-bio))
 
 (use-package highlight-indent-guides
   :config
@@ -29,10 +26,6 @@
         highlight-indent-guides-responsive 'top
         highlight-indent-guides-auto-enabled t)
   :hook (prog-mode . highlight-indent-guides-mode))
-
-;; (use-package mood-line
-;;   :demand t
-;;   :config (mood-line-mode))
 
 (use-package moody
   :demand t
@@ -46,7 +39,6 @@
   :demand t
   :config
   (minions-mode 1))
-
 
 (use-package all-the-icons
   :if (display-graphic-p))

@@ -35,7 +35,13 @@
 
 (use-package iserach
   :ensure nil
-  :init (setq isearch-lazy-count t))
+  :init
+  (setq isearch-lazy-count t)
+  (setq search-whitespace-regexp ".*?"))
+
+(use-package occur
+  :ensure nil
+  :bind ("C-c o" . occur))
 
 (use-package consult-project-extra
   :bind
@@ -258,7 +264,7 @@
   ("C-c M-c" . avy-goto-word-1))
 
 (use-package ace-window
-  :bind 
+  :bind
   ( "C-x o" . ace-window)
   ( "M-o" . ace-window)
   :config
@@ -334,11 +340,11 @@
                         :background "#fff3da"))
    (t
     (set-face-attribute 'mode-line nil
-			:foreground "#0a0a0a"
-			:background "#d7d7d7")
+                        :foreground "#0a0a0a"
+                        :background "#d7d7d7")
     (set-face-attribute 'mode-line-inactive nil
-			:foreground "#404148"
-			:background "#efefef"))))
+                        :foreground "#404148"
+                        :background "#efefef"))))
 
 ;; This mode is similar to "control-mode" but more opinionated
 (use-package god-mode

@@ -8,9 +8,15 @@
   (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
-;; (use-package all-the-icons-dired
-;;   :after (dired)
-;;   :hook (dired-mode . all-the-icons-dired-mode))
+(use-package dired-subtree
+  :demand t
+  :after (dired)
+  :bind (:map dired-mode-map
+              ("TAB" . dired-subtree-toggle)))
+
+(use-package all-the-icons-dired
+  :after (dired)
+  :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package diredfl
   :hook
@@ -22,7 +28,7 @@
   :bind (:map dired-mode-map ("C-c C-r" . dired-rsync)))
 
 (use-package dirvish
-  :demand t
+  :disabled t
   :after (dired)
   :ensure t
   :init
