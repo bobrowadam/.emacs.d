@@ -4,6 +4,7 @@
   :demand t
   :config
   (setq dired-listing-switches "-lah")
+  (setq delete-by-moving-to-trash t)
   (setq dired-use-ls-dired nil)
   (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
@@ -13,6 +14,10 @@
   :after (dired)
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
+
+(use-package all-the-icons
+  :custom
+  (setq all-the-icons-dired-monochrome nil))
 
 (use-package all-the-icons-dired
   :after (dired)

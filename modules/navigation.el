@@ -104,9 +104,11 @@
   :demand t
   :init
   (setq vertico-scroll-margin 0)
-  (setq vertico-count 10)
+  (setq vertico-count 6)
   (setq vertico-resize nil)
   (setq vertico-cycle t)
+  :hook
+  (rfn-eshadow-update-overlay . vertico-directory-tidy)
   :config
   (vertico-mode 1))
 
