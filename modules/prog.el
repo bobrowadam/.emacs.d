@@ -401,7 +401,7 @@ before running 'npm install'."
   :after fnm
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
-  :hook ((prog-mode git-commit-mode) . (lambda () (copilot-mode 1)))
+  :hook ((git-commit-mode) . (lambda () (copilot-mode 1)))
   :bind (:map copilot-completion-map
               ("C-<tab>" . copilot-accept-completion)))
 
