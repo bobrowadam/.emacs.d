@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: commit-message
+# key: cm
+# --
+${1:<What you did?>}
+
+${2:<Why, and how you did that?>}
+

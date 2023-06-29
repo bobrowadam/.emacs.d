@@ -81,3 +81,4 @@
     (magit-push-current-to-pushremote `("-u" "origin" ,(magit-get-current-branch)))))
 
 (provide 'setup-magit)
+
