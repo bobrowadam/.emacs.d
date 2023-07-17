@@ -71,10 +71,11 @@
                    (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
 
 (use-package org-habit
+  :after (org)
   :ensure nil
   :demand t
   :init (setq org-habit-graph-column 70)
-  (add-to-list 'org-modules 'ol-habits))
+  (add-to-list 'org-modules 'org-habit))
 
 (use-package org-bullets
   :if (window-system))
