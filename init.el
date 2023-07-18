@@ -1,11 +1,11 @@
-(setq gc-cons-threshold 100000000)
+(setq lexical-binding t)
+(setq gc-cons-threshold 10000000)
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
-(setq lexical-binding t)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq gc-cons-threshold 10000000)
+            (setq gc-cons-threshold 800000)
             (message "Emacs ready in %s with %d garbage collections."
                      (format "%.2f seconds"
                              (float-time
@@ -64,7 +64,7 @@
 
 (use-package setup-magit
   :after startup
-  :demand t
+  :defer 10
   :load-path "./modules")
 
 (use-package setup-org
@@ -73,6 +73,7 @@
   :load-path "./modules")
 
 (use-package setup-shell
+  :defer 10
   :after startup
   :demand t
   :load-path "./modules")
@@ -84,25 +85,46 @@
   :ensure nil
   :after (startup magit))
 
-(use-package gptel
+(use-package shell-maker
   :demand t
-  :config
-  (setq gptel-api-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
-  (setq gptel-default-mode #'org-mode)
-  (setq gptel-model "gpt-3.5-turbo-0301"))
+  :straight (:host github :repo "xenodium/chatgpt-shell" :files ("shell-maker.el")))
 
 (use-package chatgpt-shell
-  :demand t
+  :defer 10
+  :after shell-maker
+  :straight (:host github :repo "xenodium/chatgpt-shell" :files ("chatgpt-shell.el"))
   :config
-  (setq chatgpt-shell-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY")))
+  (setq chatgpt-shell-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
+  :bind
+  ("C-c g" . chatgpt-shell))
 
 (use-package breadcrumb-mode
   :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb")
-  :config (breadcrumb-mode 1))
+  :init (breadcrumb-mode 1))
 
 (use-package string-inflection)
 
-(use-package grammarly)
+(use-package khoj
+  :disabled t
+  :ensure t
+  :pin melpa-stable
+  ;; :custom
+  ;; (khoj-server-python-command "python3.11")
+  ;; (khoj-server-command "khoj")
+  :config (setq khoj-org-directories `(,(s-chop-suffix "/" org-directory))
+                khoj-openai-api-key (getenv "OPEN_AP_API_KEY")))
+
+(use-package xkcd-303-mode
+  :demand t
+  :straight (:host github :repo "elizagamedev/xkcd-303-mode.el"
+                 :files ("*.el" "compiling.png"))
+  :init
+  (xkcd-303-mode 1))
+
+(use-package mongo-cli
+  :demand t
+  :ensure nil
+  :load-path "~/source/mongo-cli-el/")
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)

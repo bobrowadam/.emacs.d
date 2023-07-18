@@ -2,11 +2,13 @@
 (use-package dired
   :ensure nil
   :demand t
-  :config
-  (setq dired-listing-switches "-lah")
-  (setq delete-by-moving-to-trash t)
-  (setq dired-use-ls-dired nil)
-  (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
+  :custom
+  (dired-auto-revert-buffer t)
+  (dired-listing-switches "-lah --group-directories-first")
+  (delete-by-moving-to-trash t)
+  (dired-use-ls-dired nil)
+  (insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
+  (dired-dwim-target t)
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
 (use-package dired-subtree
@@ -20,8 +22,14 @@
   (setq all-the-icons-dired-monochrome nil))
 
 (use-package all-the-icons-dired
+  :disabled t
   :after (dired)
   :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package nerd-icons-dired
+  :demand t
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
 
 (use-package diredfl
   :hook
@@ -31,97 +39,6 @@
   :init
   (setq dired-rsync-passphrase-stall-regex "Verification code")
   :bind (:map dired-mode-map ("C-c C-r" . dired-rsync)))
-
-(use-package dirvish
-  :disabled t
-  :after (dired)
-  :ensure t
-  :init
-  (setq dirvish-emacs-bin (expand-file-name (concat (file-name-as-directory invocation-directory) invocation-name)))
-  :custom
-  (dirvish-quick-access-entries
-   '(("h" "~/"                          "Home")
-     ("d" "~/Downloads/"                "Downloads")
-     ("s" "~/source/services" "Services")
-     ("S" "~/source/"                "Source")))
-  (dirvish-header-line-format '(:left (path fd-pwd) :right (free-space)))
-  (dirvish-mode-line-format ; it's ok to place string inside
-   '(:left (sort file-time " " vc-info fd-pwd)  :right (omit yank index)))
-
-  ;; In case you want the details at startup like `dired'
-  (dirvish-hide-details nil)
-  :init
-  ;; Let Dirvish take over Dired globally
-  (setq dirvish-attributes '(all-the-icons collapse subtree-state vc-state))
-  :config
-  (defun dirvish-find-entry-ad (&optional entry)
-    "Find ENTRY in current dirvish session.
-ENTRY can be a filename or a string with format of
-`dirvish-fd-bufname' used to query or create a `fd' result
-buffer, it defaults to filename under the cursor when it is nil."
-    (let* ((entry (or entry (dired-get-filename nil t)))
-           (buffer (dirvish--find-entry entry)))
-      (if buffer
-          (dirvish-with-no-dedication (switch-to-buffer buffer))
-        (let* ((ext (downcase (or (file-name-extension entry) "")))
-               (file (expand-file-name entry))
-               (process-connection-type nil)
-               (ex (cl-loop
-                    for (exts . (cmd . args)) in dirvish-open-with-programs
-                    thereis (and (not (dirvish-prop :remote))
-                                 (executable-find cmd)
-                                 (member ext exts)
-                                 (append (list cmd) args)))))
-          (if ex (apply #'start-process "" nil "nohup"
-                        (cl-substitute file "%f" ex :test 'string=))
-            (when-let ((dv (dirvish-curr))) (funcall (dv-on-file-open dv) dv))
-            (find-file file))))))
-  (require 'dirvish-fd)
-  (dirvish-define-preview exa (file)
-    "Use `exa' to generate directory preview."
-    :require ("exa") ; tell Dirvish to check if we have the executable
-    (when (file-directory-p file) ; we only interest in directories here
-      `(shell . ("exa" "--color=always" "-al" ,file))))
-  (add-to-list 'dirvish-preview-dispatchers 'exa)
-  (dirvish-define-preview bat (file)
-    "Use `bat' to generate directory preview."
-    :require ("bat") ; tell Dirvish to check if we have the executable
-    (when (not (file-directory-p file)) ; we only interest in directories here
-      `(shell . ("bat" "--color=always" "--decorations=always" "--paging=never",file))))
-
-  (add-to-list 'dirvish-preview-dispatchers 'bat)
-  (car dirvish-preview-dispatchers)
-  (dirvish-override-dired-mode)
-  (dirvish-peek-mode)
-  ;; Dired options are respected except a few exceptions, see *In relation to Dired* section above
-  (setq dired-dwim-target t)
-  (setq delete-by-moving-to-trash t)
-  :bind
-  (("C-c C-l" . dirvish-side)
-   ("C-x C-d" . dirvish)
-   :map dirvish-mode-map
-   ("TAB" . dirvish-subtree-toggle)
-   ("C-x C-j" . dired-up-directory)
-   ("a"   . dirvish-quick-access)
-   ("f"   . dirvish-file-info-menu)
-   ("y"   . dirvish-yank-menu)
-   ("N"   . dirvish-narrow)
-   ("^"   . dirvish-history-last)
-   ("h"   . dirvish-history-jump)  ; remapped `describe-mode'
-   ("s"   . dirvish-quicksort) ; remapped `dired-sort-toggle-or-edit'
-   ("M-n" . dirvish-history-go-forward)
-   ("M-p" . dirvish-history-go-backward)
-   ("M-l" . dirvish-ls-switches-menu)
-   ("M-m" . dirvish-mark-menu)
-   ("M-f" . dirvish-layout-toggle)
-   ("M-s" . dirvish-setup-menu)
-   ("M-e" . dirvish-emerge-menu)
-   ("M-j" . dirvish-fd)))
-
-(defmacro csetq (variable value)
-  `(funcall (or (get ',variable 'custom-set)
-                'set-default)
-            ',variable ,value))
 
 (defun ediff-copy-both-to-C ()
   (interactive)
@@ -222,6 +139,7 @@ buffer, it defaults to filename under the cursor when it is nil."
                  (ibuffer-do-sort-by-recency)))))
 
 (use-package all-the-icons-ibuffer
+  :disabled t
   :init (all-the-icons-ibuffer-mode 1)
   :custom (all-the-icons-ibuffer-formats '((mark modified read-only locked " "
                                                  (icon 2 2)
@@ -236,6 +154,10 @@ buffer, it defaults to filename under the cursor when it is nil."
                                                  (mode+ 16 16 :left :elide)
                                                  " " filename-and-process+)
                                            )))
+
+(use-package nerd-icons-ibuffer
+  :demand t
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 (use-package ibuffer-vc
   :demand
