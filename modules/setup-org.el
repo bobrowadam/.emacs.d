@@ -1,13 +1,11 @@
-(use-package  ob-mongo
-  :demand t
-  :ensure nil
+(use-package ob-mongo
+  :after org
   :custom
   (ob-mongo:default-mongo-executable "mongo")
   :load-path "~/source/ob-mongo/")
 
 (use-package org
-  :demand t
-  :after ob-mongo
+  :defer 10
   :ensure t
   :if (window-system)
   :init
@@ -148,6 +146,7 @@
 ;;   (setq org-roam-database-connector 'sqlite-builtin))
 
 (use-package org-roam
+  :after org
   :demand t
   ;; :after (emacsql-sqlite-builtin)
   :init
@@ -213,7 +212,7 @@
   :after (org)
   :mode ("\\.org\\'" . org-mode)
   :init
-  (setq verb-parse-json-to-alist t)
+  (setq verb-parse-json-to-alist nil)
   (setq verb-post-response-hook 'parse-verb-response-to-alist)
   :config 
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map)

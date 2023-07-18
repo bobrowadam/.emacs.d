@@ -1,10 +1,15 @@
-(global-hl-line-mode)
+(use-package hl-line
+  :defer 10
+  :config
+  (global-hl-line-mode))
+
 
 (setq user-login-name "Adam Bobrow"
+      scroll-preserve-screen-position nil
       make-backup-files nil
       enable-recursive-minibuffers t
       inhibit-splash-screen t
-      inhibit-startup-message t
+      inhibit-startup-message nil
       require-final-newline nil
       truncate-partial-width-windows 80
       sentence-end-double-space t       ; explicitly choose default
@@ -33,6 +38,8 @@
       visible-bell nil
       enable-local-variables :safe)
 
+(setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+
 (when (boundp 'pixel-scroll-precision-mode)
   (pixel-scroll-precision-mode 1))
 
@@ -42,9 +49,7 @@
   (load custom-file))
 
 (setq-default
- indent-tabs-mode nil
- ;; cursor-type  '(bar . 4)
-)
+ indent-tabs-mode nil)
 
 (display-time)
 (display-battery-mode)
@@ -113,7 +118,8 @@
                ("C-;" . nil)
                ("C-." . nil))
   :ensure nil
-  ;; :hook
+  :hook
+  (minibuffer-mode . flyspell-mode)
   ;; (prog-mode . flyspell-mode)
   ;; (org-mode . flyspell-mode)
   ;; (git-commit-setup . git-commit-turn-on-flyspell
@@ -139,6 +145,7 @@
   (prog-mode . wucuo-start)
   (text-mode . wucuo-start)
   (web-mode . wucuo-start)
+  (minibuffer-mode . wucuo-start)
   (git-commit-setup . wucuo-start))
 
 (use-package emojify)

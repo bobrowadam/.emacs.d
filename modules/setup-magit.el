@@ -14,6 +14,7 @@
   (magit-fetch-all-prune))
 
 (use-package magit
+  :demand t
   :ensure t
   :bind
   ("C-x g" . magit-status)

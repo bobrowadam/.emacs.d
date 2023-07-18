@@ -98,7 +98,7 @@ before running 'npm install'."
       (message "verifying NPM's cache")
       (apply #'call-process "node" nil 0 nil '("verify")))
     (with-temporary-node-version
-        (start-process "npm-install" "*npm-install-output*" "npm" "install"))
+        (compilation-start "npm i"))
     (split-window-horizontally)
     (switch-to-buffer (get-buffer "*npm-install-output*"))))
 
@@ -151,6 +151,7 @@ before running 'npm install'."
   (setq-default js-indent-level 2))
 
 (use-package web-mode
+  :demand t
   :mode
   ("\\.html\\'" . web-mode)
   ("\\.cssl\\'" . web-mode)
@@ -159,6 +160,7 @@ before running 'npm install'."
   :hook
   (web-mode . add-node-modules-path)
   (web-mode . eldoc-mode)
+  (web-mode . (lambda () (setq-local font-lock-defaults nil)))
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
@@ -191,6 +193,8 @@ before running 'npm install'."
                                (comint-read-input-ring 'silent)))))
 
 (use-package eglot
+  :custom
+  (eglot-events-buffer-size 0)
   :config
   (add-to-list 'eglot-server-programs
                `((js-mode typescript-mode)
@@ -267,7 +271,9 @@ before running 'npm install'."
   (lisp-data-mode . enable-paredit-mode)
   ;; (eshell-mode  . enable-paredit-mode)
   :bind
-  (:map paredit-mode-map ("C-'" . sp-rewrap-sexp)))
+  (:map paredit-mode-map
+        ("C-'" . sp-rewrap-sexp)
+        ("M-W" . sp-copy-sexp)))
 
 (use-package smartparens
   :demand t
@@ -332,10 +338,12 @@ before running 'npm install'."
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package tree-sitter
-  :hook ((js2-mode typescript-mode c-mode c++-mode rust-mode json-mode) . tree-sitter-hl-mode)
+  :hook ((js2-mode typescript-mode c-mode c++-mode rust-mode json-mode web-mode) . tree-sitter-hl-mode)
   :ensure t)
 
 (use-package tree-sitter-langs
+  :init
+  (add-to-list 'tree-sitter-major-mode-language-alist (cons 'web-mode 'tsx))
   :ensure t
   :after tree-sitter)
 

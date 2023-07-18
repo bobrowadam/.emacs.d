@@ -354,4 +354,24 @@
   :bind ("C-z" . god-mode-all)
   :hook (post-command-hook . #'my-god-mode-update-mode-line))
 
+;;;###autoload
+(defun move-line-up ()
+  "Move up the current line."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+
+;;;###autoload
+(defun move-line-down ()
+  "Move down the current line."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+
+(bind-key "C-S-p" 'move-line-up)
+(bind-key "C-S-n" 'move-line-down)
+
 (provide 'navigation)
