@@ -126,6 +126,11 @@
   :ensure nil
   :load-path "~/source/mongo-cli-el/")
 
+(use-package proced-narrow
+  :demand t
+  :hook (proced-mode . proced-narrow-mode)
+  :bind (:map proced-mode-map ("N" . 'proced-narrow)))
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)

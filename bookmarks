@@ -45,11 +45,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
- (front-context-string . "* Check out [[el")
- (rear-context-string . "---------------\n")
- (position . 426)
- (last-modified 25778 20608 500607 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20230718195447-reversim_standup.org")
+ (front-context-string . "\nIdeas for title")
+ (rear-context-string . "eversim-standup\n")
+ (position . 94)
+ (last-modified 25782 50171 850236 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")
