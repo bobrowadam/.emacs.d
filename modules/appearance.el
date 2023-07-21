@@ -18,7 +18,7 @@
 (use-package ef-themes
   :demand t
   :config
-  (ef-themes-select 'ef-bio))
+  (ef-themes-select 'ef-elea-dark))
 
 (use-package highlight-indent-guides
   :config
