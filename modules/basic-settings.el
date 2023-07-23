@@ -27,7 +27,6 @@
       auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc")
       dired-recursive-deletes 'always
       dired-recursive-copies 'always
-      initial-scratch-message ";; Oh it's you again"
       display-time-day-and-date t
       display-time-24hr-format t
       display-time-default-load-average nil
@@ -37,6 +36,8 @@
       ring-bell-function 'ignore
       visible-bell nil
       enable-local-variables :safe)
+
+(setq initial-scratch-message (print-sessions-duration))
 
 (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
