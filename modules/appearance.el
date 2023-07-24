@@ -1,9 +1,11 @@
 (setq custom-safe-themes t)
 (setq custom-theme-directory (concat user-emacs-directory "themes"))
-(set-frame-font "DaddyTimeMono Nerd Font 19")
+;; (set-frame-font "DaddyTimeMono Nerd Font 19")
+;; (add-to-list 'default-frame-alist
+;;              '(font . "DaddyTimeMono Nerd Font 19"))
+(set-frame-font "FiraCode Nerd Font 19")
 (add-to-list 'default-frame-alist
-             '(font . "DaddyTimeMono Nerd Font 19"))
-
+             '(font . "FiraCode Nerd Font 19"))
 (use-package material-theme
   :disabled t
   :config (load-theme 'material :no-confirm))
