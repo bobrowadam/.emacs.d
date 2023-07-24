@@ -269,6 +269,7 @@ before running 'npm install'."
   (common-lisp-mode . enable-paredit-mode)
   (lisp-mode . enable-paredit-mode)
   (lisp-data-mode . enable-paredit-mode)
+  (racket-mode . enable-paredit-mode)
   ;; (eshell-mode  . enable-paredit-mode)
   :bind
   (:map paredit-mode-map
@@ -415,5 +416,10 @@ before running 'npm install'."
 
 (use-package cider)
 (use-package clojure-mode)
+
+(use-package racket-mode
+  :hook
+  (racket-mode . racket-xp-mode)
+  (racket-mode . flymake-racket-setup))
 
 (provide 'prog)
