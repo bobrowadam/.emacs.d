@@ -37,8 +37,7 @@
       visible-bell nil
       enable-local-variables :safe)
 
-(setq initial-scratch-message (print-sessions-duration))
-
+(setq initial-scratch-message (print-sessions-duration (read-sessions-file)))
 (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
 (when (boundp 'pixel-scroll-precision-mode)
