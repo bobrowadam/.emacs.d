@@ -5,11 +5,12 @@
 
 
 (setq user-login-name "Adam Bobrow"
+      undo-limit (* 1024 1000) ;; 1 Mb seems OK
       scroll-preserve-screen-position nil
       make-backup-files nil
       enable-recursive-minibuffers t
       inhibit-splash-screen t
-      inhibit-startup-message nil
+      inhibit-startup-message t
       require-final-newline nil
       truncate-partial-width-windows 80
       sentence-end-double-space t       ; explicitly choose default
@@ -60,10 +61,12 @@
   (setq confirm-kill-emacs 'yes-or-no-p))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
+
 (when window-system
   (tool-bar-mode -1)
   (scroll-bar-mode -1)
   (tooltip-mode -1))
+
 (blink-cursor-mode 0)
 (global-subword-mode t)
 (global-superword-mode -1)
@@ -152,6 +155,9 @@
 (use-package zoom-window :bind ("C-x C-z" . zoom-window-zoom))
 (use-package iedit
   :bind ("C-;" . iedit-mode))
+(use-package vundo
+  :demand t
+  :bind ("C-x u" . vundo))
 
 ;; On my mac I accidentally zoomed in and out with my palm
 (global-unset-key (kbd "C-<wheel-up>"))
