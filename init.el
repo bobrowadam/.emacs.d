@@ -128,9 +128,16 @@
   :hook (proced-mode . proced-narrow-mode)
   :bind (:map proced-mode-map ("N" . 'proced-narrow)))
 
+(use-package xwwp
+  :bind (:map xwidget-webkit-mode-map
+              ("C-x C--" . xwidget-webkit-zoom-out)
+              ("C-x C-=" . xwidget-webkit-zoom-in)
+              ("f" . xwwp-follow-link)))
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
 (put 'upcase-region 'disabled nil)
 (put 'narrow-to-page 'disabled nil)
 (put 'magit-clean 'disabled nil)
+(put 'list-timers 'disabled nil)
