@@ -43,4 +43,6 @@
              (format-session-uptime "Latest" latest-session)
              (format-session-uptime "Longest" longest-session)))))
 
+(run-with-timer (* 60 15) t 'save-emacs-uptime)
+
 (provide 'emacs-uptime)
