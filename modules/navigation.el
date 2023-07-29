@@ -1,4 +1,5 @@
 (use-package consult
+  :demand t
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c m" . consult-mode-command)
          ("C-x r b" . consult-bookmark)
@@ -10,7 +11,6 @@
          ("M-'" . consult-register-store)
          ("C-M-#" . consult-register)
          ("M-y" . consult-yank-pop)
-         ("<help> a" . consult-apropos)
          ("M-g M-g" . consult-goto-line)
          ("M-g o" . consult-outline)
          ("M-g m" . consult-mark)
@@ -381,5 +381,66 @@
 
 (bind-key "C-S-p" 'move-line-up)
 (bind-key "C-S-n" 'move-line-down)
+
+(defun bob/make-frame-a-list ()
+  (cl-remove-if (lambda (frame)
+                  (eq (car frame)
+                      (frame-parameter nil 'name)))
+                (make-frame-names-alist)))
+
+(defvar bob/frame-name-history nil)
+(defun bob/select-frame-by-name (name)
+  "Select the frame whose name is NAME and raise it.
+Frames on the current terminal are checked first.
+If there is no frame by that name, signal an error."
+  (interactive
+   (let* ((frame-names-alist (bob/make-frame-a-list))
+           (default (car (car frame-names-alist)))
+           (input (completing-read
+                   (format-prompt "Select Frame" default)
+                   frame-names-alist nil t nil 'bob/frame-name-history)))
+     (if (= (length input) 0)
+         (list default)
+       (list input))))
+  (select-frame-set-input-focus
+   ;; Prefer frames on the current display.
+   (or (cdr (assoc name (bob/make-frame-a-list)))
+       (catch 'done
+         (dolist (frame (frame-list))
+           (when (equal (frame-parameter frame 'name) name)
+             (throw 'done frame))))
+       (error "There is no frame named `%s'" name))))
+
+(use-package beframe
+  :load-path "~/source/beframe/"
+  :demand t
+  :after consult
+  :config
+  (defvar consult-buffer-sources)
+  (declare-function consult--buffer-state "consult")
+  (defface beframe-buffer
+    '((t :inherit font-lock-string-face))
+    "Face for `consult' framed buffers.")
+  (defvar beframe-consult-source
+    `( :name     "Frame-specific buffers (current frame)"
+       :narrow   ?F
+       :category buffer
+       :face     beframe-buffer
+       :history  beframe-history
+       :items    ,(lambda () (remove (buffer-name) (beframe-buffer-names)))
+       :action   ,#'switch-to-buffer
+       :state    ,#'consult--buffer-state))
+
+  (add-to-list 'consult-buffer-sources 'beframe-consult-source)
+  (define-key global-map (kbd "C-c b") beframe-prefix-map)
+  ;; (setq beframe-functions-in-frames '(project-prompt-project-dir))
+  (setq beframe-functions-in-frames '())
+  (setq beframe-global-buffers '("*Messages*"))
+  (beframe-mode 1)
+  :bind
+
+  (:map beframe-prefix-map
+        ("r" . beframe-rename-frame)
+        ("o" . select-frame-by-name)))
 
 (provide 'navigation)
