@@ -46,12 +46,4 @@
   :disabled t
   :if (display-graphic-p))
 
-(use-package nerd-icons
-  :demand t)
-
-(use-package nerd-icons-dired
-  :after nerd-icons
-  :hook
-  (dired-mode . nerd-icons-dired-mode))
-
 (provide 'appearance)

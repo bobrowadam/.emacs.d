@@ -17,19 +17,14 @@
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
 
-(use-package all-the-icons
-  :custom
-  (setq all-the-icons-dired-monochrome nil))
+(use-package all-the-icons :demand t)
 
 (use-package all-the-icons-dired
-  :disabled t
+  :demand t
+  :custom
+  (setq all-the-icons-dired-monochrome nil)
   :after (dired)
   :hook (dired-mode . all-the-icons-dired-mode))
-
-(use-package nerd-icons-dired
-  :demand t
-  :hook
-  (dired-mode . nerd-icons-dired-mode))
 
 (use-package diredfl
   :hook
@@ -139,7 +134,7 @@
                  (ibuffer-do-sort-by-recency)))))
 
 (use-package all-the-icons-ibuffer
-  :disabled t
+  :demand t
   :init (all-the-icons-ibuffer-mode 1)
   :custom (all-the-icons-ibuffer-formats '((mark modified read-only locked " "
                                                  (icon 2 2)
@@ -154,10 +149,6 @@
                                                  (mode+ 16 16 :left :elide)
                                                  " " filename-and-process+)
                                            )))
-
-(use-package nerd-icons-ibuffer
-  :demand t
-  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 (use-package ibuffer-vc
   :demand
