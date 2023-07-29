@@ -22,7 +22,7 @@
   (format "%s session ended at %s and lasted %s"
           suffix
           (format-time-string "%Y-%m-%d %H:%M:%S" (car session-uptime))
-          (seconds-to-string (cdr session-uptime))))
+          (format-seconds "%D %H %M %S %z" (cdr session-uptime))))
 
 (defun read-sessions-file ()
   (read (format "(%s)" (f-read emacs-uptime-file))))
