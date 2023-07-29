@@ -45,23 +45,17 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
- (front-context-string . "* scratch sessio")
- (rear-context-string . " Order fat meds\n")
- (position . 443)
- (last-modified 25790 5215 887620 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20230726105335-plan_ahead.org")
+ (front-context-string . "\nService for man")
+ (rear-context-string . "tle: plan-ahead\n")
+ (position . 88)
+ (last-modified 25792 53533 841839 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")
  (rear-context-string . "84 Jun 22 10:03 ")
  (position . 614)
  (last-modified 25354 26352 493624 0))
-("notes"
- (filename . "~/Documents/notes/")
- (front-context-string . "20220805T235642-")
- (rear-context-string . "15 Aug  5 23:56 ")
- (position . 220)
- (last-modified 25325 34337 256875 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
