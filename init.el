@@ -1,11 +1,12 @@
 (setq lexical-binding t)
+(setq gc-cons-threshold-before-init gc-cons-threshold)
 (setq gc-cons-threshold 10000000)
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq gc-cons-threshold 800000)
+            (setq gc-cons-threshold gc-cons-threshold-before-init)
             (message "Emacs ready in %s with %d garbage collections."
                      (format "%.2f seconds"
                              (float-time
