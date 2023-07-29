@@ -33,8 +33,10 @@
   :bind ("M-!" . shell-command+))
 
 (use-package aweshell
-  :demand t
+  :disabled t
   :load-path "~/source/aweshell"
   :bind ("C-!" . aweshell-toggle))
+
+(use-package eat)
 
 (provide 'setup-shell)
