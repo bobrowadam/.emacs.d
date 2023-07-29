@@ -312,7 +312,8 @@
 (use-package elfeed
   :init
   (setq elfeed-feeds
-        '(("https://feeds.resonaterecordings.com/software-unscripted" programming)
+        '(("https://www.haaretz.co.il/srv/rss---feedly" news politics haaretz)
+          ("https://feeds.resonaterecordings.com/software-unscripted" programming)
           ("https://feeds.buzzsprout.com/1887966.rss" politics)
           ("https://www.omnycontent.com/d/playlist/2ee97a4e-8795-4260-9648-accf00a38c6a/5e87674c-9ff9-4a34-87ea-adb8010d232e/dae4c5e9-ceed-4d7d-a7c5-adb900952d20/podcast.rss" comedy politics)
           ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
