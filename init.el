@@ -15,11 +15,8 @@
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")
-        ("melpa-stable" . "https://stable.melpa.org/packages/")))
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+        ("melpa-stable" . "https://stable.melpa.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
 (setq package-native-compile t)
 (setq use-package-always-defer t)
