@@ -148,6 +148,19 @@ to directory DIR."
         (when (project-current)
           (project-root (project-current)))))))
 
-(provide 'bobs-utils)
+(defun bob/reset-emacs-state ()
+  "Reset emacs state to initial state, keeping only Messages and Scratch buffers."
+  (interactive)
+  (mapc 'kill-buffer (buffer-list))
+  (mapc 'kill-buffer (delq (get-buffer "*Messages*") (buffer-list)))
+  (delete-other-windows)
+  (setq initial-buffer-choice t)
+  (setq initial-scratch-message ""))
 
-(nth 2 (buffer-list))
+(defun bob/rotate-list (list)
+  "Take a list an rotate it such that:
+(rotate (1 2 3 4)) => (4 1 2 3)"
+  (cons (car (last list))
+        (butlast list)))
+
+(provide 'bobs-utils)
