@@ -56,14 +56,15 @@
   :ensure nil
   :bind
   (("C-x p w" . project-switch-to-open-project)
-   ("C-x p s" . bob/project-vterm)
+   ;; ("C-x p s" . bob/project-vterm)
+   ("C-x p s" . eat-project)
    ("C-x p m"  . magit-project-status)
    ("C-x p C-m"  . project-dired))
   :init
   (setq project-switch-commands
         '((consult-project-extra-find "Find file")
           (project-dired "Find directory")
-          (bob/project-vterm "Vterm")
+          (eat-project "Eat" "s")
           (magit-project-status "Magit" "g")
           (consult-ripgrep "Grep" "r")
           (project-ibuffer "Ibuffer" "b")

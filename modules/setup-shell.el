@@ -16,6 +16,7 @@
   :demand t)
 
 (use-package vterm
+  :disabled t
   :demand t
   :after (startup shell-defuns)
   :if (window-system)
@@ -37,6 +38,10 @@
   :load-path "~/source/aweshell"
   :bind ("C-!" . aweshell-toggle))
 
-(use-package eat)
+(use-package eat
+  :demand t
+  :bind
+  ("C-!" . eat)
+  ("C-c s j" . bob/jump-to-shell))
 
 (provide 'setup-shell)
