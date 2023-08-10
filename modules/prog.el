@@ -72,8 +72,7 @@
                 (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
            (switch-to-prev-buffer))
           (t
-           (with-temporary-node-version
-               (let ((compilation-command (if debug-mode
+           (let ((compilation-command (if debug-mode
                                               (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
                                                       (get--available-inspect-port)
                                                       (project-name (project-current)))
@@ -81,7 +80,7 @@
                                                     (project-name (project-current))))))
                  (compilation-start compilation-command
                                     t (lambda (mode)
-                                        compilation-buffer-name))))))))
+                                        compilation-buffer-name)))))))
 
 (defun npm-install-project (&optional force)
   "NPM install in project.
@@ -97,8 +96,7 @@ before running 'npm install'."
       (unwind-protect (delete-directory (concat default-directory "node_modules") t))
       (message "verifying NPM's cache")
       (apply #'call-process "node" nil 0 nil '("verify")))
-    (with-temporary-node-version
-        (compilation-start "npm i"))
+    (compilation-start "npm i")
     (split-window-horizontally)
     (switch-to-buffer (get-buffer "*npm-install-output*"))))
 
@@ -339,12 +337,12 @@ before running 'npm install'."
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package tree-sitter
-  :hook ((js2-mode typescript-mode c-mode c++-mode rust-mode json-mode web-mode) . tree-sitter-hl-mode)
+  :hook ((js2-mode typescript-mode c-mode c++-mode rust-mode json-mode) . tree-sitter-hl-mode)
   :ensure t)
 
 (use-package tree-sitter-langs
   :init
-  (add-to-list 'tree-sitter-major-mode-language-alist (cons 'web-mode 'tsx))
+  (add-to-list 'tree-sitter-major-mode-language-alist (cons 'web-mode 'html))
   :ensure t
   :after tree-sitter)
 

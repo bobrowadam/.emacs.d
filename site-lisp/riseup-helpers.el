@@ -63,12 +63,10 @@ This is used for 'clone-riseup-repo'")
 
 (defun import-customer (customer-id)
   (interactive "N")
-  (with-temporary-node-version
-   "12"
-   (let ((default-directory (format "%s/source/services/catapult" (getenv "HOME")))) 
+  (let ((default-directory (format "%s/source/services/catapult" (getenv "HOME"))))
      (async-shell-command (format "npm run import-customer %s" customer-id)
                           "*import-customer-output-buffer*"
-                          "*import-customer-error-buffer*"))))
+                          "*import-customer-error-buffer*")))
 
 (defun browse-customer-in-mamadmin (&optional project)
   "Browse riseup customer in mamadmin"

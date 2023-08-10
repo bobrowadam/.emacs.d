@@ -1,8 +1,8 @@
 (use-package hl-line
+  :disabled t
   :defer 10
   :config
   (global-hl-line-mode))
-
 
 (setq user-login-name "Adam Bobrow"
       undo-limit (* 1024 1000) ;; 1 Mb seems OK
@@ -38,7 +38,8 @@
       visible-bell nil
       enable-local-variables :safe)
 
-(setq initial-scratch-message (print-sessions-duration (read-sessions-file)))
+(when (fboundp 'print-sessions-duration)
+  (setq initial-scratch-message (print-sessions-duration (read-sessions-file))))
 (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
 (when (boundp 'pixel-scroll-precision-mode)

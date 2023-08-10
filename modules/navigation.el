@@ -275,8 +275,9 @@
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
 (use-package tramp
+  :demand t
   :ensure nil
-  :init (setq tramp-verbose 6)
+  :init (setq tramp-verbose 8)
   :config
   (setq tramp-password-prompt-regexp
         (concat
@@ -296,14 +297,13 @@
                "\\bastion\\'")
   (add-to-list 'tramp-default-proxies-alist
                '("bob$" nil "/sshx:bastion:"))
-  (setq remote-file-name-inhibit-cache 3600
+  (setq remote-file-name-inhibit-locks t
+        remote-file-name-inhibit-cache 3600
         tramp-completion-reread-directory-timeout nil
-        vc-ignore-dir-regexp (format "%s\\|%s"
+        vc-ignore-dir-regexp (format "\\(%s\\)\\|\\(%s\\)"
                                      vc-ignore-dir-regexp
                                      tramp-file-name-regexp))
   (setq tramp-histfile-override t)
-  ;; Save backup files locally
-  ;; from https://stackoverflow.com/a/47021266
   (add-to-list 'backup-directory-alist
                (cons tramp-file-name-regexp "/tmp/emacs-backup/")))
 
@@ -331,6 +331,7 @@
   :bind ("C-c w" . elfeed))
 
 (use-package elfeed-webkit
+  :disabled t
   :after elfeed
   :demand t
   :config (elfeed-webkit-enable))
@@ -340,27 +341,26 @@
   :init
   (control-mode-default-setup))
 
-
-(defun my-god-mode-update-mode-line ()
-  (cond
-   (god-local-mode
-    (set-face-attribute 'mode-line nil
-                        :foreground "#604000"
-                        :background "#fff29a")
-    (set-face-attribute 'mode-line-inactive nil
-                        :foreground "#3f3000"
-                        :background "#fff3da"))
-   (t
-    (set-face-attribute 'mode-line nil
-                        :foreground "#0a0a0a"
-                        :background "#d7d7d7")
-    (set-face-attribute 'mode-line-inactive nil
-                        :foreground "#404148"
-                        :background "#efefef"))))
-
 ;; This mode is similar to "control-mode" but more opinionated
 (use-package god-mode
+  :disabled t
   :init
+  (defun my-god-mode-update-mode-line ()
+    (cond
+     (god-local-mode
+      (set-face-attribute 'mode-line nil
+                          :foreground "#604000"
+                          :background "#fff29a")
+      (set-face-attribute 'mode-line-inactive nil
+                          :foreground "#3f3000"
+                          :background "#fff3da"))
+     (t
+      (set-face-attribute 'mode-line nil
+                          :foreground "#0a0a0a"
+                          :background "#d7d7d7")
+      (set-face-attribute 'mode-line-inactive nil
+                          :foreground "#404148"
+                          :background "#efefef"))))
   :bind ("C-z" . god-mode-all)
   :hook (post-command-hook . #'my-god-mode-update-mode-line))
 

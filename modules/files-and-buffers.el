@@ -17,8 +17,6 @@
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
 
-(use-package all-the-icons :demand t)
-
 (use-package all-the-icons-dired
   :demand t
   :custom

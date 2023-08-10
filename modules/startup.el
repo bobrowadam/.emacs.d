@@ -35,7 +35,7 @@
 
 (use-package fnm
   :after (exec-path-from-shell)
-  :defer 10
+  :demand t
   :config (fnm-use)
   :load-path "~/source/fnm.el"
   :ensure nil)
@@ -74,5 +74,12 @@
 
 (use-package scratch-pop
   :bind ("C-c r" . scratch-pop))
+
+(use-package emacs-uptime
+  :demand t
+  :load-path "./site-lisp"
+  :config
+  (emacs-uptime/start-timer)
+  :ensure nil)
 
 (provide 'startup)

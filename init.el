@@ -135,13 +135,6 @@
               ("C-x C-=" . xwidget-webkit-zoom-in)
               ("f" . xwwp-follow-link)))
 
-(use-package emacs-uptime
-  :defer 30
-  :load-path "./site-lisp"
-  :config
-  (emacs-uptime/start-timer)
-  :ensure nil)
-
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)

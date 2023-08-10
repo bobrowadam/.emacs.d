@@ -6,19 +6,33 @@
 (set-frame-font "FiraCode Nerd Font 19")
 (add-to-list 'default-frame-alist
              '(font . "FiraCode Nerd Font 19"))
+
+(defun remote-config-p ()
+  (and (boundp 'remote-mode) remote-mode))
+
 (use-package material-theme
   :disabled t
   :config (load-theme 'material :no-confirm))
 
 (use-package modus-themes
+  :demand t
   :config
   (setq modus-vivendi-palette-overridesd
-      '((fg-main "#333333")
-        (comment red-faint)
-        (keyword cyan-cooler))))
+          '((fg-main "#333333")
+            (comment red-faint)
+            (keyword cyan-cooler)))
+    (if (remote-config-p)
+        (modus-themes-select 'modus-operandi-tinted)
+      (modus-themes-select 'modus-vivendi-tinted)))
+
+(use-package spacious-padding
+  :unless (remote-config-p)
+  :demand t
+  :config (spacious-padding-mode 1))
 
 (use-package ef-themes
-  :demand t
+  :unless (remote-config-p)
+  :disabled t
   :config
   (ef-themes-select 'ef-elea-dark))
 
@@ -30,6 +44,7 @@
   :hook (prog-mode . highlight-indent-guides-mode))
 
 (use-package moody
+  :when (remote-config-p)
   :demand t
   :config
   (setq x-underline-at-descent-line t)
@@ -38,12 +53,19 @@
   (moody-replace-eldoc-minibuffer-message-function))
 
 (use-package minions
+  :when (remote-config-p)
   :demand t
   :config
   (minions-mode 1))
 
-(use-package all-the-icons
-  :disabled t
+(use-package all-the-icons :demand t
   :if (display-graphic-p))
+
+(use-package bobs-modeline
+  :after modus-themes
+  :unless (remote-config-p)
+  :ensure nil
+  :demand t
+  :load-path "~/source/bobs-modeline/")
 
 (provide 'appearance)
