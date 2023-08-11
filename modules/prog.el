@@ -405,6 +405,7 @@ before running 'npm install'."
 (use-package git-link)
 
 (use-package copilot
+  :disabled t
   :after fnm
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
