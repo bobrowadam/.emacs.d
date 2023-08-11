@@ -277,7 +277,7 @@
 (use-package tramp
   :demand t
   :ensure nil
-  :init (setq tramp-verbose 8)
+  :init (setq tramp-verbose 1)
   :config
   (setq tramp-password-prompt-regexp
         (concat
