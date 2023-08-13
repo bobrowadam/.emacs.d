@@ -29,8 +29,10 @@
   (dired-mode . diredfl-mode))
 
 (use-package dired-rsync
+  :custom
+  (dired-rsync-options "-az --progress")
   :init
-  (setq dired-rsync-passphrase-stall-regex "Verification code")
+  (setq dired-rsync-passphrase-stall-regex "^.+password: \\|Verification code.*")
   :bind (:map dired-mode-map ("C-c C-r" . dired-rsync)))
 
 (defun ediff-copy-both-to-C ()
