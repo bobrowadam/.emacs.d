@@ -87,9 +87,12 @@
   :demand t
   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("shell-maker.el")))
 
+(use-package pcsv
+  :demand t)
+
 (use-package chatgpt-shell
   :defer 10
-  :after shell-maker
+  :after shell-maker pcsv
   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("chatgpt-shell.el"))
   :config
   (setq chatgpt-shell-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
