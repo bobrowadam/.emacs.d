@@ -13,6 +13,17 @@
   (setq default-directory dir)
   (magit-fetch-all-prune))
 
+(defun bob/refresh-vc-state-in-changed-buffers ()
+  (let* ((repo-dir (magit-toplevel))
+         (changed-files (magit-changed-files
+                         (concat (magit-rev-parse "HEAD~1")
+                                 "..HEAD"))))
+    (dolist (file (mapcar (lambda (f) (concat repo-dir f)) changed-files))
+      (let ((buffer (get-file-buffer file)))
+        (when buffer
+          (with-current-buffer buffer
+            (vc-refresh-state)))))))
+
 (use-package magit
   :demand t
   :ensure t
@@ -21,6 +32,7 @@
   ("C-c s g" . bob/magit-buffers)
   :init
   (use-package with-editor :ensure t)
+  (add-hook 'git-commit-post-finish-hook 'bob/refresh-vc-state-in-changed-buffers)
   :config
   (setq magit-diff-refine-hunk 'all
         transient-default-level 7
