@@ -14,6 +14,7 @@
   (magit-fetch-all-prune))
 
 (defun bob/refresh-vc-state-in-changed-buffers ()
+  (print "in bob/refresh-vc-state-in-changed-buffers")
   (let* ((repo-dir (magit-toplevel))
          (changed-files (magit-changed-files
                          (concat (magit-rev-parse "HEAD~1")
@@ -34,6 +35,9 @@
   :init
   (use-package with-editor :ensure t)
   (add-hook 'git-commit-post-finish-hook 'bob/refresh-vc-state-in-changed-buffers)
+  (add-hook 'magit-post-stage-hook 'bob/refresh-vc-state-in-changed-buffers)
+  (add-hook 'magit-post-unstage-hook 'bob/refresh-vc-state-in-changed-buffers)
+  (add-hook 'magit-refresh-buffer-hook 'bob/refresh-vc-state-in-changed-buffers)
   :config
   (setq magit-diff-refine-hunk 'all
         transient-default-level 7
