@@ -22,7 +22,8 @@
       (let ((buffer (get-file-buffer file)))
         (when buffer
           (with-current-buffer buffer
-            (vc-refresh-state)))))))
+            (vc-refresh-state)
+            (diff-hl-update)))))))
 
 (use-package magit
   :demand t
