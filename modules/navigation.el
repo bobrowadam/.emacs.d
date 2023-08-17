@@ -52,6 +52,11 @@
   (interactive)
   (browse-riseup-git-project (project-name (project-current))))
 
+(defun project-list-file-buffers ()
+  (interactive)
+  (project-list-buffers 1)
+  (pop-to-buffer "*Buffer List*"))
+
 (use-package project
   :ensure nil
   :bind
@@ -59,7 +64,8 @@
    ;; ("C-x p s" . bob/project-vterm)
    ("C-x p s" . eat-project)
    ("C-x p m"  . magit-project-status)
-   ("C-x p C-m"  . project-dired))
+   ("C-x p C-m"  . project-dired)
+   ("C-x p i" . #'project-list-file-buffers))
   :init
   (setq project-switch-commands
         '((consult-project-extra-find "Find file")
