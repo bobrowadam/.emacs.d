@@ -171,4 +171,12 @@ to directory DIR."
   (cons (car (last list))
         (butlast list)))
 
+(defun seq-partition-by (element->bool sequence)
+  "Split the SEQUENCE by a applying ELEMENT->BOOL on each element in SEQUENCE. "
+  (let ((groups (seq-group-by
+                 (lambda (elt) (if (funcall element->bool elt) t nil))
+                 sequence)))
+    (mapcar (lambda (group) (cdr group))
+            groups)))
+
 (provide 'bobs-utils)
