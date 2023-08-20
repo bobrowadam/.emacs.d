@@ -106,6 +106,14 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
              (shell-command (format "kill %s" (s-join " " process))))
       (message "No inspect processes found"))))
 
+(defun kill-process-by-regex ()
+  (interactive)
+  (-let ((process (get--processes-by-string (read-string "Enter regex: "))))
+    (if process
+      (progn (message "Found processes: %s, killing them now" process)
+             (shell-command (format "kill %s" (s-join " " process))))
+      (message "No processes found"))))
+
 (defun run-cl-asana (arg)
   "Run cl-asana to update the local org-asana file."
   (interactive "P")
