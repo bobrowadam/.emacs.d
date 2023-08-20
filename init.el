@@ -138,6 +138,8 @@
               ("C-x C-=" . xwidget-webkit-zoom-in)
               ("f" . xwwp-follow-link)))
 
+(use-package uuid)
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
