@@ -61,3 +61,4 @@ transient/*
 /codeium/codeium_language_server
 /chatgpt/
 /.emacs-uptime
+/tree-sitter/
