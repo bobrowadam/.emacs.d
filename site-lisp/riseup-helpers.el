@@ -180,4 +180,21 @@ Else, just look for the given string."
       (s-matches-p (assocdr 'build (assocdr 'scripts package-json))
                "./node_modules/typescript/bin/tsc")))
 
+(defun riseup--dependencies ()
+  "Returns a list of a riseup node project dependencies"
+  (if-let* ((project (project-current))
+            (default-directory (project-root project))
+            (package-json (json-parse-string (read-file "package.json")
+                                             :object-type 'alist)))
+      (-filter (lambda (str) (s-starts-with? "@riseupil" str))
+         (mapcar 'symbol-name (mapcar 'car (assocdr 'dependencies package-json))))))
+
+(defun link-riseup-project ()
+  "Use NPM link to link a @riseupil/* dependencies.
+The target library should be globally linked"
+  (interactive)
+  (if-let ((dependency (completing-read "Pick a package to link" (riseup--dependencies))))
+    (async-shell-command (format "npm link %s" dependency)
+                         "*npm-link-output-buffer*"
+                         "*npm-link-error-buffer*")))
 (provide 'riseup-helpers)
