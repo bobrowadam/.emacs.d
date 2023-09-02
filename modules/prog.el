@@ -58,29 +58,30 @@
 (defun npm-run (&optional debug-mode)
   "Debug typescript project on watch mode"
   (interactive "P")
-  (let ((default-directory (project-root (project-current t)))
-        (comint-scroll-to-bottom-on-input t)
-        (comint-scroll-to-bottom-on-output t)
-        (comint-process-echoes t)
-        (compilation-buffer-name (format "TS-COMPILE -- %s"
-                                         (get-dir-name (nth 2 (project-current))))))
-    (cond ((and (eq major-mode 'typescript-mode)
-                (car (memq (get-buffer compilation-buffer-name)
-                           (buffer-list))))
-           (switch-to-buffer (get-buffer compilation-buffer-name)))
-          ((and (eq major-mode 'comint-mode)
-                (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
-           (switch-to-prev-buffer))
-          (t
-           (let ((compilation-command (if debug-mode
-                                              (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
-                                                      (get--available-inspect-port)
-                                                      (project-name (project-current)))
-                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2  -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
-                                                    (project-name (project-current))))))
-                 (compilation-start compilation-command
-                                    t (lambda (mode)
-                                        compilation-buffer-name)))))))
+  (when (is--typescript-project)
+    (let ((default-directory (project-root (project-current t)))
+          (comint-scroll-to-bottom-on-input t)
+          (comint-scroll-to-bottom-on-output t)
+          (comint-process-echoes t)
+          (compilation-buffer-name (format "TS-COMPILE -- %s"
+                                           (get-dir-name (nth 2 (project-current))))))
+      (cond ((and (not (eq major-mode 'comint-mode))
+                  (car (memq (get-buffer compilation-buffer-name)
+                             (buffer-list))))
+             (switch-to-buffer (get-buffer compilation-buffer-name)))
+            ((and (eq major-mode 'comint-mode)
+                  (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
+             (switch-to-prev-buffer))
+            (t
+             (let ((compilation-command (if debug-mode
+                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
+                                                    (get--available-inspect-port)
+                                                    (project-name (project-current)))
+                                          (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2  -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
+                                                  (project-name (project-current))))))
+               (compilation-start compilation-command
+                                  t (lambda (mode)
+                                      compilation-buffer-name))))))))
 
 (defun npm-install-project (&optional force)
   "NPM install in project.
@@ -106,11 +107,9 @@ before running 'npm install'."
   (typescript-mode . eldoc-mode)
   (typescript-mode . fnm-use)
   :bind
-  (:map typescript-mode-map ("C-c C-b" . npm-run-build))
-  (:map dired-mode-map ("C-c C-b" . npm-run-build))
-  (:map magit-mode-map ("C-c C-b" . npm-run-build))
-  (:map typescript-mode-map ("C-c C-r" . npm-run))
-  (:map comint-mode-map ("C-c C-b" . npm-run-build))
+  ("C-c C-b" . npm-run-build)
+  ("C-c C-r" . npm-run)
+  
 
   :config
   (setq-default typescript-indent-level 2))
