@@ -14,7 +14,6 @@
   (magit-fetch-all-prune))
 
 (defun bob/refresh-vc-state-in-changed-buffers ()
-  (print "in bob/refresh-vc-state-in-changed-buffers")
   (let* ((repo-dir (magit-toplevel))
          (changed-files (magit-changed-files
                          (concat (magit-rev-parse "HEAD~1")
@@ -97,6 +96,8 @@
                                     :is_template repo-is_template))
     (magit-remote-add "origin" (format "git@github.com:bobrowadam/%s.git" repo-name))
     (magit-push-current-to-pushremote `("-u" "origin" ,(magit-get-current-branch)))))
+
+(use-package gh)
 
 (provide 'setup-magit)
 
