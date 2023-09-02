@@ -4,9 +4,10 @@
 
 (defun read-file (file-name)
   "Return the contents of FILE-NAME as a lisp data type."
-  (with-temp-buffer
-    (insert-file-contents file-name)
-    (buffer-string)))
+  (when (file-exists-p file-name)
+   (with-temp-buffer
+     (insert-file-contents file-name)
+     (buffer-string))))
 
 (defun random-alnum ()
   (let* ((alnum "abcdefghijklmnopqrstuvwxyz0123456789")
@@ -103,7 +104,9 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
   (-let ((process (get--processes-by-string "inspect")))
     (if process
       (progn (message "Found inspect processes: %s, killing them now" process)
-             (shell-command (format "kill %s" (s-join " " process))))
+             (when (equal (shell-command (format "kill %s" (s-join " " process)))
+                          0)
+               (message "Killed inspect processes: %s" process)))
       (message "No inspect processes found"))))
 
 (defun kill-process-by-regex ()
@@ -111,7 +114,9 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
   (-let ((process (get--processes-by-string (read-string "Enter regex: "))))
     (if process
       (progn (message "Found processes: %s, killing them now" process)
-             (shell-command (format "kill %s" (s-join " " process))))
+             (when (equal (shell-command (format "kill %s" (s-join " " process)))
+                          0)
+               (message "Killed processes: %s" process)))
       (message "No processes found"))))
 
 (defun run-cl-asana (arg)
@@ -156,14 +161,24 @@ to directory DIR."
         (when (project-current)
           (project-root (project-current)))))))
 
+(defun kill--all-shell-buffers ()
+  (loop for buffer in (buffer-list)
+        do
+        (when (buffer-match-p '(derived-mode . comint-mode) buffer)
+          (kill-buffer buffer))))
+
 (defun bob/reset-emacs-state ()
   "Reset emacs state to initial state, keeping only Messages and Scratch buffers."
   (interactive)
-  (mapc 'kill-buffer (buffer-list))
+  (tramp-cleanup-all-buffers)
+  (tramp-cleanup-all-connections)
+  (kill--all-shell-buffers)
+  ;; (mapc 'kill-buffer (buffer-list))
   (mapc 'kill-buffer (delq (get-buffer "*Messages*") (buffer-list)))
   (delete-other-windows)
   (setq initial-buffer-choice t)
-  (setq initial-scratch-message ""))
+  (setq initial-scratch-message (print-sessions-duration (read-sessions-file)))
+  (scratch-buffer))
 
 (defun bob/rotate-list (list)
   "Take a list an rotate it such that:
