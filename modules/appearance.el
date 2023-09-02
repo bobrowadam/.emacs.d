@@ -10,10 +10,6 @@
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))
 
-(use-package material-theme
-  :disabled t
-  :config (load-theme 'material :no-confirm))
-
 (use-package modus-themes
   :demand t
   :config
@@ -42,21 +38,6 @@
         highlight-indent-guides-responsive 'top
         highlight-indent-guides-auto-enabled t)
   :hook (prog-mode . highlight-indent-guides-mode))
-
-(use-package moody
-  :when (remote-config-p)
-  :demand t
-  :config
-  (setq x-underline-at-descent-line t)
-  (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode)
-  (moody-replace-eldoc-minibuffer-message-function))
-
-(use-package minions
-  :when (remote-config-p)
-  :demand t
-  :config
-  (minions-mode 1))
 
 (use-package all-the-icons :demand t
   :if (display-graphic-p))
