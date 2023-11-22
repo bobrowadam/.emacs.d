@@ -282,7 +282,6 @@
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
 (use-package tramp
-  :demand t
   :ensure nil
   :init (setq tramp-verbose 1)
   :config
