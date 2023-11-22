@@ -11,13 +11,15 @@
                      (format "%.2f seconds"
                              (float-time
                               (time-subtract after-init-time before-init-time)))
-                     gcs-done)))
+                     gcs-done)
+            (use-package-report)))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
         ("melpa" . "http://melpa.org/packages/")
         ("melpa-stable" . "https://stable.melpa.org/packages/")
-        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+        ("gnu-devel" . "https://elpa.gnu.org/devel/")))
 
 (setq package-native-compile t)
 (setq use-package-always-defer t)
@@ -62,7 +64,6 @@
 
 (use-package setup-magit
   :after startup
-  :defer 10
   :load-path "./modules")
 
 (use-package setup-org
@@ -71,9 +72,8 @@
   :load-path "./modules")
 
 (use-package setup-shell
-  :defer 10
-  :after startup
   :demand t
+  :after startup
   :load-path "./modules")
 
 (use-package sicp)
@@ -81,7 +81,7 @@
 (use-package riseup-helpers
   :demand t
   :ensure nil
-  :after (startup magit))
+  :after (startup))
 
 (use-package shell-maker
   :demand t
@@ -91,11 +91,21 @@
   :demand t)
 
 (use-package chatgpt-shell
-  :defer 10
+  :commands (chatgpt-shell chatgpt-shell-start)
   :after shell-maker pcsv
+  :custom
+  (chatgpt-shell-model-version 6)
+  (chatgpt-shell-model-versions '("gpt-3.5-turbo"
+                                  "gpt-3.5-turbo-0613"
+                                  "gpt-3.5-turbo-16k"
+                                  "gpt-3.5-turbo-16k-0613"
+                                  "gpt-4"
+                                  "gpt-4-0613"
+                                  "gpt-4-1106-preview"))
   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("chatgpt-shell.el"))
   :config
   (setq chatgpt-shell-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
+
   :bind
   ("C-c g" . chatgpt-shell))
 
@@ -138,7 +148,8 @@
               ("C-x C-=" . xwidget-webkit-zoom-in)
               ("f" . xwwp-follow-link)))
 
-(use-package uuid)
+(use-package uuid
+  :commands uuid-create)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)

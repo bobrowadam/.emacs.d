@@ -1,19 +1,10 @@
-(use-package inf-mongo
-  :after startup
-  :demand t
-  :load-path "~/source/inf-mongo/"
-  :hook
-  (inf-mongo-mode-hook . (lambda ()
-                      (progn
-                        (setq comint-input-ring-file-name "~/.dbshell")
-                        (setq-local comint-input-history-ignore "\\(^#\\)\\|\\(^INFMONGO.+\\)")
-                        (comint-read-input-ring 'silent)))))
+(use-package inf-mongo :after startup)
 
 (use-package shell-defuns
+  :demand t  
   :after startup
   :if (window-system)
-  :load-path "./site-lisp"
-  :demand t)
+  :load-path "./site-lisp")
 
 (use-package vterm
   :disabled t
@@ -39,7 +30,9 @@
   :bind ("C-!" . aweshell-toggle))
 
 (use-package eat
-  :demand t
+  :commands (eat bob/jump-to-shell)
+  :init
+  (setq eat-term-name "xterm-256color")
   :bind
   ("C-!" . eat)
   ("C-c s j" . bob/jump-to-shell))

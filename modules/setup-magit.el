@@ -26,7 +26,7 @@
             (diff-hl-update)))))))
 
 (use-package magit
-  :demand t
+  :commands (magit-status bob/magit-buffers)
   :ensure t
   :bind
   ("C-x g" . magit-status)
@@ -71,7 +71,6 @@
   :after magit)
 
 (use-package diff-hl
-  :demand t
   :config (global-diff-hl-mode))
 
 (use-package denote)

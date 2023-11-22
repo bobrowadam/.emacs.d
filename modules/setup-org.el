@@ -5,7 +5,7 @@
   :load-path "~/source/ob-mongo/")
 
 (use-package org
-  :defer 10
+  :commands (org-agenda)
   :ensure t
   :if (window-system)
   :init
@@ -119,7 +119,7 @@
                                      ("WRITE" . ?✍)
                                      ))
   (org-superstar-special-todo-items t)
-  (org-superstar-leading-bullet "░")
+  (org-superstar-leading-bullet " ")
   (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces)
   (org-hide-leading-stars nil))
 
@@ -168,6 +168,7 @@
   :bind
   ;; creates a node if it does not exist, and inserts a link to the node at point:
   ("C-c n i" . org-roam-node-insert)
+  ("C-c n t" . org-roam-dailies-goto-today)
   ("C-c n f" . org-roam-node-find)
   ("C-c n c" . org-roam-capture)
   ("C-c n b" . org-roam-buffer-toggle)

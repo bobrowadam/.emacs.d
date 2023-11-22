@@ -162,7 +162,7 @@ to directory DIR."
           (project-root (project-current)))))))
 
 (defun kill--all-shell-buffers ()
-  (loop for buffer in (buffer-list)
+  (cl-loop for buffer in (buffer-list)
         do
         (when (buffer-match-p '(derived-mode . comint-mode) buffer)
           (kill-buffer buffer))))
@@ -170,6 +170,7 @@ to directory DIR."
 (defun bob/reset-emacs-state ()
   "Reset emacs state to initial state, keeping only Messages and Scratch buffers."
   (interactive)
+  (eglot-shutdown-all)
   (tramp-cleanup-all-buffers)
   (tramp-cleanup-all-connections)
   (kill--all-shell-buffers)

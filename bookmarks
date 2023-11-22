@@ -46,10 +46,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
- (front-context-string . "* Create dedicat")
- (rear-context-string . "8-08 Tue 20:59]\n")
- (position . 528)
- (last-modified 25816 44055 513090 0))
+ (front-context-string . "* Send Yaniv mai")
+ (rear-context-string . "---------------\n")
+ (position . 426)
+ (last-modified 25947 5309 864846 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")

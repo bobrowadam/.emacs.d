@@ -1,5 +1,9 @@
 (use-package add-node-modules-path)
 (use-package flycheck)
+(use-package flycheck-eglot
+  :after (eglot)
+  :config
+  (global-flycheck-eglot-mode 1))
 
 (use-package flycheck-posframe
   :ensure t
@@ -55,16 +59,21 @@
     (lambda (p) (s-contains? "comint" (process-name p)))
     (process-list)))))
 
-(defun npm-run (&optional debug-mode)
-  "Debug typescript project on watch mode"
+(defun bob/compilation-buffer-name ()
+  (if-let ((projcet-path (nth 2 (project-current))))
+      (format "TS-COMPILE -- %s"
+           (get-dir-name projcet-path))))
+
+(defun npm-run (&optional normal-mode)
+  "Debug typescript project on watch mode
+NORMAL-MODE is for not running with debugger"
   (interactive "P")
   (when (is--typescript-project)
     (let ((default-directory (project-root (project-current t)))
           (comint-scroll-to-bottom-on-input t)
           (comint-scroll-to-bottom-on-output t)
           (comint-process-echoes t)
-          (compilation-buffer-name (format "TS-COMPILE -- %s"
-                                           (get-dir-name (nth 2 (project-current))))))
+          (compilation-buffer-name (bob/compilation-buffer-name)))
       (cond ((and (not (eq major-mode 'comint-mode))
                   (car (memq (get-buffer compilation-buffer-name)
                              (buffer-list))))
@@ -73,15 +82,25 @@
                   (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
              (switch-to-prev-buffer))
             (t
-             (let ((compilation-command (if debug-mode
-                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
+             (let ((compilation-command (if normal-mode
+                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
+                                                  (project-name (project-current)))
+                                          (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
                                                     (get--available-inspect-port)
-                                                    (project-name (project-current)))
-                                          (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2  -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
-                                                  (project-name (project-current))))))
+                                                    (project-name (project-current))))))
                (compilation-start compilation-command
                                   t (lambda (mode)
                                       compilation-buffer-name))))))))
+(defun bob/get-inspect-port ()
+  (or (if-let ((inspect-string 
+                (--find 
+                 (s-contains? "inspect" it)
+                 (split-string (assocdr
+                                'args 
+                                (process-attributes (process-id (get-buffer-process (bob/compilation-buffer-name)))))
+                               "\s"))))
+          (string-to-number (cadr (split-string inspect-string "="))))
+      9229))
 
 (defun npm-install-project (&optional force)
   "NPM install in project.
@@ -210,14 +229,15 @@ before running 'npm install'."
         ("M-?" . xref-find-references)
         ("C-c C-a" . eglot-code-actions))
   :hook
-  ((js2-mode typescript-mode web-mode python-mode) . eglot-ensure))
+  ((js2-mode typescript-mode web-mode python-mode rust-mode) . eglot-ensure))
 
 (use-package flymake
-  :hook
-  (typescript-mode . flymake-mode)
-  (js2-mode . flymake-mode)
-  :bind (:map flymake-mode-map
-              ("C-c !" . flymake-show-buffer-diagnostics)))
+  ;; :hook
+  ;; (typescript-mode . flymake-mode)
+  ;; (js2-mode . flymake-mode)
+  ;; :bind (:map flymake-mode-map
+  ;;             ("C-c !" . flymake-show-buffer-diagnostics))
+)
 
 (defun enable-flymake-after-eglot ()
   (progn (setq flymake-eslint-project-root (project-root (project-current t)))
@@ -266,7 +286,7 @@ before running 'npm install'."
   (common-lisp-mode . enable-paredit-mode)
   (lisp-mode . enable-paredit-mode)
   (lisp-data-mode . enable-paredit-mode)
-  (racket-mode . enable-paredit-mode)
+  ;; (racket-mode . enable-paredit-mode)
   ;; (eshell-mode  . enable-paredit-mode)
   :bind
   (:map paredit-mode-map
@@ -299,6 +319,8 @@ before running 'npm install'."
 
 (use-package yasnippet-snippets)
 (use-package yasnippet
+  :custom
+  (yas-wrap-around-region t)
   :hook
   (prog-mode-hook . yas-minor-mode-on)
   (emacs-lisp-mode . yas-minor-mode-on)
@@ -404,11 +426,9 @@ before running 'npm install'."
 (use-package git-link)
 
 (use-package copilot
-  :disabled t
   :after fnm
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
-  :hook ((git-commit-mode) . (lambda () (copilot-mode 1)))
   :bind (:map copilot-completion-map
               ("C-<tab>" . copilot-accept-completion)))
 
@@ -416,8 +436,99 @@ before running 'npm install'."
 (use-package clojure-mode)
 
 (use-package racket-mode
+  :disabled t
   :hook
   (racket-mode . racket-xp-mode)
   (racket-mode . flymake-racket-setup))
+
+(use-package dape
+  ;; Currently only on github
+  :straight (dape :type git :host github :repo "svaante/dape")
+  :custom
+  (dape--debug-on '())
+  :config
+  (add-to-list 'dape-configs
+               `(vscode-ts-js-launch
+                 modes (js-mode js-ts-mode typescript-mode)
+                 host "localhost"
+                 port 8123
+                 command "node"
+                 command-cwd "~/source/vscode-js-debug/dist/"
+                 command-args ("src/dapDebugServer.js" "8123")
+                 :type "pwa-node"
+                 :request "launch"
+                 :restart t
+                 :runtimeExecutable "nodemon"
+                 :cwd dape-cwd-fn
+                 :localRoot dape-cwd-fn
+                 :program dape-find-file-buffer-default
+                 :outputCapture "console"
+                 :outFiles: ["${workspaceFolder}/dist/**/*.js"]
+                 :sourceMapRenames t
+                 :pauseForSourceMap nil
+                 :enableContentValidation t
+                 :autoAttachChildProcesses t
+                 :console "internalConsole"
+                 :killBehavior "forceful"))
+
+  (add-to-list 'dape-configs
+               `(vscode-ts-js-attach
+                 modes (js-mode js-ts-mode typescript-mode)
+                 host "localhost"
+                 port 8123
+                 command "node"
+                 command-cwd "~/source/vscode-js-debug/dist/"
+                 command-args ("src/dapDebugServer.js" "8123")
+                 :port bob/get-inspect-port
+                 :sourceMaps t
+                 :resolveSourceMapLocations ["**/dist/**/*"]
+                 :cwd dape-cwd-fn
+                 :program dape-find-file-buffer-default
+                 :autoAttachChildProcesses t
+                 :type "pwa-node"
+                 :request "attach"
+                 :outputCapture "console"
+                 :sourceMapRenames t
+                 :autoAttachChildProcesses t
+                 :console "internalConsole"
+                 :killBehavior "forceful"))
+  (add-to-list 'dape-configs
+               `(vscode-ts-js-attach-chrome
+                 modes (js-mode js-ts-mode typescript-mode web-mode)
+                 host "localhost"
+                 port 8123
+                 command "node"
+                 command-cwd "~/source/vscode-js-debug/dist/"
+                 command-args ("src/dapDebugServer.js" "8123")
+                 :port 9229
+                 :sourceMaps t
+                 :resolveSourceMapLocations ["**/dist/**/*"]
+                 :cwd dape-cwd-fn
+                 :program dape-find-file-buffer-default
+                 :autoAttachChildProcesses t
+                 :type "chrom"
+                 :request "attach"
+                 :outputCapture "console"
+                 :sourceMapRenames t
+                 :autoAttachChildProcesses t
+                 :console "internalConsole"
+                 :killBehavior "forceful"))
+  ;; Add inline variable hints, this feature is highly experimental
+  (setq dape-inline-variables nil)
+
+  ;; To remove info buffer on startup
+  (remove-hook 'dape-on-start-hooks 'dape-info)
+
+  ;; To remove repl buffer on startup
+  (remove-hook 'dape-on-start-hooks 'dape-repl)
+
+  ;; By default dape uses gdb keybinding prefix
+  ;; (setq dape-key-prefix "\C-x\C-a")
+
+  ;; Use n for next etc. in REPL
+  (setq dape-repl-use-shorthand t)
+
+  ;; Kill compile buffer on build success
+  (add-hook 'dape-compile-compile-hooks 'kill-buffer))
 
 (provide 'prog)

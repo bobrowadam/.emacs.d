@@ -62,3 +62,5 @@ transient/*
 /chatgpt/
 /.emacs-uptime
 /tree-sitter/
+/semanticdb/
+/forge-database-v9-20231009-1133.sqlite

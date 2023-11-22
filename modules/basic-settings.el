@@ -1,6 +1,5 @@
 (use-package hl-line
   :disabled t
-  :defer 10
   :config
   (global-hl-line-mode))
 
@@ -132,7 +131,7 @@
 )
 
 (use-package wucuo
-  :demand t
+  :commands (wucuo-start)
   :custom
   (wucuo-personal-font-faces-to-check '(tree-sitter-hl-face:string
                                         tree-sitter-hl-face:comment
@@ -157,7 +156,7 @@
 (use-package iedit
   :bind ("C-;" . iedit-mode))
 (use-package vundo
-  :demand t
+  :commands (vundo)
   :bind ("C-x u" . vundo))
 
 ;; On my mac I accidentally zoomed in and out with my palm

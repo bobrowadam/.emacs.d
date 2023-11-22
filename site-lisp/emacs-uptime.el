@@ -45,7 +45,7 @@
 
 (defun emacs-uptime/start-timer ()
   (message "Start timer for 'save-emacs-uptime")
-  (run-with-timer (* 60 15) t 'save-emacs-uptime))
+  (run-with-timer 0 (* 60 15) 'save-emacs-uptime))
 
 
 (provide 'emacs-uptime)

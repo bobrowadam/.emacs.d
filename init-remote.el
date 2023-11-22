@@ -59,7 +59,6 @@
   :load-path "./modules")
 
 (use-package setup-shell
-  :defer 10
   :after startup
   :demand t
   :load-path "./modules")

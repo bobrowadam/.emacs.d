@@ -35,7 +35,6 @@
 
 (use-package fnm
   :after (exec-path-from-shell)
-  :demand t
   :config (fnm-use)
   :load-path "~/source/fnm.el"
   :ensure nil)
