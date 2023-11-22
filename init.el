@@ -11,8 +11,7 @@
                      (format "%.2f seconds"
                              (float-time
                               (time-subtract after-init-time before-init-time)))
-                     gcs-done)
-            (use-package-report)))
+                     gcs-done)))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
