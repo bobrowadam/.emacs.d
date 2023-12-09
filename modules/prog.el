@@ -1,11 +1,38 @@
-(use-package add-node-modules-path)
-(use-package flycheck)
-(use-package flycheck-eglot
-  :after (eglot)
+(use-package add-node-modules-path :demand t)
+
+(defun setup-flycheck-for-js-modes ()
+  (add-node-modules-path)
+  (flycheck-mode-on-safe)
+  (flycheck-eglot-mode))
+
+(defun enable-flycheck-after-eglot ()
+  (progn (setq temp-before-hook eglot-managed-mode-hook)
+         (add-hook 'eglot-managed-mode-hook
+                   #'setup-flycheck-for-js-modes)))
+
+(use-package flycheck
+  :commands (flycheck-mode-on-safe)
   :config
-  (global-flycheck-eglot-mode 1))
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (flycheck-add-mode 'javascript-eslint 'js2-mode)
+  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
+  :hook
+  (typescript-mode . enable-flycheck-after-eglot)
+  (js2-mode . enable-flycheck-after-eglot)
+  (web-mode . enable-flycheck-after-eglot))
+
+(use-package flycheck-eglot
+  :ensure t
+  :custom (flycheck-eglot-exclusive nil)
+  ;; :hook
+  ;; (typescript-mode . flycheck-eglot-mode)
+  ;; (js2-mode . flycheck-eglot-mode)
+  ;; (web-mode . flycheck-eglot-mode)
+)
+
 
 (use-package flycheck-posframe
+  :disabled t
   :ensure t
   :after flycheck
   :config (add-hook 'flycheck-mode-hook #'flycheck-posframe-mode))
@@ -92,15 +119,15 @@ NORMAL-MODE is for not running with debugger"
                                   t (lambda (mode)
                                       compilation-buffer-name))))))))
 (defun bob/get-inspect-port ()
-  (or (if-let ((inspect-string 
-                (--find 
-                 (s-contains? "inspect" it)
-                 (split-string (assocdr
-                                'args 
-                                (process-attributes (process-id (get-buffer-process (bob/compilation-buffer-name)))))
-                               "\s"))))
-          (string-to-number (cadr (split-string inspect-string "="))))
-      9229))
+  (if-let ((compilation-process (get-buffer-process (bob/compilation-buffer-name)))
+           (inspect-string (--find
+                            (s-contains? "inspect" it)
+                            (split-string (assocdr
+                                           'args
+                                           (process-attributes (process-id compilation-process)))
+                                          "\s"))))
+      (string-to-number (cadr (split-string inspect-string "=")))
+    9229))
 
 (defun npm-install-project (&optional force)
   "NPM install in project.
@@ -116,6 +143,7 @@ before running 'npm install'."
       (unwind-protect (delete-directory (concat default-directory "node_modules") t))
       (message "verifying NPM's cache")
       (apply #'call-process "node" nil 0 nil '("verify")))
+    (fnm-use)
     (compilation-start "npm i")
     (split-window-horizontally)
     (switch-to-buffer (get-buffer "*npm-install-output*"))))
@@ -128,7 +156,7 @@ before running 'npm install'."
   :bind
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
-  
+
 
   :config
   (setq-default typescript-indent-level 2))
@@ -193,6 +221,8 @@ before running 'npm install'."
   (setq web-mode-enable-auto-indentation nil)
   (setq web-mode-enable-auto-expanding t)
   :bind (:map web-mode-map
+              ("C-M-f" . web-mode-forward-sexp)
+              ("C-M-b" . web-mode-backward-sexp)
               ("C-c C-t C-n" . web-mode-tag-next)
               ("C-c C-t C-p" . web-mode-tag-previous)
               ("C-c C-t C-m" . web-mode-tag-match)
@@ -231,23 +261,6 @@ before running 'npm install'."
   :hook
   ((js2-mode typescript-mode web-mode python-mode rust-mode) . eglot-ensure))
 
-(use-package flymake
-  ;; :hook
-  ;; (typescript-mode . flymake-mode)
-  ;; (js2-mode . flymake-mode)
-  ;; :bind (:map flymake-mode-map
-  ;;             ("C-c !" . flymake-show-buffer-diagnostics))
-)
-
-(defun enable-flymake-after-eglot ()
-  (progn (setq flymake-eslint-project-root (project-root (project-current t)))
-         (setq flymake-eslint-executable-name (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
-         (setq temp-before-hook eglot-managed-mode-hook)
-         (add-hook 'eglot-managed-mode-hook
-                   (lambda ()
-                     (flymake-eslint-enable)
-                     (setq eglot-managed-mode-hook nil)))))
-
 (defun eslint-fix ()
     "Format the current file with ESLint."
     (interactive)
@@ -260,19 +273,19 @@ before running 'npm install'."
 
     (let* ((default-directory (project-root (project-current t)))
            ;; (eslint-fix-executable "eslint")
-           (eslint (format "%snode_modules/.bin/eslint" flymake-eslint-project-root))
+           (eslint (format "%snode_modules/.bin/eslint" default-directory))
            (options (list "--fix" buffer-file-name)))
       (unless eslint
         (error "Executable ‘%s’ not found" eslint-fix-executable))
       (apply #'call-process eslint nil 0 nil options)
       (revert-buffer nil t t)))
 
-(use-package flymake-eslint
-  :after (eglot)
-  :hook
-  (typescript-mode . enable-flymake-after-eglot)
-  (js2-mode . enable-flymake-after-eglot)
-  (web-mode . enable-flymake-after-eglot))
+;; (use-package flymake-eslint
+;;   :after (eglot)
+;;   :hook
+;;   (typescript-mode . enable-flymake-after-eglot)
+;;   (js2-mode . enable-flymake-after-eglot)
+;;   (web-mode . enable-flymake-after-eglot))
 
 (defadvice enable-paredit-mode (after activate)
   (smartparens-mode -1))
