@@ -73,7 +73,6 @@
 (use-package diff-hl
   :config (global-diff-hl-mode))
 
-(use-package denote)
 (use-package vc
   :ensure nil
   :bind ("C-x v p" . vc-pull))
@@ -83,7 +82,7 @@
 (defun create-github-repo ()
   "Create a new Github repo using the Github API."
   (interactive)
-  (let ((repo-name (read-string "Repo name: "))
+  (let ((repo-name (read-string "Repo name: " (get-dir-name (project-root (project-current)))))
         (repo-description (read-string "Repo description: "))
         (repo-homepage (read-string "Repo homepage: "))
         (is-repo-private (yes-or-no-p "Is Repo private: "))

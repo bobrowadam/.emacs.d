@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("files-and-buffers.el"
+(("denote"
+ (filename . "~/denote/")
+ (front-context-string . "20231204T232526-")
+ (rear-context-string . "77 Dec  4 23:41 ")
+ (position . 212)
+ (last-modified 25966 18579 296899 0))
+("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
  (rear-context-string)
@@ -46,10 +52,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
- (front-context-string . "* Send Yaniv mai")
- (rear-context-string . "---------------\n")
- (position . 426)
- (last-modified 25947 5309 864846 0))
+ (front-context-string . "* Call leumi mas")
+ (rear-context-string . "2-02 Sat 21:23]\n")
+ (position . 529)
+ (last-modified 25965 57814 994485 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")

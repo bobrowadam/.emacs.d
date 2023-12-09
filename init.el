@@ -1,17 +1,19 @@
 (setq lexical-binding t)
 (setq gc-cons-threshold-before-init gc-cons-threshold)
-(setq gc-cons-threshold 10000000)
+(setq gc-cons-percentage 0.4)
+(setq gc-cons-threshold (* 1024 1024 300))
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
             (setq gc-cons-threshold gc-cons-threshold-before-init)
-            (message "Emacs ready in %s with %d garbage collections."
+            (message "Emacs ready in %s with %d garbage collections. GC elapsed: %s"
                      (format "%.2f seconds"
                              (float-time
                               (time-subtract after-init-time before-init-time)))
-                     gcs-done)))
+                     gcs-done
+                     gc-elapsed)))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -149,6 +151,10 @@
 
 (use-package uuid
   :commands uuid-create)
+
+(use-package denote
+  :custom
+  (denote-directory (expand-file-name "~/denote")))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)

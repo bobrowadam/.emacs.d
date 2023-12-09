@@ -175,7 +175,8 @@ Else, just look for the given string."
   "Returns true when project has an NPM build script for typescript"
   (if-let* ((project (project-current))
             (default-directory (project-root project))
-            (package-json (json-parse-string (read-file "package.json")
+            (package-json-raw (read-file "package.json"))
+            (package-json (json-parse-string package-json-raw
                                              :object-type 'alist)))
       (s-matches-p (assocdr 'build (assocdr 'scripts package-json))
                "./node_modules/typescript/bin/tsc")))
