@@ -44,11 +44,6 @@
   :ensure nil
   :bind ("C-c o" . occur))
 
-(use-package consult-project-extra
-  :bind
-  (("C-x p f" . consult-project-extra-find)
-   ("C-x p o" . consult-project-extra-find-other-window)))
-
 (defun browse-current-project ()
   (interactive)
   (browse-riseup-git-project (project-name (project-current))))
@@ -62,19 +57,19 @@
   :ensure nil
   :bind
   (("C-x p w" . project-switch-to-open-project)
-   ;; ("C-x p s" . bob/project-vterm)
    ("C-x p s" . eat-project)
+   ("C-x p b" . project-switch-to-buffer)
    ("C-x p m"  . magit-project-status)
    ("C-x p C-m"  . project-dired)
    ("C-x p i" . #'project-list-file-buffers))
   :init
   (setq project-switch-commands
-        '((consult-project-extra-find "Find file")
-          (project-dired "Find directory")
+        '((project-find-file "Find file")
+          (project-dired "Root Directory" "d")
           (eat-project "Eat" "s")
           (magit-project-status "Magit" "g")
-          (consult-ripgrep "Grep" "r")
-          (project-ibuffer "IBuffers" "b")
+          (consult-ripgrep "RipGrep" "r")
+          (consult-project-buffer "Buffers" "b")
           (project-list-file-buffers "List Buffers" "i")
           (browse-current-project "Browse" "B")))
   (unless (project-known-project-roots)
@@ -120,6 +115,11 @@
   (rfn-eshadow-update-overlay . vertico-directory-tidy)
   :config
   (vertico-mode 1))
+
+(use-package vertico-posframe
+  :demand t
+  :after vertico
+  :config (vertico-posframe-mode 1))
 
 (use-package marginalia
   :after vertico
