@@ -77,7 +77,9 @@
     (progn
       (project-remember-projects-under "~/source/" t)
       (project-remember-projects-under "~/source/services" t)
-      (project-remember-projects-under "~/source/common-lisp/" t))))
+      (project-remember-projects-under "~/source/common-lisp/" t)))
+  :config
+  (setq project-read-file-name-function #'bobs/project-read-file-name-function))
 
 (use-package savehist
   :ensure nil
@@ -204,6 +206,7 @@
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
 (use-package tramp
+  :demand t
   :ensure nil
   :init (setq tramp-verbose 1)
   :config
