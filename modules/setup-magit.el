@@ -25,6 +25,21 @@
             (vc-refresh-state)
             (diff-hl-update)))))))
 
+(defun bob/magit-buffers ()
+  "Jump to a magit buffer."
+  (interactive)
+  (if-let* ((magit-buffers
+             (bob/drop-buffer
+              (set-last-magit-buffer-as-first
+               (seq-filter
+                (lambda (b) (or (equal (with-current-buffer b major-mode) 'magit-status-mode)))
+                (mapcar (function buffer-name) (buffer-list))))))
+            (magit-buffer (completing-read "Magit: " magit-buffers)))
+      (progn
+        (setq bob/last-magit-buffer magit-buffer)
+        (switch-to-buffer magit-buffer))
+    (message "No Magit buffers exists")))
+
 (use-package magit
   :commands (magit-status bob/magit-buffers)
   :ensure t

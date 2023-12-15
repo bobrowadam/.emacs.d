@@ -52,10 +52,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20220806140803-inbox.org")
- (front-context-string . "* Call leumi mas")
- (rear-context-string . "2-02 Sat 21:23]\n")
- (position . 529)
- (last-modified 25965 57814 994485 0))
+ (front-context-string)
+ (rear-context-string . "---------------\n")
+ (position . 426)
+ (last-modified 25978 62821 640678 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")

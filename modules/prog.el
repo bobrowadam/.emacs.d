@@ -455,7 +455,6 @@ before running 'npm install'."
   (racket-mode . flymake-racket-setup))
 
 (use-package dape
-  ;; Currently only on github
   :straight (dape :type git :host github :repo "svaante/dape")
   :custom
   (dape--debug-on '())
@@ -505,27 +504,7 @@ before running 'npm install'."
                  :autoAttachChildProcesses t
                  :console "internalConsole"
                  :killBehavior "forceful"))
-  (add-to-list 'dape-configs
-               `(vscode-ts-js-attach-chrome
-                 modes (js-mode js-ts-mode typescript-mode web-mode)
-                 host "localhost"
-                 port 8123
-                 command "node"
-                 command-cwd "~/source/vscode-js-debug/dist/"
-                 command-args ("src/dapDebugServer.js" "8123")
-                 :port 9229
-                 :sourceMaps t
-                 :resolveSourceMapLocations ["**/dist/**/*"]
-                 :cwd dape-cwd-fn
-                 :program dape-find-file-buffer-default
-                 :autoAttachChildProcesses t
-                 :type "chrom"
-                 :request "attach"
-                 :outputCapture "console"
-                 :sourceMapRenames t
-                 :autoAttachChildProcesses t
-                 :console "internalConsole"
-                 :killBehavior "forceful"))
+
   ;; Add inline variable hints, this feature is highly experimental
   (setq dape-inline-variables nil)
 
@@ -534,12 +513,13 @@ before running 'npm install'."
 
   ;; To remove repl buffer on startup
   (remove-hook 'dape-on-start-hooks 'dape-repl)
+  (remove-hook 'dape-update-ui-hooks 'dape-info-update)
 
   ;; By default dape uses gdb keybinding prefix
   ;; (setq dape-key-prefix "\C-x\C-a")
 
   ;; Use n for next etc. in REPL
-  (setq dape-repl-use-shorthand t)
+  (setq dape-repl-use-shorthand nil)
 
   ;; Kill compile buffer on build success
   (add-hook 'dape-compile-compile-hooks 'kill-buffer))
