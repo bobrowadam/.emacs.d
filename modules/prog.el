@@ -524,4 +524,9 @@ before running 'npm install'."
   ;; Kill compile buffer on build success
   (add-hook 'dape-compile-compile-hooks 'kill-buffer))
 
+(use-package erefactor
+  :ensure t
+  :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on)
+  :bind-keymap ("\C-c\C-v" . erefactor-map))
+
 (provide 'prog)
