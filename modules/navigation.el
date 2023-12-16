@@ -67,7 +67,8 @@
    ("C-x p b" . project-switch-to-buffer)
    ("C-x p m"  . magit-project-status)
    ("C-x p C-m"  . project-dired)
-   ("C-x p i" . #'project-list-file-buffers))
+   ("C-x p i" . #'project-list-file-buffers)
+   ("C-x p h" . #'project-jump-to-rest-client))
   :init
   (setq project-switch-commands
         '((project-find-file "Find file")
