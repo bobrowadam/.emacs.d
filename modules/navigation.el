@@ -53,7 +53,13 @@
   (project-list-buffers 1)
   (pop-to-buffer "*Buffer List*"))
 
+(use-package bobs-project-utils
+  :demand t
+  :ensure nil
+  :load-path "./site-lisp")
+
 (use-package project
+  :after bobs-project-utils
   :ensure nil
   :bind
   (("C-x p w" . project-switch-to-open-project)
@@ -102,8 +108,8 @@
   (setq orderless-matching-styles
         '(orderless-literal orderless-flex))
   (setq completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion))))
-  (setq completion-styles '(basic orderless)))
+        completion-category-overrides '((file (styles basic partial-completion))))
+  (setq completion-styles '(orderless basic)))
 
 
 (use-package vertico
@@ -119,9 +125,10 @@
   (vertico-mode 1))
 
 (use-package vertico-posframe
+  :disabled t
   :demand t
   :after vertico
-  :config (vertico-posframe-mode 1))
+  :config (vertico-posframe-mode nil))
 
 (use-package marginalia
   :after vertico
