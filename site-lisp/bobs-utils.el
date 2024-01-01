@@ -177,8 +177,6 @@ to directory DIR."
   ;; (mapc 'kill-buffer (buffer-list))
   (mapc 'kill-buffer (delq (get-buffer "*Messages*") (buffer-list)))
   (delete-other-windows)
-  (setq initial-buffer-choice t)
-  (setq initial-scratch-message (print-sessions-duration (read-sessions-file)))
   (scratch-buffer))
 
 (defun bob/rotate-list (list)

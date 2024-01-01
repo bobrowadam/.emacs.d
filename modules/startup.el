@@ -59,11 +59,6 @@
   :load-path "./site-lisp"
   :ensure nil)
 
-(use-package emacs-uptime
-  :demand t
-  :load-path "./site-lisp"
-  :ensure nil)
-
 (use-package edit-funcs
   :if (window-system)
   :load-path "./site-lisp"
@@ -75,7 +70,7 @@
   :bind ("C-c r" . scratch-pop))
 
 (use-package emacs-uptime
-  :demand t
+  :disabled t
   :load-path "./site-lisp"
   :config
   (emacs-uptime/start-timer)

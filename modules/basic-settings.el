@@ -37,8 +37,6 @@
       visible-bell nil
       enable-local-variables :safe)
 
-(when (fboundp 'print-sessions-duration)
-  (setq initial-scratch-message (print-sessions-duration (read-sessions-file))))
 (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
 (when (boundp 'pixel-scroll-precision-mode)
@@ -171,4 +169,5 @@
 (global-set-key (kbd "C-ש") 'beginning-of-line)
 (global-set-key (kbd "C-ק") 'end-of-line)
 
+(setq xref-search-program 'ripgrep)
 (provide 'basic-settings)

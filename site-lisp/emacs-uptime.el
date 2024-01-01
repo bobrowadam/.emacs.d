@@ -47,5 +47,7 @@
   (message "Start timer for 'save-emacs-uptime")
   (run-with-timer 0 (* 60 15) 'save-emacs-uptime))
 
+(when (fboundp 'print-sessions-duration)
+  (setq initial-scratch-message (print-sessions-duration (read-sessions-file))))
 
 (provide 'emacs-uptime)

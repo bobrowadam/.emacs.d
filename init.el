@@ -5,15 +5,18 @@
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
 
+(setq initial-buffer-choice t)
+(setq initial-scratch-message "I use Emacs BTW\n\n")
 (add-hook 'emacs-startup-hook
           (lambda ()
             (setq gc-cons-threshold gc-cons-threshold-before-init)
-            (message "Emacs ready in %s with %d garbage collections. GC elapsed: %s"
-                     (format "%.2f seconds"
-                             (float-time
-                              (time-subtract after-init-time before-init-time)))
-                     gcs-done
-                     gc-elapsed)))
+
+            (insert (format "Emacs ready in %s with %d garbage collections.\nGC elapsed: %s"
+                            (format "%.2f seconds"
+                                    (float-time
+                                     (time-subtract after-init-time before-init-time)))
+                            gcs-done
+                            gc-elapsed))))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -65,6 +68,7 @@
 
 (use-package setup-magit
   :after startup
+  :demand t
   :load-path "./modules")
 
 (use-package setup-org
@@ -108,7 +112,9 @@
   (setq chatgpt-shell-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
 
   :bind
-  ("C-c g" . chatgpt-shell))
+  ("C-c g" . chatgpt-shell)
+  :hook
+  (chatgpt-shell-mode . (lambda () (corfu-mode -1))))
 
 (use-package breadcrumb-mode
   :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb")
@@ -151,10 +157,6 @@
 
 (use-package uuid
   :commands uuid-create)
-
-(use-package denote
-  :custom
-  (denote-directory (expand-file-name "~/denote")))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
