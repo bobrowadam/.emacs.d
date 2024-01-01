@@ -164,12 +164,8 @@
         ("M-B" . org-agenda-do-date-earlier))
   :ensure nil)
 
-;; (use-package emacsql-sqlite-builtin
-;;   :demand t
-;;   :init
-;;   (setq org-roam-database-connector 'sqlite-builtin))
-
 (use-package org-roam
+  :disabled t
   :after org
   :demand t
   ;; :after (emacsql-sqlite-builtin)
@@ -196,12 +192,12 @@
   ("C-c n f" . org-roam-node-find)
   ("C-c n c" . org-roam-capture)
   ("C-c n b" . org-roam-buffer-toggle)
-  ("C-c n d d" . org-roam-dailies-capture-today)
   :config
   (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode))
 
 (use-package org-roam-ui
+  :disabled t
   :after org-roam
   ;;         normally we'd recommend hooking org-ui after org-roam, but since org-roam does not have
   ;;         a hookable mode anymore, you're advised to pick something yourself
@@ -214,6 +210,7 @@
         org-roam-ui-open-on-start t))
 
 (use-package setup-org-roam
+  :disabled t
   :after (org)
   :demand t
   :ensure nil)
@@ -233,16 +230,57 @@
             (verb-response-body-mode +1))
         (json-parse-error response)))))
 
+(defun bob/toggle-verb-parse-json-to-alist ()
+  (interactive)
+  (setq verb-parse-json-to-alist (not verb-parse-json-to-alist)))
+
 (use-package verb
-  :after (org)
+  :after org
   :mode ("\\.org\\'" . org-mode)
   :init
-  (setq verb-parse-json-to-alist nil)
+  (setq verb-parse-json-to-alist t)
   (setq verb-post-response-hook 'parse-verb-response-to-alist)
-  :config 
+  :config
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((verb . t))))
+
+(use-package ob-typescript)
+
+(defun bob/denote-open-or-create (target)
+  "See `denote-open-or-create`"
+  (interactive (list (bob/completing-read "Select note: "
+                                          (denote-directory-files nil :omit-current)
+                                          'bob/truncate-denote-file-name
+                                          :file-history 'denote--file-history)))
+  (if (and target (file-exists-p target))
+      (find-file target)
+    (denote--command-with-default-title #'denote)))
+
+(defun bob/truncate-denote-file-name (file-name)
+  (s-replace-regexp "^.+--" "" file-name))
+
+(use-package denote
+  :commands (denote bob/denote-open-or-create denote-mode denote-open-or-create)
+  :custom
+  (denote-directory (expand-file-name "~/denote-notes/"))
+  (denote-date-prompt-use-org-read-date t)
+  :bind
+  ("C-c n f" . bob/denote-open-or-create)
+  ("C-c n r" . denote-rename-file)
+  ("C-c n l" . denote-link-or-create))
+
+(use-package consult-notes
+  :commands (consult-notes
+             consult-notes-search-in-all-notes)
+  :config
+  (setq consult-notes-file-dir-sources '(("Denote"  ?d  "~/denote-notes/")))
+  (consult-notes-org-headings-mode)
+  (when (locate-library "denote")
+    (consult-notes-denote-mode))
+  :bind
+  ("C-c n d" . consult-notes)
+  ("C-c n g" . consult-notes-search-in-all-notes))
 
 (provide 'setup-org)

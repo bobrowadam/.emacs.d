@@ -66,4 +66,23 @@
   :custom
   (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 
+(cl-defun bob/completing-read (prompt items
+                                      &optional (display-to-item 'identity)
+                                      &keys file-history)
+  (let ((display-map (make-hash-table :test 'equal)))
+    (dolist (item items)
+      (puthash (funcall display-to-item item)
+               item
+               display-map))
+    (-if-let* ((completing-result (completing-read prompt
+                                                   display-map
+                                                   nil
+                                                   nil
+                                                   nil
+                                                   file-history))
+               (found-value (gethash completing-result
+                                     display-map)))
+        found-value
+      completing-result)))
+
 (provide 'completions)
