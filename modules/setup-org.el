@@ -4,11 +4,27 @@
   (ob-mongo:default-mongo-executable "mongo")
   :load-path "~/source/ob-mongo/")
 
+
+;; took this snippet from:
+;; https://emacs.stackexchange.com/questions/44664/apply-ansi-color-escape-sequences-for-org-babel-results
+(defun ek/babel-ansi ()
+  (when-let ((beg (org-babel-where-is-src-block-result nil nil)))
+    (save-excursion
+      (goto-char beg)
+      (when (looking-at org-babel-result-regexp)
+        (let ((end (org-babel-result-end))
+              (ansi-color-context-region nil))
+          (ansi-color-apply-on-region beg end))))))
+(add-hook 'org-babel-after-execute-hook 'ek/babel-ansi)
+
 (use-package org
+  :custom
+  (org-babel-python-command "python3.11")
   :commands (org-agenda)
   :ensure t
   :if (window-system)
   :init
+  (setq org-confirm-babel-evaluate nil)
   (setq org-export-with-toc nil)
   (setq org-pretty-entities nil)
   (setq org-loop-over-headlines-in-active-region t)
@@ -24,16 +40,20 @@
   (setq org-tags-exclude-from-inheritance '("project"))
   (setq org-directory (concat (getenv "HOME") "/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/"))
   (setq org-capture-templates
-        `(("t" "entry" entry (file ,(concat org-directory "20220806140803-inbox.org")) "* %?\n  %i")))
+        `(("t" "entry" entry (file ,(concat org-directory "inbox.org")) "* %?\n  %i")))
   (setq org-deadline-warning-days 1)
   :config
+  (setq org-babel-lisp-eval-fn 'sly-eval)
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
      (js . t)
      (shell . t)
-     (mongo . t)))
+     (mongo . t)
+     (python . t)
+     (lisp . t)))
   (add-to-list 'org-src-lang-modes '("ts" . typescript))
+
 
   ;; (custom-set-faces
   ;;  '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
@@ -128,6 +148,10 @@
   :custom
   (org-agenda-span 1)
   :init
+  (setq org-agenda-files '("asana_tasks.org"
+                          "inbox.org"
+                          "reminders.org"
+                          "tasks.org"))
   (setq org-agenda-custom-commands
            '(("b" tags "+OngoingBugs")
              ("n" "Todo next" ((todo "NEXT")))))
