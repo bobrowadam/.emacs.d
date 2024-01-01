@@ -23,13 +23,7 @@
 
 (use-package flycheck-eglot
   :ensure t
-  :custom (flycheck-eglot-exclusive nil)
-  ;; :hook
-  ;; (typescript-mode . flycheck-eglot-mode)
-  ;; (js2-mode . flycheck-eglot-mode)
-  ;; (web-mode . flycheck-eglot-mode)
-)
-
+  :custom (flycheck-eglot-exclusive nil))
 
 (use-package flycheck-posframe
   :disabled t
@@ -239,14 +233,19 @@ before running 'npm install'."
                                (comint-read-input-ring 'silent)))))
 
 (use-package eglot
+  :commands (eglot eglot-ensure eglot-shutdown-all)
   :custom
+  ;; change this back to 0 after debugging!
   (eglot-events-buffer-size 0)
   :config
   (add-to-list 'eglot-server-programs
                `((js-mode typescript-mode)
-                                 . ("typescript-language-server" "--stdio")))
+                 . ("typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
-               `((web-mode) "vls"  "--stdio"))
+               `(web-mode
+                 ,(concat (fnm-node-bin-path "18") "/vls")
+                 "--stdio"))
+
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
   :bind
@@ -460,37 +459,14 @@ before running 'npm install'."
   (dape--debug-on '())
   :config
   (add-to-list 'dape-configs
-               `(vscode-ts-js-launch
-                 modes (js-mode js-ts-mode typescript-mode)
-                 host "localhost"
-                 port 8123
-                 command "node"
-                 command-cwd "~/source/vscode-js-debug/dist/"
-                 command-args ("src/dapDebugServer.js" "8123")
-                 :type "pwa-node"
-                 :request "launch"
-                 :restart t
-                 :runtimeExecutable "nodemon"
-                 :cwd dape-cwd-fn
-                 :localRoot dape-cwd-fn
-                 :program dape-find-file-buffer-default
-                 :outputCapture "console"
-                 :outFiles: ["${workspaceFolder}/dist/**/*.js"]
-                 :sourceMapRenames t
-                 :pauseForSourceMap nil
-                 :enableContentValidation t
-                 :autoAttachChildProcesses t
-                 :console "internalConsole"
-                 :killBehavior "forceful"))
-
-  (add-to-list 'dape-configs
                `(vscode-ts-js-attach
                  modes (js-mode js-ts-mode typescript-mode)
                  host "localhost"
                  port 8123
                  command "node"
-                 command-cwd "~/source/vscode-js-debug/dist/"
-                 command-args ("src/dapDebugServer.js" "8123")
+                 ;; command-cwd "~/source/vscode-js-debug/dist/"
+                 command-cwd "~/.emacs.d/debug-adapters/js-debug"
+                 command-args ("src/dapDebugServer.js")
                  :port bob/get-inspect-port
                  :sourceMaps t
                  :resolveSourceMapLocations ["**/dist/**/*"]
@@ -505,21 +481,12 @@ before running 'npm install'."
                  :console "internalConsole"
                  :killBehavior "forceful"))
 
-  ;; Add inline variable hints, this feature is highly experimental
-  (setq dape-inline-variables nil)
-
-  ;; To remove info buffer on startup
+  ;; To not display info and/or buffers on startup
   (remove-hook 'dape-on-start-hooks 'dape-info)
-
-  ;; To remove repl buffer on startup
   (remove-hook 'dape-on-start-hooks 'dape-repl)
-  (remove-hook 'dape-update-ui-hooks 'dape-info-update)
-
-  ;; By default dape uses gdb keybinding prefix
-  ;; (setq dape-key-prefix "\C-x\C-a")
 
   ;; Use n for next etc. in REPL
-  (setq dape-repl-use-shorthand nil)
+  (setq dape-repl-use-shorthand t)
 
   ;; Kill compile buffer on build success
   (add-hook 'dape-compile-compile-hooks 'kill-buffer))
