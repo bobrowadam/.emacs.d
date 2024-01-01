@@ -86,31 +86,39 @@
   :after magit)
 
 (use-package diff-hl
+  :after magit
   :config (global-diff-hl-mode))
 
 (use-package vc
   :ensure nil
-  :bind ("C-x v p" . vc-pull))
+  :bind
+  ("C-x v p" . vc-pull)
+  ("C-x v d" . vc-dir-root))
 
 (use-package git-timemachine)
 
-(defun create-github-repo ()
+(defun bob/create-github-repo ()
   "Create a new Github repo using the Github API."
   (interactive)
   (let ((repo-name (read-string "Repo name: " (get-dir-name (project-root (project-current)))))
         (repo-description (read-string "Repo description: "))
         (repo-homepage (read-string "Repo homepage: "))
         (is-repo-private (yes-or-no-p "Is Repo private: "))
-        (repo-is_template (yes-or-no-p "Is Repo is_template: ")))
+        (repo-is_template (yes-or-no-p "Is Repo is_template: "))
+        (current-branch (magit-get-current-branch)))
     (ghub-post "/user/repos" (list  :name repo-name
                                     :description repo-description
                                     :homepage repo-homepage
                                     :private is-repo-private
                                     :is_template repo-is_template))
     (magit-remote-add "origin" (format "git@github.com:bobrowadam/%s.git" repo-name))
-    (magit-push-current-to-pushremote `("-u" "origin" ,(magit-get-current-branch)))))
+    (magit-run-git-async "push"
+                         "-u"
+                         "origin"
+                         (format "refs/heads/%s:refs/heads/%s"
+                                 current-branch
+                                 current-branch))))
 
 (use-package gh)
 
 (provide 'setup-magit)
-
