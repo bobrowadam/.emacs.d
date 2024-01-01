@@ -103,11 +103,12 @@
   (recentf-mode 1))
 
 (use-package orderless
+  :after vertico
   :init
   (setq completion-ignore-case t)
   (setq orderless-component-separator " +")
   (setq orderless-matching-styles
-        '(orderless-literal orderless-flex))
+        '(orderless-literal orderless-prefixes orderless-flex))
   (setq completion-category-defaults nil
         completion-category-overrides '((file (styles basic partial-completion))))
   (setq completion-styles '(orderless basic)))
