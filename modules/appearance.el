@@ -3,9 +3,9 @@
 ;; (set-frame-font "DaddyTimeMono Nerd Font 19")
 ;; (add-to-list 'default-frame-alist
 ;;              '(font . "DaddyTimeMono Nerd Font 19"))
-(set-frame-font "FiraCode Nerd Font 19")
+(set-frame-font "FiraCode Nerd Font 21")
 (add-to-list 'default-frame-alist
-             '(font . "FiraCode Nerd Font 19"))
+             '(font . "FiraCode Nerd Font 21"))
 
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))
@@ -14,8 +14,11 @@
   :demand t
   :config
   (setq modus-vivendi-tinted-palette-overrides
-          nil)
-    (modus-themes-select 'modus-vivendi-tinted))
+        nil)
+  ;; (modus-themes-select 'modus-vivendi-tinted)
+  (setq modus-vivendi-tritanopia-palette-overrides 
+        '((bg-main "grey6")))
+  (modus-themes-select 'modus-vivendi-tritanopia))
 
 (use-package spacious-padding
   :demand t
@@ -37,6 +40,7 @@
   :after modus-themes
   :ensure nil
   :demand t
-  :load-path "~/source/bobs-modeline/")
+  :load-path "~/source/bobs-modeline/"
+  :config (bobs-modeline/enable))
 
 (provide 'appearance)
