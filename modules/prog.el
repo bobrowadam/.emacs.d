@@ -496,4 +496,7 @@ before running 'npm install'."
   :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on)
   :bind-keymap ("\C-c\C-v" . erefactor-map))
 
+(use-package dumb-jump
+  :init
+  (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
 (provide 'prog)
