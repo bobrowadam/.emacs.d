@@ -41,6 +41,9 @@
   (setq org-directory (concat (getenv "HOME") "/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/"))
   (setq org-capture-templates
         `(("t" "entry" entry (file ,(concat org-directory "inbox.org")) "* %?\n  %i")))
+  (setq org-refile-targets (setq org-refile-targets '((org-agenda-files :maxlevel . 3))))
+  (setq org-refile-use-outline-path 'file)
+
   (setq org-deadline-warning-days 1)
   :config
   (setq org-babel-lisp-eval-fn 'sly-eval)
@@ -77,7 +80,7 @@
         ("M-," . org-mark-ring-goto)
         ("M-F" . org-shiftright)
         ("M-B" . org-shiftleft)
-        ("C-c n r" . org-roam-refile))
+        ("C-c n R" . org-refile))
   (:map org-read-date-minibuffer-local-map
         ("M-f" . (lambda ()
                    (interactive (org-eval-in-calendar '(calendar-forward-day 1)))))
