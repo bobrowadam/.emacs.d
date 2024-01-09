@@ -54,7 +54,8 @@
      (shell . t)
      (mongo . t)
      (python . t)
-     (lisp . t)))
+     (lisp . t)
+     (verb . t)))
   (add-to-list 'org-src-lang-modes '("ts" . typescript))
 
 
@@ -151,10 +152,10 @@
   :custom
   (org-agenda-span 1)
   :init
-  (setq org-agenda-files '("asana_tasks.org"
-                          "inbox.org"
-                          "reminders.org"
-                          "tasks.org"))
+  (setq org-agenda-files '("20221114T223617--asana-tasks__project.org"
+                          "20240104T120451--inbox__project.org"
+                          "20240103T130349--reminders__project.org"
+                          "20240103T130420--tasks__project.org"))
   (setq org-agenda-custom-commands
            '(("b" tags "+OngoingBugs")
              ("n" "Todo next" ((todo "NEXT")))))
@@ -244,10 +245,7 @@
   (setq verb-parse-json-to-alist t)
   (setq verb-post-response-hook 'parse-verb-response-to-alist)
   :config
-  (define-key org-mode-map (kbd "C-c C-r") verb-command-map)
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((verb . t))))
+  (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 
 (use-package ob-typescript)
 
@@ -267,7 +265,7 @@
 (use-package denote
   :commands (denote bob/denote-open-or-create denote-mode denote-open-or-create)
   :custom
-  (denote-directory (expand-file-name "~/denote-notes/"))
+  (denote-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
   (denote-date-prompt-use-org-read-date t)
   :bind
   ("C-c n f" . bob/denote-open-or-create)
