@@ -1,6 +1,7 @@
 ;;; riseup-helpers.el ---  -*- lexical-binding: t -*-
 (require 'cl-lib)
 (require 'ghub)
+(require 'mongo)
 
 (defun browse-riseup-git-project (&optional project)
   "Browse a riseup git repository using the current known project for completion"
@@ -101,10 +102,27 @@ Else, just look for the given string."
                                        (t (format "https://riseup.datadoghq.com/logs?query=%s" query-string)))))
       (browse-url generated-datadog-url t))))
 
+(defun list-possible-customers ()
+  (mapcar
+   (lambda (document) (to-string (assocdr "_id" document)))
+   (let* ((result
+           (mongo-with-open-database
+               (db :host "localhost" :port 27017) ; Specify host and port, if needed
+             (mongo-do-request
+              (make-mongo-message-query
+               :flags 0
+               :number-to-skip 0
+               :number-to-return 0 ; Set to a positive integer to limit the number of documents returned
+               :full-collection-name "mamadmin.customers"
+               :query '())       ; An empty query to fetch all documents
+              :database db)))
+          (documents (mongo-message-reply-documents result))) ; Extract the documents from the result
+     documents)))
+
 (defun run-customer-version ()
   "Run a riseup customer version locally"
   (interactive)
-  (let ((customer-id (read-number "Enter customer id:\n")))
+  (let ((customer-id (string-to-number (completing-read "Select customer ID: " (list-possible-customers) nil nil))))
     (request "http://host.docker.internal:4030/dev/trigger-version-update"
       :method "POST"
       :data (json-encode
