@@ -72,6 +72,7 @@
 (set-default 'indent-tabs-mode nil)
 (global-auto-revert-mode 1)
 (auto-compression-mode t)
+(global-word-wrap-whitespace-mode t)
 
 ;; delete char and delte word with "C-h" "C-M-h"
 (define-key key-translation-map [?\C-h] [?\C-?])
