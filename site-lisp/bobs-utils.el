@@ -122,6 +122,7 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
 (defun run-cl-asana (arg)
   "Run cl-asana to update the local org-asana file."
   (interactive "P")
+  (message "Running cl asana")
   (let ((proc (start-process "cl-asana" "*cl-asana-output*" "~/source/common-lisp/cl-asana/cl-asana")))
     (set-process-sentinel proc (run-cl-asana-sentinel arg))))
 

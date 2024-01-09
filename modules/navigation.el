@@ -86,7 +86,8 @@
       (project-remember-projects-under "~/source/services" t)
       (project-remember-projects-under "~/source/common-lisp/" t)))
   :config
-  (setq project-read-file-name-function #'bobs/project-read-file-name-function))
+  (setq project-read-file-name-function #'bobs/project-read-file-name-function)
+  (override-project-prompt-project-dir))
 
 (use-package savehist
   :ensure nil

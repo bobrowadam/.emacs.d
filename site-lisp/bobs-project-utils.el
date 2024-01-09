@@ -60,4 +60,28 @@
           (make-symbolic-link chosen-file rest-client-path)
           (find-file rest-client-path))))))
 
+(defun override-project-prompt-project-dir ()
+  (progn
+    (defun parent-directory-name (dir-path)
+      (file-name-base (directory-file-name (file-name-directory dir-path))))
+
+    (defun project-prompt-project-dir ()
+      "Prompt the user for a directory that is one of the known project roots.
+The project is chosen among projects known from the project list,
+see `project-list-file'.
+It's also possible to enter an arbitrary directory not in the list."
+      (project--ensure-read-project-list)
+      (let* ((dir-choice "... (choose a dir)")
+             (choices
+              ;; XXX: Just using this for the category (for the substring
+              ;; completion style).
+              (mapcar 'car project--list))
+             (pr-dir ""))
+        (while (equal pr-dir "")
+          ;; If the user simply pressed RET, do this again until they don't.
+          (setq pr-dir (bob/completing-read "Select project: " choices #'parent-directory-name)))
+        (if (equal pr-dir dir-choice)
+            (read-directory-name "Select directory: " default-directory nil t)
+          pr-dir)))))
+
 (provide 'bobs-project-utils)
