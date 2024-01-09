@@ -1,4 +1,4 @@
-(defun bob/magit-message (message)
+(defun bob/magit-commit-message (message)
     (interactive "sCommit message: ")
     (magit-commit-create `("-am" ,message)))
 
@@ -69,7 +69,7 @@
   (put 'magit-display-buffer-function 'safe-local-variable #'functionp)
   (transient-append-suffix 'magit-commit
     "c"
-    '("m" "Quick commit using minibuffer for commit message." bob/magit-message))
+    '("m" "Quick commit using minibuffer for commit message." bob/magit-commit-message))
 
   (transient-append-suffix 'magit-file-dispatch
     "p"
@@ -86,6 +86,7 @@
   :after magit)
 
 (use-package diff-hl
+  :commands (diff-hl-update)
   :after magit
   :config (global-diff-hl-mode))
 

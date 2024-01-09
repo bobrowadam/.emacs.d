@@ -3,9 +3,9 @@
 ;; (set-frame-font "DaddyTimeMono Nerd Font 19")
 ;; (add-to-list 'default-frame-alist
 ;;              '(font . "DaddyTimeMono Nerd Font 19"))
-(set-frame-font "FiraCode Nerd Font 19")
+(set-frame-font "FiraCode Nerd Font 21")
 (add-to-list 'default-frame-alist
-             '(font . "FiraCode Nerd Font 19"))
+             '(font . "FiraCode Nerd Font 21"))
 
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))

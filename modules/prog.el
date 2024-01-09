@@ -303,7 +303,8 @@ before running 'npm install'."
   :bind
   (:map paredit-mode-map
         ("C-'" . sp-rewrap-sexp)
-        ("M-W" . sp-copy-sexp)))
+        ("M-W" . sp-copy-sexp)
+        ("M-?" . xref-find-references)))
 
 (use-package smartparens
   :demand t
@@ -457,6 +458,8 @@ before running 'npm install'."
   :straight (dape :type git :host github :repo "svaante/dape")
   :custom
   (dape--debug-on '())
+  :bind (:map dape-global-map
+              ("e" . dape-evaluate-expression))
   :config
   (add-to-list 'dape-configs
                `(vscode-ts-js-attach
