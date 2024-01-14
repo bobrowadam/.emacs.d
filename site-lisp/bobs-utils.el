@@ -163,10 +163,17 @@ to directory DIR."
           (project-root (project-current)))))))
 
 (defun kill--all-shell-buffers ()
+  ;; Gracefully terminate comint processes before killing buffers
   (cl-loop for buffer in (buffer-list)
-        do
-        (when (buffer-match-p '(derived-mode . comint-mode) buffer)
-          (kill-buffer buffer))))
+           do
+           (with-current-buffer buffer
+             (when (derived-mode-p 'comint-mode)
+               (let ((process (get-buffer-process buffer)))
+                 (when (process-live-p process)
+                   ;; Gracefully end process before killing the buffer
+                   (delete-process process)
+                   ;; Now kill the buffer
+                   (kill-buffer buffer)))))))
 
 (defun bob/reset-emacs-state ()
   "Reset emacs state to initial state, keeping only Messages and Scratch buffers."
@@ -175,7 +182,8 @@ to directory DIR."
   (tramp-cleanup-all-buffers)
   (tramp-cleanup-all-connections)
   (kill--all-shell-buffers)
-  ;; (mapc 'kill-buffer (buffer-list))
+
+  ;; Kill all other buffers except *Messages* and *scratch*
   (mapc 'kill-buffer (delq (get-buffer "*Messages*") (buffer-list)))
   (delete-other-windows)
   (scratch-buffer))
