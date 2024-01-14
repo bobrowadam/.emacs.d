@@ -74,7 +74,11 @@
 (use-package setup-org
   :after startup
   :demand t
-  :load-path "./modules")
+  :load-path "./modules"
+  :bind
+  ("C-c a" . org-agenda)
+  ("C-c c" . org-capture)
+  ("C-c s a" . run-cl-asana))
 
 (use-package setup-shell
   :demand t

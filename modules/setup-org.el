@@ -40,7 +40,7 @@
   (setq org-tags-exclude-from-inheritance '("project"))
   (setq org-directory (concat (getenv "HOME") "/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/"))
   (setq org-capture-templates
-        `(("t" "entry" entry (file ,(concat org-directory "inbox.org")) "* %?\n  %i")))
+        `(("t" "entry" entry (file ,(concat org-directory "20240104T120451--inbox__project.org")) "* %?\n  %i")))
   (setq org-refile-targets (setq org-refile-targets '((org-agenda-files :maxlevel . 3))))
   (setq org-refile-use-outline-path 'file)
 
@@ -57,7 +57,6 @@
      (lisp . t)
      (verb . t)))
   (add-to-list 'org-src-lang-modes '("ts" . typescript))
-
 
   ;; (custom-set-faces
   ;;  '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
@@ -148,6 +147,7 @@
   (org-hide-leading-stars nil))
 
 (use-package org-agenda
+  :commands (run-cl-asana org-agenda)
   :after org
   :custom
   (org-agenda-span 1)
@@ -160,9 +160,6 @@
            '(("b" tags "+OngoingBugs")
              ("n" "Todo next" ((todo "NEXT")))))
   :bind
-  ("C-c a" . org-agenda)
-  ("C-c c" . org-capture)
-  ("C-c s a" . run-cl-asana)
   (:map org-agenda-mode-map
         ("M-F" . org-agenda-do-date-later)
         ("M-B" . org-agenda-do-date-earlier))
@@ -263,7 +260,7 @@
   (s-replace-regexp "^.+--" "" file-name))
 
 (use-package denote
-  :commands (denote bob/denote-open-or-create denote-mode denote-open-or-create)
+  :commands (denote bob/denote-open-or-create denote-mode denote-open-or-create denote-directory-files)
   :custom
   (denote-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
   (denote-date-prompt-use-org-read-date t)
