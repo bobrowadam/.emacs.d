@@ -2,7 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("denote"
+(("setup-org.el"
+ (filename . "~/.emacs.d/modules/setup-org.el")
+ (front-context-string . "(use-package ob-")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26019 49167 329961 0))
+("org-refile-last-stored"
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20240103T130420--tasks__project.org")
+ (front-context-string . "* TODO Fix cl-as")
+ (rear-context-string . "2024-01-13 Sat>\n")
+ (position . 8067)
+ (last-modified 26015 54949 207742 0))
+("denote"
  (filename . "~/denote/")
  (front-context-string . "20231204T232526-")
  (rear-context-string . "77 Dec  4 23:41 ")
@@ -51,11 +63,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/inbox.org")
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20240104T120451--inbox__project.org")
  (front-context-string)
- (rear-context-string)
- (position . 2)
- (last-modified 26001 11160 263065 0))
+ (rear-context-string . "old/other color\n")
+ (position . 410)
+ (last-modified 26019 49209 41071 0))
 ("moud"
  (filename . "~/source/services/elsa/")
  (front-context-string . ".gitignore\n  drw")
