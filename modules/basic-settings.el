@@ -170,5 +170,24 @@
 (global-set-key (kbd "C-ש") 'beginning-of-line)
 (global-set-key (kbd "C-ק") 'end-of-line)
 
+
+;; V* like half page scrolling
+(defun half-page-up ()
+  "Scroll up half a page and try to preserve cursor position."
+  (interactive)
+  (let ((line-num (count-lines (window-start) (point))))
+    (scroll-down-command (/ (window-body-height) 2))
+    (move-to-window-line line-num)))
+
+(defun half-page-down ()
+  "Scroll down half a page and try to preserve cursor position."
+  (interactive)
+  (let ((line-num (count-lines (window-start) (point))))
+    (scroll-up-command (/ (window-body-height) 2))
+    (move-to-window-line line-num)))
+
+(global-set-key (kbd "C-v") 'half-page-down)
+(global-set-key (kbd "M-v") 'half-page-up)
+
 (setq xref-search-program 'ripgrep)
 (provide 'basic-settings)
