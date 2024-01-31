@@ -1,7 +1,5 @@
 (setq lexical-binding t)
-(setq gc-cons-threshold-before-init gc-cons-threshold)
-(setq gc-cons-percentage 0.4)
-(setq gc-cons-threshold (* 1024 1024 300))
+
 (setq debug-on-error nil)
 (setq package-enable-at-startup nil)
 
@@ -9,8 +7,7 @@
 (setq initial-scratch-message "I use Emacs BTW\n\n")
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq gc-cons-threshold gc-cons-threshold-before-init)
-
+            (bob/set-gc-configuration)
             (insert (format "Emacs ready in %s with %d garbage collections.\nGC elapsed: %s"
                             (format "%.2f seconds"
                                     (float-time
@@ -31,6 +28,9 @@
 (setq use-package-verbose t)
 (setq use-package-debug t)
 (setq use-package-compute-statistics t)
+;; use-package-enable-imenu-support must be
+;; set before requiring use-package.
+(setq use-package-enable-imenu-support t)
 
 (use-package startup
   :demand t
