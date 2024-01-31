@@ -219,4 +219,31 @@ to directory DIR."
                            (message "Garbage Collector has run for %.06fsec"
                                     (k-time (garbage-collect)))))))
 
+(defun bob/default--display-to-item (display-name hash-table)
+  "Map a display name to item name. HASH-TABLE "
+  (if-let* ((conflicted-value (gethash display-name
+                                       hash-table)))
+      (format "%s-%s" conflicted-value (random* 100000))
+      display-name))
+
+(cl-defun bob/completing-read (prompt items
+                                      &optional
+                                      (display-to-item 'bob/default--display-to-item)
+                                      &keys file-history)
+  (let ((display-map (make-hash-table :test 'equal)))
+    (dolist (item items)
+      (puthash (funcall display-to-item item display-map)
+               item
+               display-map))
+    (-if-let* ((completing-result (completing-read prompt
+                                                   display-map
+                                                   nil
+                                                   nil
+                                                   nil
+                                                   file-history))
+               (found-value (gethash completing-result
+                                     display-map)))
+        found-value
+      completing-result)))
+
 (provide 'bobs-utils)

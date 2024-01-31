@@ -1,7 +1,7 @@
 (defun bobs/project-read-file-name-function (prompt
                                              all-files &optional predicate
                                              hist mb-default)
-  (let* ((display-name-to-file-path-hash-map (display-name-to-file-path all-files (round (* 0.80 (frame-width))))))
+  (let* ((display-name-to-file-path-hash-map (display-name-to-file-path all-files (round (* 0.95 (frame-width))))))
     (gethash (completing-read (concat prompt ": ")
                               display-name-to-file-path-hash-map
                               predicate
@@ -10,17 +10,40 @@
                               hist)
              display-name-to-file-path-hash-map)))
 
+(defun file-name-prefix (file-path max-file-size)
+  (let* ((file-name (file-name-nondirectory file-path))
+        (space-padding-after-file-name (make-string (min 5 (- max-file-size (length file-name)))
+                                                    ?\s)))
+   (format "%s %s%s"
+           file-name
+           space-padding-after-file-name
+           (propertize "➜" 'face 'modus-themes-heading-0))))
+
+(defun longest--file-name (files)
+  (file-name-nondirectory (-max-by (lambda (f1 f2)
+                                     (> (length (file-name-nondirectory f1))
+                                        (length (file-name-nondirectory f2))))
+                                   files)))
+
 (defun display-name-to-file-path (files max-length)
-  (let ((names-to-path-map (make-hash-table :test 'equal)))
+  (let ((names-to-path-map (make-hash-table :test 'equal))
+        (longest-file-name-length (length (longest--file-name files))))
     (dolist (file files)
-      (let* ((truncate-path-name (bobs/truncate--path-name (s-chop-prefix (expand-file-name (project-root (project-current)))
-                                                                         file)
-                                                          max-length))
-             (key-exists-p (gethash truncate-path-name names-to-path-map))
-             (unique-truncate-path-name (if key-exists-p
-                                            (format "%s<%s>" truncate-path-name (file-name-directory file))
-                                          truncate-path-name)))
-        (puthash truncate-path-name
+      (let* ((file-name-prefixed (file-name-prefix file longest-file-name-length))
+             (truncate-path-name (bobs/truncate--path-name (s-chop-prefix (expand-file-name (project-root (project-current)))
+                                                                          file)
+                                                           (- max-length (length file-name-prefixed))))
+             (displayed-file-name (format "%s %s"
+                                          file-name-prefixed
+                                          truncate-path-name))
+             (key-exists-p (gethash displayed-file-name names-to-path-map))
+             (unique-displayed-file-name (if key-exists-p
+                                             (format "%s<%s> path depth: %s>"
+                                                     displayed-file-name
+                                                     (file-name-directory file)
+                                                     (length file))
+                                           displayed-file-name)))
+        (puthash unique-displayed-file-name
                  file
                  names-to-path-map)))
     names-to-path-map))
@@ -62,8 +85,16 @@
 
 (defun override-project-prompt-project-dir ()
   (progn
-    (defun parent-directory-name (dir-path)
-      (file-name-base (directory-file-name (file-name-directory dir-path))))
+    (defun parent-directory-name (dir-path display-name-to-item-hash-table)
+      (let* ((file-name-nondirectory (directory-file-name (file-name-directory dir-path)))
+             (hash-colition (gethash file-name-nondirectory display-name-to-item-hash-table)))
+          (if hash-colition
+              (progn
+                (error "hash collision %s" hash-colition)
+                (format "%s-(%s)"
+                       file-name-nondirectory
+                       (cl-random 100)))
+            file-name-nondirectory)))
 
     (defun project-prompt-project-dir ()
       "Prompt the user for a directory that is one of the known project roots.

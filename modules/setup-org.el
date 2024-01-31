@@ -256,7 +256,7 @@
       (find-file target)
     (denote--command-with-default-title #'denote)))
 
-(defun bob/truncate-denote-file-name (file-name)
+(defun bob/truncate-denote-file-name (file-name hash-map)
   (s-replace-regexp "^.+--" "" file-name))
 
 (use-package denote
