@@ -34,9 +34,7 @@
   (exec-path-from-shell-initialize))
 
 (use-package fnm
-  :after (exec-path-from-shell)
-  :commands (fnm-use fnm-node-bin-path)
-  :load-path "~/source/fnm.el"
+  :straight (:host github :repo "bobrowadam/fnm.el")
   :ensure nil)
 
 (use-package short-lambda

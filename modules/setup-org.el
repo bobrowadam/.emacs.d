@@ -224,10 +224,11 @@
       (condition-case err
           (progn
             (erase-buffer)
-            (insert (pp-to-string (json-parse-string response
-                                                     :object-type 'alist
-                                                     :array-type 'list
-                                                     :null-object 'nil)))
+            (when response
+                (insert (pp-to-string (json-parse-string response
+                                                      :object-type 'alist
+                                                      :array-type 'list
+                                                      :null-object 'nil))))
             (verb-response-body-mode +1))
         (json-parse-error response)))))
 
@@ -264,6 +265,7 @@
   :custom
   (denote-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
   (denote-date-prompt-use-org-read-date t)
+  (denote-prompts '(title keywords file-type))
   :bind
   ("C-c n f" . bob/denote-open-or-create)
   ("C-c n r" . denote-rename-file)

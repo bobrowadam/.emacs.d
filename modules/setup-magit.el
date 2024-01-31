@@ -58,6 +58,7 @@
         magit-commit-show-diff nil
         magit-revert-buffers 1
         magit-display-buffer-function #'magit-display-buffer-traditional
+        magit-refresh-status-buffer nil
         ;; #'magit-display-buffer-fullframe-status-v1
         )
   (magit-toggle-verbose-refresh)
@@ -80,6 +81,8 @@
 
 (use-package forge
   :after magit
+  :custom
+  (forge-topic-list-limit '(5 . -1))
   :init (setq forge-bug-reference-hooks nil))
 
 (use-package github-review

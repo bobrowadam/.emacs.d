@@ -5,6 +5,7 @@
   (flycheck-mode-on-safe)
   (flycheck-eglot-mode))
 
+(defvar eglot-managed-mode-hook '())
 (defun enable-flycheck-after-eglot ()
   (progn (setq temp-before-hook eglot-managed-mode-hook)
          (add-hook 'eglot-managed-mode-hook
@@ -233,10 +234,10 @@ before running 'npm install'."
                                (comint-read-input-ring 'silent)))))
 
 (use-package eglot
+  :after (fnm)
   :commands (eglot eglot-ensure eglot-shutdown-all)
   :custom
-  ;; change this back to 0 after debugging!
-  (eglot-events-buffer-size 0)
+  (eglot-events-buffer-config '(:size 0 :format full))
   :config
   (add-to-list 'eglot-server-programs
                `((js-mode typescript-mode)
@@ -245,7 +246,8 @@ before running 'npm install'."
                `(web-mode
                  ,(concat (fnm-node-bin-path "18") "/vls")
                  "--stdio"))
-
+  (add-to-list 'eglot-server-programs
+               '(swift-mode . ("xcrun" "sourcekit-lsp")))
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
   :bind
@@ -258,7 +260,7 @@ before running 'npm install'."
         ("M-?" . xref-find-references)
         ("C-c C-a" . eglot-code-actions))
   :hook
-  ((js2-mode typescript-mode web-mode python-mode rust-mode) . eglot-ensure))
+  ((js2-mode typescript-mode web-mode python-mode rust-mode swift-mode) . eglot-ensure))
 
 (defun eslint-fix ()
     "Format the current file with ESLint."
@@ -443,7 +445,9 @@ before running 'npm install'."
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
   :bind (:map copilot-completion-map
-              ("C-<tab>" . copilot-accept-completion)))
+              ("C-<tab>" . copilot-accept-completion))
+  :hook
+  (typescript-mode web-mode))
 
 (use-package cider)
 (use-package clojure-mode)
@@ -474,7 +478,6 @@ before running 'npm install'."
                  :sourceMaps t
                  :resolveSourceMapLocations ["**/dist/**/*"]
                  :cwd dape-cwd-fn
-                 :program dape-find-file-buffer-default
                  :autoAttachChildProcesses t
                  :type "pwa-node"
                  :request "attach"
@@ -500,6 +503,15 @@ before running 'npm install'."
   :bind-keymap ("\C-c\C-v" . erefactor-map))
 
 (use-package dumb-jump
-  :init
+  :ensure t
+  :config
+  (setq dumb-jump-selector 'popup)
   (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
+
+(use-package swift-mode
+  :after (eglot))
+
+(use-package flycheck-swift
+  :after (flycheck))
+
 (provide 'prog)

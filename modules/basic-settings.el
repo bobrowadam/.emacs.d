@@ -4,6 +4,7 @@
   (global-hl-line-mode))
 
 (setq user-login-name "Adam Bobrow"
+      garbage-collection-messages nil
       undo-limit (* 1024 1000) ;; 1 Mb seems OK
       scroll-preserve-screen-position nil
       make-backup-files nil
@@ -36,6 +37,15 @@
       ring-bell-function 'ignore
       visible-bell nil
       enable-local-variables :safe)
+
+;; Default was too low.
+;; Increase for better lsp performance.
+(setq read-process-output-max (* 3 1024 1024)) ;; 3mb
+
+;; Default of 800 was too low.
+;; Avoid Lisp nesting exceeding in swift-mode.
+(setq max-lisp-eval-depth 10000)
+(setq max-specpdl-size 10000)
 
 (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
@@ -162,6 +172,11 @@
 (global-unset-key (kbd "C-<wheel-up>"))
 (global-unset-key (kbd "C-<wheel-down>"))
 
+(global-unset-key (kbd "C-M-<mouse-5>"))
+(global-unset-key (kbd "C-M-<mouse-4>"))
+(global-unset-key (kbd "C-M-<wheel-down>"))
+(global-unset-key(kbd "C-M-<wheel-up>"))
+
 ;; Map movement keys to Hebrew letters:
 (global-set-key (kbd "C-כ") 'forward-char)
 (global-set-key (kbd "C-נ") 'backward-char)
@@ -190,4 +205,5 @@
 (global-set-key (kbd "M-v") 'half-page-up)
 
 (setq xref-search-program 'ripgrep)
+
 (provide 'basic-settings)

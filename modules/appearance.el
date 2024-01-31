@@ -18,7 +18,13 @@
   ;; (modus-themes-select 'modus-vivendi-tinted)
   (setq modus-vivendi-tritanopia-palette-overrides 
         '((bg-main "grey6")))
-  (modus-themes-select 'modus-vivendi-tritanopia))
+  (modus-themes-select 'modus-vivendi-tritanopia)
+  :hook
+  (modus-themes-after-load-theme . bobs-modeline/enable))
+
+(use-package ef-themes
+  :hook
+  (ef-themes-post-load . bobs-modeline/enable))
 
 (use-package spacious-padding
   :demand t
