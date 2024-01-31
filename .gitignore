@@ -65,3 +65,4 @@ transient/*
 /semanticdb/
 /forge-database-v9-20231009-1133.sqlite
 /debug-adapters/
+/forge-database-v11-20240130-1210.sqlite
