@@ -1,3 +1,6 @@
+(use-package flymake
+  :custom
+  (flymake-error-bitmap '(right-arrow modus-themes-prominent-error)))
 
 (use-package rust-mode)
 
@@ -325,32 +328,9 @@ before running 'npm install'."
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
   :if (window-system))
 
-(use-package rainbow-delimiters
-  :disabled t
-  :hook (prog-mode . rainbow-delimiters-mode))
-
-(use-package tree-sitter
-  :hook ((js2-mode typescript-mode c-mode c++-mode rust-mode json-mode) . tree-sitter-hl-mode)
-  :ensure t)
-
-(use-package tree-sitter-langs
-  :init
-  (add-to-list 'tree-sitter-major-mode-language-alist (cons 'web-mode 'html))
-  :ensure t
-  :after tree-sitter)
-
 (use-package json-mode)
 (use-package jq-format
   :after json-mode)
-
-(use-package ts-fold
-  :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
-  :init
-  :hook ((js2-mode typescript-mode
-                   c-mode c++-mode rust-mode) . ts-fold-mode)
-  :bind (:map ts-fold-mode
-              ("C-=" . ts-fold-toggle)
-              ("C-+" . ts-fold-open-recursively)))
 
 (use-package outline
   :ensure nil
