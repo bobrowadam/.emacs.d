@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("navigation.el"
+((#1="elfeed entry \"Anyone using Emacs with Swift?\""
+    (id "www.reddit.com" . "t3_1agrhfy")
+    (location . "Anyone using Emacs with Swift?")
+    (position . 441)
+    (handler . elfeed-show-bookmark-handler)
+    (defaults #1# "*elfeed-entry*"))
+("navigation.el"
  (filename . "~/.emacs.d/modules/navigation.el")
  (front-context-string . "(use-package con")
  (rear-context-string)

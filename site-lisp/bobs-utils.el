@@ -209,9 +209,7 @@ to directory DIR."
      (float-time (time-since time))))
 
 ;; GC optimizations taken from: https://akrl.sdf.org/#orgc15a10d
-;; Set garbage collection threshold to 1GB.
-(defun bob/set-gc-configuration ()
-  (setq gc-cons-threshold #x40000000)
+(defun bob/set-gc-timer ()
   ;; When idle for 15sec run the GC no matter what.
   (defvar k-gc-timer
     (run-with-idle-timer 15 t

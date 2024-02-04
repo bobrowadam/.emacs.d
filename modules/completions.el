@@ -39,6 +39,12 @@
   :hook
   (minibuffer-setup . corfu-enable-in-minibuffer))
 
+(use-package nerd-icons-corfu
+  :after (corfu)
+  :config
+  (message "loading nerd-icons-corfu")
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
 (use-package cape
   :demand t
   :init

@@ -5,9 +5,12 @@
 
 (setq initial-buffer-choice t)
 (setq initial-scratch-message "I use Emacs BTW\n\n")
+
+(setq gc-cons-percentage 0.6)
+(setq gc-cons-threshold most-positive-fixnum)
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (bob/set-gc-configuration)
+            (bob/set-gc-timer)
             (insert (format "Emacs ready in %s with %d garbage collections.\nGC elapsed: %s"
                             (format "%.2f seconds"
                                     (float-time

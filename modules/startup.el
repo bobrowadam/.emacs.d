@@ -34,6 +34,7 @@
   (exec-path-from-shell-initialize))
 
 (use-package fnm
+  :demand t
   :straight (:host github :repo "bobrowadam/fnm.el")
   :ensure nil)
 

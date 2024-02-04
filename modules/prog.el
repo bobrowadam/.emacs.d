@@ -1,36 +1,3 @@
-(use-package add-node-modules-path :demand t)
-
-(defun setup-flycheck-for-js-modes ()
-  (add-node-modules-path)
-  (flycheck-mode-on-safe)
-  (flycheck-eglot-mode))
-
-(defvar eglot-managed-mode-hook '())
-(defun enable-flycheck-after-eglot ()
-  (progn (setq temp-before-hook eglot-managed-mode-hook)
-         (add-hook 'eglot-managed-mode-hook
-                   #'setup-flycheck-for-js-modes)))
-
-(use-package flycheck
-  :commands (flycheck-mode-on-safe)
-  :config
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
-  (flycheck-add-mode 'javascript-eslint 'js2-mode)
-  (flycheck-add-mode 'javascript-eslint 'typescript-mode)
-  :hook
-  (typescript-mode . enable-flycheck-after-eglot)
-  (js2-mode . enable-flycheck-after-eglot)
-  (web-mode . enable-flycheck-after-eglot))
-
-(use-package flycheck-eglot
-  :ensure t
-  :custom (flycheck-eglot-exclusive nil))
-
-(use-package flycheck-posframe
-  :disabled t
-  :ensure t
-  :after flycheck
-  :config (add-hook 'flycheck-mode-hook #'flycheck-posframe-mode))
 
 (use-package rust-mode)
 
@@ -72,19 +39,19 @@
     9229))
 
 (defun get--inspect-processes-port ()
- (cl-remove-if-not 'identity
-  (mapcar
-   (lambda (process)
-     (if-let ((match (s-match "inspect=\\([0-9]+\\)" (nth 2 (process-command process)))))
-         (string-to-number (cadr match))))
-   (cl-remove-if-not
-    (lambda (p) (s-contains? "comint" (process-name p)))
-    (process-list)))))
+  (cl-remove-if-not 'identity
+                    (mapcar
+                     (lambda (process)
+                       (if-let ((match (s-match "inspect=\\([0-9]+\\)" (nth 2 (process-command process)))))
+                           (string-to-number (cadr match))))
+                     (cl-remove-if-not
+                      (lambda (p) (s-contains? "comint" (process-name p)))
+                      (process-list)))))
 
 (defun bob/compilation-buffer-name ()
   (if-let ((projcet-path (nth 2 (project-current))))
       (format "TS-COMPILE -- %s"
-           (get-dir-name projcet-path))))
+              (get-dir-name projcet-path))))
 
 (defun npm-run (&optional normal-mode)
   "Debug typescript project on watch mode
@@ -106,10 +73,10 @@ NORMAL-MODE is for not running with debugger"
             (t
              (let ((compilation-command (if normal-mode
                                             (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
-                                                  (project-name (project-current)))
+                                                    (project-name (project-current)))
                                           (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
-                                                    (get--available-inspect-port)
-                                                    (project-name (project-current))))))
+                                                  (get--available-inspect-port)
+                                                  (project-name (project-current))))))
                (compilation-start compilation-command
                                   t (lambda (mode)
                                       compilation-buffer-name))))))))
@@ -145,14 +112,10 @@ before running 'npm install'."
 
 (use-package typescript-mode
   :hook
-  (typescript-mode . add-node-modules-path)
-  (typescript-mode . eldoc-mode)
   (typescript-mode . fnm-use)
   :bind
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
-
-
   :config
   (setq-default typescript-indent-level 2))
 
@@ -167,16 +130,16 @@ before running 'npm install'."
   (interactive)
   "Ask the user to choose a jest config file from the project root"
   (if-let ((config-file (completing-read "Choose a jest config file: "
-                                       (directory-files (project-root (project-current))
-                                                        nil
-                                                        "jest"))))
-    (add-to-list 'jest-test-options (format "-c=%s" config-file))))
+                                         (directory-files (project-root (project-current))
+                                                          nil
+                                                          "jest"))))
+      (add-to-list 'jest-test-options (format "-c=%s" config-file))))
 
 (use-package js2-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
-  (js2-mode . add-node-modules-path)
+  (js2-mode . fnm-use)
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
@@ -190,15 +153,13 @@ before running 'npm install'."
   (setq-default js-indent-level 2))
 
 (use-package web-mode
-  :demand t
   :mode
   ("\\.html\\'" . web-mode)
   ("\\.cssl\\'" . web-mode)
   ("\\.jsx\\'" . web-mode)
   ("\\.vue\\'" . web-mode)
   :hook
-  (web-mode . add-node-modules-path)
-  (web-mode . eldoc-mode)
+  (fnm-use)
   (web-mode . (lambda () (setq-local font-lock-defaults nil)))
   :config
   (setq web-mode-markup-indent-offset 2)
@@ -229,9 +190,9 @@ before running 'npm install'."
 (use-package nodejs-repl
   :hook
   (nodejs-repl-mode . (lambda ()
-                             (progn
-                               (setq comint-input-ring-file-name "~/.node_repl_history")
-                               (comint-read-input-ring 'silent)))))
+                        (progn
+                          (setq comint-input-ring-file-name "~/.node_repl_history")
+                          (comint-read-input-ring 'silent)))))
 
 (use-package eglot
   :after (fnm)
@@ -258,35 +219,31 @@ before running 'npm install'."
         ("M-p" . backward-paragraph)
         ("M-." . xref-find-definitions)
         ("M-?" . xref-find-references)
-        ("C-c C-a" . eglot-code-actions))
+        ("C-c C-a" . eglot-code-actions)
+        ("C-c ! l" . flymake-show-buffer-diagnostics)
+        ("C-c ! n" . flymake-goto-next-error)
+        ("C-c ! p" . flymake-goto-prev-error))
   :hook
   ((js2-mode typescript-mode web-mode python-mode rust-mode swift-mode) . eglot-ensure))
 
 (defun eslint-fix ()
-    "Format the current file with ESLint."
-    (interactive)
-    (unless buffer-file-name
-      (error "ESLint requires a file-visiting buffer"))
-    (when (buffer-modified-p)
-      (if (y-or-n-p (format "Save file %s? " buffer-file-name))
-          (save-buffer)
-        (error "ESLint may only be run on an unmodified buffer")))
+  "Format the current file with ESLint."
+  (interactive)
+  (unless buffer-file-name
+    (error "ESLint requires a file-visiting buffer"))
+  (when (buffer-modified-p)
+    (if (y-or-n-p (format "Save file %s? " buffer-file-name))
+        (save-buffer)
+      (error "ESLint may only be run on an unmodified buffer")))
 
-    (let* ((default-directory (project-root (project-current t)))
-           ;; (eslint-fix-executable "eslint")
-           (eslint (format "%snode_modules/.bin/eslint" default-directory))
-           (options (list "--fix" buffer-file-name)))
-      (unless eslint
-        (error "Executable ‘%s’ not found" eslint-fix-executable))
-      (apply #'call-process eslint nil 0 nil options)
-      (revert-buffer nil t t)))
-
-;; (use-package flymake-eslint
-;;   :after (eglot)
-;;   :hook
-;;   (typescript-mode . enable-flymake-after-eglot)
-;;   (js2-mode . enable-flymake-after-eglot)
-;;   (web-mode . enable-flymake-after-eglot))
+  (let* ((default-directory (project-root (project-current t)))
+         ;; (eslint-fix-executable "eslint")
+         (eslint (format "%snode_modules/.bin/eslint" default-directory))
+         (options (list "--fix" buffer-file-name)))
+    (unless eslint
+      (error "Executable ‘%s’ not found" eslint-fix-executable))
+    (apply #'call-process eslint nil 0 nil options)
+    (revert-buffer nil t t)))
 
 (defadvice enable-paredit-mode (after activate)
   (smartparens-mode -1))
@@ -402,21 +359,15 @@ before running 'npm install'."
               ("C-=" . outline-cycle)
               ("C-+" . outline-show-all)))
 
-
-(use-package haskell-mode :disabled t)
-(use-package haskell-snippets :disabled t)
-(use-package cider :disabled t)
-(use-package clojure-mode :disabled t)
-
 (use-package sly
-  :init
-  (setq inferior-lisp-program "sbcl")
+  :custom
+  (inferior-lisp-program "sbcl")
   :bind (:map sly-editing-mode-map
               ("C-c M-c" . avy-goto-word-1))
   :hook
   (sly-mode . (lambda ()
-     (unless (sly-connected-p)
-       (save-excursion (sly))))))
+                (unless (sly-connected-p)
+                  (save-excursion (sly))))))
 
 (use-package sly-repl-ansi-color
   :after (sly)
@@ -510,8 +461,5 @@ before running 'npm install'."
 
 (use-package swift-mode
   :after (eglot))
-
-(use-package flycheck-swift
-  :after (flycheck))
 
 (provide 'prog)

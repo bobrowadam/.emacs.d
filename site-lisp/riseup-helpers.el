@@ -62,14 +62,16 @@ This is used for 'clone-riseup-repo'")
   (with-temp-file file-name
     (insert (to-string (get-all-riseup-repos)))))
 
-(defun import-customer (customer-id)
-  (interactive "N")
-  (browse-url (format "https://mamadmin.riseup.co.il/#/home/customer/%s/backup" customer-id))
-  (sleep-for 13)
-  (let ((default-directory (format "%s/source/services/catapult" (getenv "HOME"))))
+(defun import-customer (&optional dont-backup)
+  (interactive "P")
+  (let ((customer-id (read-number "Enter customer id:\n")))
+   (unless dont-backup
+     (browse-url (format "https://mamadmin.riseup.co.il/#/home/customer/%s/backup" customer-id)))
+   (sleep-for 13)
+   (let ((default-directory (format "%s/source/services/catapult" (getenv "HOME"))))
      (async-shell-command (format "npm run import-customer %s" customer-id)
                           "*import-customer-output-buffer*"
-                          "*import-customer-error-buffer*")))
+                          "*import-customer-error-buffer*"))))
 
 (defun browse-customer-in-mamadmin (&optional project)
   "Browse riseup customer in mamadmin"

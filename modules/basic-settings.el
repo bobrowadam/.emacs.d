@@ -1,7 +1,6 @@
 (use-package hl-line
-  :disabled t
-  :config
-  (global-hl-line-mode))
+  :hook
+  (prog-mode))
 
 (setq user-login-name "Adam Bobrow"
       garbage-collection-messages nil
