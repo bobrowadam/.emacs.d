@@ -48,7 +48,7 @@
   :bind
   ("C-x 8 l" . insert-λ))
 
-(setq initial-major-mode 'lisp-interaction-mode)
+(setq initial-major-mode 'fundamental-mode)
 
 (use-package request)
 (use-package plz)

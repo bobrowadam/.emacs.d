@@ -141,12 +141,6 @@
   :config
   (vertico-mode 1))
 
-(use-package vertico-posframe
-  :disabled t
-  :demand t
-  :after vertico
-  :config (vertico-posframe-mode nil))
-
 (use-package marginalia
   :after vertico
   :custom

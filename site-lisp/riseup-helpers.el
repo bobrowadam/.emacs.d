@@ -147,29 +147,29 @@ Else, just look for the given string."
                        customer-id
                        error-thrown))))))
 
-(transient-define-prefix data-dog-jump ()
-  "Search in data dog"
-  ["Data Dog Jump"
-   [("c " "Customer" browse-data-dog-customer)]
-   [("s " "Service" browse-data-dog-service)]
-   [("t " "Text" browse-data-dog-text)]])
+(defun init-riseup-actions ()
+  (progn
+    (transient-define-prefix data-dog-jump ()
+      "Search in data dog"
+      ["Data Dog Jump"
+       [("c " "Customer" browse-data-dog-customer)]
+       [("s " "Service" browse-data-dog-service)]
+       [("t " "Text" browse-data-dog-text)]])
 
-(transient-define-prefix customer-actions ()
-  "Customer actions"
-  ["Customer functions"
-   [("v " "Run customer's version" run-customer-version)]
-   [("c " "Customer Home" browse-customer-in-mamadmin)]
-   [("m " "Customer Merge Screen" browse-customer-merge-in-mamadmin)]
-   [("I " "Import customer from prod" import-customer)]])
+    (transient-define-prefix customer-actions ()
+      "Customer actions"
+      ["Customer functions"
+       [("v " "Run customer's version" run-customer-version)]
+       [("c " "Customer Home" browse-customer-in-mamadmin)]
+       [("m " "Customer Merge Screen" browse-customer-merge-in-mamadmin)]
+       [("I " "Import customer from prod" import-customer)]])
 
-(transient-define-prefix riseup-actions ()
-  "Run Riseup actions"
-  ["Riseup actions"
-   [("m " "Customer Actions" customer-actions)]
-   [("d " "Data Dog DWIM" browse-data-dog-dwim)]
-   [("s " "Search for service by port number" search-for-riseup-service-by-port)]])
-
-(bind-key "C-c J" 'riseup-actions)
+    (transient-define-prefix riseup-actions ()
+      "Run Riseup actions"
+      ["Riseup actions"
+       [("m " "Customer Actions" customer-actions)]
+       [("d " "Data Dog DWIM" browse-data-dog-dwim)]
+       [("s " "Search for service by port number" search-for-riseup-service-by-port)]])))
 
 (defconst *general-env* "/Users/bob/source/bob/config_mgmt/local/general.env")
 (defun map--env-file-to-port->service (file-name)
