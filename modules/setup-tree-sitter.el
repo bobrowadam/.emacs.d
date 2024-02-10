@@ -1,5 +1,6 @@
 ;;; setup-tree-sitter.el --- summary -*- lexical-binding: t -*-
 (use-package treesit
+  :disabled t
   :ensure nil
   :demand t
   :init
@@ -57,6 +58,7 @@
   )
 
 (use-package treesit-auto
+  :disabled t
   :after (treesit)
   :custom
   (treesit-auto-install 'prompt)
@@ -64,8 +66,11 @@
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 
+
+(use-package tree-sitter)
+
 (use-package ts-fold
-  :after (treesit)
+  :after (tree-sitter)
   :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
   :init
   :hook ((js2-mode typescript-mode
