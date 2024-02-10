@@ -4,7 +4,7 @@
 (setq package-enable-at-startup nil)
 
 (setq initial-buffer-choice t)
-(setq initial-scratch-message "I use Emacs BTW\n\n")
+(setq initial-scratch-message nil)
 
 (setq gc-cons-percentage 0.6)
 (setq gc-cons-threshold most-positive-fixnum)
@@ -16,7 +16,11 @@
                                     (float-time
                                      (time-subtract after-init-time before-init-time)))
                             gcs-done
-                            gc-elapsed))))
+                            gc-elapsed))
+            (let ((animated-string "I use emacs BTW"))
+                (animate-string animated-string
+                             3
+                             0))))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
