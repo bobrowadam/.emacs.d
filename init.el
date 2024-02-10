@@ -96,7 +96,7 @@
              browse-customer-in-mamadmin browse-customer-merge-in-mamadmin
              browse-data-dog-dwim run-customer-version
              search-for-riseup-service-by-port init-riseup-actions
-             init-riseup-actions riseup-actions)
+             init-riseup-actions riseup-actions is-typescript-project)
   :config
   (init-riseup-actions)
   :bind

@@ -193,7 +193,7 @@ Else, just look for the given string."
              service-port
              (cdr (assoc service-port port-to-service-map)))))
 
-(defun is--typescript-project ()
+(defun is-typescript-project ()
   "Returns true when project has an NPM build script for typescript"
   (if-let* ((project (project-current))
             (default-directory (project-root project))

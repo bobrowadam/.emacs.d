@@ -17,7 +17,7 @@
 (defun npm-run-build ()
   "Build typescript project on watch mode"
   (interactive)
-  (when (is--typescript-project)
+  (when (is-typescript-project)
     (let ((default-directory (project-root (project-current t)))
           (comint-scroll-to-bottom-on-input t)
           (comint-scroll-to-bottom-on-output t)
@@ -60,12 +60,13 @@
   "Debug typescript project on watch mode
 NORMAL-MODE is for not running with debugger"
   (interactive "P")
-  (when (is--typescript-project)
+  (when (is-typescript-project)
     (let ((default-directory (project-root (project-current t)))
           (comint-scroll-to-bottom-on-input t)
           (comint-scroll-to-bottom-on-output t)
           (comint-process-echoes t)
-          (compilation-buffer-name (bob/compilation-buffer-name)))
+          (compilation-buffer-name (bob/compilation-buffer-name))
+          (project-main-file (bob/project-main-file-overides (project-name (project-current)))))
       (cond ((and (not (eq major-mode 'comint-mode))
                   (car (memq (get-buffer compilation-buffer-name)
                              (buffer-list))))
@@ -76,13 +77,18 @@ NORMAL-MODE is for not running with debugger"
             (t
              (let ((compilation-command (if normal-mode
                                             (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
-                                                    (project-name (project-current)))
+                                                    project-main-file)
                                           (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
                                                   (get--available-inspect-port)
-                                                  (project-name (project-current))))))
+                                                  project-main-file))))
                (compilation-start compilation-command
                                   t (lambda (mode)
                                       compilation-buffer-name))))))))
+
+(defun bob/project-main-file-overides (project-name)
+  (pcase  project-name ("highland-workshop" "highlander")
+          (t project-name)))
+
 (defun bob/get-inspect-port ()
   (if-let ((compilation-process (get-buffer-process (bob/compilation-buffer-name)))
            (inspect-string (--find
@@ -372,13 +378,16 @@ before running 'npm install'."
 (use-package git-link)
 
 (use-package copilot
-  :after fnm
+  :after (fnm corfu)
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
-  :bind (:map copilot-completion-map
-              ("C-<tab>" . copilot-accept-completion))
+  :bind 
+  (:map copilot-completion-map
+        ("C-<tab>" . copilot-accept-completion))
+  (:map corfu-mode-map
+        ("C-<tab>" . copilot-accept-completion))
   :hook
-  (typescript-mode web-mode))
+  (typescript-mode web-mode js2-mode))
 
 (use-package cider)
 (use-package clojure-mode)
