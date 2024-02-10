@@ -73,6 +73,12 @@
   :demand t
   :load-path "./modules")
 
+(use-package setup-tree-sitter
+  :disabled t
+  :ensure nil
+  :demand t
+  :load-path "./modules")
+
 (use-package setup-magit
   :after startup
   :demand t
