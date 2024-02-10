@@ -20,6 +20,7 @@
 (use-package org
   :custom
   (org-babel-python-command "python3.11")
+  (org-hide-emphasis-markers t)
   :commands (org-agenda)
   :ensure t
   :if (window-system)
@@ -247,6 +248,14 @@
 
 (use-package ob-typescript)
 
+;; overide denote file prompt
+(defun denote-file-prompt (&optional files-matching-regexp)
+  "Prompt for file with identifier in variable `denote-directory'.
+With optional FILES-MATCHING-REGEXP, filter the candidates per
+the given regular expression."
+  (let ((files (denote-directory-files files-matching-regexp :omit-current)))
+    (completing-read "Select note: " files nil nil nil 'denote-file-history)))
+
 (defun bob/denote-open-or-create (target)
   "See `denote-open-or-create`"
   (interactive (list (bob/completing-read "Select note: "
@@ -267,7 +276,7 @@
   (denote-date-prompt-use-org-read-date t)
   (denote-prompts '(title keywords file-type))
   :bind
-  ("C-c n f" . bob/denote-open-or-create)
+  ("C-c n d" . denote)
   ("C-c n r" . denote-rename-file)
   ("C-c n l" . denote-link-or-create))
 
@@ -275,12 +284,10 @@
   :commands (consult-notes
              consult-notes-search-in-all-notes)
   :config
-  (setq consult-notes-file-dir-sources '(("Denote"  ?d  "~/denote-notes/")))
   (consult-notes-org-headings-mode)
-  (when (locate-library "denote")
-    (consult-notes-denote-mode))
+  (consult-notes-denote-mode)
   :bind
-  ("C-c n d" . consult-notes)
+  ("C-c n f" . consult-notes)
   ("C-c n g" . consult-notes-search-in-all-notes))
 
 (provide 'setup-org)
