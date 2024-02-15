@@ -64,7 +64,7 @@
   :bind
   (("C-x p w" . project-switch-to-open-project)
    ("C-x p s" . eat-project)
-   ("C-x p b" . project-switch-to-buffer)
+   ("C-x p b" . bob/project-switch-project)
    ("C-x p m"  . magit-project-status)
    ("C-x p C-m"  . project-dired)
    ("C-x p i" . #'project-list-file-buffers)
