@@ -16,9 +16,9 @@
 ("org-refile-last-stored"
  (filename .
            "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Checkout ")
- (rear-context-string . "2024-01-27 Sat>\n") (position . 9015)
- (last-modified 26032 59212 60667 0))
+ (front-context-string . "* TODO Fix consu")
+ (rear-context-string . "2024-02-13 Tue>\n") (position . 9201)
+ (last-modified 26056 39141 73219 0))
 ("denote" (filename . "~/denote/")
  (front-context-string . "20231204T232526-")
  (rear-context-string . "77 Dec  4 23:41 ") (position . 212)
