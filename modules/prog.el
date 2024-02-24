@@ -66,7 +66,7 @@ NORMAL-MODE is for not running with debugger"
           (comint-scroll-to-bottom-on-output t)
           (comint-process-echoes t)
           (compilation-buffer-name (bob/compilation-buffer-name))
-          (project-main-file (bob/project-main-file-overides (project-name (project-current)))))
+          (project-main-file (bob/npm--project-name)))
       (cond ((and (not (eq major-mode 'comint-mode))
                   (car (memq (get-buffer compilation-buffer-name)
                              (buffer-list))))
@@ -85,9 +85,20 @@ NORMAL-MODE is for not running with debugger"
                                   t (lambda (mode)
                                       compilation-buffer-name))))))))
 
-(defun bob/project-main-file-overides (project-name)
-  (pcase  project-name ("highland-workshop" "highlander")
-          (t project-name)))
+(defun bob/npm--project-name ()
+  "Get the current project name from the package json file."
+  (when-let ((project-root-path (project-root (project-current)))
+             (package-json (json-parse-string (read-file (format "%s/package.json" project-root-path))
+                                              :object-type 'alist)))
+    (assocdr 'name package-json)))
+
+(defun bob/project--main-file-overrides (project-name)
+  "Helper function for `npm-run`.
+If the main file of an NPM project is not "
+  (pcase  project-name
+    ("highland-workshop" "highlander")
+    ("skeleton-typescript-service" "example")
+    (_ project-name)))
 
 (defun bob/get-inspect-port ()
   (if-let ((compilation-process (get-buffer-process (bob/compilation-buffer-name)))
