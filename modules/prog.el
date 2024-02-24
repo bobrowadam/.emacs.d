@@ -218,6 +218,7 @@ before running 'npm install'."
                  "--stdio"))
   (add-to-list 'eglot-server-programs
                '(swift-mode . ("xcrun" "sourcekit-lsp")))
+
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
   :bind
@@ -381,16 +382,13 @@ before running 'npm install'."
   :after (fnm corfu)
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
-  :bind 
+  :bind
   (:map copilot-completion-map
         ("C-<tab>" . copilot-accept-completion))
   (:map corfu-mode-map
         ("C-<tab>" . copilot-accept-completion))
   :hook
   (typescript-mode web-mode js2-mode))
-
-(use-package cider)
-(use-package clojure-mode)
 
 (use-package racket-mode
   :disabled t

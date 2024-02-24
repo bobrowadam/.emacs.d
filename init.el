@@ -18,9 +18,9 @@
                             gcs-done
                             gc-elapsed))
             (let ((animated-string "I use emacs BTW"))
-                (animate-string animated-string
-                             3
-                             0))))
+              (animate-string animated-string
+                              3
+                              0))))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")

@@ -51,6 +51,7 @@
 
 ;; This assumes you've installed the package via MELPA.
 (use-package ligature
+  :demand t
   :config
   ;; Enable the "www" ligature in every possible major mode
   (ligature-set-ligatures 't '("www"))

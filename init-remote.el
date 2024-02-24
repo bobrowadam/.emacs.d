@@ -3,18 +3,15 @@
 (setq gc-cons-threshold 10000000)
 (setq debug-on-error nil)
 (setq package-enable-at-startup t)
-(defvar remote-mode t)
+(defconst remote-mode t)
 
 (package-initialize)
+(setq gc-cons-percentage 0.6)
+(setq gc-cons-threshold most-positive-fixnum)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (setq gc-cons-threshold gc-cons-threshold-before-init)
-            (message "Emacs ready in %s with %d garbage collections."
-                     (format "%.2f seconds"
-                             (float-time
-                              (time-subtract after-init-time before-init-time)))
-                     gcs-done)))
+            (bob/set-gc-timer)))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -34,6 +31,7 @@
   :load-path "./modules")
 
 (use-package basic-settings
+  :disabled t
   :after startup
   :load-path "./modules"
   :demand t)
@@ -44,6 +42,7 @@
   :demand t)
 
 (use-package navigation
+  :disabled t
   :after startup
   :demand t
   :load-path "./modules")

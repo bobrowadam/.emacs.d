@@ -24,8 +24,7 @@
   :config
   (push 'toggle-window-split dired-sidebar-toggle-hidden-commands)
   (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
-
-  (setq dired-sidebar-subtree-line-prefix "  → ")
+  (setq dired-sidebar-subtree-line-prefix " ")
   (setq dired-sidebar-theme 'vscode)
   (setq dired-sidebar-use-term-integration t)
   (setq dired-sidebar-use-custom-font t))
@@ -35,11 +34,10 @@
   :after (dired)
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
-
 (use-package all-the-icons-dired
   :demand t
   :custom
-  (setq all-the-icons-dired-monochrome nil)
+  (all-the-icons-dired-monochrome nil)
   :after (dired)
   :hook (dired-mode . all-the-icons-dired-mode))
 
