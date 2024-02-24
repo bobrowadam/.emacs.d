@@ -16,13 +16,9 @@
 ("org-refile-last-stored"
  (filename .
            "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Fix consu")
- (rear-context-string . "2024-02-13 Tue>\n") (position . 9201)
- (last-modified 26056 39141 73219 0))
-("denote" (filename . "~/denote/")
- (front-context-string . "20231204T232526-")
- (rear-context-string . "77 Dec  4 23:41 ") (position . 212)
- (last-modified 25966 18579 296899 0))
+ (front-context-string . "* TODO Add embar")
+ (rear-context-string . "vice-skeleton]]\n") (position . 9653)
+ (last-modified 26072 42792 225956 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa") (rear-context-string)
@@ -57,9 +53,9 @@
 ("org-capture-last-stored"
  (filename .
            "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Fix denote cre")
- (rear-context-string . "20240104T120451\n") (position . 112)
- (last-modified 26050 1635 990944 0))
+ (front-context-string . "* Use davids cas")
+ (rear-context-string . "project buffer \n") (position . 152)
+ (last-modified 26072 40386 270725 0))
 ("setup-magit.el" (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit") (rear-context-string)
  (position . 1) (last-modified 25322 9259 17972 0))
