@@ -52,10 +52,6 @@
                              2)))))
            (enhance-imenu-lisp "bookmarklet-command" "class" "command" "ffi-method" "function" "internal-page-command" "internal-page-command-global" "mode" "parenscript" "user-class"))
      (org-edit-src-content-indentation 0)
-     (cider-shadow-default-options . "app")
-     (cider-default-cljs-repl . shadow)
-     (cider-preferred-build-tool . shadow-cljs)
-     (cider-clojure-cli-global-options . "-A:fig")
      (haskell-process-use-ghci . t)
      (haskell-indent-spaces . 4)))
  '(weechat-color-list
