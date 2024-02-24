@@ -66,8 +66,8 @@ This is used for 'clone-riseup-repo'")
   (interactive "P")
   (let ((customer-id (read-number "Enter customer id:\n")))
    (unless dont-backup
-     (browse-url (format "https://mamadmin.riseup.co.il/#/home/customer/%s/backup" customer-id)))
-   (sleep-for 13)
+     (browse-url (format "https://mamadmin.riseup.co.il/#/home/customer/%s/backup" customer-id))
+     (sleep-for 13))
    (let ((default-directory (format "%s/source/services/catapult" (getenv "HOME"))))
      (async-shell-command (format "npm run import-customer %s" customer-id)
                           "*import-customer-output-buffer*"
