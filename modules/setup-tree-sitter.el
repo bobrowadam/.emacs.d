@@ -68,13 +68,12 @@
 
 
 (use-package tree-sitter)
+(use-package tree-sitter-langs)
 
 (use-package ts-fold
-  :after (tree-sitter)
   :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
   :init
-  :hook ((js2-mode typescript-mode
-                   c-mode c++-mode rust-mode) . ts-fold-mode)
+  :hook ((js-mode typescript-mode c-mode c++-mode rust-mode) . ts-fold-mode)
   :bind (:map ts-fold-mode
               ("C-=" . ts-fold-toggle)
               ("C-+" . ts-fold-open-recursively)))
