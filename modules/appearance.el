@@ -18,11 +18,14 @@
   ;; (modus-themes-select 'modus-vivendi-tinted)
   (setq modus-vivendi-tritanopia-palette-overrides 
         '((bg-main "grey6")))
-  (modus-themes-select 'modus-vivendi-tritanopia)
+  (modus-themes-select 'modus-vivendi-deuteranopia)
   :hook
   (modus-themes-after-load-theme . bobs-modeline/enable))
 
 (use-package ef-themes
+  :demand t
+  :custom
+  (ef-themes-to-toggle '(ef-cyprus ef-melissa-dark))
   :hook
   (ef-themes-post-load . bobs-modeline/enable))
 
@@ -48,6 +51,11 @@
   :demand t
   :load-path "~/source/bobs-modeline/"
   :config (bobs-modeline/enable))
+
+(defun bobs/hide-mode-line ()
+  (setq-local mode-line-format nil))
+
+(add-hook 'comint-mode-hook 'bobs/hide-mode-line)
 
 ;; This assumes you've installed the package via MELPA.
 (use-package ligature

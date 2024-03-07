@@ -35,6 +35,8 @@
   (setq eat-term-name "xterm-256color")
   :bind
   ("C-!" . eat)
-  ("C-c s j" . bob/jump-to-shell))
+  ("C-c s j" . bob/jump-to-shell)
+  :hook
+  (eat-mode . bobs/hide-mode-line))
 
 (provide 'setup-shell)
