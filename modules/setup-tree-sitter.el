@@ -51,11 +51,10 @@
           (typescript-mode . typescript-ts-mode)
           (rust-mode       . rust-ts-mode)))
 
-  ;; (add-to-list 'auto-mode-alist '("CMakeLists\\'" . cmake-ts-mode))
-  ;; (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-ts-mode))
-  ;; (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
-  ;; (add-to-list 'auto-mode-alist '("\\.y[a]?ml\\'" . yaml-ts-mode))
-  )
+  (add-to-list 'auto-mode-alist '("CMakeLists\\'" . cmake-ts-mode))
+  (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.y[a]?ml\\'" . yaml-ts-mode)))
 
 (use-package treesit-auto
   :disabled t
@@ -67,7 +66,8 @@
   (global-treesit-auto-mode))
 
 
-(use-package tree-sitter)
+(use-package tree-sitter
+  :hook (js-mode typescript-mode c-mode c++-mode rust-mode))
 (use-package tree-sitter-langs)
 
 (use-package ts-fold

@@ -1,3 +1,4 @@
+(setq debug-on-error t)
 (setq lexical-binding t)
 
 (setq debug-on-error nil)
@@ -74,7 +75,6 @@
   :load-path "./modules")
 
 (use-package setup-tree-sitter
-  :disabled t
   :ensure nil
   :demand t
   :load-path "./modules")
