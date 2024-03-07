@@ -1,6 +1,6 @@
 (defun bob/magit-commit-message (message)
-    (interactive "sCommit message: ")
-    (magit-commit-create `("-am" ,message)))
+  (interactive "sCommit message: ")
+  (magit-commit-create `("-am" ,message)))
 
 (defun fetch-all-git-repos-in-directory (repos-dir)
   (cl-loop for dir
@@ -122,6 +122,37 @@
                          (format "refs/heads/%s:refs/heads/%s"
                                  current-branch
                                  current-branch))))
+
+(defun bob/magit-list-gone-branches ()
+  ;; Get a list of local branches where the remote tracking branch is gone.
+  (let ((branches (magit-git-lines "branch" "-vv")))
+    (delq nil
+          (mapcar (lambda (branch)
+                    (when (string-match "\\[origin/.+? gone\\]" branch)
+                      (car (split-string branch))))
+                  branches))))
+
+(defun bobs/magit-delete-gone-branches ()
+  (interactive)
+  (magit-git-fetch nil '("--prune"))
+  (let ((gone-branches (bob/magit-list-gone-branches)))
+    (dolist (branch gone-branches)
+      (message "calling the following command: %s" `(magit-call-git "branch" "-D" ,branch)))))
+
+(defun bob/delete-merged-local-branches ()
+  (interactive)
+  (magit-fetch-all-prune)
+
+  (let* ((local-branches (magit-list-local-branch-names))
+         (current-branch (magit-get-current-branch))
+         (filtered-local-branches (seq-remove (lambda (branch)
+                                                (or (equal branch current-branch)
+                                                    (equal branch "master")
+                                                    (magit-get-upstream-branch branch)))
+                                              local-branches)))
+    (dolist (branch filtered-local-branches)
+      (magit-run-git "branch" "-D" branch)))
+  (message "Clean-up of merged local branches complete."))
 
 (use-package gh)
 
