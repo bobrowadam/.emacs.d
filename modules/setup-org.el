@@ -157,6 +157,8 @@
                           "20240104T120451--inbox__project.org"
                           "20240103T130349--reminders__project.org"
                           "20240103T130420--tasks__project.org"))
+  (add-to-list 'org-agenda-files (format "%sorg-calendar-agenda" org-directory))
+
   (setq org-agenda-custom-commands
            '(("b" tags "+OngoingBugs")
              ("n" "Todo next" ((todo "NEXT")))))
