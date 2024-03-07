@@ -2,9 +2,9 @@
   :custom
   (flymake-error-bitmap '(right-arrow modus-themes-prominent-error)))
 
-(use-package rust-mode)
+;; (use-package rust-mode)
 
-(use-package cargo-mode)
+;; (use-package cargo-mode)
 
 (use-package fancy-compilation
   :config
@@ -205,7 +205,9 @@ before running 'npm install'."
               ("C-c C-t C-e" . web-mode-tag-end)
               ("C-c C-s" . nil)
               ("C-c C-l" . nil)
-              ("C-c C-d" . nil)))
+              ("C-c C-d" . nil)
+              ("C-=" . web-mode-fold-or-unfold)
+              ("C-+" . web-mode-element-children-fold-or-unfold)))
 
 (use-package nodejs-repl
   :hook
@@ -393,6 +395,8 @@ before running 'npm install'."
   :after (fnm corfu)
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
+  :custom
+  (copilot-node-executable (fnm-node-path "18"))
   :bind
   (:map copilot-completion-map
         ("C-<tab>" . copilot-accept-completion))
@@ -410,7 +414,8 @@ before running 'npm install'."
 (use-package dape
   :straight (dape :type git :host github :repo "svaante/dape")
   :custom
-  (dape--debug-on '())
+  ;; (dape--debug-on '())
+  (dape-info-buffer-window-groups '((dape-info-scope-mode dape-info-watch-mode)))
   :bind (:map dape-global-map
               ("e" . dape-evaluate-expression))
   :config
