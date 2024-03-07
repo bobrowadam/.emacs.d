@@ -76,7 +76,7 @@
           (eat-project "Eat" "s")
           (magit-project-status "Magit" "g")
           (consult-ripgrep "RipGrep" "r")
-          (consult-project-buffer "Buffers" "b")
+          (bob/project-switch-buffer "Buffers" "b")
           (project-list-file-buffers "List Buffers" "i")
           (browse-current-project "Browse" "B")))
   (unless (project-known-project-roots)
@@ -116,6 +116,13 @@
    ;; flx.
    completion-category-defaults nil
    completion-category-overrides nil))
+
+(use-package hotfuzz
+  :demand t
+  :after fussy
+  :straight t
+  :config
+  (setq fussy-score-fn 'fussy-hotfuzz-score))
 
 (use-package orderless
   :disabled t
