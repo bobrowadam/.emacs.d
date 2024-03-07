@@ -115,13 +115,17 @@ It's also possible to enter an arbitrary directory not in the list."
             (read-directory-name "Select directory: " default-directory nil t)
           pr-dir)))))
 
+(defun bob/project--relevant-buffer-p (buf)
+  (and (buffer-file-name buf)
+       (not (eq buf (current-buffer)))))
+
 (defun bob/project-switch-buffer ()
   "Switch to a project buffer in the current project."
   (interactive)
   (let ((project (project-current)))
     (unless project
       (error "Not in a project"))
-    (let ((buffers (seq-remove (lambda (buf) (not (buffer-file-name buf))) (project-buffers project))))
+    (let ((buffers (seq-filter 'bob/project--relevant-buffer-p (project-buffers project))))
       (switch-to-buffer
        (completing-read "Switch to buffer: "
                         (lambda (string predicate action)
@@ -130,7 +134,6 @@ It's also possible to enter an arbitrary directory not in the list."
                             (complete-with-action action
                                                   (mapcar #'buffer-name buffers)
                                                   string
-                                                  predicate)))
-                        )))))
+                                                  predicate))))))))
 
 (provide 'bobs-project-utils)
