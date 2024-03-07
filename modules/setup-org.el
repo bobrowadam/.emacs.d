@@ -286,7 +286,8 @@ the given regular expression."
   :commands (consult-notes
              consult-notes-search-in-all-notes)
   :config
-  (consult-notes-org-headings-mode)
+  ;; If you want to find any headings uncoment this
+  ;; (consult-notes-org-headings-mode)
   (consult-notes-denote-mode)
   :bind
   ("C-c n f" . consult-notes)
