@@ -2,7 +2,14 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-((#1="elfeed entry \"Anyone using Emacs with Swift?\""
+(("completions.el" (filename . "~/.emacs.d/modules/completions.el")
+ (front-context-string . "(use-package cor") (rear-context-string)
+ (position . 1) (last-modified 26092 34835 8160 0))
+("common-lisp" (filename . "~/source/common-lisp/")
+ (front-context-string . "the-most-beautif")
+ (rear-context-string . "88 Mar  8 17:34 ") (position . 814)
+ (last-modified 26091 15281 409041 0))
+(#1="elfeed entry \"Anyone using Emacs with Swift?\""
     (id "www.reddit.com" . "t3_1agrhfy")
     (location . "Anyone using Emacs with Swift?") (position . 441)
     (handler . elfeed-show-bookmark-handler)
