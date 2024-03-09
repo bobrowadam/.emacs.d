@@ -313,11 +313,35 @@ before running 'npm install'."
               ("M-W" . sp-copy-sexp)))
 
 (use-package yasnippet-snippets)
+
+(use-package yasnippet-capf
+  :demand t
+  :after yasnippet
+  :hook
+  (emacs-lisp-mode . (lambda ()
+                       (setq-local completion-at-point-functions
+                                   (list (cape-capf-super
+                                          #'elisp-completion-at-point
+                                          #'yasnippet-capf
+                                          #'cape-file)))))
+  (sly-mode . (lambda ()
+                (setq-local completion-at-point-functions
+                            (list (cape-capf-super
+                                   #'yasnippet-capf
+                                   #'sly-complete-filename-maybe
+                                   #'sly-complete-symbol)))))
+  (eglot-managed-mode . (lambda ()
+                          (setq-local completion-at-point-functions
+                                      (list (cape-capf-super
+                                             #'eglot-completion-at-point
+                                             #'yasnippet-capf
+                                             #'cape-file))))))
+
 (use-package yasnippet
   :custom
   (yas-wrap-around-region t)
   :hook
-  (prog-mode-hook . yas-minor-mode-on)
+  (prog-mode . yas-minor-mode-on)
   (emacs-lisp-mode . yas-minor-mode-on)
   (js2-mode . yas-minor-mode-on)
   (typescript-mode . yas-minor-mode-on)
