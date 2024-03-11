@@ -387,11 +387,7 @@ before running 'npm install'."
   :custom
   (inferior-lisp-program "sbcl")
   :bind (:map sly-editing-mode-map
-              ("C-c M-c" . avy-goto-word-1))
-  :hook
-  (sly-mode . (lambda ()
-                (unless (sly-connected-p)
-                  (save-excursion (sly))))))
+              ("C-c M-c" . avy-goto-word-1)))
 
 (use-package sly-repl-ansi-color
   :after (sly)
