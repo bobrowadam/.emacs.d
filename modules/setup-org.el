@@ -1,3 +1,5 @@
+(defvar org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
+
 (use-package ob-mongo
   :after org
   :custom
@@ -39,7 +41,7 @@
         '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER") ""))
   ;; +LEVEL=3+boss-TODO​="DONE"
   (setq org-tags-exclude-from-inheritance '("project"))
-  (setq org-directory (concat (getenv "HOME") "/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/"))
+
   (setq org-capture-templates
         `(("t" "entry" entry (file ,(concat org-directory "20240104T120451--inbox__project.org")) "* %?\n  %i")))
   (setq org-refile-targets (setq org-refile-targets '((org-agenda-files :maxlevel . 3))))
@@ -148,20 +150,27 @@
   (org-hide-leading-stars nil))
 
 (use-package org-agenda
+  :init
+  (defun bob/reset-org-element-cache-in-agenda-files ()
+    (dolist (file-path (directory-files (format "%sorg-calendar-agenda" org-directory) t "[^.]"))
+      (with-current-buffer (find-file-noselect file-path t)
+        (message "Reseting org cache in  %s" (file-name-nondirectory (buffer-file-name (current-buffer))))
+        (org-element-cache-reset)
+        (save-buffer))))
   :commands (run-cl-asana org-agenda)
   :after org
   :custom
   (org-agenda-span 1)
   :init
   (setq org-agenda-files '("20221114T223617--asana-tasks__project.org"
-                          "20240104T120451--inbox__project.org"
-                          "20240103T130349--reminders__project.org"
-                          "20240103T130420--tasks__project.org"))
+                           "20240104T120451--inbox__project.org"
+                           "20240103T130349--reminders__project.org"
+                           "20240103T130420--tasks__project.org"))
   (add-to-list 'org-agenda-files (format "%sorg-calendar-agenda" org-directory))
 
   (setq org-agenda-custom-commands
-           '(("b" tags "+OngoingBugs")
-             ("n" "Todo next" ((todo "NEXT")))))
+        '(("b" tags "+OngoingBugs")
+          ("n" "Todo next" ((todo "NEXT")))))
   :bind
   (:map org-agenda-mode-map
         ("M-F" . org-agenda-do-date-later)
@@ -274,7 +283,7 @@ the given regular expression."
 (use-package denote
   :commands (denote bob/denote-open-or-create denote-mode denote-open-or-create denote-directory-files)
   :custom
-  (denote-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
+  (denote-directory org-directory)
   (denote-date-prompt-use-org-read-date t)
   (denote-prompts '(title keywords file-type))
   :bind
