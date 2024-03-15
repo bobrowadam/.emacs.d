@@ -137,7 +137,8 @@
   (magit-git-fetch nil '("--prune"))
   (let ((gone-branches (bob/magit-list-gone-branches)))
     (dolist (branch gone-branches)
-      (message "calling the following command: %s" `(magit-call-git "branch" "-D" ,branch)))))
+      (message "Deleting branch %s" branch)
+      (magit-call-git "branch" "-D" branch))))
 
 (defun bob/delete-merged-local-branches ()
   (interactive)
