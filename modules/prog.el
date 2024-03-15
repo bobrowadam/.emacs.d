@@ -142,8 +142,10 @@ before running 'npm install'."
 (use-package jest-test-mode
   :init
   :commands jest-test-mode
+  :straight (jest-test-mode :type git :host github :repo "rymndhng/jest-test-mode")
   :custom
-  (jest-test-command-string (format "%s %%s ./node_modules/.bin/jest %%s %%s" "node"))
+  ;; (jest-test-command-string (format "%s %%s ./node_modules/.bin/jest %%s %%s" "node"))
+  (jest-test-command-string (format "node %%s ./node_modules/jest/bin/jest %%s %%s"))
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
 (defun jest-set-config-file ()
