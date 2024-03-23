@@ -69,3 +69,4 @@ transient/*
 /denote-edges.json
 /denote-vertices.json
 /games/
+/forg-database*
