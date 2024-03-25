@@ -91,7 +91,8 @@
   :bind
   ("C-c a" . org-agenda)
   ("C-c c" . org-capture)
-  ("C-c s a" . run-cl-asana))
+  ("C-c s a" . run-cl-asana)
+  ("C-c s c" . run-calendar-sync))
 
 (use-package setup-shell
   :demand t

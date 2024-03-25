@@ -124,14 +124,28 @@ Recomended Salt weight: %.1f grams" hidration total-flour total-water total-doug
   (interactive "P")
   (message "Running cl asana")
   (let ((proc (start-process "cl-asana" "*cl-asana-output*" "~/source/common-lisp/cl-asana/cl-asana")))
-    (set-process-sentinel proc (run-cl-asana-sentinel arg))))
+    (set-process-sentinel proc (process-generic-sentinel arg))))
 
-(defun run-cl-asana-sentinel (&optional arg)
+(defun run-calendar-sync (arg)
+  "Run the \"Sync calendar to org file\" IOS shortcut
+to update the local agenda calendar files."
+  (interactive "P")
+  (message "Running Sync calendar to org file")
+  (let ((proc (start-process "Sync Calendar"
+                             "*sync-calendar-output*"
+                             "/usr/bin/shortcuts"
+                             "run"
+                             "Sync calendar to org file")))
+    (set-process-sentinel proc (process-generic-sentinel arg))))
+
+(defun process-generic-sentinel (&optional arg)
   "Display the buffer containing PROCESS output when it finishes."
   (lambda (process event)
     (when (and (boundp 'arg)
                (memq (process-status process) '(exit signal)))
       (pop-to-buffer (process-buffer process) t t))
+    (when (equal (process-name process) "Sync Calendar")
+      (bob/reset-org-element-cache-in-agenda-files))
     (message "Process %s %s" process event)))
 
 (defun project-switch-to-open-project (dir)

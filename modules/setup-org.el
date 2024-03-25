@@ -149,15 +149,15 @@
   (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces)
   (org-hide-leading-stars nil))
 
+(defun bob/reset-org-element-cache-in-agenda-files ()
+  (dolist (file-path (directory-files (format "%sorg-calendar-agenda" org-directory) t "[^.]"))
+    (with-current-buffer (find-file-noselect file-path t)
+      (message "Reseting org cache in  %s" (file-name-nondirectory (buffer-file-name (current-buffer))))
+      (org-element-cache-reset)
+      (save-buffer))))
+
 (use-package org-agenda
-  :init
-  (defun bob/reset-org-element-cache-in-agenda-files ()
-    (dolist (file-path (directory-files (format "%sorg-calendar-agenda" org-directory) t "[^.]"))
-      (with-current-buffer (find-file-noselect file-path t)
-        (message "Reseting org cache in  %s" (file-name-nondirectory (buffer-file-name (current-buffer))))
-        (org-element-cache-reset)
-        (save-buffer))))
-  :commands (run-cl-asana org-agenda)
+  :commands (run-cl-asana org-agenda bob/reset-org-element-cache-in-agenda-files)
   :after org
   :custom
   (org-agenda-span 1)
