@@ -302,4 +302,30 @@ the given regular expression."
   ("C-c n f" . consult-notes)
   ("C-c n g" . consult-notes-search-in-all-notes))
 
+(use-package org-super-agenda
+  :demand t
+  :init
+  (setq org-super-agenda-groups
+        '((:name "Reminders"
+                 :file-path "reminders"
+                 :order 4)
+          (:name "OOO"
+                 :file-path "OOO"
+                 :order 5)
+          (:name "Calendar"
+                 :discard (:file-path "OOO" :file-path "reminders")
+                 :time-grid t
+                 :order 1)
+          (:name "Do Next"
+                 :todo "NEXT"
+                 :order 2)
+          (:name "Do Later"
+                 :todo "TODO"
+                 :order 3)
+          (:name "Waiting"
+                 :todo "WAITING"
+                 :order 4)))
+  :config
+  (org-super-agenda-mode 1))
+
 (provide 'setup-org)
