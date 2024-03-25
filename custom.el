@@ -9,11 +9,13 @@
  '(ignored-local-variable-values
    '((mmm-classes . elisp-js)
      (eval mmm-add-group 'elisp-js
-           '((elisp-rawjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp--js \"" :back "\" js--")
-             (elisp-defjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp-js-def .*\12.*\"\"\12" :back "\")\12")))
-     (Base . 10)
-     (Package . CL-USER)
-     (Syntax . COMMON-LISP)))
+           '((elisp-rawjs :submode js-mode :face mmm-code-submode-face
+                          :delimiter-mode nil :front "xwwp--js \""
+                          :back "\" js--")
+             (elisp-defjs :submode js-mode :face mmm-code-submode-face
+                          :delimiter-mode nil :front
+                          "xwwp-js-def .*\12.*\"\"\12" :back "\")\12")))
+     (Base . 10) (Package . CL-USER) (Syntax . COMMON-LISP)))
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
  '(pos-tip-background-color "#FFF9DC")

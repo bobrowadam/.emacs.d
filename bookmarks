@@ -22,10 +22,10 @@
  (position . 1) (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
  (filename .
-           "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Add FNM t")
- (rear-context-string . "2024-03-08 Fri>\n") (position . 9758)
- (last-modified 26093 27877 293166 0))
+           "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
+ (front-context-string . "* TODO [[https:/")
+ (rear-context-string . "2024-03-23 Sat>\n") (position . 10038)
+ (last-modified 26113 13406 570070 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa") (rear-context-string)
@@ -59,10 +59,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename .
-           "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Add FNM to Mel")
- (rear-context-string . "20240104T120451\n") (position . 112)
- (last-modified 26093 25862 843443 0))
+           "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
+ (front-context-string . "* Add emacs cust")
+ (rear-context-string . "s are not nice.\n") (position . 215)
+ (last-modified 26106 42814 943722 0))
 ("setup-magit.el" (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit") (rear-context-string)
  (position . 1) (last-modified 25322 9259 17972 0))

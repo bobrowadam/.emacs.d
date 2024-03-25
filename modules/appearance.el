@@ -18,16 +18,18 @@
   ;; (modus-themes-select 'modus-vivendi-tinted)
   (setq modus-vivendi-tritanopia-palette-overrides 
         '((bg-main "grey6")))
-  (modus-themes-select 'modus-vivendi-deuteranopia)
+  ;; (modus-themes-select 'modus-vivendi-deuteranopia)
   :hook
   (modus-themes-after-load-theme . bobs-modeline/enable))
 
 (use-package ef-themes
   :demand t
   :custom
-  (ef-themes-to-toggle '(ef-cyprus ef-melissa-dark))
+  (ef-themes-to-toggle '(ef-cyprus ef-deuteranopia-dark))
   :hook
-  (ef-themes-post-load . bobs-modeline/enable))
+  (ef-themes-post-load . bobs-modeline/enable)
+  :config
+  (ef-themes-select 'ef-deuteranopia-dark))
 
 (use-package spacious-padding
   :demand t
