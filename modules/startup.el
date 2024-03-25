@@ -37,6 +37,7 @@
   (add-to-list 'exec-path-from-shell-variables "BOB_DIR")
   (add-to-list 'exec-path-from-shell-variables "WHATSAPP_NUMBER")
   (add-to-list 'exec-path-from-shell-variables "LOCAL_WHATSAPP_NUMBER")
+  (add-to-list 'exec-path-from-shell-variables "NODE_AUTH_TOKEN")
   (setq exec-path-from-shell-arguments nil)  
   (exec-path-from-shell-initialize))
 

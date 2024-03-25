@@ -58,11 +58,18 @@
   :ensure nil
   :load-path "./site-lisp")
 
+(defun bob/switch-to-project (dir)
+  (interactive (list (funcall project-prompter)))
+  (project-switch-project dir)
+  (when (read "package.json")
+    (bob/update-node-modules-if-needed)))
+
 (use-package project
   :after bobs-project-utils
   :ensure nil
   :bind
-  (("C-x p w" . project-switch-to-open-project)
+  (("C-x p p" . bob/switch-to-project)
+   ("C-x p w" . project-switch-to-open-project)
    ("C-x p s" . eat-project)
    ("C-x p b" . bob/project-switch-buffer)
    ("C-x p m"  . magit-project-status)

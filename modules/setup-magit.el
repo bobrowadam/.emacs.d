@@ -77,7 +77,8 @@
     '("P" "Push" magit-push))
   (transient-append-suffix 'magit-file-dispatch
     "P"
-    '("F" "Pull" magit-pull)))
+    '("F" "Pull" magit-pull))
+  :hook (magit-post-refresh . bob/update-node-modules-if-needed))
 
 (use-package forge
   :after magit

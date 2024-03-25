@@ -81,9 +81,11 @@ NORMAL-MODE is for not running with debugger"
                                           (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
                                                   (get--available-inspect-port)
                                                   project-main-file))))
-               (compilation-start compilation-command
-                                  t (lambda (mode)
-                                      compilation-buffer-name))))))))
+               (with-temporary-node-version
+                   (fnm-current-node-version)
+                 (compilation-start compilation-command
+                                    t (lambda (mode)
+                                        compilation-buffer-name)))))))))
 
 (defun bob/npm--project-name ()
   "Get the current project name from the package json file."
@@ -111,28 +113,66 @@ If the main file of an NPM project is not "
       (string-to-number (cadr (split-string inspect-string "=")))
     9229))
 
-(defun npm-install-project (&optional force)
+(defun npm-install-project (&optional force quiet)
   "NPM install in project.
-If FORCE is non-nil, delete the 'package-lock.json' and 'node_modules' directories and verify NPM cache
-before running 'npm install'."
+If FORCE is non-nil, delete the \"package-lock.json\" and \"node_modules\"
+directories and verify NPM cache before running `npm install`."
   (interactive "P")
-  (let* ((default-directory (project-root (project-current t))))
-    (message "local NPM executable version is %s" (s-trim-right (shell-command-to-string "npm -v")))
-    (when force
-      (message "removing package-lock.json")
-      (unwind-protect (delete-file (concat default-directory "package-lock.json")))
-      (message "removing node_modules")
-      (unwind-protect (delete-directory (concat default-directory "node_modules") t))
-      (message "verifying NPM's cache")
-      (apply #'call-process "node" nil 0 nil '("verify")))
-    (fnm-use)
-    (compilation-start "npm i")
-    (split-window-horizontally)
-    (switch-to-buffer (get-buffer "*npm-install-output*"))))
+  (when (read-file "package.json")
+   (let* ((default-directory (project-root (project-current t)))
+          (buffer-name (format "*npm install %s*" default-directory)))
+     (message "local NPM executable version is %s" (s-trim-right (shell-command-to-string "npm -v")))
+     (when force
+       (message "removing package-lock.json")
+       (unwind-protect (delete-file (concat default-directory "package-lock.json")))
+       (message "removing node_modules")
+       (unwind-protect (delete-directory (concat default-directory "node_modules") t))
+       (message "verifying NPM's cache")
+       (apply #'call-process "node" nil 0 nil '("verify")))
+     (with-temporary-node-version (fnm-current-node-version)
+       (if (not quiet) 
+           (compilation-start "npm i")
+         (make-process :name buffer-name
+                       :buffer buffer-name
+                       :command '("npm" "i" "--no-color")
+                       :sentinel (process-generic-sentinel)))))))
+
+
+(defun bob/update-node-modules-if-needed (&optional root)
+  "Check if node_modules should be updated by using \"npm outdated\"."
+  (interactive "P")
+  (when-let* ((default-directory (or root (project-root (project-current))))
+              (is-node-project (read-file "package.json"))
+              (buffer-name (format "*npm-outdated*: %s" default-directory)))
+    (with-temporary-node-version (fnm-current-node-version)
+      (make-process :name buffer-name
+                    :buffer buffer-name
+                    :command '("npm" "outdated" "--json" "--no-color")
+                    :sentinel 'bob/npm-outdated-sentinel))))
+
+(defun bob/npm-outdated-sentinel (process event)
+  "Sentinel for handling npm outdated process termination."
+  (with-current-buffer (process-buffer process)
+    (let ((buffer-content (buffer-string))
+          (current-project (project-root (project-current))))
+      (unwind-protect (condition-case err
+                          (when (and (bob/node-modules-are-not-updated-p
+                                      (json-parse-string buffer-content
+                                                         :object-type 'alist))
+                                     (y-or-n-p "node_modules are *not* up to date, Do you want to run `\"npm install\""))
+                            (npm-install-project nil t))
+                        (error
+                         (message "Error in npm-outdated-sentinel: %s" err)))
+        (kill-buffer (current-buffer)))))) 
+
+(defun bob/node-modules-are-not-updated-p (npm-outdated-output)
+  (seq-remove 
+     (lambda (package-entry)
+       (equal (assocdr 'wanted package-entry)
+              (assocdr 'current package-entry)))
+     npm-outdated-output))
 
 (use-package typescript-mode
-  :hook
-  (typescript-mode . fnm-use)
   :bind
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
@@ -161,7 +201,6 @@ before running 'npm install'."
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
   :hook
-  (js2-mode . fnm-use)
   (js2-mode . js2-imenu-extras-mode)
   (js2-mode . js2-mode-hide-warnings-and-errors)
   (js2-mode . electric-indent-mode)
@@ -181,7 +220,6 @@ before running 'npm install'."
   ("\\.jsx\\'" . web-mode)
   ("\\.vue\\'" . web-mode)
   :hook
-  (fnm-use)
   (web-mode . (lambda () (setq-local font-lock-defaults nil)))
   :config
   (setq web-mode-markup-indent-offset 2)
@@ -224,6 +262,7 @@ before running 'npm install'."
   :custom
   (eglot-events-buffer-config '(:size 0 :format full))
   :config
+  (fnm-use "v18.13.0")
   (add-to-list 'eglot-server-programs
                `((js-mode typescript-mode)
                  . ("typescript-language-server" "--stdio")))
