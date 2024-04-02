@@ -356,6 +356,7 @@ directories and verify NPM cache before running `npm install`."
 (use-package yasnippet-snippets)
 
 (use-package yasnippet-capf
+  :disabled t
   :demand t
   :after yasnippet
   :hook
