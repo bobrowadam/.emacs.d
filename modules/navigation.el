@@ -113,7 +113,7 @@
 (use-package fussy
   :demand t
   :custom
-  (fussy-use-cache nil)
+  (fussy-use-cache t)
   (fussy-score-fn 'flx-score)
   :config
   (push 'fussy completion-styles)
@@ -122,7 +122,8 @@
    ;; substring completion by default. Set to nil to make sure it's using
    ;; flx.
    completion-category-defaults nil
-   completion-category-overrides nil))
+   completion-category-overrides nil)
+  (advice-add 'corfu--capf-wrapper :before 'fussy-wipe-cache))
 
 (use-package hotfuzz
   :demand t
