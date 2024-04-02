@@ -143,7 +143,7 @@ directories and verify NPM cache before running `npm install`."
   (interactive "P")
   (when-let* ((default-directory (or root (project-root (project-current))))
               (is-node-project (read-file "package.json"))
-              (buffer-name (format "*npm-outdated*: %s" default-directory)))
+              (buffer-name (format "*npm-outdated*: %s %s" default-directory (random 100000))))
     (with-temporary-node-version (fnm-current-node-version)
       (make-process :name buffer-name
                     :buffer buffer-name
@@ -162,7 +162,7 @@ directories and verify NPM cache before running `npm install`."
                                      (y-or-n-p "node_modules are *not* up to date, Do you want to run `\"npm install\""))
                             (npm-install-project nil t))
                         (error
-                         (message "Error in npm-outdated-sentinel: %s" err)))
+                         (message "Error in npm-outdated-sentinel: %s. buffer-content: %s" err buffer-content)))
         (kill-buffer (current-buffer)))))) 
 
 (defun bob/node-modules-are-not-updated-p (npm-outdated-output)
