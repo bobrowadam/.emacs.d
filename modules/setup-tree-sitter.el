@@ -67,7 +67,10 @@
 
 
 (use-package tree-sitter
-  :hook (js-mode typescript-mode c-mode c++-mode rust-mode))
+  :hook (js-mode typescript-mode c-mode c++-mode rust-mode)
+  :config
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
 (use-package tree-sitter-langs)
 
 (use-package ts-fold
