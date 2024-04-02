@@ -143,8 +143,7 @@
 
 (defun bob/delete-merged-local-branches ()
   (interactive)
-  (magit-fetch-all-prune)
-
+  (magit-run-git '("remote" "update" "--prune"))
   (let* ((local-branches (magit-list-local-branch-names))
          (current-branch (magit-get-current-branch))
          (filtered-local-branches (seq-remove (lambda (branch)
@@ -153,6 +152,7 @@
                                                     (magit-get-upstream-branch branch)))
                                               local-branches)))
     (dolist (branch filtered-local-branches)
+      (message "deleting branch: %s" branch)
       (magit-run-git "branch" "-D" branch)))
   (message "Clean-up of merged local branches complete."))
 
