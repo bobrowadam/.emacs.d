@@ -526,4 +526,9 @@ directories and verify NPM cache before running `npm install`."
 (use-package swift-mode
   :after (eglot))
 
+;; REPL-driven development for NodeJS
+(use-package skerrick
+  :bind (:map js2-mode-map
+         ("C-x C-e" . skerrick-eval-region)))
+
 (provide 'prog)
