@@ -58,12 +58,16 @@
      (mongo . t)
      (python . t)
      (lisp . t)
-     (verb . t)))
+     (verb . t)
+     (typescript . t)))
   (add-to-list 'org-src-lang-modes '("ts" . typescript))
 
-  ;; (custom-set-faces
-  ;;  '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor")))))
-  (require 'ob-js)
+  (use-package ob-js
+    :ensure nil
+    :custom (org-babel-js-cmd "node"))
+  (use-package ob-typescript
+    :ensure nil
+     )
 
   ;; Fix bug in ob-js: https://emacs.stackexchange.com/questions/55690/org-babel-javascript-error
   ;; (setq org-babel-js-function-wrapper
@@ -158,7 +162,7 @@
 
 (use-package org-agenda
   :commands (run-cl-asana org-agenda bob/reset-org-element-cache-in-agenda-files)
-  :after org
+  :after (org)
   :custom
   (org-agenda-span 1)
   :init
@@ -175,7 +179,9 @@
   (:map org-agenda-mode-map
         ("M-F" . org-agenda-do-date-later)
         ("M-B" . org-agenda-do-date-earlier))
-  :ensure nil)
+  :ensure nil
+  :config
+  (org-super-agenda-mode 1))
 
 (use-package org-roam
   :disabled t
@@ -303,7 +309,6 @@ the given regular expression."
   ("C-c n g" . consult-notes-search-in-all-notes))
 
 (use-package org-super-agenda
-  :demand t
   :init
   (setq org-super-agenda-groups
         '((:name "Reminders"
