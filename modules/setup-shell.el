@@ -30,7 +30,7 @@
   :bind ("C-!" . aweshell-toggle))
 
 (use-package eat
-  :commands (eat bob/jump-to-shell)
+  :commands (eat bob/jump-to-shell eat-project)
   :init
   (setq eat-term-name "xterm-256color")
   :bind

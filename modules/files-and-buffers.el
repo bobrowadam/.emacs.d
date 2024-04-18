@@ -17,6 +17,7 @@
   :ensure t
   :commands (dired-sidebar-toggle-sidebar)
   :init
+  (setq dired-sidebar-face `(:family "Menlo"))
   (add-hook 'dired-sidebar-mode-hook
             (lambda ()
               (unless (file-remote-p default-directory)

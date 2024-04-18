@@ -1,7 +1,7 @@
 ;;; riseup-helpers.el ---  -*- lexical-binding: t -*-
-(require 'cl-lib)
-(require 'ghub)
-(require 'mongo)
+(use-package cl-lib)
+(use-package ghub)
+(use-package mongo)
 
 (defun browse-riseup-git-project (&optional project)
   "Browse a riseup git repository using the current known project for completion"

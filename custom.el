@@ -22,6 +22,7 @@
    '("/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Adams private.org"
      "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Holidays in Israel.org"
      "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Holidays.org"
+     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Home.org"
      "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/OOO.org"
      "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Tamari.org"
      "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Work.org"
@@ -104,6 +105,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(dired-sidebar-face ((t (:height 1.5 :width extra-expanded :family "Menlo"))) t)
  '(eglot-highlight-symbol-face ((t (:inherit bold :underline t))))
  '(fringe ((t :background "#0d0e1c")))
  '(header-line ((t :box (:line-width 4 :color "#1d2235" :style nil))))

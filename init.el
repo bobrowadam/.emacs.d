@@ -166,11 +166,6 @@
   :init
   (xkcd-303-mode 1))
 
-(use-package mongo-cli
-  :demand t
-  :ensure nil
-  :load-path "~/source/mongo-cli-el/")
-
 (use-package proced-narrow
   :demand t
   :hook (proced-mode . proced-narrow-mode)
@@ -184,6 +179,8 @@
 
 (use-package uuid
   :commands uuid-create)
+
+(use-package leetcode)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)

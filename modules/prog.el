@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package flymake
   :custom
   (flymake-error-bitmap '(right-arrow modus-themes-prominent-error)))
@@ -130,47 +131,43 @@ directories and verify NPM cache before running `npm install`."
        (message "verifying NPM's cache")
        (apply #'call-process "node" nil 0 nil '("verify")))
      (with-temporary-node-version (fnm-current-node-version)
-       (if (not quiet) 
+       (if (not quiet)
            (compilation-start "npm i")
          (make-process :name buffer-name
                        :buffer buffer-name
                        :command '("npm" "i" "--no-color")
                        :sentinel (process-generic-sentinel)))))))
 
-
 (defun bob/update-node-modules-if-needed (&optional root)
-  "Check if node_modules should be updated by using \"npm outdated\"."
+  "Check if node_modules should be updated by using \"npm list\"."
   (interactive "P")
   (when-let* ((default-directory (or root (project-root (project-current))))
               (is-node-project (read-file "package.json"))
-              (buffer-name (format "*npm-outdated*: %s %s" default-directory (random 100000))))
+              (buffer-name (format "*npm-list*: %s %s" default-directory (random 100000))))
     (with-temporary-node-version (fnm-current-node-version)
       (make-process :name buffer-name
                     :buffer buffer-name
-                    :command '("npm" "outdated" "--json" "--no-color")
-                    :sentinel 'bob/npm-outdated-sentinel))))
+                    :command '("npm" "list" "--no-color" "--depth=0")
+                    :sentinel (bob/npm-outdated-sentinel (current-time))))))
 
-(defun bob/npm-outdated-sentinel (process event)
+(defun bob/npm-list-problems-p (npm-list-results)
+  (seq-remove
+   (lambda (str) (s-starts-with? "npm ERR! peer dep missing" str))
+   (seq-filter (lambda (str)
+                 (s-starts-with? "npm ERR!" str))
+               (split-string npm-list-results "\n"))))
+
+(defun bob/npm-outdated-sentinel (start-time)
   "Sentinel for handling npm outdated process termination."
-  (with-current-buffer (process-buffer process)
-    (let ((buffer-content (buffer-string))
-          (current-project (project-root (project-current))))
-      (unwind-protect (condition-case err
-                          (when (and (bob/node-modules-are-not-updated-p
-                                      (json-parse-string buffer-content
-                                                         :object-type 'alist))
-                                     (y-or-n-p "node_modules are *not* up to date, Do you want to run `\"npm install\""))
-                            (npm-install-project nil t))
-                        (error
-                         (message "Error in npm-outdated-sentinel: %s. buffer-content: %s" err buffer-content)))
-        (kill-buffer (current-buffer)))))) 
-
-(defun bob/node-modules-are-not-updated-p (npm-outdated-output)
-  (seq-remove 
-     (lambda (package-entry)
-       (equal (assocdr 'wanted package-entry)
-              (assocdr 'current package-entry)))
-     npm-outdated-output))
+  (lambda (process event)
+    (with-current-buffer (process-buffer process)
+      (message (format "bob/npm-outdated-sentinel eval time is %.06f"
+                       (float-time (time-since start-time))))
+      (when (and (eq (process-exit-status process) 1)
+                 (bob/npm-list-problems-p (buffer-string))
+                 (y-or-n-p "node_modules are *not* up to date, Do you want to run `\"npm install\"")
+                 (npm-install-project nil t)))
+      (kill-buffer (current-buffer)))))
 
 (use-package typescript-mode
   :bind
@@ -267,6 +264,9 @@ directories and verify NPM cache before running `npm install`."
                `((js-mode typescript-mode)
                  . ("typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
+               `((json-mode)
+                 . ("vscode-json-language-server" "--stdio")))
+  (add-to-list 'eglot-server-programs
                `(web-mode
                  ,(concat (fnm-node-bin-path "18") "/vls")
                  "--stdio"))
@@ -288,7 +288,7 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((js2-mode typescript-mode web-mode python-mode rust-mode swift-mode) . eglot-ensure))
+  ((js2-mode typescript-mode web-mode python-mode rust-mode swift-mode json-mode) . eglot-ensure))
 
 (defun eslint-fix ()
   "Format the current file with ESLint."
@@ -402,7 +402,8 @@ directories and verify NPM cache before running `npm install`."
 
 (use-package yaml-mode)
 (use-package markdown-mode
-  :commands (markdown-mode gfm-mode)
+  :demand t
+  ;; :commands (markdown-mode gfm-mode eglot eglot-ensure)
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode)
@@ -463,9 +464,7 @@ directories and verify NPM cache before running `npm install`."
   (:map copilot-completion-map
         ("C-<tab>" . copilot-accept-completion))
   (:map corfu-mode-map
-        ("C-<tab>" . copilot-accept-completion))
-  :hook
-  (typescript-mode web-mode js2-mode))
+        ("C-<tab>" . copilot-accept-completion)))
 
 (use-package racket-mode
   :disabled t

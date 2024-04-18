@@ -48,6 +48,9 @@
 
 (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
+;; FrogFind is a simple search engine for text based browsers
+(setq eww-search-prefix "http://frogfind.com/?q=")
+
 (when (boundp 'pixel-scroll-precision-mode)
   (pixel-scroll-precision-mode 1))
 
