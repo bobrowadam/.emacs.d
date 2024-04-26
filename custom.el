@@ -9,96 +9,53 @@
  '(ignored-local-variable-values
    '((mmm-classes . elisp-js)
      (eval mmm-add-group 'elisp-js
-           '((elisp-rawjs :submode js-mode :face mmm-code-submode-face
-                          :delimiter-mode nil :front "xwwp--js \""
-                          :back "\" js--")
-             (elisp-defjs :submode js-mode :face mmm-code-submode-face
-                          :delimiter-mode nil :front
-                          "xwwp-js-def .*\12.*\"\"\12" :back "\")\12")))
-     (Base . 10) (Package . CL-USER) (Syntax . COMMON-LISP)))
+           '((elisp-rawjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp--js \"" :back "\" js--")
+             (elisp-defjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp-js-def .*\12.*\"\"\12" :back "\")\12")))
+     (Base . 10)
+     (Package . CL-USER)
+     (Syntax . COMMON-LISP)))
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
- '(org-agenda-files
-   '("/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Adams private.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Holidays in Israel.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Holidays.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Home.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/OOO.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Tamari.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Work.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/riseup.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20221114T223617--asana-tasks__project.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org"
-     "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org"))
  '(pos-tip-background-color "#FFF9DC")
  '(pos-tip-foreground-color "#011627")
  '(proced-format 'verbose)
  '(safe-local-variable-values
    '((eval mmm-add-group 'elisp-js
-           '((elisp-rawjs :submode js-mode :face mmm-code-submode-face
-                          :delimiter-mode nil :front "xwwp--js \""
-                          :back "\" js--")
-             (elisp-defjs :submode js-mode :face mmm-code-submode-face
-                          :delimiter-mode nil :front
-                          "xwwp-defjs .*\12.*\"\"\12" :back "\")\12")))
-     (whitespace-style quote (face trailing empty tabs))
-     (whitespace-action) (Syntax . ANSI-Common-Lisp)
+           '((elisp-rawjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp--js \"" :back "\" js--")
+             (elisp-defjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp-defjs .*\12.*\"\"\12" :back "\")\12")))
+     (whitespace-style quote
+                       (face trailing empty tabs))
+     (whitespace-action)
+     (Syntax . ANSI-Common-Lisp)
      (eval cl-flet
-           ((enhance-imenu-lisp (&rest keywords)
-                                (dolist (keyword keywords)
-                                  (add-to-list
-                                   'lisp-imenu-generic-expression
-                                   (list
-                                    (purecopy
-                                     (concat (capitalize keyword)
-                                             (if
-                                                 (string=
-                                                  (substring-no-properties
-                                                   keyword -1)
-                                                  "s")
-                                                 "es"
-                                               "s")))
-                                    (purecopy
-                                     (concat "^\\s-*("
-                                             (regexp-opt
-                                              (list
-                                               (concat "define-"
-                                                       keyword))
-                                              t)
-                                             "\\s-+\\("
-                                             lisp-mode-symbol-regexp
-                                             "\\)"))
-                                    2)))))
-           (enhance-imenu-lisp "bookmarklet-command" "class" "command"
-                               "ffi-method" "function"
-                               "internal-page-command"
-                               "internal-page-command-global" "mode"
-                               "parenscript" "user-class"))
-     (org-edit-src-content-indentation 0)
-     (haskell-process-use-ghci . t) (haskell-indent-spaces . 4)))
+           ((enhance-imenu-lisp
+             (&rest keywords)
+             (dolist
+                 (keyword keywords)
+               (add-to-list 'lisp-imenu-generic-expression
+                            (list
+                             (purecopy
+                              (concat
+                               (capitalize keyword)
+                               (if
+                                   (string=
+                                    (substring-no-properties keyword -1)
+                                    "s")
+                                   "es" "s")))
+                             (purecopy
+                              (concat "^\\s-*("
+                                      (regexp-opt
+                                       (list
+                                        (concat "define-" keyword))
+                                       t)
+                                      "\\s-+\\(" lisp-mode-symbol-regexp "\\)"))
+                             2)))))
+           (enhance-imenu-lisp "bookmarklet-command" "class" "command" "ffi-method" "function" "internal-page-command" "internal-page-command-global" "mode" "parenscript" "user-class"))
+     (org-edit-src-content-indentation 0)))
  '(weechat-color-list
-   '(unspecified "#011627" "#010F1D" "#DC2E29" "#EF5350" "#D76443"
-                 "#F78C6C" "#D8C15E" "#FFEB95" "#5B8FFF" "#82AAFF"
-                 "#AB69D7" "#C792EA" "#AFEFE2" "#7FDBCA" "#D6DEEB"
-                 "#FFFFFF"))
+   '(unspecified "#011627" "#010F1D" "#DC2E29" "#EF5350" "#D76443" "#F78C6C" "#D8C15E" "#FFEB95" "#5B8FFF" "#82AAFF" "#AB69D7" "#C792EA" "#AFEFE2" "#7FDBCA" "#D6DEEB" "#FFFFFF"))
  '(wucuo-font-faces-to-check
-   '(font-lock-string-face font-lock-doc-face font-lock-comment-face
-                           font-lock-function-name-face
-                           font-lock-variable-name-face
-                           tree-sitter-hl-face:type
-                           tree-sitter-hl-face:string
-                           tree-sitter-hl-face:string.special
-                           tree-sitter-hl-face:doc
-                           tree-sitter-hl-face:comment
-                           tree-sitter-hl-face:variable
-                           tree-sitter-hl-face:varialbe.parameter
-                           tree-sitter-hl-face:function
-                           tree-sitter-hl-face:function.call
-                           tree-sitter-hl-face:method
-                           js2-function-param js2-object-property
-                           js2-object-property-access css-selector
-                           css-property rjsx-text rjsx-tag rjsx-attr))
+   '(font-lock-string-face font-lock-doc-face font-lock-comment-face font-lock-function-name-face font-lock-variable-name-face tree-sitter-hl-face:type tree-sitter-hl-face:string tree-sitter-hl-face:string.special tree-sitter-hl-face:doc tree-sitter-hl-face:comment tree-sitter-hl-face:variable tree-sitter-hl-face:varialbe.parameter tree-sitter-hl-face:function tree-sitter-hl-face:function.call tree-sitter-hl-face:method js2-function-param js2-object-property js2-object-property-access css-selector css-property rjsx-text rjsx-tag rjsx-attr))
  '(zoom-window-mode-line-color "DarkBlue"))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

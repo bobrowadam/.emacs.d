@@ -180,7 +180,11 @@
 (use-package uuid
   :commands uuid-create)
 
-(use-package leetcode)
+(use-package leetcode
+  :custom
+  (leetcode-prefer-language "javascript")
+  (leetcode-directory "./leetcode")
+  (leetcode-prefer-sql "sqlite3"))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)

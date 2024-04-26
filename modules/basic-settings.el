@@ -3,6 +3,7 @@
   (prog-mode))
 
 (setq user-login-name "Adam Bobrow"
+      user-full-name "Adam Bobrow"
       garbage-collection-messages nil
       undo-limit (* 1024 1000) ;; 1 Mb seems OK
       scroll-preserve-screen-position nil

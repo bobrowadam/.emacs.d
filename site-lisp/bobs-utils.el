@@ -258,4 +258,12 @@ to directory DIR."
         found-value
       completing-result)))
 
+(defun fahrenheit-to-celsius (fahrenheit)
+  "Convert Fahrenheit to Celsius."
+  (/ (* (- (float fahrenheit) 32) 5) 9))
+
+(defun celsius-to-fahrenheit (celsius)
+  "Convert Celsius to Fahrenheit."
+  (+ (/ (* (float celsius) 9) 5) 32))
+
 (provide 'bobs-utils)
