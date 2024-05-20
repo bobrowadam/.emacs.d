@@ -1,7 +1,7 @@
-(setq debug-on-error t)
+(setq debug-on-error nil)
 (setq lexical-binding t)
 
-(setq debug-on-error nil)
+(setq debug-on-error t)
 (setq package-enable-at-startup nil)
 
 (setq initial-buffer-choice t)
@@ -126,14 +126,16 @@
   :commands (chatgpt-shell chatgpt-shell-start)
   :after shell-maker pcsv
   :custom
-  (chatgpt-shell-model-version 6)
+  (chatgpt-shell-model-version 8)
   (chatgpt-shell-model-versions '("gpt-3.5-turbo"
                                   "gpt-3.5-turbo-0613"
                                   "gpt-3.5-turbo-16k"
                                   "gpt-3.5-turbo-16k-0613"
                                   "gpt-4"
                                   "gpt-4-0613"
-                                  "gpt-4-1106-preview"))
+                                  "gpt-4-1106-preview"
+                                  "gpt-4o"
+                                  "gpt-4-turbo"))
   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("chatgpt-shell.el"))
   :config
   (setq chatgpt-shell-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))

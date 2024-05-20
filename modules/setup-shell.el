@@ -36,6 +36,7 @@
   :bind
   ("C-!" . eat)
   ("C-c s j" . bob/jump-to-shell)
+  ("C-x p s" . eat-project)
   :hook
   (eat-mode . bobs/hide-mode-line))
 

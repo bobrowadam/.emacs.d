@@ -166,8 +166,8 @@
   :custom
   (org-agenda-span 1)
   :init
-  (setq org-agenda-files '("20221114T223617--asana-tasks__project.org"
-                           "20240104T120451--inbox__project.org"
+  (setq org-agenda-files '("20240104T120451--inbox__project.org"
+                           ;; "20221114T223617--asana-tasks__project.org"
                            "20240103T130349--reminders__project.org"
                            "20240103T130420--tasks__project.org"))
   (add-to-list 'org-agenda-files (format "%sorg-calendar-agenda" org-directory))
@@ -239,16 +239,16 @@
 (defun parse-verb-response-to-alist ()
   (when verb-parse-json-to-alist
     (let ((response (slot-value verb-http-response :body)))
-      (condition-case err
-          (progn
-            (erase-buffer)
-            (when response
-                (insert (pp-to-string (json-parse-string response
-                                                      :object-type 'alist
-                                                      :array-type 'list
-                                                      :null-object 'nil))))
-            (verb-response-body-mode +1))
-        (json-parse-error response)))))
+      (progn
+        (erase-buffer)
+        (when response
+          (insert (condition-case nil
+                      (pp-to-string (json-parse-string response
+                                                       :object-type 'alist
+                                                       :array-type 'list
+                                                       :null-object 'nil))
+                    (json-parse-error response))))
+        (verb-response-body-mode +1)))))
 
 (defun bob/toggle-verb-parse-json-to-alist ()
   (interactive)
@@ -258,7 +258,7 @@
   :after org
   :mode ("\\.org\\'" . org-mode)
   :init
-  (setq verb-parse-json-to-alist t)
+  (setq verb-parse-json-to-alist nil)
   (setq verb-post-response-hook 'parse-verb-response-to-alist)
   :config
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
@@ -314,11 +314,8 @@ the given regular expression."
         '((:name "Reminders"
                  :file-path "reminders"
                  :order 4)
-          (:name "OOO"
-                 :file-path "OOO"
-                 :order 5)
           (:name "Calendar"
-                 :discard (:file-path "OOO" :file-path "reminders")
+                 :discard (:file-path "reminders")
                  :time-grid t
                  :order 1)
           (:name "Do Next"

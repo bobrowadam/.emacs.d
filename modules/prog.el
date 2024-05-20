@@ -77,9 +77,9 @@ NORMAL-MODE is for not running with debugger"
              (switch-to-prev-buffer))
             (t
              (let ((compilation-command (if normal-mode
-                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
+                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./dist/%s.js"
                                                     project-main-file)
-                                          (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./node_modules/@riseupil/env-setter/src/ssm-entrypoint-local.js ./dist/%s.js"
+                                          (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./dist/%s.js"
                                                   (get--available-inspect-port)
                                                   project-main-file))))
                (with-temporary-node-version
@@ -141,7 +141,8 @@ directories and verify NPM cache before running `npm install`."
 (defun bob/update-node-modules-if-needed (&optional root)
   "Check if node_modules should be updated by using \"npm list\"."
   (interactive "P")
-  (when-let* ((default-directory (or root (project-root (project-current))))
+  (when-let* ((default-directory (or root (and (project-current)
+                                               (project-root (project-current)))))
               (is-node-project (read-file "package.json"))
               (buffer-name (format "*npm-list*: %s %s" default-directory (random 100000))))
     (with-temporary-node-version (fnm-current-node-version)
@@ -173,6 +174,14 @@ directories and verify NPM cache before running `npm install`."
   :bind
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
+  :mode ("\\.ts\\'" . typescript-mode)
+  :config
+  (setq-default typescript-indent-level 2))
+
+(use-package typescript-tsx-mode
+  :ensure nil
+  :after typescript-mode
+  :mode ("\\.tsx?\\'" . tsx-ts-mode)
   :config
   (setq-default typescript-indent-level 2))
 
@@ -215,7 +224,8 @@ directories and verify NPM cache before running `npm install`."
   ("\\.html\\'" . web-mode)
   ("\\.cssl\\'" . web-mode)
   ("\\.jsx\\'" . web-mode)
-  ("\\.vue\\'" . web-mode)
+  ("\\.tsx\\'" . web-mode)
+  ;; ("\\.vue\\'" . web-mode)
   :hook
   (web-mode . (lambda () (setq-local font-lock-defaults nil)))
   :config
@@ -259,19 +269,13 @@ directories and verify NPM cache before running `npm install`."
   :custom
   (eglot-events-buffer-config '(:size 0 :format full))
   :config
-  (fnm-use "v18.13.0")
+  (fnm-use "v20.11.0")
   (add-to-list 'eglot-server-programs
                `((js-mode typescript-mode)
                  . ("typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
                `((json-mode)
                  . ("vscode-json-language-server" "--stdio")))
-  (add-to-list 'eglot-server-programs
-               `(web-mode
-                 ,(concat (fnm-node-bin-path "18") "/vls")
-                 "--stdio"))
-  (add-to-list 'eglot-server-programs
-               '(swift-mode . ("xcrun" "sourcekit-lsp")))
 
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
@@ -288,7 +292,11 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((js2-mode typescript-mode web-mode python-mode rust-mode swift-mode json-mode) . eglot-ensure))
+  ((js2-mode typescript-mode web-mode python-mode rust-mode json-mode tsx-ts-mode) . eglot-ensure))
+
+(use-package eldoc-box
+  :after eglot
+  :bind (:map eglot-mode-map ("C->" . eldoc-box-help-at-point)))
 
 (defun eslint-fix ()
   "Format the current file with ESLint."
@@ -522,9 +530,6 @@ directories and verify NPM cache before running `npm install`."
   :config
   (setq dumb-jump-selector 'popup)
   (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
-
-(use-package swift-mode
-  :after (eglot))
 
 ;; REPL-driven development for NodeJS
 (use-package skerrick

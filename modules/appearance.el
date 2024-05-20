@@ -9,9 +9,9 @@
 
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))
-(load-theme 'bobs-badger)
+;; (load-theme 'bobs-badger)
 (use-package modus-themes
-  :demand t
+  :demand nil
   :config
   (setq modus-vivendi-tinted-palette-overrides
         nil)
@@ -23,13 +23,13 @@
   (modus-themes-after-load-theme . bobs-modeline/enable))
 
 (use-package ef-themes
-  ;; :demand t
+  :demand t
   :custom
   (ef-themes-to-toggle '(ef-cyprus ef-deuteranopia-dark))
   :hook
   (ef-themes-post-load . bobs-modeline/enable)
   :config
-  ;; (ef-themes-select 'ef-deuteranopia-dark)
+  (ef-themes-select 'ef-deuteranopia-dark)
 )
 
 (use-package spacious-padding

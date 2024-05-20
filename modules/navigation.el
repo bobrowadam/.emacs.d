@@ -70,7 +70,6 @@
   :bind
   (("C-x p p" . bob/switch-to-project)
    ("C-x p w" . project-switch-to-open-project)
-   ("C-x p s" . eat-project)
    ("C-x p b" . bob/project-switch-buffer)
    ("C-x p m"  . magit-project-status)
    ("C-x p C-m"  . project-dired)

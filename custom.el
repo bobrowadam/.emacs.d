@@ -16,6 +16,8 @@
      (Syntax . COMMON-LISP)))
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
+ '(org-agenda-files
+   '("/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240329T115454--ice-cream__cooking.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Holidays in Israel.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Holidays.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Home.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Tamari.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Work.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/riseup.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20221114T223617--asana-tasks__project.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org"))
  '(pos-tip-background-color "#FFF9DC")
  '(pos-tip-foreground-color "#011627")
  '(proced-format 'verbose)
@@ -51,7 +53,9 @@
                                       "\\s-+\\(" lisp-mode-symbol-regexp "\\)"))
                              2)))))
            (enhance-imenu-lisp "bookmarklet-command" "class" "command" "ffi-method" "function" "internal-page-command" "internal-page-command-global" "mode" "parenscript" "user-class"))
-     (org-edit-src-content-indentation 0)))
+     (org-edit-src-content-indentation 0)
+     (haskell-process-use-ghci . t)
+     (haskell-indent-spaces . 4)))
  '(weechat-color-list
    '(unspecified "#011627" "#010F1D" "#DC2E29" "#EF5350" "#D76443" "#F78C6C" "#D8C15E" "#FFEB95" "#5B8FFF" "#82AAFF" "#AB69D7" "#C792EA" "#AFEFE2" "#7FDBCA" "#D6DEEB" "#FFFFFF"))
  '(wucuo-font-faces-to-check
@@ -77,6 +81,7 @@
  '(tab-bar-tab ((t :box (:line-width 4 :color "#0d0e1c" :style nil))))
  '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "#4a4f6a" :style nil))))
  '(tab-line-tab (nil))
+ '(tab-line-tab-active ((t)))
  '(tab-line-tab-inactive (nil))
  '(vertical-border (nil))
  '(window-divider ((t :background "#0d0e1c" :foreground "#0d0e1c")))
