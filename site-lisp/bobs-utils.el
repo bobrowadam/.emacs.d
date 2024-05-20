@@ -266,4 +266,13 @@ to directory DIR."
   "Convert Celsius to Fahrenheit."
   (+ (/ (* (float celsius) 9) 5) 32))
 
+(defun bob/calc-stabilizers (total-weight)
+  "Calculate stabilizers weight"
+  (let* ((total (+ 0.8 0.4 0.2))
+        (lbg (* total-weight (/ 0.8 total)))
+        (guar (* total-weight (/ 0.4 total)))
+        (l-carrageenan (* total-weight (/ 0.2 total))))
+    (format "LBG: %.2f, Guar: %.2f, Carrageenan: %.2f"
+            lbg guar l-carrageenan)))
+
 (provide 'bobs-utils)
