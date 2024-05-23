@@ -3,15 +3,15 @@
 ;; (set-frame-font "DaddyTimeMono Nerd Font 19")
 ;; (add-to-list 'default-frame-alist
 ;;              '(font . "DaddyTimeMono Nerd Font 19"))
-(set-frame-font "FiraCode Nerd Font 21")
+(set-frame-font "FiraMono Nerd Font 21")
 (add-to-list 'default-frame-alist
-             '(font . "FiraCode Nerd Font 21"))
+             '(font . "FiraMono Nerd Font 21"))
 
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))
 ;; (load-theme 'bobs-badger)
 (use-package modus-themes
-  :demand nil
+  :demand t
   :config
   (setq modus-vivendi-tinted-palette-overrides
         nil)
@@ -87,5 +87,9 @@
   ;; Enables ligature checks globally in all buffers. You can also do it
   ;; per mode with `ligature-mode'.
   (global-ligature-mode t))
+
+(use-package doom-modeline
+  :disabled t
+  :init (doom-modeline-mode 1))
 
 (provide 'appearance)
