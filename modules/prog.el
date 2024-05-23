@@ -536,4 +536,10 @@ directories and verify NPM cache before running `npm install`."
   :bind (:map js2-mode-map
          ("C-x C-e" . skerrick-eval-region)))
 
+(use-package pg
+  :straight (:host github :repo "emarsden/pg-el"))
+
+(use-package pgmacs
+  :straight (:host github :repo "emarsden/pgmacs"))
+
 (provide 'prog)
