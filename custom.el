@@ -16,8 +16,6 @@
      (Syntax . COMMON-LISP)))
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
- '(org-agenda-files
-   '("/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240329T115454--ice-cream__cooking.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Holidays in Israel.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Holidays.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Home.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Tamari.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/Work.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-calendar-agenda/riseup.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20221114T223617--asana-tasks__project.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org" "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org"))
  '(pos-tip-background-color "#FFF9DC")
  '(pos-tip-foreground-color "#011627")
  '(proced-format 'verbose)

@@ -174,16 +174,16 @@ directories and verify NPM cache before running `npm install`."
   :bind
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
-  :mode ("\\.ts\\'" . typescript-mode)
+  :mode ("\\.ts$\\'" . typescript-mode)
   :config
   (setq-default typescript-indent-level 2))
 
-(use-package typescript-tsx-mode
-  :ensure nil
-  :after typescript-mode
-  :mode ("\\.tsx?\\'" . tsx-ts-mode)
-  :config
-  (setq-default typescript-indent-level 2))
+;; (use-package typescript-tsx-mode
+;;   :ensure nil
+;;   :after typescript-mode
+;;   :mode ("\\.tsx$\\'" . tsx-ts-mode)
+;;   :config
+;;   (setq-default typescript-indent-level 2))
 
 (use-package jest-test-mode
   :init
@@ -269,7 +269,7 @@ directories and verify NPM cache before running `npm install`."
   :custom
   (eglot-events-buffer-config '(:size 0 :format full))
   :config
-  (fnm-use "v20.11.0")
+  (fnm-use "v20.13.1")
   (add-to-list 'eglot-server-programs
                `((js-mode typescript-mode)
                  . ("typescript-language-server" "--stdio")))

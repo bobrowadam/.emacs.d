@@ -1,7 +1,6 @@
 (setq debug-on-error nil)
 (setq lexical-binding t)
 
-(setq debug-on-error t)
 (setq package-enable-at-startup nil)
 
 (setq initial-buffer-choice t)
