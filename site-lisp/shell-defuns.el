@@ -73,6 +73,7 @@ Any other prefis will be used as the suffix itself."
                                 (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
                                 (equal (with-current-buffer b major-mode) 'comint-mode)
                                 (equal (with-current-buffer b major-mode) 'eat-mode)
+                                (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
                                 ))
                 (mapcar (function buffer-name) (buffer-list))
                 ;; (flatten-tree (mapcar (λ (buffer-name %1)) (persp-get-buffers)))

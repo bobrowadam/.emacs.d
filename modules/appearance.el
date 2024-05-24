@@ -56,10 +56,10 @@
   :load-path "~/source/bobs-modeline/"
   :config (bobs-modeline/enable))
 
-(defun bobs/hide-mode-line ()
-  (setq-local mode-line-format nil))
+;; (defun bobs/hide-mode-line ()
+;;   (setq-local mode-line-format nil))
 
-(add-hook 'comint-mode-hook 'bobs/hide-mode-line)
+;; (add-hook 'comint-mode-hook 'bobs/hide-mode-line)
 
 ;; This assumes you've installed the package via MELPA.
 (use-package ligature

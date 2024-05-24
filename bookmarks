@@ -88,10 +88,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Get a cable fo")
- (rear-context-string . " in GNU Emacs]]\n")
- (position . 238)
- (last-modified 26134 22218 285217 0))
+ (front-context-string . "* Ask shush abou")
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 26192 65465 424505 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
