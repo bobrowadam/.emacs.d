@@ -183,16 +183,13 @@
   (org-super-agenda-mode 1))
 
 (use-package org-roam
-  :disabled t
   :after org
-  :demand t
   ;; :after (emacsql-sqlite-builtin)
   :init
-  ;; (setq org-roam-graph-viewer "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser")
-  (setq org-roam-graph-viewer "/Applications/Arc.app/Contents/MacOS/Arc")
+  (setq org-roam-graph-viewer "/Applications/Firefox.app/Contents/MacOS/firefox")
   (setq org-roam-v2-ack t)
-  (setq org-roam-directory org-directory)
-  (setq org-id-locations-file (concat org-directory ".orgids"))
+  (setq org-roam-directory (format "%s/org-roam" org-directory))
+  (setq org-id-locations-file (concat org-directory "org-roam/.orgids"))
   (setq org-roam-completion-everywhere t)
   (setq org-roam-dailies-directory "journal/")
   (add-to-list 'display-buffer-alist
@@ -215,12 +212,7 @@
   (org-roam-db-autosync-mode))
 
 (use-package org-roam-ui
-  :disabled t
   :after org-roam
-  ;;         normally we'd recommend hooking org-ui after org-roam, but since org-roam does not have
-  ;;         a hookable mode anymore, you're advised to pick something yourself
-  ;;         if you don't care about startup time, use
-  ;;  :hook (after-init . org-roam-ui-mode)
   :config
   (setq org-roam-ui-sync-theme t
         org-roam-ui-follow t
@@ -292,9 +284,8 @@ the given regular expression."
   (denote-date-prompt-use-org-read-date t)
   (denote-prompts '(title keywords file-type))
   :bind
-  ("C-c n d" . denote)
-  ("C-c n r" . denote-rename-file)
-  ("C-c n l" . denote-link-or-create))
+  ("C-c d" . denote-open-or-create)
+)
 
 (use-package consult-notes
   :commands (consult-notes
@@ -302,10 +293,12 @@ the given regular expression."
   :config
   ;; If you want to find any headings uncoment this
   ;; (consult-notes-org-headings-mode)
-  (consult-notes-denote-mode)
+  ;; (consult-notes-denote-mode)
+  (consult-notes-org-roam-mode)
   :bind
-  ("C-c n f" . consult-notes)
-  ("C-c n g" . consult-notes-search-in-all-notes))
+  ;; ("C-c n f" . consult-notes)
+  ;; ("C-c n g" . consult-notes-search-in-all-notes)
+)
 
 (use-package org-super-agenda
   :init
