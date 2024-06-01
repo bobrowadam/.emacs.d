@@ -263,6 +263,8 @@ directories and verify NPM cache before running `npm install`."
                           (setq comint-input-ring-file-name "~/.node_repl_history")
                           (comint-read-input-ring 'silent)))))
 
+(use-package sql-mode :ensure nil)
+
 (use-package eglot
   :after (fnm)
   :commands (eglot eglot-ensure eglot-shutdown-all)
@@ -276,6 +278,8 @@ directories and verify NPM cache before running `npm install`."
   (add-to-list 'eglot-server-programs
                `((json-mode)
                  . ("vscode-json-language-server" "--stdio")))
+  (add-to-list 'eglot-server-programs
+               '(sql-mode . (eglot-sqls "sqls")))
 
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
@@ -292,7 +296,13 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((js2-mode typescript-mode web-mode python-mode rust-mode json-mode tsx-ts-mode) . eglot-ensure))
+  ((js2-mode typescript-mode web-mode python-mode rust-mode json-mode tsx-ts-mode sql-mode haskell-mode) . eglot-ensure))
+
+(use-package eglot-sqls
+  :demand t
+  :after eglot
+  :ensure nil
+  )
 
 (use-package eldoc-box
   :after eglot
@@ -541,5 +551,7 @@ directories and verify NPM cache before running `npm install`."
 
 (use-package pgmacs
   :straight (:host github :repo "emarsden/pgmacs"))
+
+(use-package haskell-mode)
 
 (provide 'prog)
