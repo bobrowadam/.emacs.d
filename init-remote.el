@@ -1,13 +1,13 @@
 (setq lexical-binding t)
 (setq gc-cons-threshold-before-init gc-cons-threshold)
-(setq gc-cons-threshold 10000000)
+(setq gc-cons-threshold 80000000)
 (setq debug-on-error nil)
 (setq package-enable-at-startup t)
 (defconst remote-mode t)
 
 (package-initialize)
 (setq gc-cons-percentage 0.6)
-(setq gc-cons-threshold most-positive-fixnum)
+(setq gc-cons-threshold 80000000)
 
 (add-hook 'emacs-startup-hook
           (lambda ()
