@@ -10,12 +10,15 @@
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))
 ;; (load-theme 'bobs-badger)
+
 (use-package modus-themes
   :demand t
+  :custom
+  (modus-themes-to-toggle '( modus-operandi-tinted modus-vivendi-tinted))
   :config
   (setq modus-vivendi-tinted-palette-overrides
         nil)
-  ;; (modus-themes-select 'modus-vivendi-tinted)
+  (modus-themes-select 'modus-vivendi-tinted)
   (setq modus-vivendi-tritanopia-palette-overrides 
         '((bg-main "grey6")))
   ;; (modus-themes-select 'modus-vivendi-deuteranopia)
@@ -28,16 +31,23 @@
   (ef-themes-to-toggle '(ef-cyprus ef-deuteranopia-dark))
   :hook
   (ef-themes-post-load . bobs-modeline/enable)
-  :config
-  (ef-themes-select 'ef-deuteranopia-dark)
+  ;; :config
+  ;; (ef-themes-select 'ef-deuteranopia-dark)
 )
 
 (use-package spacious-padding
   :demand t
+  :custom
+  (spacious-padding-widths
+   '(:internal-border-width 15
+                            :header-line-width 4
+                            :mode-line-width 6
+                            :tab-width 4
+                            :right-divider-width 1
+                            :scroll-bar-width 8
+                            :fringe-width 8))
   :config 
-  (spacious-padding-mode -1)
-  ;; (spacious-padding-set-invisible-dividers 'modus-vivendi-tinted)
-)
+  (spacious-padding-mode))
 
 (use-package highlight-indent-guides
   :config
@@ -91,5 +101,8 @@
 (use-package doom-modeline
   :disabled t
   :init (doom-modeline-mode 1))
+
+;; (window-divider-mode 1)
+;; (setq window-divider-default-places t)
 
 (provide 'appearance)
