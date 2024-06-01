@@ -101,6 +101,7 @@
 (use-package sicp)
 
 (use-package riseup-helpers
+  :disabled t
   :commands (browse-riseup-git-project
              clone-riseup-repo import-customer
              browse-customer-in-mamadmin browse-customer-merge-in-mamadmin
