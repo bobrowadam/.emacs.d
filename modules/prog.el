@@ -15,6 +15,16 @@
 (with-eval-after-load 'compile
   (fancy-compilation-mode))
 
+(defun is-typescript-project ()
+  "Returns true when project has an NPM build script for typescript"
+  (if-let* ((project (project-current))
+            (default-directory (project-root project))
+            (package-json-raw (read-file "package.json"))
+            (package-json (json-parse-string package-json-raw
+                                             :object-type 'alist)))
+      (s-matches-p (assocdr 'build (assocdr 'scripts package-json))
+               "./node_modules/typescript/bin/tsc")))
+
 (defun npm-run-build ()
   "Build typescript project on watch mode"
   (interactive)
