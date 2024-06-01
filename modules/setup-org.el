@@ -166,11 +166,10 @@
   :custom
   (org-agenda-span 1)
   :init
-  (setq org-agenda-files '("20240104T120451--inbox__project.org"
-                           ;; "20221114T223617--asana-tasks__project.org"
+  (setq org-agenda-files '("calendar-beorg.org"
+                           "20240104T120451--inbox__project.org"
                            "20240103T130349--reminders__project.org"
                            "20240103T130420--tasks__project.org"))
-  (add-to-list 'org-agenda-files (format "%sorg-calendar-agenda" org-directory))
 
   (setq org-agenda-custom-commands
         '(("b" tags "+OngoingBugs")
