@@ -75,7 +75,7 @@
          (project-name (file-name-nondirectory (directory-file-name project-root)))
          (rest-client-name (format "%s-client.org" project-name))
          (rest-client-path (expand-file-name rest-client-name project-root))
-         (symlink-target-dir "/Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/riseup/rest-clients/"))
+         (symlink-target-dir (format "%sriseup/rest-clients" org-directory)))
     (if (file-exists-p rest-client-path)
         (find-file rest-client-path)
       (let ((chosen-file (expand-file-name (read-file-name "Choose org file to symlink: " symlink-target-dir))))

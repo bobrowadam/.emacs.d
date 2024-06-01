@@ -172,7 +172,8 @@ Else, just look for the given string."
        [("d " "Data Dog DWIM" browse-data-dog-dwim)]
        [("s " "Search for service by port number" search-for-riseup-service-by-port)]])))
 
-(defconst *general-env* "/Users/bob/source/bob/config_mgmt/local/general.env")
+;; TODO fix the home dir path here
+(defconst *general-env* "/Users/adambobrow/source/bob/config_mgmt/local/general.env")
 (defun map--env-file-to-port->service (file-name)
   "Returns an Alist of ((<port-number> . <service-name>))"
     (let ((env-file-content (to-string (read-file file-name))))
