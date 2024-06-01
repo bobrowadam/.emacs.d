@@ -129,6 +129,7 @@
   (which-key-mode 1))
 
 (use-package flyspell
+  :disabled t
   :bind  (:map flyspell-mode-map
                ("C-;" . nil)
                ("C-." . nil))
@@ -142,7 +143,26 @@
   ;; (setq flyspell-issue-message-flag nil)
 )
 
+(use-package jinx
+  :custom
+  (jinx-include-faces '((prog-mode tree-sitter-hl-face:string
+                                         tree-sitter-hl-face:comment
+                                         tree-sitter-hl-face:constant
+                                         tree-sitter-hl-face:function
+                                         tree-sitter-hl-face:variable
+                                         font-lock-comment-face
+                                         font-lock-doc-face
+                                         font-lock-string-face
+                                         git-commit-summary)
+                        (conf-mode font-lock-comment-face font-lock-string-face)
+                        (yaml-mode . conf-mode)
+                        (yaml-ts-mode . conf-mode)))
+  :hook (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages)))
+
 (use-package wucuo
+  :disabled t
   :commands (wucuo-start)
   :custom
   (wucuo-personal-font-faces-to-check '(tree-sitter-hl-face:string
@@ -208,5 +228,7 @@
 (global-set-key (kbd "M-v") 'half-page-up)
 
 (setq xref-search-program 'ripgrep)
+
+(setq python-shell-interpreter "~/environments/default_env/bin/python3.12")
 
 (provide 'basic-settings)

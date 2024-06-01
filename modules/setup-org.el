@@ -21,7 +21,7 @@
 
 (use-package org
   :custom
-  (org-babel-python-command "python3.11")
+  (org-babel-python-command "python3")
   (org-hide-emphasis-markers t)
   :commands (org-agenda)
   :ensure t
