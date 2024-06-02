@@ -145,15 +145,11 @@
 
 (use-package jinx
   :custom
-  (jinx-include-faces '((prog-mode tree-sitter-hl-face:string
-                                         tree-sitter-hl-face:comment
-                                         tree-sitter-hl-face:constant
-                                         tree-sitter-hl-face:function
-                                         tree-sitter-hl-face:variable
-                                         font-lock-comment-face
-                                         font-lock-doc-face
-                                         font-lock-string-face
-                                         git-commit-summary)
+  (jinx-include-faces '((typescript-mode font-lock-variable-name-face
+                                   font-lock-comment-face
+                                   font-lock-doc-face
+                                   font-lock-string-face
+                                   git-commit-summary)
                         (conf-mode font-lock-comment-face font-lock-string-face)
                         (yaml-mode . conf-mode)
                         (yaml-ts-mode . conf-mode)))
