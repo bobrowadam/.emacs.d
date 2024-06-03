@@ -145,7 +145,7 @@
 
 (use-package jinx
   :custom
-  (jinx-include-faces '((typescript-mode font-lock-variable-name-face
+  (jinx-include-faces '((prog-mode font-lock-variable-name-face
                                    font-lock-comment-face
                                    font-lock-doc-face
                                    font-lock-string-face
@@ -153,6 +153,20 @@
                         (conf-mode font-lock-comment-face font-lock-string-face)
                         (yaml-mode . conf-mode)
                         (yaml-ts-mode . conf-mode)))
+  :config
+  (defun jinx--load-dicts ()
+    "Load dictionaries and setup syntax table."
+    (setq jinx--dicts (delq nil (mapcar #'jinx--mod-dict
+                                        (split-string jinx-languages)))
+          jinx--syntax-table (make-syntax-table jinx--base-syntax-table))
+    (unless jinx--dicts
+      (message "Jinx: No dictionaries available for %S" jinx-languages))
+    (dolist (dict jinx--dicts)
+      (cl-loop for c across (jinx--mod-wordchars dict) do
+               (modify-syntax-entry c "w" jinx--syntax-table)))
+    (modify-syntax-entry ?' "." jinx--syntax-table)
+    (modify-syntax-entry ?’ "w" jinx--syntax-table)
+    (modify-syntax-entry ?. "." jinx--syntax-table))
   :hook (emacs-startup . global-jinx-mode)
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
