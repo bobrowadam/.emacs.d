@@ -110,9 +110,9 @@
   (recentf-mode 1))
 
 (use-package fussy
-  :demand t
+  :disabled t
   :custom
-  (fussy-use-cache t)
+  (fussy-use-cache nil)
   (fussy-score-fn 'flx-score)
   :config
   (push 'fussy completion-styles)
@@ -126,14 +126,10 @@
 
 (use-package hotfuzz
   :demand t
-  :after fussy
-  :straight t
-  :config
-  (setq fussy-score-fn 'fussy-hotfuzz-score))
+  :straight t)
 
 (use-package orderless
-  :disabled t
-  :after (verticof fussy)
+  :after (vertico hotfuzz)
   :init
   (setq completion-ignore-case t)
   (setq orderless-component-separator " +")
@@ -141,7 +137,7 @@
         '(orderless-literal orderless-prefixes orderless-flex))
   (setq completion-category-defaults nil
         completion-category-overrides '((file (styles basic partial-completion))))
-  (setq completion-styles '(fussy orderless basic)))
+  (setq completion-styles '(hotfuzz orderless basic)))
 
 (use-package vertico
   :demand t
