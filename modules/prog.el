@@ -184,16 +184,16 @@ directories and verify NPM cache before running `npm install`."
   :bind
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
-  :mode ("\\.ts$\\'" . typescript-mode)
+  :mode ("\\.ts$\\'" . typescript-ts-mode)
   :config
   (setq-default typescript-indent-level 2))
 
-;; (use-package typescript-tsx-mode
-;;   :ensure nil
-;;   :after typescript-mode
-;;   :mode ("\\.tsx$\\'" . tsx-ts-mode)
-;;   :config
-;;   (setq-default typescript-indent-level 2))
+(use-package typescript-tsx-mode
+  :ensure nil
+  :after typescript-mode
+  :mode ("\\.tsx$\\'" . tsx-ts-mode)
+  :config
+  (setq-default typescript-indent-level 2))
 
 (use-package jest-test-mode
   :init
@@ -202,7 +202,7 @@ directories and verify NPM cache before running `npm install`."
   :custom
   ;; (jest-test-command-string (format "%s %%s ./node_modules/.bin/jest %%s %%s" "node"))
   (jest-test-command-string (format "node %%s ./node_modules/jest/bin/jest %%s %%s"))
-  :hook (typescript-mode js-mode typescript-tsx-mode))
+  :hook (typescript-mode typescript-ts-mode js-mode))
 
 (defun jest-set-config-file ()
   (interactive)
@@ -283,7 +283,7 @@ directories and verify NPM cache before running `npm install`."
   :config
   (fnm-use "v20.13.1")
   (add-to-list 'eglot-server-programs
-               `((js-mode typescript-mode)
+               `((js-mode js-ts-mode typescript-ts-mode typescript-mode)
                  . ("typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
                `((json-mode)
@@ -306,7 +306,7 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((js2-mode typescript-mode web-mode python-mode rust-mode json-mode tsx-ts-mode sql-mode haskell-mode) . eglot-ensure))
+  ((js2-mode typescript-ts-mode typescript-mode web-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure))
 
 (use-package eglot-sqls
   :demand t
@@ -366,6 +366,7 @@ directories and verify NPM cache before running `npm install`."
   (require 'smartparens-config)
   (smartparens-global-mode)
   (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
+  (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
   ;; :hook
   ;; (typescript-mode . smartparens-global-mode)
   ;; (js2-mode . smartparens-global-mode)
@@ -415,6 +416,8 @@ directories and verify NPM cache before running `npm install`."
   (emacs-lisp-mode . yas-minor-mode-on)
   (js2-mode . yas-minor-mode-on)
   (typescript-mode . yas-minor-mode-on)
+  (js-ts-mode . yas-minor-mode-on)
+  (typescript-ts-mode . yas-minor-mode-on)
   (web-mode . yas-minor-mode-on)
   (text-mode . yas-minor-mode-on)
   (lisp-mode . yas-minor-mode-on)
@@ -510,7 +513,7 @@ directories and verify NPM cache before running `npm install`."
   :config
   (add-to-list 'dape-configs
                `(vscode-ts-js-attach
-                 modes (js-mode js-ts-mode typescript-mode)
+                 modes (js-mode js-ts-mode typescript-ts-mode)
                  host "localhost"
                  port 8123
                  command "node"

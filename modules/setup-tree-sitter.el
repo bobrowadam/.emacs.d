@@ -1,6 +1,10 @@
 ;;; setup-tree-sitter.el --- summary -*- lexical-binding: t -*-
+
+(defun bob/install--grammer-if-missing (language)
+  (unless (treesit-language-available-p language)
+    (treesit-install-language-grammar language)))
+
 (use-package treesit
-  :disabled t
   :ensure nil
   :demand t
   :init
@@ -54,24 +58,32 @@
   (add-to-list 'auto-mode-alist '("CMakeLists\\'" . cmake-ts-mode))
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.y[a]?ml\\'" . yaml-ts-mode)))
+  (add-to-list 'auto-mode-alist '("\\.y[a]?ml\\'" . yaml-ts-mode))
 
-(use-package treesit-auto
-  :disabled t
-  :after (treesit)
-  :custom
-  (treesit-auto-install 'prompt)
   :config
-  (treesit-auto-add-to-auto-mode-alist 'all)
-  (global-treesit-auto-mode))
+  (bob/install--grammer-if-missing 'rust)
+  (bob/install--grammer-if-missing 'typescript)
+  (bob/install--grammer-if-missing 'tsx)
+  (bob/install--grammer-if-missing 'javascript)
+  (bob/install--grammer-if-missing 'python)
+  (bob/install--grammer-if-missing 'c)
+  (bob/install--grammer-if-missing 'cpp))
 
+;; (use-package treesit-auto
+;;   :after (treesit)
+;;   :custom
+;;   (treesit-auto-install 'prompt)
+;;   :config
+;;   (treesit-auto-add-to-auto-mode-alist 'all)
+;;   (global-treesit-auto-mode))
 
 (use-package tree-sitter
+  :disabled t
   :hook (js-mode typescript-mode c-mode c++-mode rust-mode)
-  :config
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
-(use-package tree-sitter-langs)
+(use-package tree-sitter-langs
+  :disabled t)
 
 (use-package ts-fold
   :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
