@@ -124,8 +124,26 @@
    completion-category-overrides nil)
   (advice-add 'corfu--capf-wrapper :before 'fussy-wipe-cache))
 
+
+
 (use-package hotfuzz
   :demand t
+  :config
+  ;; https://github.com/axelf4/hotfuzz/issues/1#issuecomment-1907058175:
+  (defvar +hotfuzz--is-empty nil)
+  (defun +hotfuzz-all-completions--enable-history-a (orig content &rest args)
+    "Set a variable needed for showing most recent entries."
+    (setq +hotfuzz--is-empty (string-empty-p content))
+    (apply orig content args))
+  (advice-add #'hotfuzz-all-completions
+              :around #'+hotfuzz-all-completions--enable-history-a)
+  (defun +hotfuzz--adjust-metadata--enable-history-a (orig metadata)
+    "Enable showing most recent entries for empty input."
+    (if +hotfuzz--is-empty
+        metadata
+      (funcall orig metadata)))
+  (advice-add #'hotfuzz--adjust-metadata
+              :around #'+hotfuzz--adjust-metadata--enable-history-a)
   :straight t)
 
 (use-package orderless
