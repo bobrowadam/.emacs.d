@@ -71,3 +71,4 @@ transient/*
 /games/
 /forge-database*
 /auctex-13.3/
+/site-lisp/hotfuzz-module.so
