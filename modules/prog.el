@@ -290,6 +290,7 @@ directories and verify NPM cache before running `npm install`."
                  . ("vscode-json-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
                '(sql-mode . (eglot-sqls "sqls")))
+  (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
 
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
@@ -306,13 +307,12 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((js2-mode typescript-ts-mode typescript-mode web-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure))
+  ((c++-mode c-mode js2-mode typescript-ts-mode typescript-mode web-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure))
 
 (use-package eglot-sqls
   :demand t
   :after eglot
-  :ensure nil
-  )
+  :ensure nil)
 
 (use-package eldoc-box
   :after eglot
