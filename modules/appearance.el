@@ -14,11 +14,11 @@
 (use-package modus-themes
   :demand t
   :custom
-  (modus-themes-to-toggle '( modus-operandi-tinted modus-vivendi-tinted))
+  (modus-themes-to-toggle '( modus-operandi-tinted modus-vivendi-tritanopia))
   :config
   (setq modus-vivendi-tinted-palette-overrides
         nil)
-  (modus-themes-select 'modus-vivendi-tinted)
+  (modus-themes-select 'modus-vivendi-tritanopia)
   (setq modus-vivendi-tritanopia-palette-overrides 
         '((bg-main "grey6")))
   ;; (modus-themes-select 'modus-vivendi-deuteranopia)
