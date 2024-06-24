@@ -3,10 +3,6 @@
   :custom
   (flymake-error-bitmap '(right-arrow modus-themes-prominent-error)))
 
-;; (use-package rust-mode)
-
-;; (use-package cargo-mode)
-
 (use-package fancy-compilation
   :config
   (setq fancy-compilation-term "xterm-256color")
@@ -307,7 +303,7 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((c++-mode c-mode js2-mode typescript-ts-mode typescript-mode web-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure))
+  ((c++-mode c++-ts-mode c-mode c-ts-mode js2-mode typescript-ts-mode typescript-mode web-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure))
 
 (use-package eglot-sqls
   :demand t
@@ -450,12 +446,12 @@ directories and verify NPM cache before running `npm install`."
 (use-package jq-format
   :after json-mode)
 
-(use-package outline
-  :ensure nil
-  :hook ((emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode lisp-interaction-mode) . outline-minor-mode)
-  :bind (:map outline-minor-mode-map
-              ("C-=" . outline-cycle)
-              ("C-+" . outline-show-all)))
+;; (use-package outline
+;;   :ensure nil
+;;   :hook ((emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode lisp-interaction-mode) . outline-minor-mode)
+;;   :bind (:map outline-minor-mode-map
+;;               ("C-=" . outline-cycle)
+;;               ("C-+" . outline-show-all)))
 
 (use-package sly
   :custom
@@ -570,4 +566,15 @@ directories and verify NPM cache before running `npm install`."
 (use-package realgud)
 (use-package realgud-lldb
   :after realgud)
+(use-package emacs
+  :hook
+  (prog-mode . hs-minor-mode)
+  :bind (:map prog-mode-map
+              ("C-=" . hs-toggle-hiding)))
+
+(use-package c-ts-mode-indent-offset
+  :ensure nil
+  :custom
+  (c-ts-mode-indent-offset 4))
+
 (provide 'prog)
