@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: cprint
+# key: cpr
+# --
+
+printf("#-------------------------------------#\n${1:enumerate}:$2\n", $1);
