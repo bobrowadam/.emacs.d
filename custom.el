@@ -19,6 +19,7 @@
  '(pos-tip-background-color "#FFF9DC")
  '(pos-tip-foreground-color "#011627")
  '(proced-format 'verbose)
+ '(realgud-safe-mode nil)
  '(safe-local-variable-values
    '((eval mmm-add-group 'elisp-js
            '((elisp-rawjs :submode js-mode :face mmm-code-submode-face :delimiter-mode nil :front "xwwp--js \"" :back "\" js--")

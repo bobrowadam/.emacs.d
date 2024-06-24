@@ -567,4 +567,7 @@ directories and verify NPM cache before running `npm install`."
 
 (use-package haskell-mode)
 
+(use-package realgud)
+(use-package realgud-lldb
+  :after realgud)
 (provide 'prog)
