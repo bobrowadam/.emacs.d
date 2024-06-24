@@ -41,6 +41,7 @@
     (message "No Magit buffers exists")))
 
 (use-package magit
+  :after (npm-utils)
   :commands (magit-status bob/magit-buffers)
   :ensure t
   :bind
@@ -78,7 +79,7 @@
   (transient-append-suffix 'magit-file-dispatch
     "P"
     '("F" "Pull" magit-pull))
-  :hook (magit-post-refresh . bob/update-node-modules-if-needed))
+  :hook (magit-post-refresh . bob/update-node-modules-if-needed-sync))
 
 (use-package forge
   :after magit

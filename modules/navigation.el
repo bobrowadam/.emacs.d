@@ -62,7 +62,7 @@
   (interactive (list (funcall project-prompter)))
   (project-switch-project dir)
   (when (read "package.json")
-    (bob/update-node-modules-if-needed)))
+    (bob/update-node-modules-if-needed-sync)))
 
 (use-package project
   :after bobs-project-utils

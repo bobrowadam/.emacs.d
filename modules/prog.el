@@ -1,4 +1,5 @@
 ;; -*- lexical-binding: t; -*-
+
 (use-package flymake
   :custom
   (flymake-error-bitmap '(right-arrow modus-themes-prominent-error)))
@@ -566,6 +567,7 @@ directories and verify NPM cache before running `npm install`."
 (use-package realgud)
 (use-package realgud-lldb
   :after realgud)
+
 (use-package emacs
   :hook
   (prog-mode . hs-minor-mode)

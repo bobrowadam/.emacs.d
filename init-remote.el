@@ -9,9 +9,9 @@
 (setq gc-cons-percentage 0.6)
 (setq gc-cons-threshold 80000000)
 
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (bob/set-gc-timer)))
+;; (add-hook 'emacs-startup-hook
+;;           (lambda ()
+;;             (bob/set-gc-timer)))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")

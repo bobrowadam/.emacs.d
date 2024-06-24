@@ -87,6 +87,7 @@
   :disabled t)
 
 (use-package ts-fold
+  :disabled t
   :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
   :init
   :hook ((js-mode typescript-mode c-mode c++-mode rust-mode) . ts-fold-mode)

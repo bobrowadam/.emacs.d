@@ -10,7 +10,7 @@
 (setq gc-cons-threshold most-positive-fixnum)
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (bob/set-gc-timer)
+            ;; (bob/set-gc-timer)
             (insert (format "Emacs ready in %s with %d garbage collections.\nGC elapsed: %s"
                             (format "%.2f seconds"
                                     (float-time
@@ -187,6 +187,10 @@
   (leetcode-prefer-language "javascript")
   (leetcode-directory "./leetcode")
   (leetcode-prefer-sql "sqlite3"))
+
+(use-package npm-utils
+  :commands (bob/update-node-modules-if-needed-sync)
+  :ensure nil)
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
