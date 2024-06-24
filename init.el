@@ -17,7 +17,7 @@
                                      (time-subtract after-init-time before-init-time)))
                             gcs-done
                             gc-elapsed))
-            (let ((animated-string "I use emacs BTW"))
+            (let ((animated-string "I use Emacs BTW"))
               (animate-string animated-string
                               3
                               0))))
@@ -182,11 +182,7 @@
 (use-package uuid
   :commands uuid-create)
 
-(use-package leetcode
-  :custom
-  (leetcode-prefer-language "javascript")
-  (leetcode-directory "./leetcode")
-  (leetcode-prefer-sql "sqlite3"))
+(use-package impostman)
 
 (use-package npm-utils
   :commands (bob/update-node-modules-if-needed-sync)

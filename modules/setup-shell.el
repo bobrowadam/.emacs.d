@@ -1,4 +1,4 @@
-(use-package inf-mongo :after startup)
+(use-package inf-mongo :disabled t :after startup)
 
 (use-package shell-defuns
   :demand t  

@@ -278,7 +278,7 @@ directories and verify NPM cache before running `npm install`."
   :custom
   (eglot-events-buffer-config '(:size 0 :format full))
   :config
-  (fnm-use "v20.13.1")
+  (fnm-use "v16.15.0")
   (add-to-list 'eglot-server-programs
                `((js-mode js-ts-mode typescript-ts-mode typescript-mode)
                  . ("typescript-language-server" "--stdio")))
@@ -334,8 +334,9 @@ directories and verify NPM cache before running `npm install`."
     (apply #'call-process eslint nil 0 nil options)
     (revert-buffer nil t t)))
 
-(defadvice enable-paredit-mode (after activate)
-  (smartparens-mode -1))
+(if (boundp 'smartparens-mode)
+    (defadvice enable-paredit-mode (after activate)
+      (smartparens-mode -1)))
 
 (use-package paredit
   :hook
@@ -421,9 +422,9 @@ directories and verify NPM cache before running `npm install`."
   (inf-mongo-mode . yas-minor-mode-on)
   (rust-mode . yas-minor-mode-on)
   :config
-  (setq yas-snippet-dirs
-        `(,(concat user-emacs-directory "snippets")
-          ,yasnippet-snippets-dir))
+  ;; (setq yas-snippet-dirs
+  ;;       `(,(concat user-emacs-directory "snippets")
+  ;;         ,yasnippet-snippets-dir))
   (yas-reload-all))
 
 (use-package common-lisp-snippets)
@@ -444,8 +445,8 @@ directories and verify NPM cache before running `npm install`."
   :if (window-system))
 
 (use-package json-mode)
-(use-package jq-format
-  :after json-mode)
+;; (use-package jq-format
+;;   :after json-mode)
 
 ;; (use-package outline
 ;;   :ensure nil
@@ -455,12 +456,14 @@ directories and verify NPM cache before running `npm install`."
 ;;               ("C-+" . outline-show-all)))
 
 (use-package sly
+  :disabled t
   :custom
   (inferior-lisp-program "sbcl")
   :bind (:map sly-editing-mode-map
               ("C-c M-c" . avy-goto-word-1)))
 
 (use-package sly-repl-ansi-color
+  :disabled t
   :after (sly)
   :init (push 'sly-repl-ansi-color sly-contribs))
 
@@ -471,11 +474,13 @@ directories and verify NPM cache before running `npm install`."
   :disabled t)
 
 (use-package slite
+  :disabled t
   :after (sly)
   :ensure nil
   :load-path "~/common-lisp/slite/")
 
 (use-package hcl-mode
+  :disabled t
   :mode
   ("\\.dsl\\'" . hcl-mode))
 
@@ -483,11 +488,12 @@ directories and verify NPM cache before running `npm install`."
 (use-package git-link)
 
 (use-package copilot
+  :disabled t
   :after (fnm corfu)
   :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
   :ensure t
   :custom
-  (copilot-node-executable (fnm-node-path "18"))
+  (copilot-node-executable (fnm-node-path "16"))
   :bind
   (:map copilot-completion-map
         ("C-<tab>" . copilot-accept-completion))

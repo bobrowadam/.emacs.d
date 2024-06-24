@@ -1,6 +1,7 @@
 (defvar org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
 
 (use-package ob-mongo
+  :disabled t
   :after org
   :custom
   (ob-mongo:default-mongo-executable "mongo")
@@ -55,7 +56,7 @@
    '((emacs-lisp . t)
      (js . t)
      (shell . t)
-     (mongo . t)
+     ;; (mongo . t)
      (python . t)
      (lisp . t)
      (verb . t)

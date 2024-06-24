@@ -36,8 +36,10 @@
       Info-additional-directory-list `(,(expand-file-name "info-docs" user-emacs-directory))
       ring-bell-function 'ignore
       visible-bell nil
-      enable-local-variables t
-      tab-width 4)
+      tab-width 4
+      enable-local-eval t
+      enable-local-variables t)
+
 
 ;; Default was too low.
 ;; Increase for better lsp performance.
