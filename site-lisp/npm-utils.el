@@ -8,7 +8,10 @@
                        :object-type 'alist)))
 
 (defun version--breakdown (version)
-  (mapcar 'string-to-number (string-split (s-chop-prefix "^" version) "\\.")))
+  "Breaks down version strings into numeric components,
+ ignoring non-numeric tail components."
+  (let ((clean-version (car (string-split (s-chop-prefix "^" version) "-"))))
+    (mapcar 'string-to-number (string-split clean-version "\\."))))
 
 (defun bob/package-version-meet-requirements (required-version current-version)
   (if (not (s-prefix? "^" required-version))
