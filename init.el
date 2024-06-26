@@ -145,6 +145,12 @@
   :hook
   (chatgpt-shell-mode . (lambda () (corfu-mode -1))))
 
+(use-package claude-shell
+  :commands (chatgpt-shell chatgpt-shell-start)
+  :after shell-maker pcsv
+  :config
+  (setq claude-shell-api-token (exec-path-from-shell-copy-env "CLAUDE_SHELL_API_TOKEN")))
+
 (use-package breadcrumb-mode
   :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb")
   :init (breadcrumb-mode 1))
