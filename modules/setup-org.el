@@ -167,7 +167,7 @@
   :custom
   (org-agenda-span 1)
   :init
-  (setq org-agenda-files '("calendar-beorg.org"
+  (setq org-agenda-files '("beorg.org"
                            "20240104T120451--inbox__project.org"
                            "20240103T130349--reminders__project.org"
                            "20240103T130420--tasks__project.org"))
