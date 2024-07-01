@@ -304,7 +304,11 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((c++-mode c++-ts-mode c-mode c-ts-mode js2-mode typescript-ts-mode typescript-mode web-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure))
+  ((c++-mode c++-ts-mode c-mode c-ts-mode js2-mode typescript-ts-mode typescript-mode web-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure)
+  (eglot-managed-mode .  (lambda ()
+                           (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
+                                     (eq (derived-mode-p major-mode) 'js-ts-mode))
+                             (flymake-eslint-enable)))))
 
 (use-package eglot-sqls
   :demand t
@@ -314,6 +318,15 @@ directories and verify NPM cache before running `npm install`."
 (use-package eldoc-box
   :after eglot
   :bind (:map eglot-mode-map ("C->" . eldoc-box-help-at-point)))
+
+(use-package flymake-eslint
+  :demand t
+  :ensure t
+  :after flyamke
+  :hook
+  (typescript-ts-mode . flymake-eslint-enable)
+  (typescript-js-mode . flymake-eslint-enable))
+
 
 (defun eslint-fix ()
   "Format the current file with ESLint."
