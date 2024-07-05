@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("bobs-badger-theme.el"
+(("inbox"
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
+ (front-context-string)
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 26235 50797 658393 0))
+("bobs-badger-theme.el"
  (filename . "~/.emacs.d/themes/bobs-badger-theme.el")
  (front-context-string . "(deftheme bobs-b")
  (rear-context-string)
@@ -87,11 +93,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20240526194909-effect_ts_platform.org")
- (front-context-string)
- (rear-context-string . "ect Ts Platform\n")
- (position . 96)
- (last-modified 26195 26631 197014 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20240630223706-forward.org")
+ (front-context-string . "\nA future transa")
+ (rear-context-string . "+title: Forward\n")
+ (position . 85)
+ (last-modified 26241 46310 760892 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
