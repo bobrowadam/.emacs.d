@@ -309,6 +309,7 @@ the given regular expression."
                  :order 4)
           (:name "Calendar"
                  :discard (:file-path "reminders")
+                 :discard (:tag "chennofar@gmailcom")
                  :time-grid t
                  :order 1)
           (:name "Do Next"
