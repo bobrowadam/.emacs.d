@@ -549,6 +549,26 @@ directories and verify NPM cache before running `npm install`."
                  :console "internalConsole"
                  :killBehavior "forceful"))
 
+  (add-to-list 'dape-configs
+               `(ts-node-attach
+                 modes (js-mode js-ts-mode typescript-ts-mode)
+                 host "localhost"
+                 port 8123
+                 command "node"
+                 command-cwd "~/.emacs.d/debug-adapters/js-debug"
+                 command-args ("src/dapDebugServer.js")
+                 :sourceMaps t
+                 :resolveSourceMapLocations ["**","!**/node_modules/**"]
+                 :cwd dape-cwd-fn
+                 :autoAttachChildProcesses t
+                 :type "pwa-node"
+                 :request "attach"
+                 :outputCapture "console"
+                 :sourceMapRenames t
+                 :autoAttachChildProcesses t
+                 :console "internalConsole"
+                 :killBehavior "forceful"))
+
   ;; To not display info and/or buffers on startup
   (remove-hook 'dape-on-start-hooks 'dape-info)
   (remove-hook 'dape-on-start-hooks 'dape-repl)
@@ -557,7 +577,8 @@ directories and verify NPM cache before running `npm install`."
   (setq dape-repl-use-shorthand t)
 
   ;; Kill compile buffer on build success
-  (add-hook 'dape-compile-compile-hooks 'kill-buffer))
+  (add-hook 'dape-compile-compile-hooks 'kill-buffer)
+  :hook (dape-active-mode . repeat-mode))
 
 (use-package erefactor
   :ensure t
