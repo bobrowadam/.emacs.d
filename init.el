@@ -147,9 +147,13 @@
 
 (use-package claude-shell
   :commands (chatgpt-shell chatgpt-shell-start)
+  :custom
+  (claude-shell-streaming t)
   :after shell-maker pcsv
   :config
-  (setq claude-shell-api-token (exec-path-from-shell-copy-env "CLAUDE_SHELL_API_TOKEN")))
+  (setq claude-shell-api-token (exec-path-from-shell-copy-env "CLAUDE_SHELL_API_TOKEN"))
+  :bind
+  ("C-c C-g" . claude-shell))
 
 (use-package breadcrumb-mode
   :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb")
