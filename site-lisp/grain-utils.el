@@ -5,15 +5,15 @@
 (defun run-service ()
   "Run a service in debug mode and run the other services separately"
   (interactive)
-  (let* ((service-dir "/Users/bob/source/grain/apps/backend")
+  (let* ((default-directory "~/source/grain")
+         (service-dir "/Users/bob/source/grain/apps/backend")
          (service-names (directory-files service-dir nil "^[^.]"))
          (service-name (completing-read "Enter service name: " service-names))
          (run-service-command (bob/generate--run-service-command service-name))
-         (output-buffer-name (format "*%s* stdout" service-name))
-         (default-directory "~/source/grain"))
-    (async-shell-command run-service-command output-buffer-name)
+         (output-buffer-name (format "*%s* stdout" service-name)))
     (async-shell-command (bob/generate--run-all-services-command service-name)
-                         (format "*services except %s* stdout" service-name))))
+                         (format "*services except %s* stdout" service-name))
+    (async-shell-command run-service-command output-buffer-name)))
 
 (defun bob/generate--run-all-services-command (excluded-service-name)
   (format "npx nx run-many --target=start --parallel=20 --exclude=%s"
