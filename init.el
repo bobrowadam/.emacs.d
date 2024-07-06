@@ -5,9 +5,18 @@
 
 (setq initial-buffer-choice t)
 (setq initial-scratch-message nil)
+(setq garbage-collection-messages t)
+;; (setq gc-cons-percentage 0.6)
 
-(setq gc-cons-percentage 0.6)
-(setq gc-cons-threshold most-positive-fixnum)
+(setq gc-cons-threshold (* gc-cons-threshold 10))
+(defun measure-garbage-collect-time (orig-fun &rest args)
+  (let ((start-time (current-time)))
+    (apply orig-fun args)
+    (message "Garbage collection took %.6f seconds"
+             (apply orig-fun args)
+             (float-time (time-subtract (current-time) start-time)))))
+
+(advice-add 'garbage-collect :around #'measure-garbage-collect-time)
 (add-hook 'emacs-startup-hook
           (lambda ()
             ;; (bob/set-gc-timer)
