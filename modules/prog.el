@@ -286,7 +286,7 @@ directories and verify NPM cache before running `npm install`."
                `((json-mode)
                  . ("vscode-json-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
-               '(sql-mode . (eglot-sqls "sqls")))
+               '(sql-mode . (eglot-sqls "sqls" "-config" ".sqls-config")))
   (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
 
   (cl-defmethod project-root ((project (head eglot-project)))
