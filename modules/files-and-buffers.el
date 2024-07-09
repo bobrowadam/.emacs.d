@@ -113,33 +113,10 @@
   :demand t
   :bind
   ("C-x C-b" . ibuffer)
-
-  ;; :config
-  ;; (define-ibuffer-column short-file-name (:name Testing-Define-Column :inline true)
-  ;;   (if-let (((cdr (ibuffer-vc-root (current-buffer))))
-  ;;            (visiting-file-name (buffer-file-name)))
-  ;;       (short--file-path (s-replace (expand-file-name (project-root (project-current t))) "" visiting-file-name))
-  ;;     (or (buffer-file-name) (buffer-name))))
-  ;; (define-ibuffer-column size-h
-  ;;   (:name "Size" :inline t)
-  ;;   (cond
-  ;;    ((> (buffer-size) 1000000) (format "%7.1fM" (/ (buffer-size) 1000000.0)))
-  ;;    ((> (buffer-size) 1000) (format "%7.1fk" (/ (buffer-size) 1000.0)))
-  ;;    (t (format "%8d" (buffer-size)))))
   :custom
   (ibuffer-expert t)
+  (ibuffer-use-other-window t)
   (ibuffer-show-empty-filter-groups nil)
-  ;; (ibuffer-formats
-  ;;  '((mark modified read-only vc-status-mini " "
-  ;;          (short-file-name))
-  ;;    (mark modified read-only vc-status-mini " "
-  ;;          (name 18 18 :left :elide)
-  ;;          " "
-  ;;          (size-h 9 -1 :right)
-  ;;          " "
-  ;;          (mode 16 16 :left :elide)
-  ;;          " "
-  ;;          filename-and-process)))
   (ibuffer-filter-group-name-face 'font-lock-doc-face)
   :hook
   (ibuffer . (lambda ()
@@ -149,6 +126,13 @@
                (all-the-icons-ibuffer-mode)
                (unless (eq ibuffer-sorting-mode 'recency)
                  (ibuffer-do-sort-by-recency)))))
+
+(use-package casual-ibuffer
+  :after ibuffer
+  :bind (:map ibuffer-mode-map
+              ("C-o" . casual-ibuffer-tmenu)
+              ("F" . casual-ibuffer-filter-tmenu)
+              ("s" . casual-ibuffer-sortby-tmenu)))
 
 (use-package all-the-icons-ibuffer
   :demand t
