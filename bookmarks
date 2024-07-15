@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("inbox"
+(("sql-queries.sql"
+ (filename . "~/source/grain/sql-queries.sql")
+ (front-context-string)
+ (rear-context-string . "* FROM forwards;")
+ (position . 24)
+ (last-modified 26254 50249 85304 0))
+("inbox"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
  (front-context-string)
  (rear-context-string . "20240104T120451\n")
