@@ -11,6 +11,11 @@
   (dired-dwim-target t)
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
+(use-package casual-dired
+  :bind (:map dired-mode-map
+              ("C-o" . #'casual-dired-tmenu)
+              ("s" . #'casual-dired-sort-by-tmenu)))
+
 (use-package dired-sidebar
   :after (dired)
   :bind (("C-x C-d" . dired-sidebar-toggle-sidebar))
@@ -160,5 +165,13 @@
 (use-package csv-mode)
 (use-package dockerfile-mode)
 (use-package pdf-tools)
+
+(use-package casual-re-builder
+  :commands (re-builder)
+  :bind
+  (:map reb-mode-map
+              ("C-o" . #'casual-re-builder-tmenu))
+  (:map reb-lisp-mode-map
+        ("C-o" . #'casual-re-builder-tmenu)))
 
 (provide 'files-and-buffers)
