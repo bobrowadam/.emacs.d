@@ -60,6 +60,7 @@
         magit-revert-buffers 1
         magit-display-buffer-function #'magit-display-buffer-traditional
         magit-refresh-status-buffer nil
+        magit-process-finish-apply-ansi-colors t
         ;; #'magit-display-buffer-fullframe-status-v1
         )
   (magit-toggle-verbose-refresh)
@@ -134,13 +135,16 @@
                       (car (split-string branch))))
                   branches))))
 
-(defun bobs/magit-delete-gone-branches ()
-  (interactive)
+(defun bobs/magit-delete-gone-branches (dry-run)
+  (interactive "P")
   (magit-git-fetch nil '("--prune"))
   (let ((gone-branches (bob/magit-list-gone-branches)))
     (dolist (branch gone-branches)
-      (message "Deleting branch %s" branch)
-      (magit-call-git "branch" "-D" branch))))
+      (if dry-run
+          (message "Would delete branch %s" branch)
+        (progn (message "Deleting branch %s" branch)
+               ;; (magit-call-git "branch" "-D" branch)
+)))))
 
 (defun bob/delete-merged-local-branches ()
   (interactive)
