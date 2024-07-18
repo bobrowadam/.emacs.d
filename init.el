@@ -211,6 +211,13 @@
   :commands (run-service)
   :ensure nil)
 
+(use-package casual-calc
+  :bind
+  (:map calc-mode-map
+              ("C-o" . #'casual-calc-tmenu))
+  (:map calc-alg-map
+              ("C-o" . #'casual-calc-tmenu)))
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
