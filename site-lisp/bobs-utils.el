@@ -188,8 +188,9 @@ to directory DIR."
   "Reset emacs state to initial state, keeping only Messages and Scratch buffers."
   (interactive)
   (eglot-shutdown-all)
-  (tramp-cleanup-all-buffers)
-  (tramp-cleanup-all-connections)
+  (when (featurep 'tramp)
+    (progn (tramp-cleanup-all-buffers)
+           (tramp-cleanup-all-connections)))
   (kill--all-shell-buffers)
 
   ;; Kill all other buffers except *Messages* and *scratch*
