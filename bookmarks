@@ -52,10 +52,10 @@
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO [[https:/")
- (rear-context-string . "6-17 Mon 09:34]\n")
- (position . 12036)
- (last-modified 26233 27004 872097 0))
+ (front-context-string . "* TODO Check if ")
+ (rear-context-string . "2024-07-17 Wed>\n")
+ (position . 12598)
+ (last-modified 26262 25078 798392 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -100,10 +100,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Make sqls exec")
- (rear-context-string . "e in grain repo\n")
- (position . 148)
- (last-modified 26250 43956 804605 0))
+ (front-context-string . "* define emacs s")
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 26263 30848 412234 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
