@@ -19,8 +19,8 @@
             (package-json-raw (read-file "package.json"))
             (package-json (json-parse-string package-json-raw
                                              :object-type 'alist)))
-      (s-matches-p (assocdr 'build (assocdr 'scripts package-json))
-               "./node_modules/typescript/bin/tsc")))
+      (s-matches-p (assocdr 'check-types (assocdr 'scripts package-json))
+               "tsc --noEmit -p tsconfig.app.json")))
 
 (defun npm-run-build ()
   "Build typescript project on watch mode"
@@ -40,8 +40,8 @@
                   (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
              (switch-to-prev-buffer))
             (t
-             (compilation-start (format "%s ./node_modules/typescript/bin/tsc -w" "node")
-                                t (lambda (mode)
+             (compilation-start (bob/generate--run-service-command (project-name (project-current)))
+                                t (lambda (_)
                                     compilation-buffer-name)))))))
 
 (defun get--available-inspect-port ()
@@ -196,9 +196,9 @@ directories and verify NPM cache before running `npm install`."
   :init
   :commands jest-test-mode
   :straight (jest-test-mode :type git :host github :repo "rymndhng/jest-test-mode")
-  :custom
+  ;; :custom
   ;; (jest-test-command-string (format "%s %%s ./node_modules/.bin/jest %%s %%s" "node"))
-  (jest-test-command-string (format "node %%s ./node_modules/jest/bin/jest %%s %%s"))
+  ;; (jest-test-command-string (format "node %%s ./node_modules/jest/bin/jest %%s %%s"))
   :hook (typescript-mode typescript-ts-mode js-mode))
 
 (defun jest-set-config-file ()
