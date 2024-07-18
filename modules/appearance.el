@@ -3,9 +3,9 @@
 ;; (set-frame-font "DaddyTimeMono Nerd Font 19")
 ;; (add-to-list 'default-frame-alist
 ;;              '(font . "DaddyTimeMono Nerd Font 19"))
-(set-frame-font "FiraMono Nerd Font 21")
+(set-frame-font "Iosevka-21:weight=medium:width=expanded")
 (add-to-list 'default-frame-alist
-             '(font . "FiraMono Nerd Font 21"))
+             '(font . "Iosevka-21:weight=medium:width=expanded"))
 
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))
@@ -56,7 +56,7 @@
         highlight-indent-guides-auto-enabled t)
   :hook (prog-mode . highlight-indent-guides-mode))
 
-(use-package all-the-icons :demand t
+(use-package all-the-icons
   :if (display-graphic-p))
 
 (use-package bobs-modeline
