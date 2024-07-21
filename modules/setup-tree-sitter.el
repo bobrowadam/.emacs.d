@@ -59,8 +59,6 @@
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
   (add-to-list 'auto-mode-alist '("\\.y[a]?ml\\'" . yaml-ts-mode))
-
-  :config
   (bob/install--grammer-if-missing 'yaml)
   (bob/install--grammer-if-missing 'rust)
   (bob/install--grammer-if-missing 'typescript)
