@@ -178,19 +178,20 @@ directories and verify NPM cache before running `npm install`."
       (kill-buffer (current-buffer)))))
 
 (use-package typescript-mode
+  :ensure nil
   :bind
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
-  :mode ("\\.ts$\\'" . typescript-ts-mode)
+  :mode ("\\.ts$" . typescript-ts-mode)
+  :mode ("\\.tsx$" . tsx-ts-mode)
   :config
   (setq-default typescript-indent-level 2))
 
-(use-package typescript-tsx-mode
-  :ensure nil
-  :after typescript-mode
-  :mode ("\\.tsx$\\'" . tsx-ts-mode)
-  :config
-  (setq-default typescript-indent-level 2))
+;; (use-package tsx-ts-mode
+;;   :ensure nil
+;;   :mode ("\\.tsx$" . tsx-ts-mode)
+;;   :config
+;;   (setq-default typescript-indent-level 2))
 
 (use-package jest-test-mode
   :init
@@ -230,8 +231,8 @@ directories and verify NPM cache before running `npm install`."
   :mode
   ("\\.html\\'" . web-mode)
   ("\\.cssl\\'" . web-mode)
-  ("\\.jsx\\'" . web-mode)
-  ("\\.tsx\\'" . web-mode)
+  ;; ("\\.jsx\\'" . web-mode)
+  ;; ("\\.tsx\\'" . web-mode)
   ;; ("\\.vue\\'" . web-mode)
   :hook
   (web-mode . (lambda () (setq-local font-lock-defaults nil)))
@@ -278,9 +279,9 @@ directories and verify NPM cache before running `npm install`."
   :custom
   (eglot-events-buffer-config '(:size 0 :format full))
   :config
-  (fnm-use "v16.15.0")
+  (fnm-use)
   (add-to-list 'eglot-server-programs
-               `((js-mode js-ts-mode typescript-ts-mode typescript-mode)
+               `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
                  . ("typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
                `((json-mode)
@@ -304,11 +305,12 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((c++-mode c++-ts-mode c-mode c-ts-mode js2-mode typescript-ts-mode typescript-mode web-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure)
+  ((c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode) . eglot-ensure)
   (eglot-managed-mode .  (lambda ()
                            (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
                                      (eq (derived-mode-p major-mode) 'js-ts-mode))
-                             (flymake-eslint-enable)))))
+                             (flymake-eslint-enable))))
+)
 
 (use-package eglot-sqls
   :demand t
@@ -361,7 +363,7 @@ directories and verify NPM cache before running `npm install`."
   (lisp-mode . enable-paredit-mode)
   (lisp-data-mode . enable-paredit-mode)
   ;; (racket-mode . enable-paredit-mode)
-  ;; (eshell-mode  . enable-paredit-mode)
+  (eshell-mode  . enable-paredit-mode)
   :bind
   (:map paredit-mode-map
         ("C-'" . sp-rewrap-sexp)
