@@ -1,3 +1,5 @@
+(use-package devil)
+
 (use-package consult
   :demand t
   :bind (;; C-c bindings (mode-specific-map)
@@ -67,10 +69,6 @@
 (use-package project
   :after bobs-project-utils
   :ensure nil
-  :custom
-  (project-vc-extra-root-markers '(".project"
-                                      "package.json"
-                                      "README.md"))
   :bind
   (("C-x p p" . bob/switch-to-project)
    ("C-x p w" . project-switch-to-open-project)
