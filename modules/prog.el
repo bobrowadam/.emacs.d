@@ -211,6 +211,9 @@ directories and verify NPM cache before running `npm install`."
                                                           "jest"))))
       (add-to-list 'jest-test-options (format "-c=%s" config-file))))
 
+(use-package js-ts-mode
+  :ensure nil
+  )
 (use-package js2-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
@@ -285,7 +288,7 @@ directories and verify NPM cache before running `npm install`."
                  . ("typescript-language-server" "--stdio")))
   (add-to-list 'eglot-server-programs
                `((json-mode)
-                 . ("vscode-json-language-server" "--stdio")))
+                 . ("vscode-json-languageserver" "--stdio")))
   (add-to-list 'eglot-server-programs
                '(sql-mode . (eglot-sqls "sqls" "-config" ".sqls-config")))
   (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
@@ -300,6 +303,7 @@ directories and verify NPM cache before running `npm install`."
         ("M-p" . backward-paragraph)
         ("M-." . xref-find-definitions)
         ("M-?" . xref-find-references)
+        ("C-<" . eglot-find-typeDefinition)
         ("C-c C-a" . eglot-code-actions)
         ("C-c ! l" . flymake-show-buffer-diagnostics)
         ("C-c ! n" . flymake-goto-next-error)
@@ -471,22 +475,18 @@ directories and verify NPM cache before running `npm install`."
 ;;               ("C-+" . outline-show-all)))
 
 (use-package sly
-  :disabled t
   :custom
   (inferior-lisp-program "sbcl")
   :bind (:map sly-editing-mode-map
               ("C-c M-c" . avy-goto-word-1)))
 
 (use-package sly-repl-ansi-color
-  :disabled t
   :after (sly)
   :init (push 'sly-repl-ansi-color sly-contribs))
 
-(use-package sly-asdf
-  :disabled t)
+(use-package sly-asdf)
 
-(use-package sly-quicklisp
-  :disabled t)
+(use-package sly-quicklisp)
 
 (use-package slite
   :disabled t

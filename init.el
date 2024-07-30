@@ -133,19 +133,8 @@
 
 (use-package chatgpt-shell
   :commands (chatgpt-shell chatgpt-shell-start)
-  :after shell-maker pcsv
   :custom
-  (chatgpt-shell-model-version 8)
-  (chatgpt-shell-model-versions '("gpt-3.5-turbo"
-                                  "gpt-3.5-turbo-0613"
-                                  "gpt-3.5-turbo-16k"
-                                  "gpt-3.5-turbo-16k-0613"
-                                  "gpt-4"
-                                  "gpt-4-0613"
-                                  "gpt-4-1106-preview"
-                                  "gpt-4o"
-                                  "gpt-4-turbo"))
-  :straight (:host github :repo "xenodium/chatgpt-shell" :files ("chatgpt-shell.el"))
+  (chatgpt-shell-model-version 0)
   :config
   (setq chatgpt-shell-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
 
@@ -162,7 +151,9 @@
   :config
   (setq claude-shell-api-token (exec-path-from-shell-copy-env "CLAUDE_SHELL_API_TOKEN"))
   :bind
-  ("C-c C-g" . claude-shell))
+  ("C-c C-g" . claude-shell)
+  :hook
+  (claude-shell-mode . (lambda () (corfu-mode -1))))
 
 (use-package breadcrumb-mode
   :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb")

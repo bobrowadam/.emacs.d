@@ -12,6 +12,7 @@
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
 (use-package casual-dired
+  :commands (dired)
   :bind (:map dired-mode-map
               ("C-o" . #'casual-dired-tmenu)
               ("s" . #'casual-dired-sort-by-tmenu)))
@@ -133,15 +134,15 @@
                  (ibuffer-do-sort-by-recency)))))
 
 (use-package casual-ibuffer
-  :after ibuffer
+  :commands (ibuffer)
   :bind (:map ibuffer-mode-map
               ("C-o" . casual-ibuffer-tmenu)
               ("F" . casual-ibuffer-filter-tmenu)
               ("s" . casual-ibuffer-sortby-tmenu)))
 
 (use-package all-the-icons-ibuffer
-  :demand t
-  :init (all-the-icons-ibuffer-mode 1)
+  :commands (ibuffer)
+  :config (all-the-icons-ibuffer-mode 1)
   :custom (all-the-icons-ibuffer-formats '((mark modified read-only locked " "
                                                  (icon 2 2)
                                                  (name 16 -1 :left)
