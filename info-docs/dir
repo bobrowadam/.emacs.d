@@ -17,3 +17,4 @@ File: dir,	Node: Top	This is the top of the INFO tree
 Software development
 * asdf: (asdf).                 Another System Definition Facility (for Common 
                                   Lisp)
+* gnu-c-manual: (gnu-c-manual).
