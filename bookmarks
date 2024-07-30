@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("sql-queries.sql"
+(("grain-client-local.org"
+ (filename . "~/source/grain-client-local.org")
+ (front-context-string . "* Grain Partners")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26269 26443 609506 0))
+("sql-queries.sql"
  (filename . "~/source/grain/sql-queries.sql")
  (front-context-string)
  (rear-context-string . "* FROM forwards;")
@@ -52,10 +58,10 @@
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Check if ")
- (rear-context-string . "2024-07-17 Wed>\n")
- (position . 12598)
- (last-modified 26262 25078 798392 0))
+ (front-context-string . "* NEXT Find an o")
+ (rear-context-string . "024-07-23 Tue>\n\n")
+ (position . 13139)
+ (last-modified 26271 18074 205186 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -100,10 +106,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* define emacs s")
- (rear-context-string . "20240104T120451\n")
- (position . 112)
- (last-modified 26263 30848 412234 0))
+ (front-context-string)
+ (rear-context-string . " next day hedge\n")
+ (position . 133)
+ (last-modified 26280 526 360746 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
