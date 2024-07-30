@@ -73,3 +73,4 @@ transient/*
 /auctex-13.3/
 /site-lisp/hotfuzz-module.so
 /claude/
+/.chatgpt-shell.el
