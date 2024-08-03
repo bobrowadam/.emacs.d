@@ -87,7 +87,11 @@
 (use-package forge
   :after magit
   :custom
-  (forge-topic-list-limit '(5 . -1))
+  (forge-status-buffer-default-topic-filters
+   (forge--topics-spec
+    :type 'topic :active t :state 'open :order 'newest
+    :author "bobrowadam"
+    :limit 8))
   :init (setq forge-bug-reference-hooks nil))
 
 (use-package github-review
