@@ -313,6 +313,7 @@
      ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
      ;; ("https://www.reddit.com/r/listentothis/.rss" music reddit)
      ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
+     ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
      ("https://www.omnycontent.com/d/playlist/2ee97a4e-8795-4260-9648-accf00a38c6a/661e2338-316e-4a0c-a2ab-ace100c4f08b/1c1fe6c7-ca02-4358-a7e3-ace100c4f0a3/podcast.rss" podcast politics)
      ("http://notarbut.co/feed/podcast" podcast)
      ("https://blog.rust-lang.org/feed.xml" programming rust)
