@@ -26,7 +26,6 @@
   (modus-themes-after-load-theme . bobs-modeline/enable))
 
 (use-package ef-themes
-  :demand t
   :custom
   (ef-themes-to-toggle '(ef-cyprus ef-deuteranopia-dark))
   :hook

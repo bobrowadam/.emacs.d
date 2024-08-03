@@ -450,8 +450,6 @@ directories and verify NPM cache before running `npm install`."
 
 (use-package yaml-mode)
 (use-package markdown-mode
-  :demand t
-  ;; :commands (markdown-mode gfm-mode eglot eglot-ensure)
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode)

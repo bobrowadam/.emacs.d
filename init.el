@@ -125,7 +125,6 @@
   :after (startup))
 
 (use-package shell-maker
-  :demand t
   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("shell-maker.el")))
 
 (use-package pcsv

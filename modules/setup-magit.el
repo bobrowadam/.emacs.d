@@ -47,13 +47,13 @@
   :bind
   ("C-x g" . magit-status)
   ("C-c s g" . bob/magit-buffers)
-  :init
-  (use-package with-editor :ensure t)
+  :config
+
   (add-hook 'git-commit-post-finish-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-post-stage-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-post-unstage-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-refresh-buffer-hook 'bob/refresh-vc-state-in-changed-buffers)
-  :config
+  (remove-hook 'magit-status-headers-hook 'magit-insert-tags-header)
   (setq magit-diff-refine-hunk 'all
         transient-default-level 7
         magit-commit-show-diff nil
@@ -81,6 +81,8 @@
     "P"
     '("F" "Pull" magit-pull))
   :hook (magit-post-refresh . bob/update-node-modules-if-needed-sync))
+
+(use-package with-editor :after magit :demand t)
 
 (use-package forge
   :after magit
