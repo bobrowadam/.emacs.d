@@ -162,12 +162,13 @@
       (save-buffer))))
 
 (use-package org-agenda
-  :commands (run-cl-asana org-agenda bob/reset-org-element-cache-in-agenda-files)
+  :commands (org-agenda bob/reset-org-element-cache-in-agenda-files)
   :after (org)
   :custom
   (org-agenda-span 1)
   :init
-  (setq org-agenda-files '("beorg.org"
+  (setq org-agenda-files `(,(format "%sorg-roam/journal" org-directory)
+                           "beorg.org"
                            "20240104T120451--inbox__project.org"
                            "20240103T130349--reminders__project.org"
                            "20240103T130420--tasks__project.org"))
@@ -311,7 +312,10 @@ the given regular expression."
                  :discard (:file-path "reminders")
                  :discard (:tag "chennofar@gmailcom")
                  :time-grid t
-                 :order 1)
+                 :order 2)
+          (:name "Today Journal"
+                 :file-path "journal"
+                 :order 1.1)
           (:name "Do Next"
                  :todo "NEXT"
                  :order 2)
