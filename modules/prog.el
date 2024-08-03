@@ -375,18 +375,14 @@ directories and verify NPM cache before running `npm install`."
         ("M-?" . xref-find-references)))
 
 (use-package smartparens
-  :demand t
-  :init
+  :config
   (setq sp-ignore-modes-list
         '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode))
-  :config
   (require 'smartparens-config)
-  (smartparens-global-mode)
   (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
   (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
-  ;; :hook
-  ;; (typescript-mode . smartparens-global-mode)
-  ;; (js2-mode . smartparens-global-mode)
+  :hook
+  (prog-mode)
   :bind (:map smartparens-mode-map
               ("M-(" . sp-wrap-round)
               ("M-s" . sp-unwrap-sexp)
