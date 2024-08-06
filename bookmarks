@@ -57,11 +57,11 @@
  (position . 1)
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Try ROC L")
- (rear-context-string . "2024-07-31 Wed>\n")
- (position . 13332)
- (last-modified 26281 59885 120545 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org")
+ (front-context-string . "* TODO לבדוק את ")
+ (rear-context-string . "2024-10-01 Tue>\n")
+ (position . 88431)
+ (last-modified 26287 12553 266754 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")

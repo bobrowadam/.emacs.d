@@ -5,7 +5,7 @@
 (setq user-login-name "Adam Bobrow"
       user-full-name "Adam Bobrow"
       garbage-collection-messages nil
-      undo-limit (* 1024 1000) ;; 1 Mb seems OK
+      undo-limit (* 30 1024 1000)
       scroll-preserve-screen-position nil
       make-backup-files nil
       enable-recursive-minibuffers t
@@ -16,7 +16,7 @@
       sentence-end-double-space t       ; explicitly choose default
       x-select-enable-clipboard t
       set-mark-command-repeat-pop t
-      mark-ring-max 6
+      mark-ring-max 12
       global-mark-ring-max 8
       history-delete-duplicates t
       comint-input-ignoredups t

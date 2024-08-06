@@ -1,7 +1,7 @@
 ;; Dired
 (use-package dired
+  :commands dired
   :ensure nil
-  :demand t
   :custom
   (dired-auto-revert-buffer t)
   (dired-listing-switches "-lah --group-directories-first")
@@ -158,7 +158,6 @@
                                            )))
 
 (use-package ibuffer-vc
-  :demand
   :commands (ibuffer-vc-set-filter-groups-by-vc-root)
   :custom
   (ibuffer-vc-skip-if-remote t))

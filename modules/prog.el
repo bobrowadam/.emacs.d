@@ -358,6 +358,9 @@ directories and verify NPM cache before running `npm install`."
     (defadvice enable-paredit-mode (after activate)
       (smartparens-mode -1)))
 
+(use-package prettier
+  :hook (typescript-ts-mode js2-mode))
+
 (use-package paredit
   :hook
   ;; (eval-expression-minibuffer-setup . enable-paredit-mode)

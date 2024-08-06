@@ -171,10 +171,9 @@
                 khoj-openai-api-key (getenv "OPEN_AP_API_KEY")))
 
 (use-package xkcd-303-mode
-  :demand t
   :straight (:host github :repo "elizagamedev/xkcd-303-mode.el"
                  :files ("*.el" "compiling.png"))
-  :init
+  :config
   (xkcd-303-mode 1))
 
 (use-package proced-narrow

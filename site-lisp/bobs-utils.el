@@ -18,7 +18,7 @@
 (defun random-n-letter-string (n)
   (mapconcat 'identity (cl-loop for x to n collect (random-alnum)) ""))
 
-(defun my/unique (list)
+(defun bob/unique (list)
   "Get a new list with LISTS's unique values."
   (let ((hash-t (make-hash-table :test 'eq)))
     (dolist (n list) (puthash n 1 hash-t))
