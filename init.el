@@ -143,10 +143,10 @@
   (chatgpt-shell-mode . (lambda () (corfu-mode -1))))
 
 (use-package claude-shell
-  :commands (chatgpt-shell chatgpt-shell-start)
+  :commands (chatgpt-shell chatgpt-shell-start claude-shell)
   :custom
   (claude-shell-streaming t)
-  :after shell-maker pcsv
+  ;; :after shell-maker pcsv
   :config
   (setq claude-shell-api-token (exec-path-from-shell-copy-env "CLAUDE_SHELL_API_TOKEN"))
   :bind
