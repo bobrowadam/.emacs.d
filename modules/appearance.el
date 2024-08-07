@@ -3,9 +3,23 @@
 ;; (set-frame-font "DaddyTimeMono Nerd Font 19")
 ;; (add-to-list 'default-frame-alist
 ;;              '(font . "DaddyTimeMono Nerd Font 19"))
-(set-frame-font "Iosevka-21:weight=medium:width=expanded")
-(add-to-list 'default-frame-alist
-             '(font . "Iosevka-21:weight=medium:width=expanded"))
+(defun set-font-based-on-resolution (frame)
+  (let* ((attrs (frame-monitor-attributes))
+         (geo (cdr (assq 'geometry attrs))))
+    (if (and geo (>= (length geo) 4))
+        (let* ((width (nth 2 geo))
+                (height (nth 3 geo))
+                (font-size
+                 (cond
+                  ((and (> width 1920) (> height 1080)) 29)  ; Large screens
+                  ((and (> width 1366) (> height 768)) 21)   ; Medium screens
+                  (t 17))))    ; Small screens
+          (let ((font-string (format "Iosevka-%d:weight=medium:width=expanded" font-size)))
+            (set-frame-font font-string 'keep-size t)
+            (add-to-list 'default-frame-alist `(font . ,font-string))))
+      (message "Error: Unable to determine screen dimensions."))))
+
+(setq move-frame-functions '(set-font-based-on-resolution))
 
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))
