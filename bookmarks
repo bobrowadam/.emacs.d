@@ -106,10 +106,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* לבדוק את חנן מ")
+ (front-context-string . "* Ask for Aderal")
  (rear-context-string . "20240104T120451\n")
  (position . 112)
- (last-modified 26283 22107 722268 0))
+ (last-modified 26291 14120 363207 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
