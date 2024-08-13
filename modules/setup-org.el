@@ -167,7 +167,7 @@
   :custom
   (org-agenda-span 1)
   :init
-  (setq org-agenda-files `(,(format "%sorg-roam/journal" org-directory)
+  (setq org-agenda-files `(,(format "%sjournal" org-directory)
                            "beorg.org"
                            "20240104T120451--inbox__project.org"
                            "20240103T130349--reminders__project.org"
@@ -286,7 +286,8 @@ the given regular expression."
   (denote-date-prompt-use-org-read-date t)
   (denote-prompts '(title keywords file-type))
   :bind
-  ("C-c d" . denote-open-or-create)
+  ("C-c d d" . denote-open-or-create)
+  ("C-c d t" . denote-journal-extras-new-or-existing-entry)
 )
 
 (use-package consult-notes
