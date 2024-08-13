@@ -48,7 +48,7 @@
   ("C-x g" . magit-status)
   ("C-c s g" . bob/magit-buffers)
   :config
-
+  (magit-wip-mode 1)
   (add-hook 'git-commit-post-finish-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-post-stage-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-post-unstage-hook 'bob/refresh-vc-state-in-changed-buffers)
