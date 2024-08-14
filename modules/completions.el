@@ -3,7 +3,7 @@
   :custom
   (tab-always-indent 'complete)
   (completion-cycle-threshold 1)
-  (corfu-auto-delay 0.08)
+  (corfu-auto-delay 0.06)
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-separator ?\s)          ;; Orderless field separator
@@ -14,7 +14,7 @@
   (corfu-on-exact-match 'insert)     ;; Configure handling of exact matches
   (corfu-echo-documentation t) ;; Disable documentation in the echo area
   (corfu-scroll-margin 8)        ;; Use scroll margin
-  (corfu-auto-prefix 2)
+  (corfu-auto-prefix 1)
 
   ;; Recommended: Enable Corfu globally.
   ;; This is recommended since Dabbrev can be used globally (M-/).
