@@ -12,10 +12,10 @@
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
 (use-package casual-dired
-  :commands (dired)
+  :commands (dired dired-jump)
+  :after (dired)
   :bind (:map dired-mode-map
-              ("C-o" . #'casual-dired-tmenu)
-              ("s" . #'casual-dired-sort-by-tmenu)))
+              ("C-o" . #'casual-dired-tmenu)))
 
 (use-package dired-sidebar
   :after (dired)
