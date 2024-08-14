@@ -46,6 +46,11 @@
   :custom
   (all-the-icons-dired-monochrome nil)
   :after (dired)
+  :config
+  (add-to-list 'all-the-icons-extension-icon-alist
+               '("roc" all-the-icons-fileicon "elm" :face all-the-icons-blue))
+  (add-to-list 'all-the-icons-mode-icon-alist
+             '(roc-mode all-the-icons-fileicon "elm" :face all-the-icons-blue))
   :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package diredfl
