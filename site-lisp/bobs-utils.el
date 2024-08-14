@@ -278,4 +278,17 @@ to directory DIR."
     (format "LBG: %.2f, Guar: %.2f, Carrageenan: %.2f"
             lbg guar l-carrageenan)))
 
+(defun bob/transpose-surroundings-sexps ()
+  "Transpose the surrounding sexps around the current point expression:
+a-word center-word b-word =>
+b-word center-word a-word"
+  (interactive)
+  (save-excursion
+    (forward-sexp)
+    (transpose-sexps 1)
+    (backward-sexp)
+    (backward-sexp)
+    (transpose-sexps 1)
+    (transpose-sexps 1)))
+
 (provide 'bobs-utils)
