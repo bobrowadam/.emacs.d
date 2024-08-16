@@ -12,7 +12,7 @@
                 (font-size
                  (cond
                   ((and (> width 1920) (> height 1080)) 29)  ; Large screens
-                  ((and (> width 1366) (> height 768)) 21)   ; Medium screens
+                  ((and (> width 1366) (> height 768)) 23)   ; Medium screens
                   (t 17))))    ; Small screens
           (let ((font-string (format "Iosevka-%d:weight=medium:width=expanded" font-size)))
             (set-frame-font font-string 'keep-size t)
@@ -28,11 +28,11 @@
 (use-package modus-themes
   :demand t
   :custom
-  (modus-themes-to-toggle '( modus-operandi-tinted modus-vivendi-tritanopia))
+  (modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tritanopia))
   :config
   (setq modus-vivendi-tinted-palette-overrides
         nil)
-  (modus-themes-select 'modus-vivendi-tritanopia)
+  (modus-themes-select 'modus-vivendi-tinted)
   (setq modus-vivendi-tritanopia-palette-overrides 
         '((bg-main "grey6")))
   ;; (modus-themes-select 'modus-vivendi-deuteranopia)

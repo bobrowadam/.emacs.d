@@ -16,8 +16,8 @@
       sentence-end-double-space t       ; explicitly choose default
       x-select-enable-clipboard t
       set-mark-command-repeat-pop t
-      mark-ring-max 12
-      global-mark-ring-max 8
+      mark-ring-max 16
+      global-mark-ring-max 16
       history-delete-duplicates t
       comint-input-ignoredups t
       view-read-only nil          ; all read-only buffers in view-mode
@@ -57,7 +57,7 @@
 (when (boundp 'pixel-scroll-precision-mode)
   (pixel-scroll-precision-mode 1))
 
-(setq scroll-conservatively 101)
+(setq scroll-conservatively 10)
 
 (unless (not (file-exists-p custom-file))
   (load custom-file))
@@ -243,6 +243,6 @@
 
 (setq xref-search-program 'ripgrep)
 
-(setq python-shell-interpreter "~/environments/default_env/bin/python3.12")
+(setq python-shell-interpreter (executable-find "python3.12"))
 
 (provide 'basic-settings)

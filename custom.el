@@ -21,7 +21,8 @@
  '(proced-format 'verbose)
  '(realgud-safe-mode nil)
  '(safe-local-variable-values
-   '((etags-regen-ignores "test/manual/etags/")
+   '((vc-default-patch-addressee . "bug-gnu-emacs@gnu.org")
+     (etags-regen-ignores "test/manual/etags/")
      (etags-regen-regexp-alist
       (("c" "objc")
        "/[ \11]*DEFVAR_[A-Z_ \11(]+\"\\([^\"]+\\)\"/\\1/" "/[ \11]*DEFVAR_[A-Z_ \11(]+\"[^\"]+\",[ \11]\\([A-Za-z0-9_]+\\)/\\1/"))
@@ -85,6 +86,7 @@
  '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "#4a4f6a" :style nil))))
  '(tab-line-tab (nil))
  '(tab-line-tab-active ((t)))
+ '(tab-line-tab-current ((t)))
  '(tab-line-tab-inactive (nil))
  '(vertical-border (nil))
  '(window-divider ((t :background "#0d0e1c" :foreground "#0d0e1c")))

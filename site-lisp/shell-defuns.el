@@ -72,6 +72,7 @@ Any other prefis will be used as the suffix itself."
                                 (equal (with-current-buffer b major-mode) 'js-comint-mode)
                                 (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
                                 (equal (with-current-buffer b major-mode) 'comint-mode)
+                                (equal (with-current-buffer b major-mode) 'compilation-mode)
                                 (equal (with-current-buffer b major-mode) 'eat-mode)
                                 (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
                                 ))

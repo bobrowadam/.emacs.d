@@ -95,7 +95,8 @@
       (project-remember-projects-under "~/source/common-lisp/" t)))
   :config
   (setq project-read-file-name-function #'bobs/project-read-file-name-function)
-  (override-project-prompt-project-dir))
+  ;; (override-project-prompt-project-dir)
+)
 
 (use-package savehist
   :ensure nil
@@ -231,6 +232,8 @@
   :bind ("M-#" . er/expand-region))
 
 (use-package rg
+  ;; :custom
+  ;; (rg-command-line-flags '("--multiline"))
   :bind
   ("M-g d" . rg))
 
@@ -309,18 +312,16 @@
      ("https://feeds.megaphone.fm/POLTD9269001873" podcast funny rotner)
      ("https://learncodethehardway.com/feed.rss" programming learning c)
      ("https://feeds.resonaterecordings.com/software-unscripted" programming)
-     ("https://feeds.buzzsprout.com/1887966.rss" politics) ("https://www.omnycontent.com/d/playlist/2ee97a4e-8795-4260-9648-accf00a38c6a/5e87674c-9ff9-4a34-87ea-adb8010d232e/dae4c5e9-ceed-4d7d-a7c5-adb900952d20/podcast.rss" comedy politics)
      ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
      ;; ("https://www.reddit.com/r/listentothis/.rss" music reddit)
      ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
+     ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
      ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
-     ("https://www.omnycontent.com/d/playlist/2ee97a4e-8795-4260-9648-accf00a38c6a/661e2338-316e-4a0c-a2ab-ace100c4f08b/1c1fe6c7-ca02-4358-a7e3-ace100c4f0a3/podcast.rss" podcast politics)
      ("http://notarbut.co/feed/podcast" podcast)
-     ("https://blog.rust-lang.org/feed.xml" programming rust)
+     ;; ("https://blog.rust-lang.org/feed.xml" programming rust)
      ;; ("https://www.reddit.com/r/rust/.rss" programming rust reddit)
      ;; ("https://www.reddit.com/r/Clojure/.rss" programming clojure reddit)
      ("https://danluu.com/atom.xml" programming blog)
-     ("https://feed.podbean.com/geekonomy/feed.xml" podcast)
      ("https://protesilaos.com/master.xml" programming blog emacs)))
   :bind
   ("C-c w" . elfeed)

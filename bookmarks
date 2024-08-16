@@ -57,11 +57,11 @@
  (position . 1)
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org")
- (front-context-string . "* TODO לבדוק את ")
- (rear-context-string . "2024-10-01 Tue>\n")
- (position . 88431)
- (last-modified 26287 12553 266754 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
+ (front-context-string . "* TODO Ask for A")
+ (rear-context-string . "2024-07-31 Wed>\n")
+ (position . 13872)
+ (last-modified 26297 56254 708803 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -105,11 +105,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Ask for Aderal")
- (rear-context-string . "20240104T120451\n")
- (position . 112)
- (last-modified 26291 14120 363207 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20240812154714-postgres_locking.org")
+ (front-context-string . "\n[[file:20240812")
+ (rear-context-string . "ostgres locking\n")
+ (position . 94)
+ (last-modified 26298 1218 343608 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
