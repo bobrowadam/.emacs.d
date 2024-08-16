@@ -22,7 +22,6 @@
       comint-input-ignoredups t
       view-read-only nil          ; all read-only buffers in view-mode
       view-inhibit-help-message t ; don't tell me about it
-      delete-active-region nil    ; just use <delete>
       gdb-many-windows t
       epa-pinentry-mode 'loopback
       auth-sources '("~/.authinfo" "~/.authinfo.gpg" "~/.netrc")
