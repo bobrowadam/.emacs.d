@@ -9,7 +9,6 @@
                      (member ".git" (directory-files (format "%s/%s" repos-dir dir))))
            do (run-fetch-in-dir (format "%s/%s" repos-dir dir))))
 
-
 (defun run-fetch-in-dir (dir)
   (setq default-directory dir)
   (magit-fetch-all-prune))
