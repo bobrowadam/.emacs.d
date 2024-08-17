@@ -2,7 +2,6 @@
   (interactive "sCommit message: ")
   (magit-commit-create `("-am" ,message)))
 
-
 (defun fetch-all-git-repos-in-directory (repos-dir)
   (cl-loop for dir
            in (directory-files repos-dir)
