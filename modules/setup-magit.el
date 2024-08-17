@@ -9,6 +9,7 @@
                      (member ".git" (directory-files (format "%s/%s" repos-dir dir))))
            do (run-fetch-in-dir (format "%s/%s" repos-dir dir))))
 
+
 (defun run-fetch-in-dir (dir)
   (setq default-directory dir)
   (magit-fetch-all-prune))
@@ -88,8 +89,7 @@
     '("P" "Push" magit-push))
   (transient-append-suffix 'magit-file-dispatch
     "P"
-    '("F" "Pull" magit-pull))
-  :hook (magit-post-refresh . bob/update-node-modules-if-needed-sync))
+    '("F" "Pull" magit-pull)))
 
 (use-package with-editor :after magit :demand t)
 
