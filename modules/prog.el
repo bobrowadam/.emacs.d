@@ -361,15 +361,23 @@ directories and verify NPM cache before running `npm install`."
 (use-package prettier
   :hook (typescript-ts-mode js2-mode))
 
+(defun preserve-paredit-and-enable-ret ()
+  (interactive)
+  (let* ((enter-key (kbd "RET"))
+         (original-binding (key-binding enter-key)))
+    (funcall 'enable-paredit-mode)
+    (local-set-key enter-key original-binding)))
+
 (use-package paredit
   :hook
-  ;; (eval-expression-minibuffer-setup . enable-paredit-mode)
+  ;; (eval-expression-minibuffer-setup . preserve-paredit-and-enable-ret)
   (emacs-lisp-mode . enable-paredit-mode)
   (slime-mode . enable-paredit-mode)
   (slime-repl-mode . enable-paredit-mode)
   (common-lisp-mode . enable-paredit-mode)
   (lisp-mode . enable-paredit-mode)
   (lisp-data-mode . enable-paredit-mode)
+  ;; (minibuffer-mode . preserve-paredit-and-enable-ret)
   ;; (racket-mode . enable-paredit-mode)
   (eshell-mode  . enable-paredit-mode)
   :bind
@@ -386,7 +394,7 @@ directories and verify NPM cache before running `npm install`."
   (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
   (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
   :hook
-  (prog-mode)
+  (prog-mode text-mode comint-mode)
   :bind (:map smartparens-mode-map
               ("M-(" . sp-wrap-round)
               ("M-s" . sp-unwrap-sexp)

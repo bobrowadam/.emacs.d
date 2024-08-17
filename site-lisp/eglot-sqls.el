@@ -7,20 +7,6 @@
 (defclass eglot-sqls (eglot-lsp-server) ()
     :documentation "SQL's Language Server")
 
-;; (cl-defmethod eglot-execute ((server eglot-sqls) (_cmd (eql switchDatabase)))
-;;   "For switchDatabase."
-;;   (let* ((res (jsonrpc-request server :workspace/executeCommand
-;;                                `(:command "showDatabases" :arguments ,arguments :timeout 0.5)))
-;;          (menu-items (split-string res "\n"))
-;;          (menu `("Eglot code actions:" ("dummy" ,@menu-items)))
-;;          (db (if (listp last-nonmenu-event)
-;;                  (x-popup-menu last-nonmenu-event menu)
-;;                (completing-read "[eglot] Pick an database: "
-;;                                 menu-items nil t
-;;                                 nil nil (car menu-items)))))
-;;     (jsonrpc-request server :workspace/executeCommand
-;;                      `(:command "switchDatabase" :arguments [,db] :timeout 0.5))))
-
 (cl-defmethod eglot-execute ((server eglot-sqls) command)
   (let* ((uri (eglot-path-to-uri (buffer-file-name)))
          (beg (eglot--pos-to-lsp-position (if (use-region-p)

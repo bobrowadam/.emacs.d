@@ -303,8 +303,13 @@ the given regular expression."
   ;; ("C-c n g" . consult-notes-search-in-all-notes)
 )
 
+(defun bob/org-super-agenda-custom-header-format (header)
+  (progn (string-match ".+?:[[:space:]]\\(.+?$\\)"
+                       header)
+         (match-string 1 header)))
+
 (use-package org-super-agenda
-  :init
+  :config
   (setq org-super-agenda-groups
         '((:name "Reminders"
                  :file-path "reminders"
@@ -316,7 +321,8 @@ the given regular expression."
                  :order 2)
           (:name "Today Journal"
                  :file-path "journal"
-                 :order 1.1)
+                 :order 1.1
+                 :transformer bob/org-super-agenda-custom-header-format)
           (:name "Do Next"
                  :todo "NEXT"
                  :order 2)
@@ -326,7 +332,6 @@ the given regular expression."
           (:name "Waiting"
                  :todo "WAITING"
                  :order 4)))
-  :config
   (org-super-agenda-mode 1))
 
 (provide 'setup-org)

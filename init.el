@@ -1,3 +1,8 @@
+(setenv "LIBRARY_PATH"
+	(string-join
+	 '("/opt/homebrew/opt/libgccjit/lib/gcc/14/"
+	   "/opt/homebrew/opt/gcc/lib/gcc/13/gcc/aarch64-apple-darwin22/13")
+	 ":"))
 (setq debug-on-error nil)
 (setq lexical-binding t)
 
@@ -9,27 +14,23 @@
 ;; (setq gc-cons-percentage 0.6)
 
 (setq gc-cons-threshold (* gc-cons-threshold 10))
-(defun measure-garbage-collect-time (orig-fun &rest args)
-  (let ((start-time (current-time)))
-    (apply orig-fun args)
-    (message "Garbage collection took %.6f seconds"
-             (apply orig-fun args)
-             (float-time (time-subtract (current-time) start-time)))))
 
-(advice-add 'garbage-collect :around #'measure-garbage-collect-time)
+(defface init-title
+  '((t :inherit info-title-3 :height 300))
+  "A face For the initial Emacs title.")
+
 (add-hook 'emacs-startup-hook
           (lambda ()
-            ;; (bob/set-gc-timer)
-            (insert (format "Emacs ready in %s with %d garbage collections.\nGC elapsed: %s"
-                            (format "%.2f seconds"
-                                    (float-time
-                                     (time-subtract after-init-time before-init-time)))
-                            gcs-done
-                            gc-elapsed))
-            (let ((animated-string "I use Emacs BTW"))
-              (animate-string animated-string
-                              3
-                              0))))
+            (insert (propertize "M-x"
+                                'face '(init-title)))
+            (insert "\n\n ")
+            (insert (propertize (format "Ready in %s with %d garbage collections.\nGC elapsed: %s"
+                                        (format "%.2f seconds"
+                                                (float-time
+                                                 (time-subtract after-init-time before-init-time)))
+                                        gcs-done
+                                        (format "%.2f seconds" gc-elapsed))
+                                'face '(info-title-1)))))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")

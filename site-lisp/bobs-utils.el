@@ -58,8 +58,11 @@ You can escape '$' with '\\' as prefix.
                (format "\"%s\": \"%s\"" x (to-string (number-sequence 0 10)))
              (format "\"%s\": \"%s\"\n," x (to-string (number-sequence 0 50))))))
 
-(defun bob/calc-sourdough-hydration (levan bakers-hydration total-weight)
-  (-let* ((total-% (+ bakers-hydration 1))
+(defun bob/calc-sourdough-hydration (levan bakers-hydration-input total-weight)
+  (-let* ((bakers-hydration (if (> bakers-hydration-input 1)
+                                (/ bakers-hydration-input 100.0)
+                              bakers-hydration-input))
+          (total-% (+ bakers-hydration 1))
           (water-% (/ bakers-hydration total-%))
           (water-grm (* total-weight water-%))
           (flour-grm (- total-weight water-grm))

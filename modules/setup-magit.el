@@ -54,6 +54,15 @@
   (add-hook 'magit-post-unstage-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-refresh-buffer-hook 'bob/refresh-vc-state-in-changed-buffers)
   (remove-hook 'magit-status-headers-hook 'magit-insert-tags-header)
+  (setq magit-status-sections-hook
+        '(magit-insert-status-headers
+          magit-insert-merge-log magit-insert-rebase-sequence magit-insert-am-sequence
+          magit-insert-sequencer-sequence magit-insert-bisect-output magit-insert-bisect-rest
+          magit-insert-bisect-log magit-insert-untracked-files magit-insert-unstaged-changes
+          magit-insert-staged-changes magit-insert-stashes magit-insert-unpushed-to-pushremote
+          magit-insert-unpulled-from-pushremote magit-insert-unpulled-from-upstream))
+
+  ;; (remove-hook 'magit-status-sections-hook 'magit-insert-unpushed-to-upstream-or-recent)
   (setq magit-diff-refine-hunk 'all
         transient-default-level 7
         magit-commit-show-diff nil
@@ -61,7 +70,7 @@
         magit-display-buffer-function #'magit-display-buffer-traditional
         magit-refresh-status-buffer nil
         magit-process-finish-apply-ansi-colors t
-        ;; #'magit-display-buffer-fullframe-status-v1
+        git-commit-summary-max-length 80
         )
   (magit-toggle-verbose-refresh)
 
