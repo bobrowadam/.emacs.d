@@ -198,7 +198,7 @@
   :ensure nil)
 
 (use-package grain-utils
-  :commands (run-service)
+  :commands (grain/run-service)
   :ensure nil)
 
 (use-package casual-calc

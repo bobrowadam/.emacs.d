@@ -16,8 +16,7 @@
          (run-service-command (bob/generate--run-service-command service-name)))
     (compilation-start (bob/generate--run-all-services-command service-name)
                        nil
-                       (λ (format "%s: *services except %s* stdout")))
-    (print "here")
+                       (λ (format "%s *services except %s* stdout" %1 service-name)))
     (compilation-start run-service-command nil
                        (λ (format "%s: *%s* stdout" service-name %1)))))
 
