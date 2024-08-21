@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: not implemented
+# key: impl
+# --
+    crash "Not implemented"

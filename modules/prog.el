@@ -629,6 +629,9 @@ directories and verify NPM cache before running `npm install`."
 
 (use-package roc-mode
   :straight (:host gitlab :repo "tad-lispy/roc-mode")
+  :hook
+  (before-save . (lambda () (when (equal major-mode 'roc-mode)
+                             (roc-format))))
   :demand t)
 
 
