@@ -157,7 +157,7 @@
                         (yaml-ts-mode . conf-mode)))
   :config
   (add-to-list 'jinx-camel-modes 'tsx-ts-mode)
-  (add-to-list 'jinx-camel-modes 'roc-mode)
+  (add-to-list 'jinx-camel-modes 'roc-ts-mode)
   (defun jinx--load-dicts ()
     "Load dictionaries and setup syntax table."
     (setq jinx--dicts (delq nil (mapcar #'jinx--mod-dict

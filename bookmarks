@@ -38,12 +38,6 @@
  (rear-context-string . "88 Mar  8 17:34 ")
  (position . 814)
  (last-modified 26091 15281 409041 0))
-(#1="elfeed entry \"Anyone using Emacs with Swift?\""
-    (id "www.reddit.com" . "t3_1agrhfy")
-    (location . "Anyone using Emacs with Swift?")
-    (position . 441)
-    (handler . elfeed-show-bookmark-handler)
-    (defaults #1# "*elfeed-entry*"))
 ("navigation.el"
  (filename . "~/.emacs.d/modules/navigation.el")
  (front-context-string . "(use-package con")
@@ -58,10 +52,10 @@
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Ask for A")
- (rear-context-string . "2024-07-31 Wed>\n")
- (position . 13872)
- (last-modified 26297 56254 708803 0))
+ (front-context-string . "* TODO Check if ")
+ (rear-context-string . "2024-08-25 Sun>\n")
+ (position . 13938)
+ (last-modified 26314 65252 828652 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -105,11 +99,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20240812154714-postgres_locking.org")
- (front-context-string . "\n[[file:20240812")
- (rear-context-string . "ostgres locking\n")
- (position . 94)
- (last-modified 26298 1218 343608 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
+ (front-context-string . "* Check if we ne")
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 26311 7461 320819 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")

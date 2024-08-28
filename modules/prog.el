@@ -292,7 +292,7 @@ directories and verify NPM cache before running `npm install`."
   (add-to-list 'eglot-server-programs
                '(sql-mode . (eglot-sqls "sqls" "-config" ".sqls-config")))
   (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-  (add-to-list 'eglot-server-programs '((roc-mode) "rocls"))
+  (add-to-list 'eglot-server-programs '((roc-ts-mode) "rocls"))
 
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
@@ -310,7 +310,7 @@ directories and verify NPM cache before running `npm install`."
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error))
   :hook
-  ((c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-mode) . eglot-ensure)
+  ((c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode) . eglot-ensure)
   (eglot-managed-mode .  (lambda ()
                            (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
                                      (eq (derived-mode-p major-mode) 'js-ts-mode))
@@ -448,10 +448,11 @@ directories and verify NPM cache before running `npm install`."
   (lisp-mode . yas-minor-mode-on)
   (inf-mongo-mode . yas-minor-mode-on)
   (rust-mode . yas-minor-mode-on)
+  (roc-ts-mode . yas-minor-mode-on)
   :config
-  ;; (setq yas-snippet-dirs
-  ;;       `(,(concat user-emacs-directory "snippets")
-  ;;         ,yasnippet-snippets-dir))
+  (setq yas-snippet-dirs
+        `(,(concat user-emacs-directory "snippets")
+          ,yasnippet-snippets-dir))
   (yas-reload-all))
 
 (use-package common-lisp-snippets)
@@ -627,13 +628,11 @@ directories and verify NPM cache before running `npm install`."
   :custom
   (c-ts-mode-indent-offset 4))
 
-(use-package roc-mode
-  :straight (:host gitlab :repo "tad-lispy/roc-mode")
+(use-package roc-ts-mode
+  :straight (:host gitlab :repo "tad-lispy/roc-ts-mode")
   :hook
-  (before-save . (lambda () (when (equal major-mode 'roc-mode)
-                             (roc-format))))
-  :demand t)
-
-
+  (before-save . (lambda ()
+                   (when (equal major-mode 'roc-ts-mode)
+                     (roc-ts-format)))))
 
 (provide 'prog)
