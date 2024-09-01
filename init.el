@@ -11,14 +11,15 @@
 (setq initial-buffer-choice t)
 (setq initial-scratch-message nil)
 (setq garbage-collection-messages t)
-;; (setq gc-cons-percentage 0.6)
-
-(setq gc-cons-threshold (* gc-cons-threshold 10))
 
 (defface init-title
   '((t :inherit info-title-3 :height 300))
   "A face For the initial Emacs title.")
 
+(setq gc-cons-percentage-before-init gc-cons-percentage)
+(setq gc-cons-threshold-before-init gc-cons-threshold)
+(setq gc-cons-percentage 0.6)
+(setq gc-cons-threshold (* gc-cons-threshold 1000))
 (add-hook 'emacs-startup-hook
           (lambda ()
             (insert (propertize "M-x"
@@ -30,7 +31,9 @@
                                                  (time-subtract after-init-time before-init-time)))
                                         gcs-done
                                         (format "%.2f seconds" gc-elapsed))
-                                'face '(info-title-1)))))
+                                'face '(info-title-1)))
+            (setq gc-cons-percentage gc-cons-percentage-before-init)
+            (setq gc-cons-threshold gc-cons-threshold-before-init)))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
