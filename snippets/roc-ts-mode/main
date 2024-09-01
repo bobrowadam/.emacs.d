@@ -1,0 +1,18 @@
+# -*- mode: snippet -*-
+# name: main
+# key: main
+# expand-env: ((yas-indent-line 'fixed))
+# --
+app [main] {
+    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.15.0/SlwdbJ-3GR7uBWQo6zlmYWNYOxnvo8r6YABXD-45UOw.tar.br",
+}
+
+import pf.Stdout
+import pf.Utc
+
+main =
+    start = Utc.now! {}
+    Stdout.line! "solving"
+    end = Utc.now! {}
+    totalRunTime = (Utc.deltaAsNanos end start) |> Num.toStr
+    Stdout.line! "Total run time: $(totalRunTime)"
