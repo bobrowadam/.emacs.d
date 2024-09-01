@@ -169,7 +169,8 @@
 
 (use-package csv-mode)
 (use-package dockerfile-mode)
-(use-package pdf-tools)
+(use-package pdf-tools
+  :config (pdf-tools-install))
 
 (use-package casual-re-builder
   :commands (re-builder)
