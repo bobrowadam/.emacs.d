@@ -292,7 +292,7 @@ directories and verify NPM cache before running `npm install`."
   (add-to-list 'eglot-server-programs
                '(sql-mode . (eglot-sqls "sqls" "-config" ".sqls-config")))
   (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-  (add-to-list 'eglot-server-programs '((roc-ts-mode) "rocls"))
+  (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
 
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
@@ -436,6 +436,7 @@ directories and verify NPM cache before running `npm install`."
 (use-package yasnippet
   :custom
   (yas-wrap-around-region t)
+  (yas-also-auto-indent-first-line t)
   :hook
   (prog-mode . yas-minor-mode-on)
   (emacs-lisp-mode . yas-minor-mode-on)
@@ -449,6 +450,8 @@ directories and verify NPM cache before running `npm install`."
   (inf-mongo-mode . yas-minor-mode-on)
   (rust-mode . yas-minor-mode-on)
   (roc-ts-mode . yas-minor-mode-on)
+  :bind (:map yas-minor-mode-map
+              ("C-<tab>" . yas-expand))
   :config
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
