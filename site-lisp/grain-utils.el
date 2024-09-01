@@ -13,12 +13,13 @@
          (service-dir "/Users/bob/source/grain/apps/backend")
          (service-names (directory-files service-dir nil "^[^.]"))
          (service-name (completing-read "Enter service name: " service-names))
-         (run-service-command (bob/generate--run-service-command service-name)))
-    (compilation-start (bob/generate--run-all-services-command service-name)
-                       nil
-                       (λ (format "%s *services except %s* stdout" %1 service-name)))
-    (compilation-start run-service-command nil
-                       (λ (format "%s: *%s* stdout" service-name %1)))))
+         (run-service-command (bob/generate--run-service-command service-name))
+         (output-buffer-name (format "*%s* stdout" service-name))
+         (default-directory "~/source/grain"))
+    (async-shell-command run-service-command output-buffer-name)
+    (async-shell-command (bob/generate--run-all-services-command service-name)
+                         (format "*services except %s* stdout" service-name))
+))
 
 
 (ert-deftest generate-command ()
