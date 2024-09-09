@@ -93,8 +93,8 @@
       (project-remember-projects-under "~/source/" t)
       (project-remember-projects-under "~/source/services" t)
       (project-remember-projects-under "~/source/common-lisp/" t)))
-  :config
-  (setq project-read-file-name-function #'bobs/project-read-file-name-function)
+  ;; :config
+  ;; (setq project-read-file-name-function #'bobs/project-read-file-name-function)
   ;; (override-project-prompt-project-dir)
 )
 
@@ -152,7 +152,8 @@
 (use-package orderless
   :after (vertico hotfuzz)
   :init
-  (setq completion-ignore-case t)
+  (setq completion-ignore-case nil)
+  (setq read-file-name-completion-ignore-case nil)
   (setq orderless-component-separator " +")
   (setq orderless-matching-styles
         '(orderless-literal orderless-prefixes orderless-flex))
