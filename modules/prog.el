@@ -642,6 +642,9 @@ directories and verify NPM cache before running `npm install`."
   :custom
   (blamer-idle-time 0.5)
   (blamer-min-offset 70)
+  (blamer-max-commit-message-length 200)
+  :bind
+  (:map prog-mode-map ("C-c b" . blamer-show-posframe-commit-info))
   :custom-face
   (blamer-face ((t
                  :italic t
