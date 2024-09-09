@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: clog
+# key: clog
+# --
+
+Stdout.line! "${1:enumerate} $(Inspect.toStr $1)"
