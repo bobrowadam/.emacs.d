@@ -633,11 +633,22 @@ directories and verify NPM cache before running `npm install`."
 
 (use-package roc-ts-mode
   :straight (:host gitlab :repo "tad-lispy/roc-ts-mode")
-  :bind (:map roc-ts-mode-map
-         ("C-j". newline))
   :hook
   (before-save . (lambda ()
                    (when (equal major-mode 'roc-ts-mode)
                      (roc-ts-format)))))
+
+(use-package blamer
+  :custom
+  (blamer-idle-time 0.5)
+  (blamer-min-offset 70)
+  :custom-face
+  (blamer-face ((t
+                 :italic t
+                 :background nil
+                 :height 160
+                 :inherit modus-themes-heading-3)))
+  :hook
+  (prog-mode . (lambda () (blamer-mode 1))))
 
 (provide 'prog)
