@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("grain-client-local.org"
+(("rest-clients"
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/grain/rest-clients/")
+ (front-context-string . "grain-client-loc")
+ (rear-context-string . "2K Aug  5 15:04 ")
+ (position . 234)
+ (last-modified 26324 18355 116785 0))
+("grain-client-local.org"
  (filename . "~/source/grain-client-local.org")
  (front-context-string . "* Grain Partners")
  (rear-context-string)
@@ -81,11 +87,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Check if we ne")
- (rear-context-string . "20240104T120451\n")
- (position . 112)
- (last-modified 26311 7461 320819 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20240904175216-tests.org")
+ (front-context-string . "#+filetags: :gra")
+ (rear-context-string . "\n#+title: tests\n")
+ (position . 83)
+ (last-modified 26328 31108 748573 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
