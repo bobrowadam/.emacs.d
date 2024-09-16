@@ -192,7 +192,7 @@
               ("f" . xwwp-follow-link)))
 
 (use-package uuid
-  :commands uuid-create)
+  :commands (uuid-create uuid-string))
 
 (use-package impostman)
 

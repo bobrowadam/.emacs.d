@@ -254,6 +254,7 @@
   (setq verb-parse-json-to-alist nil)
   (setq verb-post-response-hook 'parse-verb-response-to-alist)
   :config
+  (require 'uuid)
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 
 (use-package ob-typescript)
