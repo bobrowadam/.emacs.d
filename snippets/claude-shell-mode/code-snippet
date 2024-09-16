@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: code-snippet
+# key: code
+# --
+
+\`\`\` $1
+$2
+\`\`\`
