@@ -1,6 +1,4 @@
-(use-package hl-line
-  :hook
-  (prog-mode))
+(use-package hl-line)
 
 (setq user-login-name "Adam Bobrow"
       user-full-name "Adam Bobrow"
