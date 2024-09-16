@@ -648,9 +648,8 @@ directories and verify NPM cache before running `npm install`."
   :custom-face
   (blamer-face ((t
                  :italic t
-                 :font-family Futura-medium-normal
-                 :background nil
-                 :height 160
+                 :font "Futura"
+                 :height 180
                  :inherit modus-themes-heading-3)))
   :hook
   (prog-mode . (lambda () (blamer-mode 1))))
