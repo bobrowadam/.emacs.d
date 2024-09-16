@@ -5,6 +5,8 @@
 # --
 app [main] {
     pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.15.0/SlwdbJ-3GR7uBWQo6zlmYWNYOxnvo8r6YABXD-45UOw.tar.br",
+    json: "https://github.com/lukewilliamboswell/roc-json/releases/download/0.10.1/jozYCvOqoYa-cV6OdTcxw3uDGn61cLvzr5dK1iKf1ag.tar.br",
+    parser: "https://github.com/lukewilliamboswell/roc-parser/releases/download/0.7.2/1usTzOOACTpnkarBX0ED3gFESzR4ROdAlt1Llf4WFzo.tar.br",
 }
 
 import pf.Stdout
@@ -14,5 +16,6 @@ main =
     start = Utc.now! {}
     Stdout.line! "solving"
     end = Utc.now! {}
-    totalRunTime = (Utc.deltaAsNanos end start) |> Num.toStr
-    Stdout.line! "Total run time: $(totalRunTime)"
+    totalRunTimeNanos = (Utc.deltaAsNanos end start) |> Num.toStr
+    totalRunTimeMillis = (Utc.deltaAsMillis end start) |> Num.toStr
+    Stdout.line! "Total run time:\n$(totalRunTimeNanos) nanoseconds\n$(totalRunTimeMillis) milliseconds"
