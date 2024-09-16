@@ -58,10 +58,10 @@
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Check if ")
- (rear-context-string . "2024-08-25 Sun>\n")
- (position . 13938)
- (last-modified 26314 65252 828652 0))
+ (front-context-string . "* TODO create a ")
+ (rear-context-string . "2024-09-12 Thu>\n")
+ (position . 14128)
+ (last-modified 26337 19358 540053 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -87,11 +87,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20240904175216-tests.org")
- (front-context-string . "#+filetags: :gra")
- (rear-context-string . "\n#+title: tests\n")
- (position . 83)
- (last-modified 26328 31108 748573 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
+ (front-context-string . "* create a jest ")
+ (rear-context-string . " TODO plan diet\n")
+ (position . 147)
+ (last-modified 26336 19893 314919 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")

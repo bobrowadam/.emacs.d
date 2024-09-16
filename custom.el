@@ -6,6 +6,46 @@
  '(compilation-message-face 'default)
  '(datetime-timezone 'Israel)
  '(eglot-autoshutdown t)
+ '(ibuffer-saved-filter-groups nil)
+ '(ibuffer-saved-filters
+   '(("integration-tests"
+      (directory . "packages/integration-tests"))
+     ("liquidity-service"
+      (directory . "apps/backend/liquidity-service")
+      (directory . ".+liquidity.+"))
+     ("programming"
+      (or
+       (derived-mode . prog-mode)
+       (mode . ess-mode)
+       (mode . compilation-mode)))
+     ("text document"
+      (and
+       (derived-mode . text-mode)
+       (not
+        (starred-name))))
+     ("TeX"
+      (or
+       (derived-mode . tex-mode)
+       (mode . latex-mode)
+       (mode . context-mode)
+       (mode . ams-tex-mode)
+       (mode . bibtex-mode)))
+     ("web"
+      (or
+       (derived-mode . sgml-mode)
+       (derived-mode . css-mode)
+       (mode . javascript-mode)
+       (mode . js2-mode)
+       (mode . scss-mode)
+       (derived-mode . haml-mode)
+       (mode . sass-mode)))
+     ("gnus"
+      (or
+       (mode . message-mode)
+       (mode . mail-mode)
+       (mode . gnus-group-mode)
+       (mode . gnus-summary-mode)
+       (mode . gnus-article-mode)))))
  '(ignored-local-variable-values
    '((mmm-classes . elisp-js)
      (eval mmm-add-group 'elisp-js
