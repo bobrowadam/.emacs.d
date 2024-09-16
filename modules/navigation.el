@@ -246,7 +246,7 @@
 (use-package avy
   :init (setq avy-case-fold-search nil)
   :custom
-  (avy-timeout-seconds 0.3)
+  (avy-timeout-seconds 0.13)
   :bind
   ("C-c M-d" . avy-goto-char-in-line)
   ("C-c M-c" . avy-goto-char-timer))
