@@ -87,11 +87,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* create a jest ")
- (rear-context-string . " TODO plan diet\n")
- (position . 147)
- (last-modified 26336 19893 314919 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20240919130528-grain_monitoring.org")
+ (front-context-string)
+ (rear-context-string . "rain monitoring\n")
+ (position . 94)
+ (last-modified 26347 63338 799588 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")

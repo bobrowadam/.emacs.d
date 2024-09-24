@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: esdisable
-# key: esd
-# --
-// eslint-disable-next-line

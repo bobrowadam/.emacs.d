@@ -326,6 +326,9 @@ directories and verify NPM cache before running `npm install`."
   :after eglot
   :bind (:map eglot-mode-map ("C->" . eldoc-box-help-at-point)))
 
+(use-package consult-eglot
+  :after eglot)
+
 (use-package flymake-eslint
   :demand t
   :ensure t
@@ -580,7 +583,14 @@ directories and verify NPM cache before running `npm install`."
                  :autoAttachChildProcesses t
                  :console "internalConsole"
                  :killBehavior "forceful"))
-
+  
+  (add-to-list 'dape-configs
+               `(rust-mode-debug
+                 modes (rust-mode)
+                 :cwd dape-cwd-fn
+                 :type "lldb-dap"
+                 :request "launch"
+                 ))
   ;; To not display info and/or buffers on startup
   (remove-hook 'dape-on-start-hooks 'dape-info)
   (remove-hook 'dape-on-start-hooks 'dape-repl)
@@ -653,5 +663,11 @@ directories and verify NPM cache before running `npm install`."
                  :inherit modus-themes-heading-3)))
   :hook
   (prog-mode . (lambda () (blamer-mode 1))))
+
+(use-package rust-mode
+  :init
+  (setq rust-mode-treesitter-derive t))
+
+(use-package cargo-mode)
 
 (provide 'prog)

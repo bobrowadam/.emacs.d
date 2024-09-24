@@ -51,6 +51,7 @@
   (magit-wip-mode 1)
   (add-hook 'git-commit-post-finish-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-post-stage-hook 'bob/refresh-vc-state-in-changed-buffers)
+  (add-hook 'magit-post-commit-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-post-unstage-hook 'bob/refresh-vc-state-in-changed-buffers)
   (add-hook 'magit-refresh-buffer-hook 'bob/refresh-vc-state-in-changed-buffers)
   (remove-hook 'magit-status-headers-hook 'magit-insert-tags-header)

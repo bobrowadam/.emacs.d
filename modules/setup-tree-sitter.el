@@ -53,11 +53,11 @@
           (python-mode     . python-ts-mode)
           (sh-mode         . bash-ts-mode)
           (typescript-mode . typescript-ts-mode)
-          (rust-mode       . rust-ts-mode)))
+          (rust-mode       . rust-mode)))
 
   (add-to-list 'auto-mode-alist '("CMakeLists\\'" . cmake-ts-mode))
   (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-ts-mode))
-  (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
   (add-to-list 'auto-mode-alist '("\\.y[a]?ml\\'" . yaml-ts-mode))
   (bob/install--grammer-if-missing 'yaml)
   (bob/install--grammer-if-missing 'rust)
