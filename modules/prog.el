@@ -668,6 +668,9 @@ directories and verify NPM cache before running `npm install`."
   :init
   (setq rust-mode-treesitter-derive t))
 
-(use-package cargo-mode)
+(use-package cargo
+  :custom
+  (cargo-process--command-clippy--additional-args "--fix")
+  :hook (rust-mode . (lambda () (cargo-minor-mode 1))))
 
 (provide 'prog)
