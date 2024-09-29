@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: jlog
+# key: jlog
+# --
+console.log('#-------------------------------------#\n${1:enumerate}:\n', JSON.stringify($1, null, '   '));
