@@ -106,6 +106,10 @@
 (use-package github-review
   :after magit)
 
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
+
 (use-package diff-hl
   :commands (diff-hl-update)
   :after magit
