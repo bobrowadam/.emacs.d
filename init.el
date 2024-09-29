@@ -218,3 +218,4 @@
 (put 'narrow-to-page 'disabled nil)
 (put 'list-timers 'disabled nil)
 (put 'magit-clean 'disabled nil)
+(put 'magit-edit-line-commit 'disabled nil)
