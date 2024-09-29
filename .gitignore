@@ -74,3 +74,4 @@ transient/*
 /site-lisp/hotfuzz-module.so
 /claude/
 /.chatgpt-shell.el
+/places
