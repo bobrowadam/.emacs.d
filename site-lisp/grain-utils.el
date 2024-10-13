@@ -15,11 +15,15 @@
          (service-name (completing-read "Enter service name: " service-names))
          (run-service-command (bob/generate--run-service-command service-name))
          (output-buffer-name (format "*%s* stdout" service-name))
-         (default-directory "~/source/grain"))
+         (service-output-buffer-name (format "*services except %s* stdout" service-name)))
+    (when (get-buffer output-buffer-name)
+      (kill-buffer output-buffer-name))
+    (when (get-buffer service-output-buffer-name)
+      (kill-buffer service-output-buffer-name))
+
     (async-shell-command run-service-command output-buffer-name)
     (async-shell-command (bob/generate--run-all-services-command service-name)
-                         (format "*services except %s* stdout" service-name))
-))
+                         service-output-buffer-name)))
 
 
 (ert-deftest generate-command ()
