@@ -604,8 +604,9 @@ directories and verify NPM cache before running `npm install`."
 
 (use-package erefactor
   :ensure t
-  :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on)
-  :bind-keymap ("\C-c\C-v" . erefactor-map))
+  :hook (emacs-lisp-mode .
+                         (lambda ()
+                           (define-key emacs-lisp-mode-map (kbd "C-c C-v") erefactor-map))))
 
 (use-package dumb-jump
   :ensure t
