@@ -182,4 +182,8 @@
 
 (use-package gh)
 
+(use-package abridge-diff
+  :after magit ;; optional, if you'd like to use with magit
+  :init (abridge-diff-mode 1))
+
 (provide 'setup-magit)
