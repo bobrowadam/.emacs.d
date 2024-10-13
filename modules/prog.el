@@ -463,7 +463,9 @@ directories and verify NPM cache before running `npm install`."
 
 (use-package common-lisp-snippets)
 
-(use-package yaml-mode)
+(use-package yaml-mode
+  :mode (("\\.gotmpl\\'" . yaml-mode)))
+
 (use-package markdown-mode
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
