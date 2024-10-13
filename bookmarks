@@ -63,11 +63,11 @@
  (position . 1)
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO create a ")
- (rear-context-string . "2024-09-12 Thu>\n")
- (position . 14128)
- (last-modified 26337 19358 540053 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org")
+ (front-context-string . "* TODO Get Adera")
+ (rear-context-string . "2024-10-06 Sun>\n")
+ (position . 92786)
+ (last-modified 26362 37759 563123 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -93,11 +93,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20240924103026-jobs_scheduler.org")
- (front-context-string)
- (rear-context-string . " Jobs Scheduler\n")
- (position . 92)
- (last-modified 26354 27286 677401 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
+ (front-context-string . "* Prepare for RN")
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 26375 52891 685074 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
