@@ -40,6 +40,12 @@
         (switch-to-buffer magit-buffer))
     (message "No Magit buffers exists")))
 
+(defun bob/git-fetch-and-rebase ()
+  "Fetch \"origin/main and\" rebase current branch onto \"main\"."
+  (interactive)
+  (magit-fetch-refspec "origin" "main:main" nil)
+  (magit-rebase-branch "main" nil))
+
 (use-package magit
   :after (npm-utils)
   :commands (magit-status bob/magit-buffers)
@@ -89,7 +95,11 @@
     '("P" "Push" magit-push))
   (transient-append-suffix 'magit-file-dispatch
     "P"
-    '("F" "Pull" magit-pull)))
+    '("F" "Pull" magit-pull))
+
+  (transient-append-suffix 'magit-rebase
+    "f"
+    '("F" "Fetch & Rebase" bob/git-fetch-and-rebase)))
 
 (use-package with-editor :after magit :demand t)
 
