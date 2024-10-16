@@ -7,8 +7,9 @@
   (dired-listing-switches "-lah --group-directories-first")
   (delete-by-moving-to-trash t)
   (dired-use-ls-dired nil)
-  (insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
   (dired-dwim-target t)
+  :config
+  (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
 (use-package casual-dired
