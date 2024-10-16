@@ -75,3 +75,4 @@ transient/*
 /claude/
 /.chatgpt-shell.el
 /places
+/pomm

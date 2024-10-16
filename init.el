@@ -225,6 +225,12 @@ const episodes = [{ startSecond 0, endSecond: 1:  1740, title: \"Feather in the 
   (:map calc-alg-map
               ("C-o" . #'casual-calc-tmenu)))
 
+(use-package pomm
+  :custom
+  (pomm-audio-enabled t)
+  (pomm-audio-tick-enabled nil)
+  :commands (pomm pomm-third-time))
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
