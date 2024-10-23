@@ -12,38 +12,6 @@
 (with-eval-after-load 'compile
   (fancy-compilation-mode))
 
-(defun is-typescript-project ()
-  "Returns true when project has an NPM build script for typescript"
-  (if-let* ((project (project-current))
-            (default-directory (project-root project))
-            (package-json-raw (read-file "package.json"))
-            (package-json (json-parse-string package-json-raw
-                                             :object-type 'alist)))
-      (s-matches-p (assocdr 'check-types (assocdr 'scripts package-json))
-               "tsc --noEmit -p tsconfig.app.json")))
-
-(defun npm-run-build ()
-  "Build typescript project on watch mode"
-  (interactive)
-  (when (is-typescript-project)
-    (let ((default-directory (project-root (project-current t)))
-          (comint-scroll-to-bottom-on-input t)
-          (comint-scroll-to-bottom-on-output t)
-          (comint-process-echoes t)
-          (compilation-buffer-name (format "TS-COMPILE -- %s"
-                                           (get-dir-name (nth 2 (project-current))))))
-      (cond ((and (not (eq major-mode 'comint-mode))
-                  (car (memq (get-buffer compilation-buffer-name)
-                             (buffer-list))))
-             (switch-to-buffer (get-buffer compilation-buffer-name)))
-            ((and (eq major-mode 'comint-mode)
-                  (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
-             (switch-to-prev-buffer))
-            (t
-             (compilation-start (bob/generate--run-service-command (project-name (project-current)))
-                                t (lambda (_)
-                                    compilation-buffer-name)))))))
-
 (defun get--available-inspect-port ()
   (if-let (inspect-processes (get--inspect-processes-port))
       (1+ (car (-sort '> inspect-processes)))
@@ -59,125 +27,8 @@
                       (lambda (p) (s-contains? "comint" (process-name p)))
                       (process-list)))))
 
-(defun bob/compilation-buffer-name ()
-  (if-let ((projcet-path (nth 2 (project-current))))
-      (format "TS-COMPILE -- %s"
-              (get-dir-name projcet-path))))
-
-(defun npm-run (&optional normal-mode)
-  "Debug typescript project on watch mode
-NORMAL-MODE is for not running with debugger"
-  (interactive "P")
-  (when (is-typescript-project)
-    (let ((default-directory (project-root (project-current t)))
-          (comint-scroll-to-bottom-on-input t)
-          (comint-scroll-to-bottom-on-output t)
-          (comint-process-echoes t)
-          (compilation-buffer-name (bob/compilation-buffer-name))
-          (project-main-file (bob/npm--project-name)))
-      (cond ((and (not (eq major-mode 'comint-mode))
-                  (car (memq (get-buffer compilation-buffer-name)
-                             (buffer-list))))
-             (switch-to-buffer (get-buffer compilation-buffer-name)))
-            ((and (eq major-mode 'comint-mode)
-                  (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
-             (switch-to-prev-buffer))
-            (t
-             (let ((compilation-command (if normal-mode
-                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./dist/%s.js"
-                                                    project-main-file)
-                                          (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./dist/%s.js"
-                                                  (get--available-inspect-port)
-                                                  project-main-file))))
-               (with-temporary-node-version
-                   (fnm-current-node-version)
-                 (compilation-start compilation-command
-                                    t (lambda (mode)
-                                        compilation-buffer-name)))))))))
-
-(defun bob/npm--project-name ()
-  "Get the current project name from the package json file."
-  (when-let ((project-root-path (project-root (project-current)))
-             (package-json (json-parse-string (read-file (format "%s/package.json" project-root-path))
-                                              :object-type 'alist)))
-    (assocdr 'name package-json)))
-
-(defun bob/project--main-file-overrides (project-name)
-  "Helper function for `npm-run`.
-If the main file of an NPM project is not "
-  (pcase  project-name
-    ("highland-workshop" "highlander")
-    ("skeleton-typescript-service" "example")
-    (_ project-name)))
-
-(defun bob/get-inspect-port ()
-  (if-let ((compilation-process (get-buffer-process (bob/compilation-buffer-name)))
-           (inspect-string (--find
-                            (s-contains? "inspect" it)
-                            (split-string (assocdr
-                                           'args
-                                           (process-attributes (process-id compilation-process)))
-                                          "\s"))))
-      (string-to-number (cadr (split-string inspect-string "=")))
-    9229))
-
-(defun npm-install-project (&optional force quiet)
-  "NPM install in project.
-If FORCE is non-nil, delete the \"package-lock.json\" and \"node_modules\"
-directories and verify NPM cache before running `npm install`."
-  (interactive "P")
-  (when (read-file "package.json")
-   (let* ((default-directory (project-root (project-current t)))
-          (buffer-name (format "*npm install %s*" default-directory)))
-     (message "local NPM executable version is %s" (s-trim-right (shell-command-to-string "npm -v")))
-     (when force
-       (message "removing package-lock.json")
-       (unwind-protect (delete-file (concat default-directory "package-lock.json")))
-       (message "removing node_modules")
-       (unwind-protect (delete-directory (concat default-directory "node_modules") t))
-       (message "verifying NPM's cache")
-       (apply #'call-process "node" nil 0 nil '("verify")))
-     (with-temporary-node-version (fnm-current-node-version)
-       (if (not quiet)
-           (compilation-start "npm i")
-         (make-process :name buffer-name
-                       :buffer buffer-name
-                       :command '("npm" "i" "--no-color")
-                       :sentinel (process-generic-sentinel)))))))
-
-(defun bob/update-node-modules-if-needed (&optional root)
-  "Check if node_modules should be updated by using \"npm list\"."
-  (interactive "P")
-  (when-let* ((default-directory (or root (and (project-current)
-                                               (project-root (project-current)))))
-              (is-node-project (read-file "package.json"))
-              (buffer-name (format "*npm-list*: %s %s" default-directory (random 100000))))
-    (with-temporary-node-version (fnm-current-node-version)
-      (make-process :name buffer-name
-                    :buffer buffer-name
-                    :command '("npm" "list" "--no-color" "--depth=0")
-                    :sentinel (bob/npm-outdated-sentinel (current-time))))))
-
-(defun bob/npm-list-problems-p (npm-list-results)
-  (seq-remove
-   (lambda (str) (s-starts-with? "npm ERR! peer dep missing" str))
-   (seq-filter (lambda (str)
-                 (s-starts-with? "npm ERR!" str))
-               (split-string npm-list-results "\n"))))
-
-(defun bob/npm-outdated-sentinel (start-time)
-  "Sentinel for handling npm outdated process termination."
-  (lambda (process event)
-    (with-current-buffer (process-buffer process)
-      (message (format "bob/npm-outdated-sentinel eval time is %.06f"
-                       (float-time (time-since start-time))))
-      (when (and (eq (process-exit-status process) 1)
-                 (bob/npm-list-problems-p (buffer-string))
-                 (y-or-n-p "node_modules are *not* up to date, Do you want to run `\"npm install\"")
-                 (npm-install-project nil t)))
-      (kill-buffer (current-buffer)))))
-
 (use-package typescript-mode
+  :after npm-utils
   :ensure nil
   :bind
   ("C-c C-b" . npm-run-build)
@@ -194,6 +45,7 @@ directories and verify NPM cache before running `npm install`."
 ;;   (setq-default typescript-indent-level 2))
 
 (use-package jest-test-mode
+  :disabled t
   :init
   :commands jest-test-mode
   :straight (jest-test-mode :type git :host github :repo "rymndhng/jest-test-mode")
@@ -293,6 +145,7 @@ directories and verify NPM cache before running `npm install`."
                '(sql-mode . (eglot-sqls "sqls" "-config" ".sqls-config")))
   (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
   (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
+  (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
 
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
@@ -466,13 +319,6 @@ directories and verify NPM cache before running `npm install`."
 (use-package yaml-mode
   :mode (("\\.gotmpl\\'" . yaml-mode)))
 
-(use-package markdown-mode
-  :mode (("README\\.md\\'" . gfm-mode)
-         ("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode)
-         ("\\.mess\\'" . markdown-mode))
-  :init (setq markdown-command "pandoc"))
-
 (use-package restclient
   :init
   (add-to-list 'auto-mode-alist '("\\.client$" . restclient-mode))
@@ -535,6 +381,22 @@ directories and verify NPM cache before running `npm install`."
   :hook
   (racket-mode . racket-xp-mode)
   (racket-mode . flymake-racket-setup))
+
+(defun bob/compilation-buffer-name ()
+  (if-let ((projcet-path (nth 2 (project-current))))
+      (format "TS-COMPILE -- %s"
+              (get-dir-name projcet-path))))
+
+(defun bob/get-inspect-port ()
+  (if-let ((compilation-process (get-buffer-process (bob/compilation-buffer-name)))
+           (inspect-string (--find
+                            (s-contains? "inspect" it)
+                            (split-string (assocdr
+                                           'args
+                                           (process-attributes (process-id compilation-process)))
+                                          "\s"))))
+      (string-to-number (cadr (split-string inspect-string "=")))
+    9229))
 
 (use-package dape
   :straight (dape :type git :host github :repo "svaante/dape")
@@ -605,7 +467,8 @@ directories and verify NPM cache before running `npm install`."
   :hook (dape-active-mode . repeat-mode))
 
 (use-package erefactor
-  :ensure t
+  :ensure nil
+  :load-path "~/source/Emacs-erefactor/"
   :hook (emacs-lisp-mode .
                          (lambda ()
                            (define-key emacs-lisp-mode-map (kbd "C-c C-v") erefactor-map))))
@@ -675,5 +538,14 @@ directories and verify NPM cache before running `npm install`."
   :custom
   (cargo-process--command-clippy--additional-args "--fix")
   :hook (rust-mode . (lambda () (cargo-minor-mode 1))))
+
+(use-package zig-mode)
+(use-package clojure-ts-mode)
+(use-package cider)
+
+(use-package smerge-mode
+  :ensure nil
+  :hook
+  (prog-mode . smerge-mode))
 
 (provide 'prog)
