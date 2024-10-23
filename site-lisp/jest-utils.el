@@ -1,10 +1,18 @@
 ;;;###autoload
-(defun bob/jest-run-integration-tests ()
+(defun bob/jest-run-tests ()
   "Run Jest integration tests."
   (interactive)
-  (async-shell-command (jest-integation-command
+  (compile (jest-integation-command
                         `(:file-name ,buffer-file-name :test-name ,(jest--get-current-test-name)))
-                       "*jest-integration-tests"))
+                       'jest-test-compilation-mode))
+
+(define-compilation-mode jest-test-compilation-mode "Jest Compilation"
+  "Compilation mode for Jest output."
+  (add-hook 'compilation-filter-hook 'jest-test-colorize-compilation-buffer nil t))
+
+(defun jest-test-colorize-compilation-buffer ()
+  "Colorize the compilation buffer."
+  (ansi-color-apply-on-region compilation-filter-start (point)))
 
 (defun jest-integation-command (&optional test-file-name-and-pattern)
   "Create the command to run Jest integration tests.
