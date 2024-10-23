@@ -111,66 +111,15 @@
   :after startup
   :load-path "./modules")
 
+(use-package setup-llm
+  :demand t
+  :after startup
+  :load-path "./modules")
+
 (use-package sicp)
-
-(use-package riseup-helpers
-  :disabled t
-  :commands (browse-riseup-git-project
-             clone-riseup-repo import-customer
-             browse-customer-in-mamadmin browse-customer-merge-in-mamadmin
-             browse-data-dog-dwim run-customer-version
-             search-for-riseup-service-by-port init-riseup-actions
-             init-riseup-actions riseup-actions is-typescript-project)
-  :config
-  (init-riseup-actions)
-  :bind
-  ("C-c J" . riseup-actions)
-  :ensure nil
-  :after (startup))
-
-;; (use-package shell-maker
-;;   :disabled t
-;;   :straight (:host github :repo "xenodium/chatgpt-shell" :files ("shell-maker.el")))
 
 (use-package pcsv
   :demand t)
-
-(use-package chatgpt-shell
-  :commands (chatgpt-shell chatgpt-shell-start)
-  :custom
-  (chatgpt-shell-model-version 0)
-  :config
-  (setq chatgpt-shell-openai-key (exec-path-from-shell-copy-env "OPEN_AP_API_KEY"))
-  (add-to-list 'chatgpt-shell-system-prompts
-               '("Movie to TV Show" . "I want to split a movie into several “episodes” for a TV-like experience. Follow these steps:
-
-1. Break the movie into episodes with varying lengths (they don't need to be the same).
-2. For each episode:
-   - Provide a title relevant to that part of the movie. (no spoilers)
-   - Include the start and end time in seconds.
-   - Total duration in minutes
-3. Maintain the key plot points, while making sure each episode feels somewhat self-contained.
-4. Don't add any information about the movie. No spoilers what so ever!
-5. If you are not familiar with the movie just say so, don't give fake data, it's fine.
-
-Here’s the example data structure output:
-const episodes = [{ startSecond 0, endSecond: 1:  1740, title: \"Feather in the Wind\", totalDuration: 29 }]
-  "))
-  :bind
-  ("C-c g" . chatgpt-shell)
-  :hook
-  (chatgpt-shell-mode . (lambda () (corfu-mode -1))))
-
-(use-package claude-shell
-  :commands (claude-shel)
-  :custom
-  (claude-shell-streaming t)
-  :config
-  (setq claude-shell-api-token (exec-path-from-shell-copy-env "CLAUDE_SHELL_API_TOKEN"))
-  :bind
-  ("C-c C-g" . claude-shell)
-  :hook
-  (claude-shell-mode . (lambda () (corfu-mode -1))))
 
 (use-package breadcrumb-mode
   :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb")
@@ -211,12 +160,17 @@ const episodes = [{ startSecond 0, endSecond: 1:  1740, title: \"Feather in the 
 (use-package impostman)
 
 (use-package npm-utils
-  :commands (bob/update-node-modules-if-needed-sync)
+  :commands (bob/update-node-modules-if-needed-sync is-typescript-project)
   :ensure nil)
 
 (use-package grain-utils
   :commands (grain/run-service)
   :ensure nil)
+
+(use-package jest-utils :ensure nil
+  :bind
+  (:map typescript-ts-mode-map
+   ("C-c C-t C-n" . bob/jest-run-tests)))
 
 (use-package casual-calc
   :bind
@@ -230,6 +184,15 @@ const episodes = [{ startSecond 0, endSecond: 1:  1740, title: \"Feather in the 
   (pomm-audio-enabled t)
   (pomm-audio-tick-enabled nil)
   :commands (pomm pomm-third-time))
+
+(use-package markdown-mode
+  :custom
+  (markdown-enable-highlighting-syntax t)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode)
+         ("\\.mess\\'" . markdown-mode))
+  :init (setq markdown-command "pandoc"))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
