@@ -108,9 +108,9 @@
   :custom
   (forge-status-buffer-default-topic-filters
    (forge--topics-spec
-    :type 'topic :active t :state 'open :order 'newest
+    :type 'topic :active nil :state 'open :order 'newest
     :author "bobrowadam"
-    :limit 8))
+    :limit 10))
   :init (setq forge-bug-reference-hooks nil))
 
 (use-package github-review
