@@ -75,6 +75,7 @@
   ;;       "console.log(require('util').inspect(function(){\n%s\n}(), { depth: 100 }))")
   :hook
   (org-mode . (lambda () (org-superstar-mode 1)))
+  (org-mode . (lambda () (visual-line-mode 1)))
   (org-archive . org-save-all-org-buffers)
   (org-after-refile-insert . org-save-all-org-buffers)
   :bind
