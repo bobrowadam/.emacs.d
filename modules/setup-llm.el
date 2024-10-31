@@ -1,10 +1,23 @@
 (use-package gptel
+  :config
+  (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
+                            car
+                            (plist-get :secret)
+                            funcall)))
+    (gptel-make-anthropic
+        "Claude"
+      :stream t
+      :key credentials))
   :custom
   (gptel-default-mode 'org-mode)
-  :bind ("C-c g" . gptel))
+  :bind
+  ("C-c g" . gptel)
+  (:map gptel-mode-map ("C-c i" . gptel-menu)))
 
 (use-package elysium
-  :commands (elysium-query elysium-toggle-window))
+  :commands (elysium-query elysium-toggle-window)
+  :bind
+  ("C-c i" . elysium-query))
 
 (use-package chatgpt-shell
   :disabled t

@@ -543,9 +543,4 @@
 (use-package clojure-ts-mode)
 (use-package cider)
 
-(use-package smerge-mode
-  :ensure nil
-  :hook
-  (prog-mode . smerge-mode))
-
 (provide 'prog)
