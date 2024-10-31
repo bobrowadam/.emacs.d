@@ -51,12 +51,20 @@ You can escape '$' with '\\' as prefix.
                         (float-time (time-since time))))
        res)))
 
-(defun gen-tags (n)
+(defun bob/gen-tags (n)
   (interactive)
   (cl-loop for x from 0 to n concat
            (if (eq x n)
                (format "\"%s\": \"%s\"" x (to-string (number-sequence 0 10)))
              (format "\"%s\": \"%s\"\n," x (to-string (number-sequence 0 50))))))
+
+(defun bob/run-ctags ()
+  "Run ctags -Re on the current directory."
+  (interactive)
+  (if (executable-find "ctags")
+    (shell-command "ctags -Re ." "*ctags-stdout*" "*ctags-stderr*")
+    (error "You need to install ctags. (on mac) run 'brew install ctags'"))
+  )
 
 (defun bob/calc-sourdough-hydration (levan bakers-hydration-input total-weight)
   (-let* ((bakers-hydration (if (> bakers-hydration-input 1)
