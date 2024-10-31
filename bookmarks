@@ -63,11 +63,11 @@
  (position . 1)
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Prepare f")
- (rear-context-string . "2024-11-03 Sun>\n")
- (position . 14612)
- (last-modified 26382 9173 726350 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org")
+ (front-context-string . "* TODO להעביר מש")
+ (rear-context-string . "2025-01-05 Sun>\n")
+ (position . 94550)
+ (last-modified 26399 31985 880603 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -94,10 +94,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Prepare for RN")
+ (front-context-string . "* Standup\nכל פעם")
  (rear-context-string . "20240104T120451\n")
  (position . 112)
- (last-modified 26375 52891 685074 0))
+ (last-modified 26399 33247 752809 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
