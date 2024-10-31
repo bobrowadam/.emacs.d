@@ -167,9 +167,10 @@
   :commands (grain/run-service)
   :ensure nil)
 
-(use-package jest-utils :ensure nil
+(use-package jest-utils
+  :ensure nil
   :bind
-  (:map typescript-ts-mode-map
+  (:map typescript-mode-map
    ("C-c C-t C-n" . bob/jest-run-tests)))
 
 (use-package casual-calc

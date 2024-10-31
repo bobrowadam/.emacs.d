@@ -8,7 +8,11 @@
  '(eglot-autoshutdown t)
  '(ibuffer-saved-filter-groups nil)
  '(ibuffer-saved-filters
-   '(("integration-tests"
+   '(("web/admin-console"
+      (directory . "/apps/web/admin-console/"))
+     ("admin-console-api"
+      (directory . "admin-console-api"))
+     ("integration-tests"
       (directory . "packages/integration-tests"))
      ("liquidity-service"
       (directory . "apps/backend/liquidity-service")
@@ -112,6 +116,7 @@
  ;; If there is more than one, they won't work right.
  '(dired-sidebar-face ((t (:height 1.5 :width extra-expanded :family "Menlo"))) t)
  '(eglot-highlight-symbol-face ((t (:inherit bold :underline t))))
+ '(forge-topic-slug-open ((t (:inherit modus-themes-heading-3))))
  '(fringe ((t :background "#0d0e1c")))
  '(header-line ((t :box (:line-width 4 :color "#1d2235" :style nil))))
  '(header-line-highlight (nil))
@@ -124,7 +129,7 @@
  '(org-agenda-current-time ((t (:inherit org-time-grid :foreground "controlAccentColor"))))
  '(tab-bar-tab ((t :box (:line-width 4 :color "#0d0e1c" :style nil))))
  '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "#4a4f6a" :style nil))))
- '(tab-line-tab (nil))
+ '(tab-line-tab ((t)))
  '(tab-line-tab-active ((t)))
  '(tab-line-tab-current ((t)))
  '(tab-line-tab-inactive (nil))

@@ -5,8 +5,8 @@
   :custom
   (dired-auto-revert-buffer t)
   (dired-listing-switches "-lah --group-directories-first")
+  (dired-use-ls-dired t)
   (delete-by-moving-to-trash t)
-  (dired-use-ls-dired nil)
   (dired-dwim-target t)
   :config
   (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
@@ -82,7 +82,8 @@
 
 (defun bob/kill-this-buffer ()
   (interactive)
-  (kill-buffer (current-buffer)))
+  (kill-buffer (current-buffer))
+  (delete-window))
 
 (use-package basic-keybindigs
   :ensure nil

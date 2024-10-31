@@ -34,9 +34,11 @@
         nil)
   (modus-themes-select 'modus-vivendi-tinted)
   (setq modus-vivendi-tritanopia-palette-overrides 
-        '((bg-main "grey12")))
+        '((bg-main "grey12")
+          (shadow "blue5")))
   (setq modus-vivendi-deuteranopia-palette-overrides
-        '((bg-main "grey12")))
+        '((bg-main "grey12")
+          (forge-topic-slug-open "blue4")))
   ;; (modus-themes-select 'modus-vivendi-deuteranopia)
   :hook
   (modus-themes-after-load-theme . bobs-modeline/enable))
