@@ -17,6 +17,7 @@
          (output-buffer-name (format "*%s* stdout" service-name))
          (service-output-buffer-name (format "*services except %s* stdout" service-name)))
     (when (get-buffer output-buffer-name)
+      (kill-process (get-process (get-buffer output-buffer-name)))
       (kill-buffer output-buffer-name))
     (when (get-buffer service-output-buffer-name)
       (kill-buffer service-output-buffer-name))
@@ -28,5 +29,13 @@
 
 (ert-deftest generate-command ()
   (should (equal (bob/generate--run-service-command "mail-service") "TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
+
+(defun debug-migration ()
+  (interactive)
+  (let ((runOrRevert (completing-read "Command: " '("run" "revert")))
+        (default-directory "/Users/bob/source/grain/packages/rdb/"))
+    (async-shell-command (format "node --inspect --require ts-node/register ../../node_modules/typeorm/cli.js migration:%s -d src/data-source.ts"
+                                 runOrRevert)
+                         "*migration-shell*")))
 
 (provide 'grain-utils)
