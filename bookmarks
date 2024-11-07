@@ -64,10 +64,10 @@
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org")
- (front-context-string . "* TODO להעביר מש")
- (rear-context-string . "2025-01-05 Sun>\n")
- (position . 94550)
- (last-modified 26399 31985 880603 0))
+ (front-context-string . "* TODO Checkout ")
+ (rear-context-string . "11-04 Mon 7:00>\n")
+ (position . 95032)
+ (last-modified 26407 14860 643815 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -94,10 +94,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Create a monor")
- (rear-context-string . "א מבין כלום אחכ\n")
- (position . 193)
- (last-modified 26402 14609 116263 0))
+ (front-context-string . "* Move all secre")
+ (rear-context-string . "Stroopy waffele\n")
+ (position . 283)
+ (last-modified 26404 38542 499292 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
