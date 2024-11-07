@@ -136,4 +136,14 @@ It's also possible to enter an arbitrary directory not in the list."
                                                   string
                                                   predicate))))))))
 
-(provide 'bobs-project-utils)
+(defun bob/eat-top-project (dominating-file-name)
+  "Open an Eat shell on the highest project"
+  (let ((higher-level-project-root
+          (locate-dominating-file (file-name-parent-directory default-directory)
+                                  dominating-file-name)))
+    (if higher-level-project-root
+        (let ((default-directory higher-level-project-root))
+          (bob/eat-top-project dominating-file-name))
+      (eat-project))))
+
+(provide 'project-utils)

@@ -50,12 +50,7 @@
   (interactive)
   (browse-riseup-git-project (project-name (project-current))))
 
-(defun project-list-file-buffers ()
-  (interactive)
-  (project-list-buffers 1)
-  (pop-to-buffer "*Buffer List*"))
-
-(use-package bobs-project-utils
+(use-package project-utils
   :demand t
   :ensure nil
   :load-path "./site-lisp")
@@ -66,13 +61,20 @@
   (when (read "package.json")
     (bob/update-node-modules-if-needed-sync)))
 
+(defun bob/eat-top-node-project ()
+  (interactive)
+  (bob/eat-top-project "package.json"))
+
 (use-package project
-  :after bobs-project-utils
+  :after project-utils
   :ensure nil
+  :custom
+  (project-vc-extra-root-markers '("package.json"))
   :bind
   (("C-x p p" . bob/switch-to-project)
    ("C-x p w" . project-switch-to-open-project)
    ("C-x p b" . bob/project-switch-buffer)
+   ("C-x p S" .  bob/eat-top-node-project)
    ("C-x p m"  . magit-project-status)
    ("C-x p C-m"  . project-dired)
    ("C-x p i" . #'project-list-file-buffers)
@@ -82,10 +84,10 @@
         '((project-find-file "Find file")
           (project-dired "Root Directory" "d")
           (eat-project "Eat" "s")
+          (eat-top-project "Eat Top" "S")
           (magit-project-status "Magit" "g")
           (consult-ripgrep "RipGrep" "r")
           (bob/project-switch-buffer "Buffers" "b")
-          (project-list-file-buffers "List Buffers" "i")
           (browse-current-project "Browse" "B")))
   (unless (project-known-project-roots)
     (message "No project file found, indexing projects")
