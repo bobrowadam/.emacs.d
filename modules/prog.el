@@ -34,7 +34,7 @@
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
   :mode ("\\.ts$" . typescript-ts-mode)
-  :mode ("\\.tsx$" . tsx-ts-mode)
+  ;; :mode ("\\.tsx$" . tsx-ts-mode)
   :config
   (setq-default typescript-indent-level 2))
 
@@ -63,9 +63,27 @@
                                                           "jest"))))
       (add-to-list 'jest-test-options (format "-c=%s" config-file))))
 
-(use-package js-ts-mode
-  :ensure nil
-  )
+;; (use-package js-ts-mode
+;;   :ensure nil
+;;   )
+
+(use-package jtsx
+  :custom
+  (jtsx-enable-jsx-element-tags-auto-sync t)
+  :mode
+  ("\\.tsx\\'" . jtsx-tsx-mode)
+  ("\\.jsx\\'" . jtsx-jsx-mode)
+  :bind
+  (:map jtsx-tsx-mode-map
+        ("C-c C-j C-w" . jtsx-wrap-in-jsx-element)
+        ("C-c C-j C-u" . jtsx-unwrap-jsx)
+        ("C-c C-j C-j" . jtsx-jump-jsx-element-tag-dwim)
+        ("C-c C-j C-r" . jtsx-rename-jsx-element)
+        ("C-c C-j C-f" . jtsx-move-jsx-element-tag-forward)
+        ("C-c C-j C-b" . jtsx-move-jsx-element-tag-backward)
+        ("C-c C-j C-k" . jtsx-delete-jsx-node))
+  :ensure t)
+
 (use-package js2-mode
   :init
   (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
@@ -215,7 +233,7 @@
       (smartparens-mode -1)))
 
 (use-package prettier
-  :hook (typescript-ts-mode js2-mode))
+  :hook (typescript-ts-mode js2-mode js-ts-mode))
 
 (defun preserve-paredit-and-enable-ret ()
   (interactive)
@@ -299,6 +317,7 @@
   (js2-mode . yas-minor-mode-on)
   (typescript-mode . yas-minor-mode-on)
   (js-ts-mode . yas-minor-mode-on)
+  (jtsx-jsx-mode-map . yas-minor-mode-on)
   (typescript-ts-mode . yas-minor-mode-on)
   (web-mode . yas-minor-mode-on)
   (text-mode . yas-minor-mode-on)
