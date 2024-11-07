@@ -206,6 +206,7 @@
 
 (use-package emacs
   :ensure nil
+  :bind ("C-x O" . window-swap-states)
   :init
   ;; Add prompt indicator to `completing-read-multiple'.
   ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
