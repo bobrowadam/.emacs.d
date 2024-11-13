@@ -12,6 +12,10 @@
   (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
   :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
+(use-package dired-imenu
+  :after dired
+  :config (dired-setup-imenu))
+
 (use-package casual-dired
   :commands (dired dired-jump)
   :after (dired)
