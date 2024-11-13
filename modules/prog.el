@@ -188,10 +188,7 @@
                              (flymake-eslint-enable))))
 )
 
-(use-package eglot-sqls
-  :demand t
-  :after eglot
-  :ensure nil)
+(use-package eglot-sqls :ensure nil)
 
 (use-package eldoc-box
   :after eglot
