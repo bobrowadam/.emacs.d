@@ -117,13 +117,13 @@
   (s-prepend "/" (s-join "/" (-take-last 4 (s-split "/" file-path)))))
 
 (use-package project-ibuffer
+  :disabled t
   :after (ibuffer)
   :ensure nil
   :bind
   ("C-x p I" . project-ibuffer))
 
 (use-package ibuffer
-  :demand t
   :bind
   ("C-x C-b" . ibuffer)
   :custom
@@ -134,11 +134,24 @@
   :hook
   (ibuffer . (lambda ()
                (ibuffer-auto-mode)
-               (ibuffer-vc-set-filter-groups-by-vc-root)
-               (ibuffer-filter-by-prog-mode)
+               ;; (ibuffer-filter-by-prog-mode)
                (all-the-icons-ibuffer-mode)
-               (unless (eq ibuffer-sorting-mode 'recency)
-                 (ibuffer-do-sort-by-recency)))))
+               ;; (unless (eq ibuffer-sorting-mode 'recency)
+               ;;   (ibuffer-do-sort-by-recency))
+               ;; This is using ibuffer-project
+               (setq ibuffer-filter-groups (ibuffer-project-generate-filter-groups))
+                     (unless (eq ibuffer-sorting-mode 'project-file-relative)
+                       (ibuffer-do-sort-by-project-file-relative)))))
+
+(use-package ibuffer-project
+  :custom (ibuffer-formats
+           '((mark modified read-only locked " "
+                   (name 18 18 :left :elide)
+                   " "
+                   (size 9 -1 :right)
+                   " "
+                   (mode 16 16 :left :elide)
+                   " " project-file-relative))))
 
 (use-package casual-ibuffer
   :commands (ibuffer)
@@ -165,6 +178,7 @@
                                            )))
 
 (use-package ibuffer-vc
+  :disabled t
   :commands (ibuffer-vc-set-filter-groups-by-vc-root)
   :custom
   (ibuffer-vc-skip-if-remote t))
