@@ -61,10 +61,7 @@
   (when (read "package.json")
     (bob/update-node-modules-if-needed-sync)))
 
-(defun bob/eat-top-node-project ()
-  (interactive)
-  (bob/eat-top-project "package.json"))
-
+(defvar Buffer-menu-show-internal nil)
 (use-package project
   :after project-utils
   :ensure nil
@@ -74,17 +71,17 @@
   (("C-x p p" . bob/switch-to-project)
    ("C-x p w" . project-switch-to-open-project)
    ("C-x p b" . bob/project-switch-buffer)
-   ("C-x p S" .  bob/eat-top-node-project)
+   ("C-x p S" .  bob/eat-top-project)
    ("C-x p m"  . magit-project-status)
    ("C-x p C-m"  . project-dired)
-   ("C-x p i" . #'project-list-file-buffers)
+   ("C-x p i" . bob/project-list-buffers)
    ("C-x p h" . #'project-jump-to-rest-client))
   :init
   (setq project-switch-commands
         '((project-find-file "Find file")
           (project-dired "Root Directory" "d")
           (eat-project "Eat" "s")
-          (eat-top-project "Eat Top" "S")
+          (bob/eat-top-project "Eat Top" "S")
           (magit-project-status "Magit" "g")
           (consult-ripgrep "RipGrep" "r")
           (bob/project-switch-buffer "Buffers" "b")
@@ -243,7 +240,19 @@
 
 (use-package wgrep)
 
+(defun bob/deadgrep-project ()
+  "Open an Eat shell on the highest project"
+  (interactive)
+  (if-let* ((project--root (bob/monorepo-root)))
+      (deadgrep--lookup-override project--root)
+    (error "Not in project")))
+
 (use-package deadgrep
+  :init
+  (setq deadgrep--skip-if-hidden t)
+  :custom
+  (deadgrep-project-root-function #'bob/deadgrep-project)
+  (deadgrep--skip-if-hidden t)
   :bind ("M-g D" . deadgrep))
 
 (use-package avy

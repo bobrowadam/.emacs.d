@@ -136,14 +136,34 @@ It's also possible to enter an arbitrary directory not in the list."
                                                   string
                                                   predicate))))))))
 
-(defun bob/eat-top-project (dominating-file-name)
+(defun bob/monorepo-root ()
+  "Finds the topmost root in a multi-project structure."
+  (or (-some--> (project-current nil (file-name-parent-directory default-directory))
+        project-root
+        (let ((default-directory it))
+          (bob/monorepo-root)))
+      (-some-> (project-current) project-root)))
+
+(defun bob/eat-top-project ()
   "Open an Eat shell on the highest project"
-  (let ((higher-level-project-root
-          (locate-dominating-file (file-name-parent-directory default-directory)
-                                  dominating-file-name)))
-    (if higher-level-project-root
-        (let ((default-directory higher-level-project-root))
-          (bob/eat-top-project dominating-file-name))
-      (eat-project))))
+  (interactive)
+  (if-let* ((project--root (bob/monorepo-root))
+             (default-directory project--root))
+      (eat-project)
+    (error "Not in project")))
+
+(defun bob/switch-to-recent-buffer ()
+  "Switch to the most recently created visible buffer."
+  (interactive)
+  (let ((recent-buffers (mapcar #'window-buffer (window-list))))
+    (if recent-buffers
+        (let ((recent-buffer (car (last recent-buffers))))
+          (pop-to-buffer-same-window recent-buffer))
+      (message "No visible buffers found."))))
+
+(defun bob/project-list-buffers ()
+  (interactive)
+  (project-list-buffers t)
+  (other-window 1))
 
 (provide 'project-utils)
