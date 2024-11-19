@@ -94,10 +94,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Make an exampl")
- (rear-context-string . "40104T120451\n* \n")
- (position . 115)
- (last-modified 26417 65266 387669 0))
+ (front-context-string . "* get ready for ")
+ (rear-context-string . "n monorepo root\n")
+ (position . 219)
+ (last-modified 26421 53383 198683 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
