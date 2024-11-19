@@ -168,9 +168,10 @@
   :ensure nil)
 
 (use-package jest-utils
+  :after (typescript-ts-mode)
   :ensure nil
   :bind
-  (:map typescript-mode-map
+  (:map typescript-ts-mode-map
    ("C-c C-t C-n" . bob/jest-run-tests)))
 
 (use-package casual-calc
