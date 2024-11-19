@@ -8,16 +8,7 @@
  '(eglot-autoshutdown t)
  '(ibuffer-saved-filter-groups nil)
  '(ibuffer-saved-filters
-   '(("web/admin-console"
-      (directory . "/apps/web/admin-console/"))
-     ("admin-console-api"
-      (directory . "admin-console-api"))
-     ("integration-tests"
-      (directory . "packages/integration-tests"))
-     ("liquidity-service"
-      (directory . "apps/backend/liquidity-service")
-      (directory . ".+liquidity.+"))
-     ("programming"
+   '(("programming"
       (or
        (derived-mode . prog-mode)
        (mode . ess-mode)
@@ -60,6 +51,9 @@
      (Syntax . COMMON-LISP)))
  '(magit-diff-use-overlays nil)
  '(magit-todos-group-by '(magit-todos-item-filename magit-todos-item-keyword))
+ '(package-vc-selected-packages
+   '((miasma-theme :vc-backend Git :url "https://github.com/daut/miasma-theme.el")
+     (vc-use-package :vc-backend Git :url "https://github.com/slotThe/vc-use-package")))
  '(pos-tip-background-color "#FFF9DC")
  '(pos-tip-foreground-color "#011627")
  '(proced-format 'verbose)
