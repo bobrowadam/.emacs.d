@@ -197,4 +197,6 @@
   :after magit ;; optional, if you'd like to use with magit
   :init (abridge-diff-mode 1))
 
+(use-package agitate)
+
 (provide 'setup-magit)
