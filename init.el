@@ -196,6 +196,13 @@
          ("\\.mess\\'" . markdown-mode))
   :init (setq markdown-command "pandoc"))
 
+(use-package multiple-cursors
+  :bind
+  ("C-S-c C-c" . mc/edit-lines)
+  ("C-S-c C->" . mc/mark-next-like-this)
+  ("C-S-c C-<" . mc/mark-previous-like-this)
+  ("C-S-c C-." . mc/mark-all-like-this))
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
