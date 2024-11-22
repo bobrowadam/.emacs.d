@@ -63,11 +63,11 @@
  (position . 1)
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org")
- (front-context-string . "* TODO Checkout ")
- (rear-context-string . "11-04 Mon 7:00>\n")
- (position . 95032)
- (last-modified 26407 14860 643815 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
+ (front-context-string . "* NEXT get ready")
+ (rear-context-string . "ankTransfer\n\n  \n")
+ (position . 356)
+ (last-modified 26428 29870 407855 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -94,10 +94,10 @@
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* get ready for ")
- (rear-context-string . "n monorepo root\n")
- (position . 219)
- (last-modified 26421 53383 198683 0))
+ (front-context-string . "* Send Baz a req")
+ (rear-context-string . "processing data\n")
+ (position . 180)
+ (last-modified 26428 63873 248587 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
