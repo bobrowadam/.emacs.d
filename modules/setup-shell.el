@@ -31,6 +31,8 @@
 
 (use-package eat
   :commands (eat bob/jump-to-shell eat-project)
+  :custom
+  (eat-term-scrollback-size nil)
   :init
   (setq eat-term-name "xterm-256color")
   :bind
