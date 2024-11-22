@@ -1,8 +1,6 @@
 (setq custom-safe-themes t)
 (setq custom-theme-directory (concat user-emacs-directory "themes"))
-;; (set-frame-font "DaddyTimeMono Nerd Font 19")
-;; (add-to-list 'default-frame-alist
-;;              '(font . "DaddyTimeMono Nerd Font 19"))
+
 (defun set-font-based-on-resolution (frame)
   (let* ((attrs (frame-monitor-attributes))
          (geo (cdr (assq 'geometry attrs))))
@@ -23,7 +21,6 @@
 
 (defun remote-config-p ()
   (and (boundp 'remote-mode) remote-mode))
-;; (load-theme 'bobs-badger)
 
 (use-package modus-themes
   :demand t
@@ -32,14 +29,13 @@
   :config
   (setq modus-vivendi-tinted-palette-overrides
         nil)
-  (modus-themes-select 'modus-vivendi-tinted)
   (setq modus-vivendi-tritanopia-palette-overrides 
         '((bg-main "grey12")
           (shadow "blue5")))
   (setq modus-vivendi-deuteranopia-palette-overrides
         '((bg-main "grey12")
           (forge-topic-slug-open "blue4")))
-  ;; (modus-themes-select 'modus-vivendi-deuteranopia)
+  (modus-themes-select 'modus-vivendi-tritanopia)
   :hook
   (modus-themes-after-load-theme . bobs-modeline/enable))
 
@@ -47,10 +43,7 @@
   :custom
   (ef-themes-to-toggle '(ef-cyprus ef-deuteranopia-dark))
   :hook
-  (ef-themes-post-load . bobs-modeline/enable)
-  ;; :config
-  ;; (ef-themes-select 'ef-deuteranopia-dark)
-)
+  (ef-themes-post-load . bobs-modeline/enable))
 
 (use-package spacious-padding
   :demand t
@@ -63,7 +56,7 @@
                             :right-divider-width 1
                             :scroll-bar-width 8
                             :fringe-width 8))
-  :config 
+  :config
   (spacious-padding-mode))
 
 (use-package highlight-indent-guides
@@ -88,7 +81,6 @@
 
 ;; (add-hook 'comint-mode-hook 'bobs/hide-mode-line)
 
-;; This assumes you've installed the package via MELPA.
 (use-package ligature
   :demand t
   :config
