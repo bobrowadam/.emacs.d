@@ -98,7 +98,6 @@
   ("M-C-h" . backward-kill-sexp)
   ("C-x -" . my/gloden-ratio)
   ("C-x f" . recentf-open-files)
-  ("M-o" . other-frame)
   ("C-x k" . bob/kill-this-buffer)
   ("M-SPC" . cycle-spacing)
   ("<s-return>" . toggle-frame-fullscreen))
