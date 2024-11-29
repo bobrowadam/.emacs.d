@@ -150,7 +150,8 @@
                           (setq comint-input-ring-file-name "~/.node_repl_history")
                           (comint-read-input-ring 'silent)))))
 
-(use-package sql-mode :ensure nil)
+(use-package sql-mode :ensure nil
+  :hook (eglot-ensure))
 
 (use-package eglot
   :after (fnm)
