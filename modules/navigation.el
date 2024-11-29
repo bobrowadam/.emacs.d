@@ -336,7 +336,7 @@
      ;; ("https://blog.rust-lang.org/feed.xml" programming rust)
      ;; ("https://www.reddit.com/r/rust/.rss" programming rust reddit)
      ;; ("https://www.reddit.com/r/Clojure/.rss" programming clojure reddit)
-     ("https://danluu.com/atom.xml" programming blog)
+     ("https://danluu.com/atom.xml" programming blog danluu)
      ("https://protesilaos.com/master.xml" programming blog emacs)))
   :bind
   ("C-c w" . elfeed)
