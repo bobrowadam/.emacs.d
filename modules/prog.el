@@ -1,11 +1,5 @@
 ;; -*- lexical-binding: t; -*-
 
-(use-package prog-mode
-  :after exec-path
-  :ensure nil
-  :config
-  (exec-path-from-shell-initialize))
-
 (use-package flymake
   :custom
   (flymake-error-bitmap '(right-arrow modus-themes-prominent-error)))
@@ -159,6 +153,7 @@
   :custom
   (eglot-events-buffer-config '(:size 0 :format full))
   :config
+  (exec-path-from-shell-initialize)
   (fnm-use)
   (add-to-list 'eglot-server-programs
                `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
