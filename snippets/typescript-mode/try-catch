@@ -5,5 +5,5 @@
 try {
   $0
 } catch (e) {
-  throw new ErrorWithContext('$1', { error: (e as Error).message, $2 });
+  throw new Error($1);
 }

@@ -2,4 +2,4 @@
 # name: ts-ignore
 # key: ignore
 # --
-// @ts-expect-error
+// @ts-expect-error ${1:wip}
