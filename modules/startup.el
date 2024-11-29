@@ -31,8 +31,6 @@
 
 (use-package exec-path-from-shell
   :if (window-system)
-  :hook
-  (prog-mode . exec-path-from-shell-initialize)
   :config
   (setq exec-path-from-shell-arguments nil))
 

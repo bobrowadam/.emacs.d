@@ -1,5 +1,11 @@
 ;; -*- lexical-binding: t; -*-
 
+(use-package prog-mode
+  :after exec-path
+  :ensure nil
+  :config
+  (exec-path-from-shell-initialize))
+
 (use-package flymake
   :custom
   (flymake-error-bitmap '(right-arrow modus-themes-prominent-error)))
