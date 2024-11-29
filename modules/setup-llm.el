@@ -15,13 +15,12 @@
   ("C-c g s" . gptel-send)
   (:map gptel-mode-map ("C-c g s" . gptel-menu)))
 
+(defun elysium-apply-code-changes--turn-on-smerge-mode (orig-fun &rest args)
+  "Advise `elysium-apply-code-changes' to turn on smerge-mode."
+  (let ((result (apply orig-fun args)))  ; Call the original function
+    (smerge-mode 1)                       ; Turn on smerge-mode
+    result))
 (use-package elysium
-  :init
-  (defun elysium-apply-code-changes--turn-on-smerge-mode (orig-fun &rest args)
-    "Advise `elysium-apply-code-changes' to turn on smerge-mode."
-    (let ((result (apply orig-fun args)))  ; Call the original function
-      (smerge-mode 1)                       ; Turn on smerge-mode
-      result))
   :commands (elysium-query elysium-toggle-window)
   :config
   (advice-add 'elysium-apply-code-changes :around #'elysium-apply-code-changes--turn-on-smerge-mode)
