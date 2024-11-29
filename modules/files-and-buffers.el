@@ -27,6 +27,8 @@
   :bind (("C-x C-d" . dired-sidebar-toggle-sidebar))
   :ensure t
   :commands (dired-sidebar-toggle-sidebar)
+  :custom
+  (dired-sidebar-width 25)
   :init
   (setq dired-sidebar-face `(:family "Menlo"))
   (add-hook 'dired-sidebar-mode-hook
