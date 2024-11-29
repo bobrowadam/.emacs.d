@@ -194,6 +194,12 @@
                              (flymake-eslint-enable))))
 )
 
+(use-package eglot-booster
+  :after eglot
+  :straight (:host github :repo "jdtsmith/eglot-booster" :files ("eglot-booster.el"))
+  :config (eglot-booster-mode))
+
+
 (use-package eglot-sqls :ensure nil)
 
 (use-package eldoc-box
