@@ -1,13 +1,29 @@
+(defvar *latest-test* nil)
+
 ;;;###autoload
 (defun bob/jest-run-tests ()
   "Run Jest tests."
   (interactive)
-  (if-let ((default-directory (locate-dominating-file "./" "jest.config.ts")))
-   (compile (jest-test-command
-             default-directory
-             `(:file-name ,buffer-file-name :test-name ,(jest--get-current-test-name)))
-            'jest-test-compilation-mode)
-   (error "No jest-config found. default directory: %s" default-directory)))
+  (if-let ((default-directory (locate-dominating-file "./" "jest.config.ts"))
+           (test-name (jest--get-current-test-name))
+           (test-file-name (buffer-file-name)))
+      (progn (setq *latest-test* (list test-file-name test-name default-directory))
+             (compile (jest-test-command
+                       default-directory
+                       `(:file-name ,test-file-name :test-name ,test-name))
+                      'jest-test-compilation-mode))
+    (error "No jest-config found. default directory: %s" default-directory)))
+
+(defun bob/jest-rerun-latest-test ()
+  "Run the latest test when exists."
+  (interactive)
+  (when *latest-test*
+    (if-let ((default-directory (nth 2 *latest-test*)))
+        (compile (jest-test-command
+                  default-directory
+                  `(:file-name ,(car *latest-test*) :test-name ,(nth 1 *latest-test*)))
+                 'jest-test-compilation-mode)
+      (error "No jest-config found. default directory: %s" default-directory))))
 
 (define-compilation-mode jest-test-compilation-mode "Jest Compilation"
   "Compilation mode for Jest output."
@@ -38,18 +54,22 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
 
 (defun jest--get-current-test-name ()
   "Extract the current test name using Treesit."
-  (when (treesit-ready-p 'typescript)
-    (-if-let* ((node (treesit-node-at (point)))
-               ;; Walk upwards, stopping on a node that matches the criterion from jest--is-jest-test-call
-               (test-node (treesit-parent-until node #'jest--is-jest-test-call))
-               ;; Fetch the arguments passed to the function, typically the test description
-               (test-name-node (treesit-node-child-by-field-name test-node "arguments"))
-               ;; Get the first argument, usually the test description
-               (first-arg-node (treesit-node-child test-name-node 1))
-               ;; Ensure it's a string literal node
-               (node-type (treesit-node-type first-arg-node)))
-        (when (string= node-type "string")
-          (->>
-           (treesit-node-text first-arg-node t)
-           (s-chop-prefix "'")
-           (s-chop-suffix "'"))))))
+  (if (region-active-p)
+      (buffer-substring-no-properties (region-beginning) (region-end))
+    (when (treesit-ready-p 'typescript)
+      (-if-let* ((node (treesit-node-at (point)))
+                 ;; Walk upwards, stopping on a node that matches the criterion from jest--is-jest-test-call
+                 (test-node (treesit-parent-until node #'jest--is-jest-test-call))
+                 ;; Fetch the arguments passed to the function, typically the test description
+                 (test-name-node (treesit-node-child-by-field-name test-node "arguments"))
+                 ;; Get the first argument, usually the test description
+                 (first-arg-node (treesit-node-child test-name-node 1))
+                 ;; Ensure it's a string literal node
+                 (node-type (treesit-node-type first-arg-node)))
+          (when (string= node-type "string")
+            (->>
+             (treesit-node-text first-arg-node t)
+             (s-chop-prefix "'")
+             (s-chop-suffix "'")
+             (s-chop-suffix "]")
+             (s-chop-prefix "[")))))))

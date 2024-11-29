@@ -172,7 +172,8 @@
   :ensure nil
   :bind
   (:map typescript-ts-mode-map
-   ("C-c C-t C-n" . bob/jest-run-tests)))
+   ("C-c C-t C-n" . #'bob/jest-run-tests)
+   ("C-c C-t C-r" . #'bob/jest-rerun-latest-test)))
 
 (use-package casual-calc
   :bind
