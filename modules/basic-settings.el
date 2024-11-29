@@ -184,23 +184,23 @@
 (global-set-key (kbd "C-ק") 'end-of-line)
 
 
-;; V* like half page scrolling
-(defun half-page-up ()
+;; scroll pages conservatively
+(defun consertive-page-up ()
   "Scroll up half a page and try to preserve cursor position."
   (interactive)
   (let ((line-num (count-lines (window-start) (point))))
-    (scroll-down-command (/ (window-body-height) 2))
+    (scroll-down-command (round (* (window-body-height) 0.25)))
     (move-to-window-line line-num)))
 
-(defun half-page-down ()
+(defun consertive-page-down ()
   "Scroll down half a page and try to preserve cursor position."
   (interactive)
   (let ((line-num (count-lines (window-start) (point))))
-    (scroll-up-command (/ (window-body-height) 2))
+    (scroll-up-command (round (* (window-body-height) 0.25)))
     (move-to-window-line line-num)))
 
-(global-set-key (kbd "C-v") 'half-page-down)
-(global-set-key (kbd "M-v") 'half-page-up)
+(global-set-key (kbd "C-v") 'consertive-page-down)
+(global-set-key (kbd "M-v") 'consertive-page-up)
 
 (setq xref-search-program 'ripgrep)
 
