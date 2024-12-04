@@ -106,10 +106,7 @@
   (setq savehist-save-minibuffer-history t)
   (savehist-mode))
 
-(use-package recentf-mode
-  :ensure nil
-  :init
-  (recentf-mode 1))
+(use-package recentf-mode :ensure nil)
 
 (use-package fussy
   :disabled t
@@ -170,7 +167,8 @@
   :hook
   (rfn-eshadow-update-overlay . vertico-directory-tidy)
   :config
-  (vertico-mode 1))
+  (vertico-mode 1)
+  (recentf-mode 1))
 
 (use-package marginalia
   :after vertico
