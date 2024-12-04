@@ -14,6 +14,7 @@
                       'jest-test-compilation-mode))
     (error "No jest-config found. default directory: %s" default-directory)))
 
+;;;###autoload
 (defun bob/jest-rerun-latest-test ()
   "Run the latest test when exists."
   (interactive)
@@ -73,3 +74,5 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
              (s-chop-suffix "'")
              (s-chop-suffix "]")
              (s-chop-prefix "[")))))))
+
+(provide 'jest-utils)
