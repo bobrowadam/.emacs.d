@@ -70,6 +70,7 @@
   :if (display-graphic-p))
 
 (use-package bobs-modeline
+  :disabled t
   :after modus-themes
   :ensure nil
   :demand t
@@ -108,7 +109,6 @@
   (global-ligature-mode t))
 
 (use-package doom-modeline
-  :disabled t
   :init (doom-modeline-mode 1))
 
 ;; (window-divider-mode 1)
