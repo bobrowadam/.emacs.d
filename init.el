@@ -9,31 +9,7 @@
 (setq package-enable-at-startup nil)
 
 (setq initial-buffer-choice t)
-(setq initial-scratch-message nil)
 (setq garbage-collection-messages t)
-
-(defface init-title
-  '((t :inherit info-title-3 :height 300))
-  "A face For the initial Emacs title.")
-
-(setq gc-cons-percentage-before-init gc-cons-percentage)
-(setq gc-cons-threshold-before-init gc-cons-threshold)
-(setq gc-cons-percentage 0.6)
-(setq gc-cons-threshold (* gc-cons-threshold 1000))
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (insert (propertize "M-x"
-                                'face '(init-title)))
-            (insert "\n\n ")
-            (insert (propertize (format "Ready in %s with %d garbage collections.\nGC elapsed: %s"
-                                        (format "%.2f seconds"
-                                                (float-time
-                                                 (time-subtract after-init-time before-init-time)))
-                                        gcs-done
-                                        (format "%.2f seconds" gc-elapsed))
-                                'face '(info-title-1)))
-            (setq gc-cons-percentage gc-cons-percentage-before-init)
-            (setq gc-cons-threshold gc-cons-threshold-before-init)))
 
 (setq package-archives
       '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -121,10 +97,6 @@
 (use-package pcsv
   :demand t)
 
-(use-package breadcrumb-mode
-  :straight (breadcrumb-mode :type git :host github :repo "joaotavora/breadcrumb")
-  :init (breadcrumb-mode 1))
-
 (use-package string-inflection)
 
 (use-package khoj
@@ -136,12 +108,6 @@
   ;; (khoj-server-command "khoj")
   :config (setq khoj-org-directories `(,(s-chop-suffix "/" org-directory))
                 khoj-openai-api-key (getenv "OPEN_AP_API_KEY")))
-
-(use-package xkcd-303-mode
-  :straight (:host github :repo "elizagamedev/xkcd-303-mode.el"
-                 :files ("*.el" "compiling.png"))
-  :config
-  (xkcd-303-mode 1))
 
 (use-package proced-narrow
   :demand t
@@ -168,7 +134,7 @@
   :ensure nil)
 
 (use-package jest-utils
-  :after (typescript-ts-mode)
+  :commands (bob/jest-run-tests bob/jest-rerun-latest-test)
   :ensure nil
   :bind
   (:map typescript-ts-mode-map

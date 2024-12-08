@@ -60,8 +60,7 @@
 (unless (not (file-exists-p custom-file))
   (load custom-file))
 
-(setq-default
- indent-tabs-mode nil)
+(setq-default indent-tabs-mode nil)
 
 (display-time)
 (display-battery-mode)
@@ -82,7 +81,6 @@
 (global-subword-mode t)
 (global-superword-mode -1)
 (delete-selection-mode 1)
-(set-default 'indent-tabs-mode nil)
 (global-auto-revert-mode 1)
 (auto-compression-mode t)
 (global-word-wrap-whitespace-mode t)
