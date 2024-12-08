@@ -394,4 +394,6 @@ the given regular expression."
   (org-tree-slide-breadcrumbs " > ")
   (org-image-actual-width nil))
 
+(use-package dslide)
+
 (provide 'setup-org)
