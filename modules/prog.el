@@ -48,7 +48,7 @@
   :disabled t
   :init
   :commands jest-test-mode
-  :straight (jest-test-mode :type git :host github :repo "rymndhng/jest-test-mode")
+  ;; :straight (jest-test-mode :type git :host github :repo "rymndhng/jest-test-mode")
   ;; :custom
   ;; (jest-test-command-string (format "%s %%s ./node_modules/.bin/jest %%s %%s" "node"))
   ;; (jest-test-command-string (format "node %%s ./node_modules/jest/bin/jest %%s %%s"))
@@ -147,13 +147,18 @@
 (use-package sql-mode :ensure nil
   :hook (eglot-ensure))
 
+(use-package breadcrumb)
+
 (use-package eglot
   :after (fnm)
   :commands (eglot eglot-ensure eglot-shutdown-all)
   :custom
   (eglot-events-buffer-config '(:size 0 :format full))
+  (eglot-sync-connect 0)
   :config
   (exec-path-from-shell-initialize)
+  (eglot-booster-mode)
+  (breadcrumb-mode 1)
   (fnm-use)
   (add-to-list 'eglot-server-programs
                `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
@@ -187,13 +192,10 @@
   (eglot-managed-mode .  (lambda ()
                            (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
                                      (eq (derived-mode-p major-mode) 'js-ts-mode))
-                             (flymake-eslint-enable))))
-)
+                             (flymake-eslint-enable)))))
 
 (use-package eglot-booster
-  :after eglot
-  :straight (:host github :repo "jdtsmith/eglot-booster" :files ("eglot-booster.el"))
-  :config (eglot-booster-mode))
+  :straight (:host github :repo "jdtsmith/eglot-booster" :files ("eglot-booster.el")))
 
 
 (use-package eglot-sqls :ensure nil)
@@ -423,7 +425,6 @@
     9229))
 
 (use-package dape
-  :straight (dape :type git :host github :repo "svaante/dape")
   :custom
   ;; (dape--debug-on '())
   (dape-info-buffer-window-groups '((dape-info-scope-mode dape-info-watch-mode)))

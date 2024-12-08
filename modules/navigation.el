@@ -92,7 +92,9 @@
       (project-remember-projects-under "~/source/" t)
       (project-remember-projects-under "~/source/services" t)
       (project-remember-projects-under "~/source/common-lisp/" t)))
-  ;; :config
+  :config
+  (vertico-mode 1)
+  (recentf-mode 1)
   ;; (setq project-read-file-name-function #'bobs/project-read-file-name-function)
   ;; (override-project-prompt-project-dir)
 )
@@ -122,8 +124,6 @@
    completion-category-defaults nil
    completion-category-overrides nil)
   (advice-add 'corfu--capf-wrapper :before 'fussy-wipe-cache))
-
-
 
 (use-package hotfuzz
   :demand t
@@ -165,10 +165,7 @@
   (setq vertico-resize nil)
   (setq vertico-cycle t)
   :hook
-  (rfn-eshadow-update-overlay . vertico-directory-tidy)
-  :config
-  (vertico-mode 1)
-  (recentf-mode 1))
+  (rfn-eshadow-update-overlay . vertico-directory-tidy))
 
 (use-package marginalia
   :after vertico
