@@ -112,6 +112,7 @@ You can escape '$' with '\\' as prefix.
               (nth 1 (s-split " " line t)))
             lines)))
 
+;;;###autoload
 (defun kill-inspect-process ()
   (interactive)
   (-let ((process (get--processes-by-string "inspect")))
@@ -122,6 +123,7 @@ You can escape '$' with '\\' as prefix.
                (message "Killed inspect processes: %s" process)))
       (message "No inspect processes found"))))
 
+;;;###autoload
 (defun kill-process-by-regex ()
   (interactive)
   (-let ((process (get--processes-by-string (read-string "Enter regex: "))))
@@ -161,61 +163,6 @@ to update the local agenda calendar files."
       (bob/reset-org-element-cache-in-agenda-files))
     (message "Process %s %s" process event)))
 
-(defun project-switch-to-open-project (dir)
-  "\"Switch\" to another ACTIVE project by running an Emacs command.
-The available commands are presented as a dispatch menu
-made from `project-switch-commands'.
-
-When called in a program, it will use the project corresponding
-to directory DIR."
-  (interactive (list (completing-read "Choose a project: " (get--active-projects))))
-  (let ((command (if (symbolp project-switch-commands)
-                     project-switch-commands
-                   (project--switch-project-command))))
-    (let ((project-current-directory-override dir))
-      (call-interactively command))))
-
-(defun get--active-projects ()
-  "Return a list of projects that are associated with the open buffers."
-  (cl-remove-if-not 'identity
-           (mapcar
-            #'project--buffer
-            (buffer-list))))
-
-(defun project--buffer (buffer)
-  (let ((buffer-file (buffer-file-name buffer)))
-    (when buffer-file
-      (let ((default-directory (file-name-directory buffer-file)))
-        (when (project-current)
-          (project-root (project-current)))))))
-
-(defun kill--all-shell-buffers ()
-  ;; Gracefully terminate comint processes before killing buffers
-  (cl-loop for buffer in (buffer-list)
-           do
-           (with-current-buffer buffer
-             (when (derived-mode-p 'comint-mode)
-               (let ((process (get-buffer-process buffer)))
-                 (when (process-live-p process)
-                   ;; Gracefully end process before killing the buffer
-                   (delete-process process)
-                   ;; Now kill the buffer
-                   (kill-buffer buffer)))))))
-
-(defun bob/reset-emacs-state ()
-  "Reset emacs state to initial state, keeping only Messages and Scratch buffers."
-  (interactive)
-  (eglot-shutdown-all)
-  (when (featurep 'tramp)
-    (progn (tramp-cleanup-all-buffers)
-           (tramp-cleanup-all-connections)))
-  (kill--all-shell-buffers)
-
-  ;; Kill all other buffers except *Messages* and *scratch*
-  (mapc 'kill-buffer (delq (get-buffer "*Messages*") (buffer-list)))
-  (delete-other-windows)
-  (scratch-buffer))
-
 (defun bob/rotate-list (list)
   "Take a list an rotate it such that:
 (rotate (1 2 3 4)) => (4 1 2 3)"
@@ -235,15 +182,6 @@ to directory DIR."
   `(let ((time (current-time)))
      ,@body
      (float-time (time-since time))))
-
-;; GC optimizations taken from: https://akrl.sdf.org/#orgc15a10d
-(defun bob/set-gc-timer ()
-  ;; When idle for 15sec run the GC no matter what.
-  (defvar k-gc-timer
-    (run-with-idle-timer 15 t
-                         (lambda ()
-                           (message "Garbage Collector has run for %.06fsec"
-                                    (k-time (garbage-collect)))))))
 
 (defun bob/default--display-to-item (display-name hash-table)
   "Map a display name to item name. HASH-TABLE "
@@ -301,5 +239,9 @@ b-word center-word a-word"
     (backward-sexp)
     (transpose-sexps 1)
     (transpose-sexps 1)))
+
+(defun bob/eval-to-kill-ring ()
+  (interactive)
+  (kill-new (with-output-to-string (princ (call-interactively 'eval-expression)))))
 
 (provide 'bobs-utils)

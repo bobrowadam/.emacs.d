@@ -166,4 +166,32 @@ It's also possible to enter an arbitrary directory not in the list."
   (project-list-buffers t)
   (other-window 1))
 
+(defun project-switch-to-open-project (dir)
+  "\"Switch\" to another ACTIVE project by running an Emacs command.
+The available commands are presented as a dispatch menu
+made from `project-switch-commands'.
+
+When called in a program, it will use the project corresponding
+to directory DIR."
+  (interactive (list (completing-read "Choose a project: " (get--active-projects))))
+  (let ((command (if (symbolp project-switch-commands)
+                     project-switch-commands
+                   (project--switch-project-command))))
+    (let ((project-current-directory-override dir))
+      (call-interactively command))))
+
+(defun project--buffer (buffer)
+  (let ((buffer-file (buffer-file-name buffer)))
+    (when buffer-file
+      (let ((default-directory (file-name-directory buffer-file)))
+        (when (project-current)
+          (project-root (project-current)))))))
+
+(defun get--active-projects ()
+  "Return a list of projects that are associated with the open buffers."
+  (cl-remove-if-not 'identity
+           (mapcar
+            #'project--buffer
+            (buffer-list))))
+
 (provide 'project-utils)
