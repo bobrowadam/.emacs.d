@@ -6,8 +6,7 @@
 
 (use-package treesit
   :ensure nil
-  :demand t
-  :init
+  :config
   (setq treesit-language-source-alist
         '((bash . ("https://github.com/tree-sitter/tree-sitter-bash"))
           (c . ("https://github.com/tree-sitter/tree-sitter-c"))
@@ -67,30 +66,5 @@
   (bob/install--grammer-if-missing 'python)
   (bob/install--grammer-if-missing 'c)
   (bob/install--grammer-if-missing 'cpp))
-
-;; (use-package treesit-auto
-;;   :after (treesit)
-;;   :custom
-;;   (treesit-auto-install 'prompt)
-;;   :config
-;;   (treesit-auto-add-to-auto-mode-alist 'all)
-;;   (global-treesit-auto-mode))
-
-(use-package tree-sitter
-  :disabled t
-  :hook (js-mode typescript-mode c-mode c++-mode rust-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
-(use-package tree-sitter-langs
-  :disabled t)
-
-(use-package ts-fold
-  :disabled t
-  :straight (ts-fold :type git :host github :repo "emacs-tree-sitter/ts-fold")
-  :init
-  :hook ((js-mode typescript-mode c-mode c++-mode rust-mode) . ts-fold-mode)
-  :bind (:map ts-fold-mode
-              ("C-=" . ts-fold-toggle)
-              ("C-+" . ts-fold-open-recursively)))
 
 (provide 'setup-tree-sitter)
