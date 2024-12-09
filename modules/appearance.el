@@ -109,7 +109,8 @@
   (global-ligature-mode t))
 
 (use-package doom-modeline
-  :init (doom-modeline-mode 1))
+  :init (doom-modeline-mode 1)
+  :custom (doom-modeline-time-analogue-clock nil))
 
 ;; (window-divider-mode 1)
 ;; (setq window-divider-default-places t)
