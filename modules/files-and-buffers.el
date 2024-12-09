@@ -88,8 +88,9 @@
 
 (defun bob/kill-this-buffer ()
   (interactive)
-  (kill-buffer (current-buffer))
-  (delete-window))
+  (if (one-window-p)
+      (kill-buffer)
+    (kill-buffer-and-window)))
 
 (use-package basic-keybindigs
   :ensure nil
