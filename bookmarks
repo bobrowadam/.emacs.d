@@ -93,11 +93,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Show coverPaym")
- (rear-context-string . "open an account\n")
- (position . 153)
- (last-modified 26439 5809 108475 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20241208152205-fundtransfer.org")
+ (front-context-string . "\nMoney that the ")
+ (rear-context-string . "e: FundTransfer\n")
+ (position . 90)
+ (last-modified 26453 40323 60210 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
