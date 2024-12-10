@@ -10,6 +10,7 @@
       :key credentials))
   :custom
   (gptel-default-mode 'org-mode)
+  (gptel-model 'gpt-4o)
   :bind
   ("C-c g g" . gptel)
   ("C-c g s" . gptel-send)
