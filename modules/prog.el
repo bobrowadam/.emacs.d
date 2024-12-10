@@ -259,9 +259,7 @@
   (common-lisp-mode . enable-paredit-mode)
   (lisp-mode . enable-paredit-mode)
   (lisp-data-mode . enable-paredit-mode)
-  ;; (minibuffer-mode . preserve-paredit-and-enable-ret)
   ;; (racket-mode . enable-paredit-mode)
-  (eshell-mode  . enable-paredit-mode)
   :bind
   (:map paredit-mode-map
         ("C-'" . sp-rewrap-sexp)
@@ -276,7 +274,7 @@
   (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
   (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
   :hook
-  (prog-mode text-mode comint-mode)
+  (prog-mode text-mode comint-mode minibuffer-mode)
   :bind (:map smartparens-mode-map
               ("M-(" . sp-wrap-round)
               ("M-s" . sp-unwrap-sexp)
