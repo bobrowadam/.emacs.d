@@ -137,7 +137,7 @@
   :commands (bob/jest-run-tests bob/jest-rerun-latest-test)
   :ensure nil
   :bind
-  (:map typescript-ts-mode-map
+  (:map typescript-ts-base-mode-map
    ("C-c C-t C-n" . #'bob/jest-run-tests)
    ("C-c C-t C-r" . #'bob/jest-rerun-latest-test)))
 
