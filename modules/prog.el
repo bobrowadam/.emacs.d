@@ -169,7 +169,6 @@
   (eglot-booster-mode)
   (breadcrumb-mode 1)
   (fnm-use)
-  (doom-modeline-mode 1)
   (add-to-list 'eglot-server-programs
                `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
                  . ("typescript-language-server" "--stdio")))

@@ -130,6 +130,10 @@
   (doom-modeline-time t)
   (doom-modeline-buffer-encoding nil))
 
+(use-package prog-mode
+  :ensure nil
+  :config
+  (doom-modeline 1))
 ;; (window-divider-mode 1)
 ;; (setq window-divider-default-places t)
 
