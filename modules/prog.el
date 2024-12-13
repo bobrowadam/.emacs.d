@@ -29,23 +29,20 @@
 
 (use-package jest-ts-mode
   :commands (bob/jest-run-tests bob/jest-rerun-latest-test)
-  :ensure nil
-  )
+  :ensure nil)
 
-(use-package typescript-mode
-  :after npm-utils
+(use-package typescript-ts-mode
   :ensure nil
-  :bind
-  ("C-c C-b" . npm-run-build)
-  ("C-c C-r" . npm-run)
-  (:map typescript-ts-mode-map
-        ("C-c C-t C-n" . #'bob/jest-run-tests)
-        ("C-c C-t C-p" . #'bob/jest-run-test-on-point)
-        ("C-c C-t C-r" . #'bob/jest-rerun-latest-test))
-  :mode ("\\.ts$" . typescript-ts-mode)
-  ;; :mode ("\\.tsx$" . tsx-ts-mode)
+  :mode ("\\.ts\\'" . typescript-ts-mode)
+  :bind (("C-c C-b" . npm-run-build)
+         ("C-c C-r" . npm-run)
+         :map typescript-ts-mode-map
+         ("C-c C-t C-n" . bob/jest-run-tests)
+         ("C-c C-t C-p" . bob/jest-run-test-on-point)
+         ("C-c C-t C-r" . bob/jest-rerun-latest-test))
   :config
-  (setq-default typescript-indent-level 2))
+  (fnm-use)
+  (setq typescript-ts-mode-indent-offset 2))
 
 ;; (use-package tsx-ts-mode
 ;;   :ensure nil
@@ -156,7 +153,8 @@
 (use-package sql-mode :ensure nil
   :hook (eglot-ensure))
 
-(use-package breadcrumb)
+(use-package breadcrumb
+  :hook (prog-mode))
 
 (use-package eglot
   :after (fnm)
@@ -167,8 +165,6 @@
   :config
   (exec-path-from-shell-initialize)
   (eglot-booster-mode)
-  (breadcrumb-mode 1)
-  (fnm-use)
   (add-to-list 'eglot-server-programs
                `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
                  . ("typescript-language-server" "--stdio")))
@@ -217,7 +213,6 @@
   :after eglot)
 
 (use-package flymake-eslint
-  :demand t
   :ensure t
   :after flyamke
   :hook
@@ -329,7 +324,7 @@
   (prog-mode . yas-minor-mode-on)
   (emacs-lisp-mode . yas-minor-mode-on)
   (js2-mode . yas-minor-mode-on)
-  (typescript-mode . yas-minor-mode-on)
+  (typescript-ts-mode . yas-minor-mode-on)
   (js-ts-mode . yas-minor-mode-on)
   (jtsx-jsx-mode-map . yas-minor-mode-on)
   (typescript-ts-mode . yas-minor-mode-on)
@@ -432,12 +427,14 @@
     9229))
 
 (use-package dape
+  :bind
+  ("C-x C-a d" . dape)
   :custom
-  ;; (dape--debug-on '())
   (dape-info-buffer-window-groups '((dape-info-scope-mode dape-info-watch-mode)))
-  :bind (:map dape-global-map
-              ("e" . dape-evaluate-expression))
+  ;; :bind (:map dape-global-map
+  ;;             ("e" . dape-evaluate-expression))
   :config
+  (setq dape-inlay-hints t)
   (add-to-list 'dape-configs
                `(vscode-ts-js-attach
                  modes (js-mode js-ts-mode typescript-ts-mode)
@@ -499,6 +496,7 @@
   :hook (dape-active-mode . repeat-mode))
 
 (use-package erefactor
+  :disabled t
   :ensure nil
   :load-path "~/source/Emacs-erefactor/"
   :hook (emacs-lisp-mode .
@@ -506,6 +504,7 @@
                            (define-key emacs-lisp-mode-map (kbd "C-c C-v") erefactor-map))))
 
 (use-package dumb-jump
+  :disabled t
   :ensure t
   :config
   (setq dumb-jump-selector 'popup)
