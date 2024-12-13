@@ -73,13 +73,9 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
       (buffer-substring-no-properties (region-beginning) (region-end))
     (when (treesit-ready-p 'typescript)
       (-if-let* ((node (treesit-node-at (point)))
-                 ;; Walk upwards, stopping on a node that matches the criterion from jest--is-jest-test-call
                  (test-node (treesit-parent-until node #'jest--is-jest-test-call))
-                 ;; Fetch the arguments passed to the function, typically the test description
                  (test-name-node (treesit-node-child-by-field-name test-node "arguments"))
-                 ;; Get the first argument, usually the test description
                  (first-arg-node (treesit-node-child test-name-node 1))
-                 ;; Ensure it's a string literal node
                  (node-type (treesit-node-type first-arg-node)))
           (when (string= node-type "string")
             (jest--prepare-test-matching-string (treesit-node-text first-arg-node t)))))))
@@ -136,5 +132,5 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
                                   (treesit-node-parent 
                                    (cdr capture)))) 1))))))))
 
-(provide 'jest-utils)
+(provide 'jest-ts-mode)
 

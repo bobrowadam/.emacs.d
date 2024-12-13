@@ -27,12 +27,21 @@
                       (lambda (p) (s-contains? "comint" (process-name p)))
                       (process-list)))))
 
+(use-package jest-ts-mode
+  :commands (bob/jest-run-tests bob/jest-rerun-latest-test)
+  :ensure nil
+  )
+
 (use-package typescript-mode
   :after npm-utils
   :ensure nil
   :bind
   ("C-c C-b" . npm-run-build)
   ("C-c C-r" . npm-run)
+  (:map typescript-ts-mode-map
+        ("C-c C-t C-n" . #'bob/jest-run-tests)
+        ("C-c C-t C-p" . #'bob/jest-run-test-on-point)
+        ("C-c C-t C-r" . #'bob/jest-rerun-latest-test))
   :mode ("\\.ts$" . typescript-ts-mode)
   ;; :mode ("\\.tsx$" . tsx-ts-mode)
   :config
