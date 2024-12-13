@@ -357,4 +357,8 @@
 (bind-key "C-S-p" 'move-line-up)
 (bind-key "C-S-n" 'move-line-down)
 
+(use-package p-search
+  :commands (p-search)
+  :straight (:host github :repo "zkry/p-search"))
+
 (provide 'navigation)
