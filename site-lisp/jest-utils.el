@@ -75,4 +75,17 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
              (s-chop-suffix "]")
              (s-chop-prefix "[")))))))
 
+(defun jest--extract-describe-and-test-strings ()
+  "Extract all strings within `describe` and `test` calls in the current buffer."
+  (interactive)
+  (let ((queries '((call_expression
+                    function: (identifier) @func-name
+                    arguments: (arguments
+                                (string _))))))
+    (let* ((parser (treesit-parser-create 'typescript)) ;; use 'tsx' or 'javascript' if needed
+           (captures (treesit-query-capture parser queries)))
+      (cl-loop for capture in captures
+               when (s-matches? "describe\\|test" (treesit-node-text (cdr capture)))
+               collect (treesit-node-text (treesit-node-child (cadr (treesit-node-children (treesit-node-parent (cdr capture)))) 1))))))
+
 (provide 'jest-utils)
