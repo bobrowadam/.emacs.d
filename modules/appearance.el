@@ -23,7 +23,6 @@
   (and (boundp 'remote-mode) remote-mode))
 
 (use-package modus-themes
-  :demand t
   :custom
   (modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tritanopia))
   :config
@@ -36,8 +35,21 @@
         '((bg-main "grey12")
           (forge-topic-slug-open "blue4")))
   (modus-themes-select 'modus-vivendi-tritanopia)
-  :hook
-  (modus-themes-after-load-theme . bobs-modeline/enable))
+  ;; :hook
+  ;; (modus-themes-after-load-theme . bobs-modeline/enable)
+)
+
+(use-package doom-themes
+  :demand t
+  :custom
+  (doom-ayu-dark-padded-modeline t)
+  (doom-ayu-dark-brighter-comments t)
+  (doom-ayu-dark-brighter-modeline nil)
+  (doom-ayu-dark-comment-bg nil)
+  :config
+  (load-theme 'doom-ayu-dark)
+  ;; (doom-themes-set-faces 'user '(default :background "grey8"))
+)
 
 (use-package ef-themes
   :custom
@@ -60,10 +72,14 @@
   (spacious-padding-mode))
 
 (use-package highlight-indent-guides
+  :custom
+  (highlight-indent-guides-auto-even-face-perc 45)
+  (highlight-indent-guides-auto-odd-face-perc 10)
   :config
   (setq highlight-indent-guides-method 'fill
         highlight-indent-guides-responsive 'top
         highlight-indent-guides-auto-enabled t)
+  ;; (set-face-foreground 'highlight-indent-guides-character-face "dimgray")
   :hook (prog-mode . highlight-indent-guides-mode))
 
 (use-package all-the-icons
@@ -109,7 +125,10 @@
   (global-ligature-mode t))
 
 (use-package doom-modeline
-  :custom (doom-modeline-time-analogue-clock nil))
+  :custom 
+  (doom-modeline-time-icon nil)
+  (doom-modeline-time t)
+  (doom-modeline-buffer-encoding nil))
 
 ;; (window-divider-mode 1)
 ;; (setq window-divider-default-places t)
