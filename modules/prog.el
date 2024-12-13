@@ -551,7 +551,7 @@
                  :italic t
                  :font "Futura"
                  :height 180
-                 :inherit modus-themes-heading-3)))
+                 )))
   :hook
   (prog-mode . (lambda () (blamer-mode 1))))
 
