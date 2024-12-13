@@ -23,26 +23,29 @@
               ("C-o" . #'casual-dired-tmenu)))
 
 (use-package dired-sidebar
+  :commands (dired-sidebar-toggle-sidebar dired-sidebar-toggle-with-current-directory)
   :after (dired)
   :bind 
-  ("C-x C-d" . dired-sidebar-toggle-with-current-directory)
-  :ensure t
-  :commands (dired-sidebar-toggle-sidebar)
+  ;; This can be achived using "C-u C-x C-j" so not binding it
+  ;; ("C-x C-d" . dired-sidebar-toggle-with-current-directory)
+  ("C-x C-j" . dired-sidebar-toggle-sidebar)
   :custom
   (dired-sidebar-width 25)
-  :init
-  (setq dired-sidebar-face `(:family "Menlo"))
-  (add-hook 'dired-sidebar-mode-hook
-            (lambda ()
+  (dired-sidebar-subtree-line-prefix "  ")
+  (dired-sidebar-theme 'vscode)
+  (dired-sidebar-use-term-integration t)
+  (dired-sidebar-use-custom-font t)
+  :hook
+  (dired-sidebar-mode . (lambda ()
               (unless (file-remote-p default-directory)
                 (auto-revert-mode))))
-  :config
-  (push 'toggle-window-split dired-sidebar-toggle-hidden-commands)
-  (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
-  (setq dired-sidebar-subtree-line-prefix " ")
-  (setq dired-sidebar-theme 'vscode)
-  (setq dired-sidebar-use-term-integration t)
-  (setq dired-sidebar-use-custom-font t))
+  :custom-face
+  (dired-sidebar-face ((t (:family "Menlo"))))
+
+  ;; :config
+  ;; (push 'toggle-window-split dired-sidebar-toggle-hidden-commands)
+  ;; (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
+)
 
 (use-package dired-subtree
   :demand t
