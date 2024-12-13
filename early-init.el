@@ -59,6 +59,6 @@
                                                  (time-subtract after-init-time before-init-time)))
                                         gcs-done
                                         (format "%.2f seconds" gc-elapsed))
-                                'face '(info-title-1)))
+                                'face '(info-title-4)))
             (setq gc-cons-percentage gc-cons-percentage-before-init)
             (setq gc-cons-threshold gc-cons-threshold-before-init)))
