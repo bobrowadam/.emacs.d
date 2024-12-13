@@ -146,7 +146,8 @@
                (ibuffer-filter-by-prog-mode)
                (all-the-icons-ibuffer-mode)
                (unless (eq ibuffer-sorting-mode 'recency)
-                 (ibuffer-do-sort-by-recency)))))
+                 (ibuffer-do-sort-by-recency))
+               (ibuffer-vc-set-filter-groups-by-vc-root))))
 
 (use-package casual-ibuffer
   :commands (ibuffer)
@@ -173,7 +174,6 @@
                                            )))
 
 (use-package ibuffer-vc
-  :disabled t
   :commands (ibuffer-vc-set-filter-groups-by-vc-root)
   :custom
   (ibuffer-vc-skip-if-remote t))
