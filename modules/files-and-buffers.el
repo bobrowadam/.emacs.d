@@ -24,7 +24,8 @@
 
 (use-package dired-sidebar
   :after (dired)
-  :bind (("C-x C-d" . dired-sidebar-toggle-sidebar))
+  :bind 
+  ("C-x C-d" . dired-sidebar-toggle-with-current-directory)
   :ensure t
   :commands (dired-sidebar-toggle-sidebar)
   :custom
