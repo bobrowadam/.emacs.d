@@ -139,6 +139,7 @@
   :bind
   (:map typescript-ts-base-mode-map
    ("C-c C-t C-n" . #'bob/jest-run-tests)
+   ("C-c C-t C-p" . #'bob/jest-run-test-on-point)
    ("C-c C-t C-r" . #'bob/jest-rerun-latest-test)))
 
 (use-package casual-calc

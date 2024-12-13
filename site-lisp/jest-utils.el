@@ -1,14 +1,14 @@
 (defvar *latest-test* nil)
 
 ;;;###autoload
-(defun bob/jest-run-tests ()
-  "Run Jest tests."
+(defun bob/jest-run-test-on-point ()
+  "Run the enclosing test"
   (interactive)
   (if-let ((default-directory (locate-dominating-file "./" "jest.config.ts"))
            (test-name (jest--get-current-test-name))
            (test-file-name (buffer-file-name)))
       (progn (setq *latest-test* (list test-file-name test-name default-directory))
-             (compile (jest-test-command
+             (compile (jest--test-command
                        default-directory
                        `(:file-name ,test-file-name :test-name ,test-name))
                       'jest-test-compilation-mode))
@@ -20,11 +20,25 @@
   (interactive)
   (when *latest-test*
     (if-let ((default-directory (nth 2 *latest-test*)))
-        (compile (jest-test-command
+        (compile (jest--test-command
                   default-directory
                   `(:file-name ,(car *latest-test*) :test-name ,(nth 1 *latest-test*)))
                  'jest-test-compilation-mode)
       (error "No jest-config found. default directory: %s" default-directory))))
+
+;;;###
+(defun bob/jest-run-tests (describe-only)
+  "Run a specific test from the current file"
+  (interactive "P")
+  (if-let ((default-directory (locate-dominating-file "./" "jest.config.ts"))
+           (test-name (jest--choose-test-with-completion describe-only))
+           (test-file-name (buffer-file-name)))
+      (progn (setq *latest-test* (list test-file-name test-name default-directory))
+             (compile (jest--test-command
+                       default-directory
+                       `(:file-name ,test-file-name :test-name ,test-name))
+                      'jest-test-compilation-mode))
+    (error "No jest-config found. default directory: %s" default-directory)))
 
 (define-compilation-mode jest-test-compilation-mode "Jest Compilation"
   "Compilation mode for Jest output."
@@ -34,7 +48,7 @@
   "Colorize the compilation buffer."
   (ansi-color-apply-on-region compilation-filter-start (point)))
 
-(defun jest-test-command (jest-config-dir &optional test-file-name-and-pattern)
+(defun jest--test-command (jest-config-dir &optional test-file-name-and-pattern)
   "Create the command to run Jest tests.
 TEST-FILE-NAME-AND-PATTERN is a plist with optional
  `:file-name` and `:test-name`."
@@ -68,24 +82,59 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
                  ;; Ensure it's a string literal node
                  (node-type (treesit-node-type first-arg-node)))
           (when (string= node-type "string")
-            (->>
-             (treesit-node-text first-arg-node t)
-             (s-chop-prefix "'")
-             (s-chop-suffix "'")
-             (s-chop-suffix "]")
-             (s-chop-prefix "[")))))))
+            (jest--prepare-test-matching-string (treesit-node-text first-arg-node t)))))))
 
-(defun jest--extract-describe-and-test-strings ()
+(defun jest--prepare-test-matching-string (test-name)
+  (->>
+   test-name
+   (s-chop-prefix "'")
+   (s-chop-suffix "'")
+   (s-chop-suffix "]")
+   (s-chop-prefix "[")))
+
+(defun jest--choose-test-with-completion (&optional describe-only)
+  (let* ((candidates (jest--extract-tests-strings describe-only))
+         (display-map (mapcar (lambda (candidate)
+                                (let ((type (car candidate))
+                                      (text (cdr candidate)))
+                                  (cons (jest--prepare-for-display type text)
+                                        text)))
+                              candidates)))
+    (let ((chosen-display (completing-read "Choose: "
+                                           (mapcar (lambda (d) (car d))
+                                                   display-map)
+                                           nil t)))
+      (jest--prepare-test-matching-string (cdr (assoc chosen-display display-map))))))
+
+(defun jest--prepare-for-display (type text)
+  (format "%s %s"
+          type
+          (->> text
+               (s-chop-prefix "'")
+               (s-chop-suffix "'"))))
+
+(defun jest--extract-tests-strings (&optional describe-only)
   "Extract all strings within `describe` and `test` calls in the current buffer."
-  (interactive)
   (let ((queries '((call_expression
                     function: (identifier) @func-name
                     arguments: (arguments
                                 (string _))))))
-    (let* ((parser (treesit-parser-create 'typescript)) ;; use 'tsx' or 'javascript' if needed
+    (let* ((parser (treesit-parser-create 'typescript))
            (captures (treesit-query-capture parser queries)))
       (cl-loop for capture in captures
-               when (s-matches? "describe\\|test" (treesit-node-text (cdr capture)))
-               collect (treesit-node-text (treesit-node-child (cadr (treesit-node-children (treesit-node-parent (cdr capture)))) 1))))))
+               for text = (treesit-node-text (cdr capture))
+               for prefix = (cond ((string-match "describe" text) "")
+                                  ((and (not describe-only)
+                                        (string-match "test" text)) "✅"))
+               when prefix
+               collect (cons prefix 
+                             (substring-no-properties
+                              (treesit-node-text 
+                               (treesit-node-child 
+                                (cadr 
+                                 (treesit-node-children 
+                                  (treesit-node-parent 
+                                   (cdr capture)))) 1))))))))
 
 (provide 'jest-utils)
+
