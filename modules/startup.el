@@ -9,7 +9,9 @@
 (use-package bobs-utils
   :demand t
   :load-path "./site-lisp"
-  :ensure nil)
+  :ensure nil
+  :bind
+  ("C-M-S-t" . bob/transpose-surroundings-sexps ))
 
 (defvar bootstrap-version)
 (defun setup-straight ()
