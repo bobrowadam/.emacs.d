@@ -122,14 +122,12 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
                                   ((and (not describe-only)
                                         (string-match "test" text)) "✅"))
                when prefix
-               collect (cons prefix 
+               collect (cons prefix
                              (substring-no-properties
-                              (treesit-node-text 
-                               (treesit-node-child 
-                                (cadr 
-                                 (treesit-node-children 
-                                  (treesit-node-parent 
-                                   (cdr capture)))) 1))))))))
+                              (treesit-node-text (treesit-node-child (cadr (treesit-node-children 
+                                                                            (treesit-node-parent 
+                                                                             (cdr capture))))
+                                                                     1))))))))
 
 (provide 'jest-ts-mode)
 
