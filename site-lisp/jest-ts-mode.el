@@ -89,18 +89,19 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
    (s-chop-prefix "[")))
 
 (defun jest--choose-test-with-completion (&optional describe-only)
-  (let* ((candidates (jest--extract-tests-strings describe-only))
-         (display-map (mapcar (lambda (candidate)
-                                (let ((type (car candidate))
-                                      (text (cdr candidate)))
-                                  (cons (jest--prepare-for-display type text)
-                                        text)))
-                              candidates)))
+  (if-let* ((candidates (jest--extract-tests-strings describe-only))
+            (display-map (mapcar (lambda (candidate)
+                                   (let ((type (car candidate))
+                                         (text (cdr candidate)))
+                                     (cons (jest--prepare-for-display type text)
+                                           text)))
+                                 candidates)))
     (let ((chosen-display (completing-read "Choose: "
                                            (mapcar (lambda (d) (car d))
                                                    display-map)
                                            nil t)))
-      (jest--prepare-test-matching-string (cdr (assoc chosen-display display-map))))))
+      (jest--prepare-test-matching-string (cdr (assoc chosen-display display-map))))
+    (error "No tests definition found in file")))
 
 (defun jest--prepare-for-display (type text)
   (format "%s %s"

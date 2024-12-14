@@ -28,6 +28,7 @@
                       (process-list)))))
 
 (use-package jest-ts-mode
+  :load-path "site-lisp/jest-ts-mode"
   :commands (bob/jest-run-tests bob/jest-rerun-latest-test)
   :ensure nil)
 
