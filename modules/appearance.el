@@ -2,6 +2,7 @@
 (setq custom-theme-directory (concat user-emacs-directory "themes"))
 
 (defun set-font-based-on-resolution (frame)
+  (message "setting font properties based on frame resolution")
   (let* ((attrs (frame-monitor-attributes))
          (geo (cdr (assq 'geometry attrs))))
     (if (and geo (>= (length geo) 4))
