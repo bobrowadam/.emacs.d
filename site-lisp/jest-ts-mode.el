@@ -1,7 +1,7 @@
 (defvar *latest-test* nil)
 
 ;;;###autoload
-(defun bob/jest-run-test-on-point ()
+(defun jest-ts-mode/run-test-on-point ()
   "Run the enclosing test"
   (interactive)
   (if-let ((default-directory (locate-dominating-file "./" "jest.config.ts"))
@@ -15,7 +15,7 @@
     (error "No jest-config found. default directory: %s" default-directory)))
 
 ;;;###autoload
-(defun bob/jest-rerun-latest-test ()
+(defun jest-ts-mode/rerun-latest-test ()
   "Run the latest test when exists."
   (interactive)
   (when *latest-test*
@@ -26,8 +26,8 @@
                  'jest-test-compilation-mode)
       (error "No jest-config found. default directory: %s" default-directory))))
 
-;;;###
-(defun bob/jest-run-tests (describe-only)
+;;;###autoload
+(defun jest-ts-mode/run-tests (describe-only)
   "Run a specific test from the current file"
   (interactive "P")
   (if-let ((default-directory (locate-dominating-file "./" "jest.config.ts"))
