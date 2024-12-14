@@ -1,11 +1,11 @@
 (defvar *latest-test* nil)
 
 ;;;###autoload
-(defun jest-ts-mode/run-test-on-point ()
-  "Run the enclosing test"
-  (interactive)
+(defun jest-ts-mode/run-tests (describe-only)
+  "Run a specific test from the current file"
+  (interactive "P")
   (if-let ((default-directory (locate-dominating-file "./" "jest.config.ts"))
-           (test-name (jest--get-current-test-name))
+           (test-name (jest--choose-test-with-completion describe-only))
            (test-file-name (buffer-file-name)))
       (progn (setq *latest-test* (list test-file-name test-name default-directory))
              (compile (jest--test-command
@@ -27,11 +27,11 @@
       (error "No jest-config found. default directory: %s" default-directory))))
 
 ;;;###autoload
-(defun jest-ts-mode/run-tests (describe-only)
-  "Run a specific test from the current file"
-  (interactive "P")
+(defun jest-ts-mode/run-test-on-point ()
+  "Run the enclosing test around point"
+  (interactive)
   (if-let ((default-directory (locate-dominating-file "./" "jest.config.ts"))
-           (test-name (jest--choose-test-with-completion describe-only))
+           (test-name (jest--get-current-test-name))
            (test-file-name (buffer-file-name)))
       (progn (setq *latest-test* (list test-file-name test-name default-directory))
              (compile (jest--test-command
