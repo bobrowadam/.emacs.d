@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-scripts"
+(("jest-ts-mode.el"
+ (filename . "~/.emacs.d/site-lisp/jest-ts-mode.el")
+ (front-context-string . "(defvar *latest-")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26461 18020 21942 0))
+("org-scripts"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/grain/org-scripts/")
  (front-context-string . "rabbit-client.or")
  (rear-context-string . "39 Sep 24 19:47 ")
