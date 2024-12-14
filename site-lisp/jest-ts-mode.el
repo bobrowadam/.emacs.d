@@ -83,10 +83,8 @@ TEST-FILE-NAME-AND-PATTERN is a plist with optional
 (defun jest--prepare-test-matching-string (test-name)
   (->>
    test-name
-   (s-chop-prefix "'")
-   (s-chop-suffix "'")
-   (s-chop-suffix "]")
-   (s-chop-prefix "[")))
+   (s-chop-prefixes '("'" "["))
+   (s-chop-suffixes '("'" "]"))))
 
 (defun jest--choose-test-with-completion (&optional describe-only)
   (if-let* ((candidates (jest--extract-tests-strings describe-only))
