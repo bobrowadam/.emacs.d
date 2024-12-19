@@ -528,6 +528,19 @@
 (use-package realgud-lldb
   :after realgud)
 
+(use-package comment-tags
+  :custom
+  (comment-tags-keywords '("TODO"
+                           "FIXME"
+                           "BUG"
+                           "HACK"
+                           "KLUDGE"
+                           "XXX"
+                           "INFO"
+                           "DONE"))
+  (comment-tags-require-colon t)
+  :hook (prog-mode))
+
 (use-package emacs
   :hook
   (prog-mode . hs-minor-mode)
