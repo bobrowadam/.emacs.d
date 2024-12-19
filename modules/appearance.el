@@ -24,6 +24,7 @@
   (and (boundp 'remote-mode) remote-mode))
 
 (use-package modus-themes
+  :disabled t
   :custom
   (modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tritanopia))
   :config
@@ -53,6 +54,7 @@
 )
 
 (use-package ef-themes
+  :disabled t
   :custom
   (ef-themes-to-toggle '(ef-cyprus ef-deuteranopia-dark))
   :hook
