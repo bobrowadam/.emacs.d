@@ -15,6 +15,7 @@
                   (t 17))))    ; Small screens
           (let ((font-string (format "Iosevka-%d:weight=medium:width=expanded" font-size)))
             (set-frame-font font-string 'keep-size t)
+            (set-frame-font font-string)
             (add-to-list 'default-frame-alist `(font . ,font-string))))
       (message "Error: Unable to determine screen dimensions."))))
 
@@ -43,13 +44,18 @@
 
 (use-package doom-themes
   :demand t
+  :custom-face
+  (font-lock-variable-name-face ((t (:foreground "#59c2ff"))))
   :custom
+  ;; maybe use doom-challenger-deep. it's nice
   (doom-ayu-dark-padded-modeline t)
   (doom-ayu-dark-brighter-comments t)
   (doom-ayu-dark-brighter-modeline nil)
   (doom-ayu-dark-comment-bg nil)
+
   :config
   (load-theme 'doom-ayu-dark)
+  ;; (load-theme 'doom-pine)
   ;; (doom-themes-set-faces 'user '(default :background "grey8"))
 )
 
@@ -128,11 +134,13 @@
   (global-ligature-mode t))
 
 (use-package doom-modeline
+  :demand t
   :custom 
   (doom-modeline-time-icon nil)
-  (doom-modeline-time t)
+  (doom-modeline-time nil)
   (doom-modeline-buffer-encoding nil)
-  :init
+
+  :config
   (doom-modeline-mode 1))
 
 ;; (window-divider-mode 1)
