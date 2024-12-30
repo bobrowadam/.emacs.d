@@ -1,8 +1,6 @@
 ;; -*- lexical-binding: t; -*-
 
-(use-package flymake
-  :custom
-  (flymake-error-bitmap '(right-arrow modus-themes-prominent-error)))
+(use-package flymake)
 
 (use-package fancy-compilation
   :config
@@ -198,6 +196,7 @@
   (eglot-managed-mode .  (lambda ()
                            (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
                                      (eq (derived-mode-p major-mode) 'js-ts-mode))
+                             (set-eslint-executable-name)
                              (flymake-eslint-enable)))))
 
 (use-package eglot-booster
@@ -212,6 +211,10 @@
 
 (use-package consult-eglot
   :after eglot)
+
+(defun set-eslint-executable-name ()
+  (setq flymake-eslint-executable-name
+        (format "%snode_modules/.bin/eslint" (locate-dominating-file "" "node_modules"))))
 
 (use-package flymake-eslint
   :ensure t
@@ -233,10 +236,10 @@
 
   (let* ((default-directory (project-root (project-current t)))
          ;; (eslint-fix-executable "eslint")
-         (eslint (format "%snode_modules/.bin/eslint" default-directory))
+         (eslint (format "%snode_modules/.bin/eslint" (locate-dominating-file "" "node_modules")))
          (options (list "--fix" buffer-file-name)))
     (unless eslint
-      (error "Executable ‘%s’ not found" eslint-fix-executable))
+      (error "Executable ‘%s’ not found" eslint))
     (apply #'call-process eslint nil 0 nil options)
     (revert-buffer nil t t)))
 
