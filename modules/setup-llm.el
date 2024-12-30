@@ -1,32 +1,33 @@
 (use-package gptel
   :config
-  (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
-                            car
-                            (plist-get :secret)
-                            funcall)))
-    (gptel-make-anthropic
-        "Claude"
-      :stream t
-      :key credentials))
+  (setq
+   gptel-model 'claude-3-5-sonnet-20241022
+   gptel-backend (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
+                                           car
+                                           (plist-get :secret)
+                                           funcall)))
+                   (gptel-make-anthropic
+                       "Claude"
+                     :stream t
+                     :key credentials)))
   :custom
   (gptel-default-mode 'org-mode)
-  (gptel-model 'gpt-4o)
   :bind
   ("C-c g g" . gptel)
-  ("C-c g s" . gptel-send)
+  ("C-c g r" . gptel-rewrite)
   (:map gptel-mode-map ("C-c g s" . gptel-menu)))
 
-(defun elysium-apply-code-changes--turn-on-smerge-mode (orig-fun &rest args)
-  "Advise `elysium-apply-code-changes' to turn on smerge-mode."
-  (let ((result (apply orig-fun args)))  ; Call the original function
-    (smerge-mode 1)                       ; Turn on smerge-mode
-    result))
-(use-package elysium
-  :commands (elysium-query elysium-toggle-window)
-  :config
-  (advice-add 'elysium-apply-code-changes :around #'elysium-apply-code-changes--turn-on-smerge-mode)
-  :bind
-  ("C-c g e" . elysium-query))
+;; (defun elysium-apply-code-changes--turn-on-smerge-mode (orig-fun &rest args)
+;;   "Advise `elysium-apply-code-changes' to turn on smerge-mode."
+;;   (let ((result (apply orig-fun args)))  ; Call the original function
+;;     (smerge-mode 1)                       ; Turn on smerge-mode
+;;     result))
+;; (use-package elysium
+;;   :commands (elysium-query elysium-toggle-window)
+;;   :config
+;;   (advice-add 'elysium-apply-code-changes :around #'elysium-apply-code-changes--turn-on-smerge-mode)
+;;   :bind
+;;   ("C-c g e" . elysium-query))
 
                               ; Return the result of the original function
 (use-package chatgpt-shell
