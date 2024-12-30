@@ -29,7 +29,7 @@
 
 (use-package jest-ts-mode
   :commands (jest-ts-mode/run-tests jest-ts-mode/run-test-on-point jest-ts-mode/rerun-latest-test)
-  :load-path "site-lisp/jest-ts-mode"
+  :load-path "~/source/jest-ts-mode"
   :ensure nil)
 
 (use-package typescript-ts-mode
