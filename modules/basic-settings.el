@@ -37,7 +37,6 @@
       enable-local-eval t
       enable-local-variables t)
 
-
 ;; Default was too low.
 ;; Increase for better lsp performance.
 (setq read-process-output-max (* 3 1024 1024)) ;; 3mb
@@ -62,10 +61,11 @@
 
 (setq-default indent-tabs-mode nil)
 
-(display-time)
-(display-battery-mode)
+(display-time-mode -1)
+(display-battery-mode -1)
 (menu-bar-mode -1)
-(column-number-mode 1)
+(line-number-mode -1)
+(column-number-mode -1)
 
 (when (window-system)
   (setq confirm-kill-emacs 'yes-or-no-p))
@@ -180,6 +180,7 @@
 (global-set-key (kbd "C-פ") 'previous-line)
 (global-set-key (kbd "C-ש") 'beginning-of-line)
 (global-set-key (kbd "C-ק") 'end-of-line)
+(global-set-key (kbd "C-c T") 'display-time-mode)
 
 
 ;; scroll pages conservatively

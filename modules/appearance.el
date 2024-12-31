@@ -135,7 +135,8 @@
 
 (use-package doom-modeline
   :demand t
-  :custom 
+  :custom
+  (doom-modeline-percent-position nil)
   (doom-modeline-time-icon nil)
   (doom-modeline-time nil)
   (doom-modeline-buffer-encoding nil)

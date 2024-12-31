@@ -547,7 +547,7 @@
 (use-package emacs
   :hook
   (prog-mode . hs-minor-mode)
-  (prog-mode . visual-line-mode)
+  ;; (prog-mode . visual-line-mode)
   :bind (:map prog-mode-map
               ("C-=" . hs-toggle-hiding)))
 
