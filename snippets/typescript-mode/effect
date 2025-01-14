@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: effect
-# key: effect
-# --
-import { Effect as T } from 'effect';

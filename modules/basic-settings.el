@@ -14,8 +14,8 @@
       sentence-end-double-space t       ; explicitly choose default
       x-select-enable-clipboard t
       set-mark-command-repeat-pop t
-      mark-ring-max 16
-      global-mark-ring-max 16
+      mark-ring-max 30
+      global-mark-ring-max 40
       history-delete-duplicates t
       comint-input-ignoredups t
       view-read-only nil          ; all read-only buffers in view-mode
@@ -55,6 +55,7 @@
   (pixel-scroll-precision-mode 1))
 
 (setq scroll-conservatively 10)
+(setq scroll-margin 6)
 
 (unless (not (file-exists-p custom-file))
   (load custom-file))
@@ -64,8 +65,8 @@
 (display-time-mode -1)
 (display-battery-mode -1)
 (menu-bar-mode -1)
-(line-number-mode -1)
-(column-number-mode -1)
+(line-number-mode 1)
+(column-number-mode 1)
 
 (when (window-system)
   (setq confirm-kill-emacs 'yes-or-no-p))
