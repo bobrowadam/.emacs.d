@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: try-catch
+# key: tc
+# --
+try {
+  $0
+} catch (e) {
+  throw new Error('$1', { error: (e as Error).message, $2 });
+}
