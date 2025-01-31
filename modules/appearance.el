@@ -82,8 +82,10 @@
 
 (use-package highlight-indent-guides
   :custom
-  (highlight-indent-guides-auto-even-face-perc 45)
-  (highlight-indent-guides-auto-odd-face-perc 10)
+  (highlight-indent-guides-auto-even-face-perc 19)
+  (highlight-indent-guides-auto-odd-face-perc 11)
+  (highlight-indent-guides-auto-top-even-face-perc 30)
+  (highlight-indent-guides-auto-top-odd-face-perc 25)
   :config
   (setq highlight-indent-guides-method 'fill
         highlight-indent-guides-responsive 'top
