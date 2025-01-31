@@ -40,7 +40,9 @@
   :init
   (setq isearch-lazy-count t)
   ;; If you want some flexibility with white-space searching change this var:
-  (setq search-whitespace-regexp nil))
+  (setq search-whitespace-regexp nil)
+  :bind
+  (:map isearch-mode-map ("M-i" . casual-isearch-tmenu)))
 
 (use-package occur
   :ensure nil

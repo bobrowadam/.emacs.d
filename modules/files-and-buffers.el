@@ -10,17 +10,13 @@
   (dired-dwim-target t)
   :config
   (setq insert-directory-program (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
-  :hook (dired-mode . (lambda () (dired-hide-details-mode 1))))
+  :hook (dired-mode . (lambda () (dired-hide-details-mode 1)))
+  :bind
+  (:map dired-mode-map ("M-i" . casual-dired-tmenu)))
 
 (use-package dired-imenu
   :after dired
   :config (dired-setup-imenu))
-
-(use-package casual-dired
-  :commands (dired dired-jump)
-  :after (dired)
-  :bind (:map dired-mode-map
-              ("C-o" . #'casual-dired-tmenu)))
 
 (use-package dired-sidebar
   :commands (dired-sidebar-toggle-sidebar dired-sidebar-toggle-with-current-directory)
@@ -30,7 +26,7 @@
   ;; ("C-x C-d" . dired-sidebar-toggle-with-current-directory)
   ("C-x C-j" . dired-sidebar-toggle-sidebar)
   :custom
-  (dired-sidebar-width 25)
+  (dired-sidebar-width 40)
   (dired-sidebar-subtree-line-prefix "  ")
   (dired-sidebar-theme 'vscode)
   (dired-sidebar-use-term-integration t)
@@ -135,6 +131,7 @@
 (use-package ibuffer
   :bind
   ("C-x C-b" . ibuffer)
+  (:map ibuffer-mode-map ("M-i" . casual-ibuffer-tmenu))
   :custom
   (ibuffer-expert t)
   (ibuffer-use-other-window t)
@@ -148,13 +145,6 @@
                (unless (eq ibuffer-sorting-mode 'recency)
                  (ibuffer-do-sort-by-recency))
                (ibuffer-vc-set-filter-groups-by-vc-root))))
-
-(use-package casual-ibuffer
-  :commands (ibuffer)
-  :bind (:map ibuffer-mode-map
-              ("C-o" . casual-ibuffer-tmenu)
-              ("F" . casual-ibuffer-filter-tmenu)
-              ("s" . casual-ibuffer-sortby-tmenu)))
 
 (use-package all-the-icons-ibuffer
   :commands (ibuffer)
@@ -183,12 +173,5 @@
 (use-package pdf-tools
   :config (pdf-tools-install))
 
-(use-package casual-re-builder
-  :commands (re-builder)
-  :bind
-  (:map reb-mode-map
-              ("C-o" . #'casual-re-builder-tmenu))
-  (:map reb-lisp-mode-map
-        ("C-o" . #'casual-re-builder-tmenu)))
 
 (provide 'files-and-buffers)

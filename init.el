@@ -133,12 +133,12 @@
   :commands (grain/run-service)
   :ensure nil)
 
-(use-package casual-calc
+(use-package calc
+  :ensure nil
   :bind
-  (:map calc-mode-map
-              ("C-o" . #'casual-calc-tmenu))
-  (:map calc-alg-map
-              ("C-o" . #'casual-calc-tmenu)))
+  (:map calc-mode-map ("M-i" . casual-calc-tmenu)))
+
+(use-package casual)
 
 (use-package pomm
   :custom
@@ -221,6 +221,17 @@
   ;; (start-process "alert-sound" nil "afplay" (format "%stick.wav" (expand-file-name user-emacs-directory)))))
   (setq alert-default-style 'notifier))
 
+(use-package eradio
+  :init
+  (setq eradio-channels '(("def con - soma fm" . "https://somafm.com/defcon256.pls")          ;; electronica with defcon-speaker bumpers
+                          ("metal - soma fm"   . "https://somafm.com/metal130.pls")           ;; \m/
+                          ("cyberia - lainon"  . "https://lainon.life/radio/cyberia.ogg.m3u") ;; cyberpunk-esque electronica
+                          ("cafe - lainon"     . "https://lainon.life/radio/cafe.ogg.m3u")    ;; boring ambient, but with lain
+                          ("99FM"     . "https://eco01.livecdn.biz/ecolive/99fm_aac/icecast.audio")
+                          ("103FM"     . "https://cdn.cybercdn.live/103FM/Live/icecast.audio")
+                          ("Kan Bet" . "https://25703.live.streamtheworld.com/KAN_BET.mp3?dist=rlive")
+                          ("glglz" . "https://glzwizzlv.bynetcdn.com/glglz_mp3")
+                          ("glz" . "https://glzwizzlv.bynetcdn.com/glz_mp3?awCollectionId=misc&awEpisodeId=glz"))))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
