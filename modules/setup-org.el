@@ -186,8 +186,7 @@
   (org-super-agenda-mode 1))
 
 (use-package org-roam
-  :after org
-  ;; :after (emacsql-sqlite-builtin)
+  :commands (org-roam-node-find)
   :init
   (setq org-roam-graph-viewer "/Applications/Firefox.app/Contents/MacOS/firefox")
   (setq org-roam-v2-ack t)
@@ -229,6 +228,8 @@
   :ensure nil)
 
 (use-package ox-gfm :after org)
+(use-package ox-pandoc
+  :after org)
 
 (defun parse-verb-response-to-alist ()
   (when verb-parse-json-to-alist
