@@ -434,12 +434,13 @@
 (use-package dape
   :bind
   ("C-x C-a d" . dape)
+  ("C-x C-a b" . dape-breakpoint-toggle)
   :custom
   (dape-info-buffer-window-groups '((dape-info-scope-mode dape-info-watch-mode)))
   ;; :bind (:map dape-global-map
   ;;             ("e" . dape-evaluate-expression))
   :config
-  (setq dape-inlay-hints t)
+  (setq dape-inlay-hints nil)
   (add-to-list 'dape-configs
                `(vscode-ts-js-attach
                  modes (js-mode js-ts-mode typescript-ts-mode)
