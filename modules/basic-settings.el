@@ -4,7 +4,7 @@
       user-full-name "Adam Bobrow"
       garbage-collection-messages nil
       undo-limit (* 30 1024 1000)
-      scroll-preserve-screen-position nil
+      scroll-preserve-screen-position t
       make-backup-files nil
       enable-recursive-minibuffers t
       inhibit-splash-screen t
@@ -161,6 +161,7 @@
 (use-package zoom-window :bind ("C-x C-z" . zoom-window-zoom))
 (use-package iedit
   :bind ("C-;" . iedit-mode))
+
 (use-package vundo
   :commands (vundo)
   :bind ("C-x u" . vundo))
