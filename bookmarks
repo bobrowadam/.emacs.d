@@ -70,10 +70,10 @@
  (last-modified 26019 49167 329961 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Add linea")
- (rear-context-string . "ashkaa deposit \n")
- (position . 407)
- (last-modified 26482 23317 337794 0))
+ (front-context-string . "* TODO Fix stagi")
+ (rear-context-string . "2025-01-29 Wed>\n")
+ (position . 877)
+ (last-modified 26520 61671 282853 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa")
@@ -99,11 +99,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Add linear tas")
- (rear-context-string . "ashkaa deposit \n")
- (position . 177)
- (last-modified 26481 6163 620323 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20250130115520-coding_principles.org")
+ (front-context-string . "* Our Coding Pri")
+ (rear-context-string . "ding Principles\n")
+ (position . 95)
+ (last-modified 26523 19688 203170 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
