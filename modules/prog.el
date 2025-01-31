@@ -199,9 +199,10 @@
                              (set-eslint-executable-name)
                              (flymake-eslint-enable)))))
 
+(use-package flycheck)
+
 (use-package eglot-booster
   :straight (:host github :repo "jdtsmith/eglot-booster" :files ("eglot-booster.el")))
-
 
 (use-package eglot-sqls :ensure nil)
 
@@ -591,5 +592,32 @@
 (use-package zig-mode)
 (use-package clojure-ts-mode)
 (use-package cider)
+
+;; OCAML
+(use-package tuareg
+  :mode (("\\.ocamlinit\\'" . tuareg-mode))
+  :custom-face
+  (tuareg-font-lock-constructor-face ((t (:inherit font-lock-type-face))))
+  :bind (:map tuareg-mode-map
+              ("C-c C-N" . xref-find-references-and-replace)
+              ("C-c C-e" . tuareg-eval-phrase)
+              ("C-c C-R" . tuareg-eval-region)))
+
+(use-package merlin
+  :config
+  (exec-path-from-shell-initialize)
+  (setq merlin-error-after-save nil)
+  :hook (tuareg-mode))
+
+(use-package merlin-eldoc
+  :hook (tuareg-mode . merlin-eldoc-setup))
+
+(use-package dune)
+
+(use-package flycheck-ocaml
+  :hook
+  (tuareg-mode . (lambda ()
+              (flycheck-ocaml-setup)
+              (flycheck-mode 1))))
 
 (provide 'prog)
