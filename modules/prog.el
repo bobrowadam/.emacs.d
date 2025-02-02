@@ -26,7 +26,7 @@
                       (process-list)))))
 
 (use-package jest-ts-mode
-  :commands (jest-ts-mode/run-tests jest-ts-mode/run-test-on-point jest-ts-mode/rerun-latest-test)
+  :commands (jest-ts-mode/run-tests jest-ts-mode/run-test-at-point jest-ts-mode/rerun-latest-test)
   :load-path "~/source/jest-ts-mode"
   :ensure nil)
 
@@ -37,8 +37,9 @@
          ("C-c C-r" . npm-run)
          :map typescript-ts-mode-map
          ("C-c C-t C-n" . jest-ts-mode/run-tests)
-         ("C-c C-t C-p" . jest-ts-mode/run-test-on-point)
-         ("C-c C-t C-r" . jest-ts-mode/rerun-latest-test))
+         ("C-c C-t C-p" . jest-ts-mode/run-test-at-point)
+         ("C-c C-t C-r" . jest-ts-mode/rerun-latest-test)
+         ("C-c C-t C-j" . jest-ts-mode/jump-to-latest-test))
   :config
   (fnm-use)
   (setq typescript-ts-mode-indent-offset 2))
