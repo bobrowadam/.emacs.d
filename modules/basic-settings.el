@@ -35,7 +35,8 @@
       visible-bell nil
       tab-width 4
       enable-local-eval t
-      enable-local-variables t)
+      enable-local-variables t
+      dictionary-server "dict.org")
 
 ;; Default was too low.
 ;; Increase for better lsp performance.
