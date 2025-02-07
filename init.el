@@ -233,6 +233,19 @@
                           ("glglz" . "https://glzwizzlv.bynetcdn.com/glglz_mp3")
                           ("glz" . "https://glzwizzlv.bynetcdn.com/glz_mp3?awCollectionId=misc&awEpisodeId=glz"))))
 
+;; postgres
+(unless (package-installed-p 'pg)
+   (package-vc-install "https://github.com/emarsden/pg-el" nil nil 'pg))
+(unless (package-installed-p 'pgmacs)
+   (package-vc-install "https://github.com/emarsden/pgmacs" nil nil 'pgmacs))
+
+(use-package pgmacs
+  :ensure nil
+  :config
+  (setenv "POSTGRES_DATABASE" "grain")
+  (setenv "POSTGRES_USER" "postgres")
+  (setenv "POSTGRES_PASSWORD" "grain"))
+
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)

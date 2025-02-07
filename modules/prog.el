@@ -522,13 +522,8 @@
   :bind (:map js2-mode-map
          ("C-x C-e" . skerrick-eval-region)))
 
-(use-package pg
-  :straight (:host github :repo "emarsden/pg-el"))
-
-(use-package pgmacs
-  :straight (:host github :repo "emarsden/pgmacs"))
-
-(use-package haskell-mode)
+(use-package haskell-mode
+  :disabled t)
 
 (use-package realgud)
 (use-package realgud-lldb
