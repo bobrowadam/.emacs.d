@@ -277,7 +277,7 @@ the given regular expression."
                                           :file-history 'denote--file-history)))
   (if (and target (file-exists-p target))
       (find-file target)
-    (denote--command-with-default-title #'denote)))
+    (funcall #'denote)))
 
 (defun bob/truncate-denote-file-name (file-name hash-map)
   (s-replace-regexp "^.+--" "" file-name))
@@ -285,26 +285,13 @@ the given regular expression."
 (use-package denote
   :commands (denote bob/denote-open-or-create denote-mode denote-open-or-create denote-directory-files)
   :custom
+  (denote-open-or-create-fn 'counsel-find-file)
   (denote-directory org-directory)
   (denote-date-prompt-use-org-read-date t)
   (denote-prompts '(title keywords file-type))
   :bind
   ("C-c d d" . denote-open-or-create)
-  ("C-c d t" . denote-journal-extras-new-or-existing-entry)
-)
-
-(use-package consult-notes
-  :commands (consult-notes
-             consult-notes-search-in-all-notes)
-  :config
-  ;; If you want to find any headings uncoment this
-  ;; (consult-notes-org-headings-mode)
-  ;; (consult-notes-denote-mode)
-  (consult-notes-org-roam-mode)
-  :bind
-  ;; ("C-c n f" . consult-notes)
-  ;; ("C-c n g" . consult-notes-search-in-all-notes)
-)
+  ("C-c d t" . denote-journal-extras-new-or-existing-entry))
 
 (defun bob/org-super-agenda-custom-header-format (header)
   (progn (string-match ".+?:[[:space:]]\\(.+?$\\)"
