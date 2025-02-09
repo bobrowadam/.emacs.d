@@ -1,3 +1,16 @@
+;; TODO: improve this
+(defun gptel-run-tree-cb (dir-path depth &optional sub-dirs)
+  "Runs the tree command from DIR-PATH displaying up to DEPTH levels.
+Optional SUB-DIRS restricts display to specific directories."
+  (let* ((default-directory (or dir-path default-directory)) ; Replace <default_path> with a sensible default
+         (depth (or depth 1)) ; Default depth if none provided
+         (sub-dirs-arg (if (and sub-dirs (listp (cl-coerce sub-dirs 'list)))
+                           (mapconcat 'identity sub-dirs " ")
+                         "")))
+    (if (and (stringp default-directory) (numberp depth))
+        (shell-command-to-string (format "tree %s -L %d" sub-dirs-arg depth))
+      (error "Invalid arguments: directory path must be a string and depth must be a number"))))
+
 (defun buffer-content-with-line-numbers (&optional buffer)
   "Return content of BUFFER with line numbers prepended.
 If BUFFER is nil, use the current buffer."
@@ -371,9 +384,28 @@ and return the list of file paths."
    :category "filesystem")
 
   (gptel-make-tool
+   :name "run_tree"
+   :function 'gptel-run-tree-cb
+   :args (list '(:path "dir-path"
+                       :type string
+                       :description "The directory path (required)"
+                       :default "<default_path>") ; specify a sensible default if possible
+               '(:depth "depth"
+                        :type number
+                        :description "The depth to run tree with (required)"
+                        :default 1) ; a reasonable default depth
+               '(:sub-dirs "sub-dirs"
+                           :type array
+                           :value (:type string)
+                           :description "The sub dirs to map as an array of strings. If not specified, all subdirectories will be listed."))
+   :category "filesystem"
+   :description "Run the unix tree command in a directory. the function should get a dir-path, a depth and a sub-dirs optional string array")
+
+
+  (gptel-make-tool
    :name "run_pwd"
    :function 'gptel-run-pwd-cb
-   :description "Run the unix ls command in a directory"
+   :description "Run the unix pwd command in a directory"
    :args nil
    :category "filesystem")
 
@@ -390,7 +422,8 @@ and return the list of file paths."
                                      :properties (:line-number
                                                   (:type "number")
                                                   :action
-                                                  (:type "enum" :items
+                                                  (:type "enum"
+                                                         :items
                                                          ["insert" "replace" "delete"])
                                                   :current-line-content
                                                   (:type "string")
