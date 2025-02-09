@@ -1,41 +1,110 @@
-(defun gptel-apply-diff-to-buffer-cb (buffer-name diff)
-  "Apply a unified diff to a specified file visiting BUFFER-NAME."
-  (with-current-buffer buffer-name
-    (let ((patch-buffer (get-buffer-create "*patch*")))
-      (unwind-protect
-          (progn
-            (with-current-buffer patch-buffer
-              (erase-buffer)
-              (insert diff))
-            (if (zerop (call-process-region (point-min) (point-max) "patch"
-                                            nil nil nil
-                                            "-o" "/dev/null"
-                                            "--force" ;; Apply the patch regardless of comments
-                                            "--input" "-"))
-                (progn
-                  (save-buffer)
-                  (cons t "Diff applied successfully."))
-              (cons nil "Failed to apply diff.")))
-        ;; Cleanup the patch buffer
-        (kill-buffer patch-buffer)))))
+(defun buffer-content-with-line-numbers (&optional buffer)
+  "Return content of BUFFER with line numbers prepended.
+If BUFFER is nil, use the current buffer."
+  (-> (with-current-buffer (or buffer (current-buffer))
+     (let* ((lines (split-string (buffer-string) "\n"))
+            (numbered-lines
+             (cl-loop for line in lines
+                      for line-number from 1
+                      collect (cons line-number line))))
+       (mapconcat
+        (lambda (numbered-line)
+          (format "%4d: %s" (car numbered-line) (cdr numbered-line)))
+        numbered-lines
+        "\n")))
+      substring-no-properties))
 
-(defun pgtel-read-file-cb (path filename)
+(defun gptel-run-pwd-cb ()
+  (shell-command-to-string "pwd"))
+
+(defun changes--array-to-list (changes-array)
+  (let ((changes-list (cl-coerce changes-array 'list)))
+    (dolist (change changes-list)
+        (parse--change-schema change))
+    changes-list))
+
+(defun parse--change-schema (change)
+  (progn
+    (unless (plist-get change :line-number)
+      (error ":line-number is a mandatory filed in change"))
+    (unless (plist-get change :action)
+      (error ":action is a mandatory filed in change"))
+    (unless (plist-get change :current-line-content)
+      (error ":current-line-content is a mandatory filed in change"))
+    (unless (plist-get change :updated-line-content)
+      (error ":updated-line-content is a mandatory filed in change"))))
+
+(defun gptel--validate-action (line-number line-expected-content)
+  (let ((line-current-content (save-excursion
+                                (goto-char (point-min))
+                                (forward-line (1- line-number))
+                                (buffer-substring-no-properties (line-beginning-position) (line-end-position)))))
+    (unless (s-contains? line-expected-content line-current-content)
+      (error "Validation failed on line %d. Expected content: '%s'. Actual content: '%s'."
+             line-number
+             line-expected-content
+             line-current-content))))
+
+(defun gptel-apply-changes-to-buffer-cb (buffer-name changes)
+  "Apply CHANGES to the buffer named BUFFER-NAME.
+CHANGES is an array of objects; each object includes line-number,
+action, current-line-content, and updated-line-content."
+  (let ((delete-offset 1))
+    (with-current-buffer buffer-name
+      ;; Wrap the save-excursion block with condition-case
+      (condition-case err
+          (progn
+            (save-excursion
+              (dolist (change (changes--array-to-list changes))
+                (let ((line (- (plist-get change :line-number)
+                               delete-offset))
+                      (line-expected-content (plist-get change :current-line-content))
+                      (action (intern (plist-get change :action)))
+                      (updated-content (plist-get change :updated-line-content)))
+                  (gptel--validate-action (1+ line) line-expected-content)
+                  (goto-char (point-min))
+                  (forward-line line)
+                  (pcase action
+                    ('replace
+                     (kill-whole-line)
+                     (insert updated-content))
+                    ('insert
+                     (insert updated-content "\n"))
+                    ('delete
+                     (kill-whole-line)
+                     (setq delete-offset (1+ delete-offset)))))))
+            ;; Save the buffer if no error occurs
+            (save-buffer)
+            ;; Return the buffer content with line numbers if no error occurs
+            (buffer-content-with-line-numbers (current-buffer)))
+        ;; Return the error string if it happens
+        (error (error-message-string err))))))
+
+
+(defun gptel-read-file-cb (path filename)
   (let ((full-path (expand-file-name filename path)))
     (with-temp-buffer
       (read-file full-path))))
 
-(defun pgtel-open-file-buffer-cb (path filename &optional create-if-not-exists)
-  "Open the given file into a buffer without switching. If CREATE-IF-NOT-EXISTS is non-nil, create the file if it doesn't exist. Provides the current directory in error messages."
-  (let ((full-path (expand-file-name filename path)))
-    (if (or (file-exists-p full-path) create-if-not-exists)
-        (progn
-          (find-file-noselect full-path)
-          (if (file-exists-p full-path)
-              "File opened in buffer without switching."
-            "New file created and opened in buffer without switching."))
-      (format "File '%s' does not exist and was not created. Current directory: %s" full-path default-directory))))
+(defun gptel-open-file-buffer-cb (path filename &optional create-if-not-exists)
+  "Open the given file into a buffer without switching.
+ If CREATE-IF-NOT-EXISTS is non-nil, create the file if it doesn't exist.
+ Return buffer content if it exists, otherwise return a
+ message specifying the buffer name."
+  (let* ((full-path (expand-file-name filename path))
+         (buffer (get-file-buffer full-path)))
+    (if buffer
+        (buffer-content-with-line-numbers buffer)
+      (if (file-exists-p full-path)
+          (with-current-buffer (find-file-noselect full-path)
+            (buffer-content-with-line-numbers (buffer-name)))
+        (if create-if-not-exists
+            (let ((new-buffer (find-file-noselect full-path)))
+              (format "Created a new file. Buffer name is: %s" (buffer-name new-buffer)))
+          (format "Buffer for file '%s' does not exist. Current directory: %s"
+                  (file-name-nondirectory full-path) default-directory))))))
 
-(defun pgtel-read-dir-cb (directory)
+(defun gptel-read-dir-cb (directory)
   (mapcar (lambda (file)
             (let ((full-path (expand-file-name file directory)))
               (if (file-directory-p full-path)
@@ -65,10 +134,10 @@ and return the list of file paths."
       (format "npm run check-types"))))
 
 (defun gptel-get-buffer-content-cb (buffer-name)
-  "Return the content of the buffer specified by BUFFER-NAME as a string, or provide an error if it doesn't exist."
-  (if (get-buffer buffer-name)
-      (with-current-buffer buffer-name
-        (buffer-substring-no-properties (point-min) (point-max)))
+  "Return the content of the buffer specified by BUFFER-NAME as a string,
+ or provide an error if it doesn't exist."
+  (if-let ((this-buffer (get-buffer buffer-name)))
+      (buffer-content-with-line-numbers this-buffer)
     (format "Error: Buffer '%s' not found. Current working directory: %s" buffer-name default-directory)))
 
 (defun gptel-list-buffers-cb ()
@@ -87,9 +156,9 @@ and return the list of file paths."
     (shell-command-to-string (format "git diff %s" branch-name))))
 
 (defun gptel-git-log-cb ()
-  "Get git log."
+  "Get git log with the last 20 changes."
   (let ((default-directory (locate-dominating-file default-directory ".git")))
-    (shell-command-to-string "git log")))
+    (shell-command-to-string "git log -n 20")))
 
 (defun gptel-edit-file-content-cb (filename content)
   "Edit FILENAME with new CONTENT."
@@ -113,7 +182,7 @@ and return the list of file paths."
       (save-buffer)
       "Content updated and file saved successfully.")))
 
-(defun pgtel-kill-buffer-cb (buffer-name)
+(defun gptel-kill-buffer-cb (buffer-name)
   "Kill the buffer specified by BUFFER-NAME silently,
  or provide an error if it doesn't exist."
   (if (get-buffer buffer-name)
@@ -140,7 +209,7 @@ and return the list of file paths."
 
   (gptel-make-tool
    :name "read_file"
-   :function 'pgtel-read-file-cb
+   :function 'gptel-read-file-cb
    :description "Read the given file and analyze it"
    :args (list '(:name "path"
                        :type string
@@ -152,7 +221,7 @@ and return the list of file paths."
 
   (gptel-make-tool
    :name "read_directory"
-   :function 'pgtel-read-dir-cb
+   :function 'gptel-read-dir-cb
    :description "List the directory"
    :args (list '(:name "path"
                        :type string
@@ -268,10 +337,10 @@ and return the list of file paths."
                        :type string
                        :description "The new content for the buffer"))
    :category "buffers")
-  
+
   (gptel-make-tool
    :name "open_file_buffer"
-   :function 'pgtel-open-file-buffer-cb
+   :function 'gptel-open-file-buffer-cb
    :description "Open the given file into a buffer, optionally creating it if it doesn't exist"
    :args (list '(:name "path"
                        :type string
@@ -287,23 +356,11 @@ and return the list of file paths."
 
   (gptel-make-tool
    :name "kill_buffer"
-   :function 'pgtel-kill-buffer-cb
+   :function 'gptel-kill-buffer-cb
    :description "Kill the buffer specified by BUFFER-NAME"
    :args (list '(:name "buffer-name"
                        :type string
                        :description "The name of the buffer to kill"))
-   :category "buffers")
-
-  (gptel-make-tool
-   :name "apply_diff_to_file_buffer"
-   :function 'gptel-apply-diff-to-buffer-cb
-   :description "Edit the content of buffer BUFFER-NAME and save it"
-   :args (list '(:name "buffer-name"
-                       :type string
-                       :description "The buffer name to apply the diff in")
-               '(:name "diff"
-                       :type string
-                       :description "The change diff to apply"))
    :category "buffers")
 
   (gptel-make-tool
@@ -312,6 +369,49 @@ and return the list of file paths."
    :description "Get the current project root else return nil"
    :args ()
    :category "filesystem")
+
+  (gptel-make-tool
+   :name "run_pwd"
+   :function 'gptel-run-pwd-cb
+   :description "Run the unix ls command in a directory"
+   :args nil
+   :category "filesystem")
+
+  (gptel-make-tool
+   :name "apply_changes_to_buffer"
+   :function 'gptel-apply-changes-to-buffer-cb
+   :description "Apply a series of changes to a buffer and retrieve the final buffer content"
+   :args (list '(:name "buffer-name"
+                       :type string
+                       :description "The name of the buffer to modify")
+               '(:name "changes"
+                       :type array
+                       :value (:type 'object
+                                     :properties (:line-number
+                                                  (:type "number")
+                                                  :action
+                                                  (:type "enum" :items
+                                                         ["insert" "replace" "delete"])
+                                                  :current-line-content
+                                                  (:type "string")
+                                                  :updated-line-content
+                                                  (:type "string")))
+                       :description "An array of change operations. Each operation is an object with
+the change operation.
+Change operation schema:
+:line-number
+    number
+:action
+    enum
+    'delete for deleting the whole line
+    'replace for replacing the whole line
+    'insert for insert a line below the line
+:current-line-content
+    type: string
+:updated-line-content
+    type: string
+"))
+   :category "buffers")
 
   :bind
   ("C-c g g" . gptel)
