@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("gptel-sessions"
+(("gptel-grain-session.org"
+ (filename . "~/source/grain/gptel-grain-session.org")
+ (front-context-string . ":PROPERTIES:\n:GP")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26535 1837 417481 0))
+("gptel-sessions"
  (filename . "~/.emacs.d/gptel-sessions/")
  (front-context-string . "testing-tools.or")
  (rear-context-string . "1K Feb  5 22:52 ")
