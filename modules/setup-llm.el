@@ -80,9 +80,10 @@ action, current-line-content, and updated-line-content."
                   (pcase action
                     ('replace
                      (kill-whole-line)
-                     (insert updated-content))
-                    ('insert
                      (insert updated-content "\n"))
+                    ('insert
+                     (insert updated-content "\n")
+                     (setq delete-offset (1- delete-offset)))
                     ('delete
                      (kill-whole-line)
                      (setq delete-offset (1+ delete-offset)))))))
@@ -208,9 +209,10 @@ and return the list of file paths."
   :custom
   (gptel-model 'gpt-4o)
   (gptel-default-mode 'org-mode)
-  (setq gptel-max-tokens 8192)
+  (gptel-max-tokens 8192)
   ;; (gptel-max-tokens nil)
   :config
+  (add-to-list 'gptel-directives (cons 'ai-assitant "You are a large language model living in Emacs and a helpful assistant. Respond concisely. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it."))
   (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
                             car
                             (plist-get :secret)
@@ -393,13 +395,9 @@ and return the list of file paths."
                '(:depth "depth"
                         :type number
                         :description "The depth to run tree with (required)"
-                        :default 1) ; a reasonable default depth
-               '(:sub-dirs "sub-dirs"
-                           :type array
-                           :value (:type string)
-                           :description "The sub dirs to map as an array of strings. If not specified, all subdirectories will be listed."))
+                        :default 1) ; a reasonable default depth)
    :category "filesystem"
-   :description "Run the unix tree command in a directory. the function should get a dir-path, a depth and a sub-dirs optional string array")
+   :description "Run the unix tree command in a directory. the function should get a dir-path and a depth.")
 
 
   (gptel-make-tool
