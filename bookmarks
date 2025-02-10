@@ -117,11 +117,11 @@
  (position . 1566)
  (last-modified 25423 2231 921847 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20250130115520-coding_principles.org")
- (front-context-string . "* Our Coding Pri")
- (rear-context-string . "ding Principles\n")
- (position . 95)
- (last-modified 26523 19688 203170 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org-roam/20250209161143-local_env.org")
+ (front-context-string . "#+filetags: :gra")
+ (rear-context-string . "itle: local env\n")
+ (position . 87)
+ (last-modified 26536 47021 958090 0))
 ("setup-magit.el"
  (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit")
