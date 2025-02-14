@@ -1,8 +1,0 @@
-# -*- mode: snippet -*-
-# name: nlog        
-# key: nlog
- expand-env: ((yas-indent-line 'fixed))
-# --
-
-dbg "`(buffer-name)` line `(count-lines 1 (point))`  ---------------------------'"
-$1

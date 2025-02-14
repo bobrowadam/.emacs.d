@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: printlog
-# key: npr
-# --
-printf("$1`(buffer-name)` line `(count-lines 1 (point))`  -----------------------------------------------------------");

@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: pr-fix
-# key: pr
-# --
-[PR-FIX]: $1

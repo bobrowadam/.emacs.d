@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: clog
-# key: clog
-# --
-println!("#-------------------------------------#${1:enumerate}:{}\n", $1);
