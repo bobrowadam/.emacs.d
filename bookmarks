@@ -2,7 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("gptel-grain-session.org"
+(("setup-llm.el"
+ (filename . "~/.emacs.d/modules/setup-llm.el")
+ (front-context-string . "(defun gptel-run")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26547 247 910321 0))
+("early-init.el"
+ (filename . "~/.emacs.d/early-init.el")
+ (front-context-string . "(toggle-debug-on")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26543 48387 155048 0))
+("gptel-grain-session.org"
  (filename . "~/source/grain/gptel-grain-session.org")
  (front-context-string . ":PROPERTIES:\n:GP")
  (rear-context-string)

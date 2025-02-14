@@ -1,7 +1,0 @@
-# -*- mode: snippet -*-
-# name: zod-type
-# key: zt
-# --
-
-export const ${1:enumerate} = $2;
-export type $1 = z.infer<typeof $1>;

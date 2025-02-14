@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: elpaca use package
+# key: eup
+# --
+(use-package $1
+    :ensure (:repo $2 :fetcher ${3:github} :files (${4:"*.el"})))

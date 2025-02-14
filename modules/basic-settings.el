@@ -1,5 +1,7 @@
-(use-package hl-line)
-
+;; Default was too low.
+;; Increase for better lsp performance.
+(setq read-process-output-max (* 3 1024 1024)) ;; 3mb
+(setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 (setq user-login-name "Adam Bobrow"
       user-full-name "Adam Bobrow"
       garbage-collection-messages nil
@@ -29,7 +31,6 @@
       display-time-24hr-format t
       display-time-default-load-average nil
       shift-select-mode nil
-      custom-file (expand-file-name "custom.el" user-emacs-directory)
       Info-additional-directory-list `(,(expand-file-name "info-docs" user-emacs-directory))
       ring-bell-function 'ignore
       visible-bell nil
@@ -37,17 +38,6 @@
       enable-local-eval t
       enable-local-variables t
       dictionary-server "dict.org")
-
-;; Default was too low.
-;; Increase for better lsp performance.
-(setq read-process-output-max (* 3 1024 1024)) ;; 3mb
-
-;; Default of 800 was too low.
-;; Avoid Lisp nesting exceeding in swift-mode.
-(setq max-lisp-eval-depth 10000)
-(setq max-specpdl-size 10000)
-
-(setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
 ;; FrogFind is a simple search engine for text based browsers
 (setq eww-search-prefix "http://frogfind.com/?q=")
@@ -58,6 +48,7 @@
 (setq scroll-conservatively 10)
 (setq scroll-margin 6)
 
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (unless (not (file-exists-p custom-file))
   (load custom-file))
 
@@ -68,6 +59,7 @@
 (menu-bar-mode -1)
 (line-number-mode 1)
 (column-number-mode 1)
+(setq ring-bell-function 'ignore)
 
 (when (window-system)
   (setq confirm-kill-emacs 'yes-or-no-p))
@@ -116,56 +108,11 @@
       kept-new-versions 5    ; keep some new versions
       kept-old-versions 2)   ; and some old ones, too
 
-(add-to-list 'prog-mode-hook #'display-line-numbers-mode)
+
 (setq linum-format "%4d  ")
 
 ;; Set Emacs C source dir:
 (setq find-function-C-source-directory "~/source/emacs/src")
-
-(use-package which-key
-  :demand t
-  :if (window-system)
-  :config
-  (which-key-mode 1))
-
-(use-package jinx
-  :custom
-  (jinx-include-faces '((prog-mode font-lock-variable-name-face
-                                   font-lock-comment-face
-                                   font-lock-doc-face
-                                   font-lock-string-face
-                                   git-commit-summary)
-                        (conf-mode font-lock-comment-face font-lock-string-face)
-                        (yaml-mode . conf-mode)
-                        (yaml-ts-mode . conf-mode)))
-  :config
-  (add-to-list 'jinx-camel-modes 'tsx-ts-mode)
-  (add-to-list 'jinx-camel-modes 'roc-ts-mode)
-  (defun jinx--load-dicts ()
-    "Load dictionaries and setup syntax table."
-    (setq jinx--dicts (delq nil (mapcar #'jinx--mod-dict
-                                        (split-string jinx-languages)))
-          jinx--syntax-table (make-syntax-table jinx--base-syntax-table))
-    (unless jinx--dicts
-      (message "Jinx: No dictionaries available for %S" jinx-languages))
-    (dolist (dict jinx--dicts)
-      (cl-loop for c across (jinx--mod-wordchars dict) do
-               (modify-syntax-entry c "w" jinx--syntax-table)))
-    (modify-syntax-entry ?' "." jinx--syntax-table)
-    (modify-syntax-entry ?’ "w" jinx--syntax-table)
-    (modify-syntax-entry ?. "." jinx--syntax-table))
-  :hook (emacs-startup . global-jinx-mode)
-  :bind (("M-$" . jinx-correct)
-         ("C-M-$" . jinx-languages)))
-
-(use-package emojify)
-(use-package zoom-window :bind ("C-x C-z" . zoom-window-zoom))
-(use-package iedit
-  :bind ("C-;" . iedit-mode))
-
-(use-package vundo
-  :commands (vundo)
-  :bind ("C-x u" . vundo))
 
 ;; On my mac I accidentally zoomed in and out with my palm
 (global-unset-key (kbd "C-<wheel-up>"))
@@ -184,7 +131,6 @@
 (global-set-key (kbd "C-ש") 'beginning-of-line)
 (global-set-key (kbd "C-ק") 'end-of-line)
 (global-set-key (kbd "C-c T") 'display-time-mode)
-
 
 ;; scroll pages conservatively
 (defun consertive-page-up ()
@@ -207,5 +153,15 @@
 (setq xref-search-program 'ripgrep)
 
 (setq python-shell-interpreter (executable-find "python3.12"))
+
+(setq custom-safe-themes t)
+(setq custom-theme-directory (concat user-emacs-directory "themes"))
+
+(setq font-size 23)
+;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" font-size)
+;;                 'keep-size t)
+(set-frame-font (format "Aporetic Sans Mono-%d" font-size)
+                'keep-size t)
+(setq initial-major-mode 'fundamental-mode)
 
 (provide 'basic-settings)

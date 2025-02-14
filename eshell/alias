@@ -1,7 +1,6 @@
-alias ll exa -l --color=always
+alias ll ls -la
 alias pk eshell-up-peek
 alias up eshell-up
-alias ccache sudo killall -HUP mDNSResponder
 alias em find-file $1
 alias kub kubectl
 alias npmdbg npm run debug

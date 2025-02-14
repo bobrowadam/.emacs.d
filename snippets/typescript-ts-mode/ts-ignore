@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: ts-ignore
-# key: ignore
-# --
-// @ts-expect-error ${1:wip}
