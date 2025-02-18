@@ -2,7 +2,19 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("setup-llm.el"
+(("bob-utils.el"
+ (filename . "~/.emacs.d/site-lisp/bob-utils.el")
+ (front-context-string . "\n\n(provide 'bob-")
+ (rear-context-string . "uffer-string))))")
+ (position . 6259)
+ (last-modified 26548 24454 681798 0))
+("llm-tools.el"
+ (filename . "~/.emacs.d/modules/llm-tools.el")
+ (front-context-string . "(defun buffer--c")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26547 35725 378403 0))
+("setup-llm.el"
  (filename . "~/.emacs.d/modules/setup-llm.el")
  (front-context-string . "(defun gptel-run")
  (rear-context-string)
@@ -110,12 +122,6 @@
  (rear-context-string)
  (position . 1)
  (last-modified 25749 62194 917946 0))
-("bobs-utils.el"
- (filename . "~/.emacs.d/site-lisp/bobs-utils.el")
- (front-context-string . "(defun assocdr (")
- (rear-context-string)
- (position . 1)
- (last-modified 25740 11305 386872 0))
 ("elpa"
  (filename . "~/.emacs.d/elpa/")
  (front-context-string . "ace-window-20220")
@@ -158,12 +164,6 @@
  (rear-context-string)
  (position . 1)
  (last-modified 25308 30072 45407 0))
-("appearance.el"
- (filename . "~/.emacs.d/modules/appearance.el")
- (front-context-string . "(setq custom-saf")
- (rear-context-string)
- (position . 1)
- (last-modified 25308 1751 127602 0))
 ("modules"
  (filename . "~/.emacs.d/modules/")
  (front-context-string . "appearance.el\n  ")

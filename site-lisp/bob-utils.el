@@ -31,13 +31,14 @@
       (eat-project)
     (error "Not in project")))
 
+(defvar bob/last-shell-buffer nil)
 
 (defun set-last-shell-buffer-as-first (buffers)
   (seq-sort (lambda (a b)
               (equal a bob/last-shell-buffer))
             buffers))
 
-(defvar bob/last-shell-buffer nil)
+
 (defun bob/jump-to-shell ()
   "Jump to a shell buffer."
   (interactive)
@@ -131,4 +132,43 @@ NORMAL-MODE is for not running with debugger"
                  (compilation-start compilation-command
                                     t (lambda (mode)
                                         compilation-buffer-name)))))))))
+
+(defun npm-run-build ()
+  "Build typescript project on watch mode"
+  (interactive)
+  (if-let* ((default-directory (locate-dominating-file default-directory "package.json"))
+            (local-check-types-command (check-types-command))
+            (comint-scroll-to-bottom-on-input t)
+            (comint-scroll-to-bottom-on-output t)
+            (comint-process-echoes t)
+            (compilation-buffer-name (format "TS-COMPILE -- %s"
+                                             (get-dir-name default-directory))))
+      (cond ((and (not (eq major-mode 'comint-mode))
+                  (car (memq (get-buffer compilation-buffer-name)
+                             (buffer-list))))
+             (switch-to-buffer (get-buffer compilation-buffer-name)))
+            ((and (eq major-mode 'comint-mode)
+                  (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
+             (switch-to-prev-buffer))
+            ((s-starts-with-p "nx" local-check-types-command)
+             (compilation-start "npm run check-types"
+                                t (lambda (_)
+                                    compilation-buffer-name)))
+            (t
+             (compilation-start "npm run check-types -- -w"
+                                t (lambda (_)
+                                    compilation-buffer-name))))
+    (error "probably not a typescript application")))
+
+(defun read-file (file-name)
+  "Return the contents of FILE-NAME as a lisp data type."
+  (when (file-exists-p file-name)
+   (with-temp-buffer
+     (insert-file-contents file-name)
+     (buffer-string))))
+
+(defun bob/get-unix-timestamp ()
+  "Return the current Unix timestamp as an integer."
+  (floor (float-time (current-time))))
+
 (provide 'bob-utils)

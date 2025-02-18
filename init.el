@@ -5,7 +5,7 @@
 (elpaca-wait)
 
 (use-package bob-utils
-  :demand t
+  :commands (bob/eat-top-project bob/kill-this-buffer)
   :load-path "site-lisp"
   :ensure nil)
 
@@ -129,16 +129,7 @@
 
 (use-package markdown-ts-mode)
 
-(defvar org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
-(defun ek/babel-ansi ()
-  (when-let ((beg (org-babel-where-is-src-block-result nil nil)))
-    (save-excursion
-      (goto-char beg)
-      (when (looking-at org-babel-result-regexp)
-        (let ((end (org-babel-result-end))
-              (ansi-color-context-region nil))
-          (ansi-color-apply-on-region beg end))))))
-(add-hook 'org-babel-after-execute-hook 'ek/babel-ansi)
+
 
 (use-package ob-js
     :ensure nil
@@ -147,7 +138,7 @@
 (use-package ob-typescript)
 
 (use-package org
-  :bind ("C-c a" . org-agenda)
+  :commands (org-agenda)
   :ensure ( :package "org"
             :repo ("https://git.savannah.gnu.org/git/emacs/org-mode.git" . "org")
             :pre-build (progn (require 'elpaca-menu-org)
@@ -159,6 +150,7 @@
                                "etc/styles/*" "doc/*.texi"))
             :source "Org")
   :custom
+  (org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
   (org-babel-python-command "python3")
   (org-hide-emphasis-markers t)
   (org-pretty-entities nil)
@@ -172,19 +164,22 @@
    '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
   (org-stuck-projects
    '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER") ""))
-  :commands (org-agenda)
-  :if (window-system)
-  :init
-  ;; +LEVEL=3+boss-TODO​="DONE"
-  (setq org-tags-exclude-from-inheritance '("project"))
+  (org-tags-exclude-from-inheritance '("project"))
+  (org-capture-templates
+   `(("t" "entry" entry (file ,(concat org-directory "20240104T120451--inbox__project.org")) "* %?\n  %i")))
+  (org-refile-targets '((org-agenda-files :maxlevel . 3)))
+  (org-refile-use-outline-path 'file)
+  (org-deadline-warning-days 1)
 
-  (setq org-capture-templates
-        `(("t" "entry" entry (file ,(concat org-directory "20240104T120451--inbox__project.org")) "* %?\n  %i")))
-  (setq org-refile-targets (setq org-refile-targets '((org-agenda-files :maxlevel . 3))))
-  (setq org-refile-use-outline-path 'file)
-
-  (setq org-deadline-warning-days 1)
   :config
+  (defun bob/babel-ansi ()
+    (when-let ((beg (org-babel-where-is-src-block-result nil nil)))
+      (save-excursion
+        (goto-char beg)
+        (when (looking-at org-babel-result-regexp)
+          (let ((end (org-babel-result-end))
+                (ansi-color-context-region nil))
+            (ansi-color-apply-on-region beg end))))))
   (setq org-babel-lisp-eval-fn 'sly-eval)
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -198,17 +193,17 @@
      (typescript . t)))
   (add-to-list 'org-src-lang-modes '("ts" . typescript))
 
-
-
   ;; Fix bug in ob-js: https://emacs.stackexchange.com/questions/55690/org-babel-javascript-error
   ;; (setq org-babel-js-function-wrapper
   ;;       "console.log(require('util').inspect(function(){\n%s\n}(), { depth: 100 }))")
   :hook
+  (org-babel-after-execute . #'bob/babel-ansi)
   (org-mode . (lambda () (org-superstar-mode 1)))
   (org-mode . (lambda () (visual-line-mode 1)))
   (org-archive . org-save-all-org-buffers)
   (org-after-refile-insert . org-save-all-org-buffers)
   :bind
+  ("C-c a" . org-agenda)
   ("C-c l" . org-store-link)
   (:map org-mode-map
         ("M-p" . org-metaup)
@@ -231,18 +226,16 @@
                    (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
 
 (use-package org-agenda
-  :commands (org-agenda bob/reset-org-element-cache-in-agenda-files)
+  :commands (org-agenda)
   :after (org)
   :custom
   (org-agenda-span 1)
-  :init
-  (setq org-agenda-files `(,(format "%sjournal" org-directory)
-                           "beorg.org"
-                           "20240104T120451--inbox__project.org"
-                           "20240103T130349--reminders__project.org"
-                           "20240103T130420--tasks__project.org"))
-
-  (setq org-agenda-custom-commands
+  (org-agenda-files `(,(format "%sjournal" org-directory)
+                      "beorg.org"
+                      "20240104T120451--inbox__project.org"
+                      "20240103T130349--reminders__project.org"
+                      "20240103T130420--tasks__project.org"))
+  (org-agenda-custom-commands
         '(("b" tags "+OngoingBugs")
           ("n" "Todo next" ((todo "NEXT")))))
   :bind
@@ -530,8 +523,11 @@
 
 (use-package cape
   :init
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-rfc1345))
+  (add-hook 'completion-at-point-functions #'cape-file)
+  (add-hook 'completion-at-point-functions #'cape-rfc1345)
+  (add-hook 'completion-at-point-functions #'cape-history)
+  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'cape-elisp-block))
 
 (use-package which-key
   :init (which-key-mode 1))
@@ -541,10 +537,11 @@
 
 (use-package fnm
   :demand t
-  :ensure (:host github
-                 :repo "bobrowadam/fnm.el"
-                 :branch "main"
-                 :files ("fnm.el")))
+  :ensure
+  (:fetcher github
+            :repo "bobrowadam/fnm.el"
+            :branch "main"
+            :files ("fnm.el")))
 
 (use-package exec-path-from-shell)
 (use-package xref)
@@ -561,7 +558,7 @@
           (bob/eat-top-project "Eat Top" "S")
           (magit-project-status "Magit" "g")
           (consult-ripgrep "RipGrep" "r")
-          (bob/project-switch-buffer "Buffers" "b")
+          (consult-project-buffer "Buffers" "b")
           (browse-current-project "Browse" "B")))
   (unless (project-known-project-roots)
     (message "No project file found, indexing projects")
@@ -711,11 +708,17 @@
   :hook (dape-active-mode . repeat-mode))
 
 (use-package jest-ts-mode
-  :ensure
-  (:package "jest-ts-mode"
-            :fetcher github
-            :repo "bobrowadam/jest-ts-mode"
-            :files ("jest-ts-mode.el")))
+  :ensure (:package "jest-ts-mode"
+                    :fetcher github
+                    :branch "main"
+                    :repo "bobrowadam/jest-ts-mode"
+                    :files ("jest-ts-mode.el"))
+  :bind 
+  (:map typescript-ts-mode-map
+        ("C-c C-t C-n" . jest-ts-mode/run-tests)
+        ("C-c C-t C-p" . jest-ts-mode/run-test-at-point)
+        ("C-c C-t C-r" . jest-ts-mode/rerun-latest-test)
+        ("C-c C-t C-j" . jest-ts-mode/jump-to-latest-test)))
 
 (use-package typescript-mode
   :mode ("\\.ts\\'" . typescript-ts-mode)
@@ -732,6 +735,14 @@
   :config
   (fnm-use)
   (setq typescript-ts-mode-indent-offset 2))
+
+(use-package web-mode
+  :mode
+  ("\\.jsx$" . web-mode)
+  ("\\.tsx$" . web-mode))
+
+
+(use-package zig-ts-mode)
 
 (use-package roc-ts-mode)
 
@@ -860,7 +871,7 @@
           (vue . ("https://github.com/merico-dev/tree-sitter-vue"))
           (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
           (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
-          (zig . ("https://github.com/GrayJack/tree-sitter-zig")))
+          (zig . ("https://github.com/maxxnino/tree-sitter-zig")))
 
         major-mode-remap-alist
         '((c-mode          . c-ts-mode)
@@ -889,7 +900,8 @@
   (bob/install--grammer-if-missing 'javascript)
   (bob/install--grammer-if-missing 'python)
   (bob/install--grammer-if-missing 'c)
-  (bob/install--grammer-if-missing 'cpp))
+  (bob/install--grammer-if-missing 'cpp)
+  (bob/install--grammer-if-missing 'zig))
 
 (use-package pgmacs
   :ensure (:repo "emarsden/pgmacs" :fetcher github :files ("*.el"))
@@ -972,7 +984,7 @@
   (global-ligature-mode t))
 
 (use-package eat
-  :commands (eat bob/jump-to-shell eat-project)
+  :commands (eat bob/jump-to-shell eat-project bob/eat-top-project)
   :custom
   (eat-term-scrollback-size nil)
   :init
@@ -1023,5 +1035,9 @@
   (defun bob/elfeed-reset-search-by-current-entry-tags ()
     (interactive)
     (elfeed-search-set-filter "+unread")))
+
+(use-package erefactor
+  :bind-keymap ("C-c C-v" . erefactor-map)
+  :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on))
 
 (put 'narrow-to-region 'disabled nil)

@@ -42,42 +42,6 @@ If BUFFER is nil, use the current buffer."
              line-expected-content
              line-current-content))))
 
-(defun gptel-apply-changes-to-buffer-cb (buffer-name changes)
-  "Apply CHANGES to the buffer named BUFFER-NAME.
-CHANGES is an array of objects; each object includes line-number,
-action, current-line-content, and updated-line-content."
-  (let ((delete-offset 1))
-    (with-current-buffer buffer-name
-      ;; Wrap the save-excursion block with condition-case
-      (condition-case err
-          (progn
-            (save-excursion
-              (dolist (change (changes--array-to-list changes))
-                (let ((line (- (plist-get change :line-number)
-                               delete-offset))
-                      (line-expected-content (plist-get change :current-line-content))
-                      (action (intern (plist-get change :action)))
-                      (updated-content (plist-get change :updated-line-content)))
-                  (gptel--validate-action (1+ line) line-expected-content)
-                  (goto-char (point-min))
-                  (forward-line line)
-                  (pcase action
-                    ('replace
-                     (kill-whole-line)
-                     (insert updated-content "\n"))
-                    ('insert
-                     (insert updated-content "\n")
-                     (setq delete-offset (1- delete-offset)))
-                    ('delete
-                     (kill-whole-line)
-                     (setq delete-offset (1+ delete-offset)))))))
-            ;; Save the buffer if no error occurs
-            (save-buffer)
-            ;; Return the buffer content with line numbers if no error occurs
-            (buffer--content-with-line-numbers (current-buffer)))
-        ;; Return the error string if it happens
-        (error (error-message-string err))))))
-
 (defun gptel-read-file-cb (path filename)
   (let ((full-path (expand-file-name filename path)))
     (with-temp-buffer
@@ -113,8 +77,7 @@ action, current-line-content, and updated-line-content."
  :category "filesystem")
 
 (defun gptel-find-files-by-pattern-cb (pattern)
-  "Find files in DIRECTORY with names matching glob PATTERN,
-and return the list of file paths."
+  "Find files in DIRECTORY with names matching glob PATTERN and return the list of file paths."
   (split-string
    (shell-command-to-string (format "rg --files --glob %s"
                                     (shell-quote-argument pattern)))
@@ -377,8 +340,44 @@ Optional SUB-DIRS restricts display to specific directories."
  :args nil
  :category "filesystem")
 
+(defun gptel-apply-changes-to-buffer-cb (buffer-name changes)
+  "Apply CHANGES to the buffer named BUFFER-NAME.
+CHANGES is an array of objects; each object includes line-number,
+action, current-line-content, and updated-line-content."
+  (let ((delete-offset 1))
+    (with-current-buffer buffer-name
+      ;; Wrap the save-excursion block with condition-case
+      (condition-case err
+          (progn
+            (save-excursion
+              (dolist (change (changes--array-to-list changes))
+                (let ((line (- (plist-get change :line-number)
+                               delete-offset))
+                      (line-expected-content (plist-get change :current-line-content))
+                      (action (intern (plist-get change :action)))
+                      (updated-content (plist-get change :updated-line-content)))
+                  (gptel--validate-action (1+ line) line-expected-content)
+                  (goto-char (point-min))
+                  (forward-line line)
+                  (pcase action
+                    ('replace
+                     (kill-whole-line)
+                     (insert updated-content "\n"))
+                    ('insert
+                     (insert updated-content "\n")
+                     (setq delete-offset (1- delete-offset)))
+                    ('delete
+                     (kill-whole-line)
+                     (setq delete-offset (1+ delete-offset)))))))
+            ;; Save the buffer if no error occurs
+            (save-buffer)
+            ;; Return the buffer content with line numbers if no error occurs
+            (buffer--content-with-line-numbers (current-buffer)))
+        ;; Return the error string if it happens
+        (error (error-message-string err))))))
+
 (gptel-make-tool
- :name "apply_changes_to_bufferrrr"
+ :name "apply_changes_to_buffer"
  :function 'gptel-apply-changes-to-buffer-cb
  :description "Apply a series of changes to a buffer and retrieve the final buffer content"
  :args (list '(:name "buffer-name"
@@ -387,14 +386,17 @@ Optional SUB-DIRS restricts display to specific directories."
              '(:name "changes"
                      :type array
                      :value (:type object
-                                   :properties (:line-number
-                                                (:type "number")
-                                                :action
-                                                (:type "string"
-                                                       :description: "The action to perform: replace, insert, or delete"      
-                                                       :current-line-content
-                                                       (:type "string")
-                                                       :updated-line-content
-                                                       (:type "string"))))
+                                   :properties
+                                   (:line-number
+                                    (:type number)
+                                    :action
+                                    (:type string :description: "The action to perform: replace, insert, or delete")
+                                    
+                                    :current-line-content
+                                    (:type string)
+
+                                    :updated-line-content
+                                    (:type string)))
+
                      :description "An array of change operations")
              :category "buffers"))
