@@ -48,7 +48,7 @@ If BUFFER is nil, use the current buffer."
               (if (file-directory-p full-path)
                   (format "%s/" file)
                 file)))
-          (directory-files directory nil "^[^.]")))
+          (directory-files directory nil "^[^.]*")))
 
 (gptel-make-tool
  :name "read_directory"
@@ -287,32 +287,6 @@ If BUFFER is nil, use the current buffer."
  :args ()
  :category "filesystem")
 
-(defun gptel-run-tree-cb (dir-path depth &optional sub-dirs)
-  "Runs the tree command from DIR-PATH displaying up to DEPTH levels.
-Optional SUB-DIRS restricts display to specific directories."
-  (let* ((default-directory (or dir-path default-directory)) ; Replace <default_path> with a sensible default
-         (depth (or depth 1)) ; Default depth if none provided
-         (sub-dirs-arg (if (and sub-dirs (listp (cl-coerce sub-dirs 'list)))
-                           (mapconcat 'identity sub-dirs " ")
-                         "")))
-    (if (and (stringp default-directory) (numberp depth))
-        (shell-command-to-string (format "tree %s -L %d" sub-dirs-arg depth))
-      (error "Invalid arguments: directory path must be a string and depth must be a number"))))
-
-(gptel-make-tool
- :name "run_tree"
- :function 'gptel-run-tree-cb
- :args (list '(:path "dir-path"
-                     :type string
-                     :description "The directory path (required)"
-                     :default "<default_path>") ; specify a sensible default if possible
-             '(:depth "depth"
-                      :type number
-                      :description "The depth to run tree with (required)"
-                      :default 1) ; a reasonable default depth)
-             :category "filesystem"
-             :description "Run the unix tree command in a directory. the function should get a dir-path and a depth."))
-
 (defun gptel-run-pwd-cb ()
   (shell-command-to-string "pwd"))
 
@@ -323,76 +297,83 @@ Optional SUB-DIRS restricts display to specific directories."
  :args nil
  :category "filesystem")
 
-(defun gptel--validate-action (line-number line-expected-content)
-  (let ((line-current-content (save-excursion
-                                (goto-char (point-min))
-                                (forward-line (1- line-number))
-                                (buffer-substring-no-properties (line-beginning-position) (line-end-position)))))
-    (unless (s-contains? line-expected-content line-current-content)
-      (error "Validation failed on line %d. Expected content: '%s'. Actual content: '%s'."
-             line-number
-             line-expected-content
-             line-current-content))))
+(defun apply-diff-to-buffer (buffer-name diff-content)
+  "Apply a unified diff DIFF-CONTENT to BUFFER-NAME.
+The diff should be in unified diff format, like:
+@@ -1,3 +1,4 @@
+ unchanged line
+-removed line
++added line
+ unchanged line
++another added line
 
-(defun changes--array-to-list (changes-array)
-  (let ((changes-list (cl-coerce changes-array 'list)))
-    (dolist (change changes-list)
-        (parse--change-schema change))
-    changes-list))
+Returns t if successful, nil otherwise with a message explaining why."
+  (unless (get-buffer buffer-name)
+    (error "Buffer %s does not exist" buffer-name))
 
-(defun gptel-apply-changes-to-buffer-cb (buffer-name changes)
-  "Apply CHANGES to the buffer named BUFFER-NAME.
-CHANGES is an array of objects; each object includes line-number,
-action, current-line-content, and updated-line-content."
-  (let ((delete-offset 1))
-    (with-current-buffer buffer-name
-      (condition-case err
-          (progn
-            (save-excursion
-              (dolist (change (changes--array-to-list changes))
-                (let ((line (- (plist-get change :line-number)
-                               delete-offset))
-                      (line-expected-content (plist-get change :current-line-content))
-                      (action (intern (plist-get change :action)))
-                      (updated-content (plist-get change :updated-line-content)))
-                  (gptel--validate-action (1+ line) line-expected-content)
-                  (goto-char (point-min))
-                  (forward-line line)
-                  (pcase action
-                    ('replace
-                     (kill-whole-line)
-                     (insert updated-content "\n"))
-                    ('insert
-                     (insert updated-content "\n")
-                     (setq delete-offset (1- delete-offset)))
-                    ('delete
-                     (kill-whole-line)
-                     (setq delete-offset (1+ delete-offset)))))))
-            (save-buffer)
-            (buffer--content-with-line-numbers (current-buffer)))
-        (error (error-message-string err))))))
+  (with-current-buffer (get-buffer buffer-name)
+    (save-excursion
+      (let ((lines (split-string diff-content "\n" t))
+            (current-line 1)
+            (success t))
+        ;; Validate diff format
+        (unless (seq-some (lambda (line)
+                           (string-match "^@@ -[0-9]+,[0-9]+ \\+[0-9]+,[0-9]+ @@" line))
+                         lines)
+          (error "Invalid diff format - missing @@ header"))
+
+        (dolist (line lines)
+          (cond
+           ;; Parse hunk header
+           ((string-match "^@@ -\\([0-9]+\\),[0-9]+ \\+[0-9]+,[0-9]+ @@" line)
+            (setq current-line (string-to-number (match-string 1 line)))
+            (goto-char (point-min))
+            (forward-line (1- current-line)))
+
+           ;; Skip diff command lines
+           ((string-match "^[+-][-+]" line) nil)
+
+           ;; Handle context lines (lines without +/-)
+           ((not (or (string-prefix-p "+" line)
+                    (string-prefix-p "-" line)))
+            (let ((expected-line (buffer-substring-no-properties
+                                (line-beginning-position)
+                                (line-end-position))))
+              (unless (string= line expected-line)
+                (setq success nil)
+                (message "Context mismatch at line %d. Expected '%s', got '%s'"
+                         current-line expected-line line)))
+            (forward-line 1)
+            (cl-incf current-line))
+
+           ;; Handle line removal
+           ((string-prefix-p "-" line)
+            (let ((to-delete (buffer-substring-no-properties
+                            (line-beginning-position)
+                            (line-end-position))))
+              (unless (string= (substring line 1) to-delete)
+                (setq success nil)
+                (message "Content mismatch for deletion at line %d" current-line)))
+            (delete-region (line-beginning-position)
+                         (min (point-max) (1+ (line-end-position)))))
+
+           ;; Handle line addition
+           ((string-prefix-p "+" line)
+            (insert (substring line 1) "\n")
+            (cl-incf current-line))))
+
+        (when success
+          (save-buffer))
+        success))))
 
 (gptel-make-tool
- :name "apply_changes_to_buffer"
- :function 'gptel-apply-changes-to-buffer-cb
- :description "Apply a series of changes to a buffer and retrieve the final buffer content"
+ :name "apply_diff_to_buffer"
+ :function 'apply-diff-to-buffer
+ :description "Apply a unified diff to a buffer. The diff should be in unified format with @@ headers, context lines, and +/- line changes. Returns t if successful, nil otherwise with error message."
  :args (list '(:name "buffer-name"
                      :type string
-                     :description "The name of the buffer to modify")
-             '(:name "changes"
-                     :type array
-                     :value (:type object
-                                   :properties
-                                   (:line-number
-                                    (:type number)
-                                    :action
-                                    (:type string :description: "The action to perform: replace, insert, or delete")
-                                    
-                                    :current-line-content
-                                    (:type string)
-
-                                    :updated-line-content
-                                    (:type string)))
-
-                     :description "An array of change operations")
-             :category "buffers"))
+                     :description "The buffer name to apply the diff to.")
+             '(:name "diff-content"
+                     :type string
+                     :description "The diff content to apply."))
+ :category "buffers")
