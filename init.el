@@ -526,7 +526,6 @@
   (add-hook 'completion-at-point-functions #'cape-file)
   (add-hook 'completion-at-point-functions #'cape-rfc1345)
   (add-hook 'completion-at-point-functions #'cape-history)
-  (add-hook 'completion-at-point-functions #'cape-dabbrev)
   (add-hook 'completion-at-point-functions #'cape-elisp-block))
 
 (use-package which-key
@@ -1039,5 +1038,27 @@
 (use-package erefactor
   :bind-keymap ("C-c C-v" . erefactor-map)
   :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on))
+
+(use-package hideshow
+  :ensure nil
+  :bind
+  (:map prog-mode-map
+        ("C-=" . hs-toggle-hiding)))
+
+(use-package jinx
+  :custom
+  (jinx-include-faces '((prog-mode font-lock-variable-name-face
+                                   font-lock-comment-face
+                                   font-lock-doc-face
+                                   font-lock-string-face
+                                   git-commit-summary)
+                        (conf-mode font-lock-comment-face font-lock-string-face)
+                        (yaml-mode . conf-mode)
+                        (yaml-ts-mode . conf-mode)))
+  :config
+  (add-to-list 'jinx-camel-modes 'roc-ts-mode)
+  :hook (prog-mode . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages)))
 
 (put 'narrow-to-region 'disabled nil)
