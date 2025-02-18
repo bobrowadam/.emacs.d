@@ -425,7 +425,7 @@
         ("C-}" . puni-barf-forward)
         ("C-{" . puni-barf-backward)
         ("C-'" . puni-rewrap))
-  :hook (typescript-ts-mode c-ts-mode js-ts-mode))
+  :hook (typescript-ts-mode c-ts-mode js-ts-mode minibuffer-mode))
 
 (use-package transient)
 
