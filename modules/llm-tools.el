@@ -14,12 +14,6 @@ If BUFFER is nil, use the current buffer."
         "\n")))
       substring-no-properties))
 
-(defun changes--array-to-list (changes-array)
-  (let ((changes-list (cl-coerce changes-array 'list)))
-    (dolist (change changes-list)
-        (parse--change-schema change))
-    changes-list))
-
 (defun parse--change-schema (change)
   (progn
     (unless (plist-get change :line-number)
@@ -30,17 +24,6 @@ If BUFFER is nil, use the current buffer."
       (error ":current-line-content is a mandatory filed in change"))
     (unless (plist-get change :updated-line-content)
       (error ":updated-line-content is a mandatory filed in change"))))
-
-(defun gptel--validate-action (line-number line-expected-content)
-  (let ((line-current-content (save-excursion
-                                (goto-char (point-min))
-                                (forward-line (1- line-number))
-                                (buffer-substring-no-properties (line-beginning-position) (line-end-position)))))
-    (unless (s-contains? line-expected-content line-current-content)
-      (error "Validation failed on line %d. Expected content: '%s'. Actual content: '%s'."
-             line-number
-             line-expected-content
-             line-current-content))))
 
 (defun gptel-read-file-cb (path filename)
   (let ((full-path (expand-file-name filename path)))
@@ -340,13 +323,29 @@ Optional SUB-DIRS restricts display to specific directories."
  :args nil
  :category "filesystem")
 
+(defun gptel--validate-action (line-number line-expected-content)
+  (let ((line-current-content (save-excursion
+                                (goto-char (point-min))
+                                (forward-line (1- line-number))
+                                (buffer-substring-no-properties (line-beginning-position) (line-end-position)))))
+    (unless (s-contains? line-expected-content line-current-content)
+      (error "Validation failed on line %d. Expected content: '%s'. Actual content: '%s'."
+             line-number
+             line-expected-content
+             line-current-content))))
+
+(defun changes--array-to-list (changes-array)
+  (let ((changes-list (cl-coerce changes-array 'list)))
+    (dolist (change changes-list)
+        (parse--change-schema change))
+    changes-list))
+
 (defun gptel-apply-changes-to-buffer-cb (buffer-name changes)
   "Apply CHANGES to the buffer named BUFFER-NAME.
 CHANGES is an array of objects; each object includes line-number,
 action, current-line-content, and updated-line-content."
   (let ((delete-offset 1))
     (with-current-buffer buffer-name
-      ;; Wrap the save-excursion block with condition-case
       (condition-case err
           (progn
             (save-excursion
@@ -369,11 +368,8 @@ action, current-line-content, and updated-line-content."
                     ('delete
                      (kill-whole-line)
                      (setq delete-offset (1+ delete-offset)))))))
-            ;; Save the buffer if no error occurs
             (save-buffer)
-            ;; Return the buffer content with line numbers if no error occurs
             (buffer--content-with-line-numbers (current-buffer)))
-        ;; Return the error string if it happens
         (error (error-message-string err))))))
 
 (gptel-make-tool
