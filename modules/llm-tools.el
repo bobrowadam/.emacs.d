@@ -314,12 +314,11 @@ Returns t if successful, nil otherwise with a message explaining why."
   (with-current-buffer (get-buffer buffer-name)
     (save-excursion
       (let ((lines (split-string diff-content "\n" t))
-            (current-line 1)
-            (success t))
+            (current-line 1))
         ;; Validate diff format
         (unless (seq-some (lambda (line)
-                           (string-match "^@@ -[0-9]+,[0-9]+ \\+[0-9]+,[0-9]+ @@" line))
-                         lines)
+                            (string-match "^@@ -[0-9]+,[0-9]+ \\+[0-9]+,[0-9]+ @@" line))
+                          lines)
           (error "Invalid diff format - missing @@ header"))
 
         (dolist (line lines)
@@ -335,36 +334,34 @@ Returns t if successful, nil otherwise with a message explaining why."
 
            ;; Handle context lines (lines without +/-)
            ((not (or (string-prefix-p "+" line)
-                    (string-prefix-p "-" line)))
+                     (string-prefix-p "-" line)))
             (let ((expected-line (buffer-substring-no-properties
-                                (line-beginning-position)
-                                (line-end-position))))
-              (unless (string= line expected-line)
-                (setq success nil)
-                (message "Context mismatch at line %d. Expected '%s', got '%s'"
-                         current-line expected-line line)))
-            (forward-line 1)
+                                  (line-beginning-position)
+                                  (line-end-position))))
+              (if (string= (string-trim line)
+                           (string-trim expected-line))
+                  (forward-line 1)
+                (format "Error: Context mismatch at line %d. Expected '%s', got '%s'"
+                        current-line expected-line line)))
             (cl-incf current-line))
 
            ;; Handle line removal
            ((string-prefix-p "-" line)
             (let ((to-delete (buffer-substring-no-properties
-                            (line-beginning-position)
-                            (line-end-position))))
-              (unless (string= (substring line 1) to-delete)
-                (setq success nil)
-                (message "Content mismatch for deletion at line %d" current-line)))
-            (delete-region (line-beginning-position)
-                         (min (point-max) (1+ (line-end-position)))))
+                              (line-beginning-position)
+                              (line-end-position))))
+              (if (string= (string-trim (substring line 1)) (string-trim to-delete))
+                  (delete-region (line-beginning-position)
+                                 (min (point-max) (1+ (line-end-position))))
+                (format "Error: Content mismatch for deletion at line %d" current-line))))
 
            ;; Handle line addition
            ((string-prefix-p "+" line)
             (insert (substring line 1) "\n")
             (cl-incf current-line))))
 
-        (when success
-          (save-buffer))
-        success))))
+        (save-buffer)
+        (buffer--content-with-line-numbers)))))
 
 (gptel-make-tool
  :name "apply_diff_to_buffer"
