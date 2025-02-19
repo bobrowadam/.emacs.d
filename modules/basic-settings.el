@@ -157,7 +157,11 @@
 (setq custom-safe-themes t)
 (setq custom-theme-directory (concat user-emacs-directory "themes"))
 
-(setq font-size 23)
+;; Set the fonts size according to monitor size
+(if (>= (nth 3 (assoc 'geometry (frame-monitor-attributes))) 1920)
+      (set-face-attribute 'default nil :height (* 10 27))
+    (set-face-attribute 'default nil :height (* 10 23)))
+
 ;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" font-size)
 ;;                 'keep-size t)
 (set-frame-font (format "Aporetic Sans Mono-%d" font-size)
