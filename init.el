@@ -1061,4 +1061,7 @@
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
 
+(use-package proced-narrow
+  :bind (:map proced-mode-map ("N" . proced-narrow)))
+
 (put 'narrow-to-region 'disabled nil)
