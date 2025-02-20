@@ -5,7 +5,7 @@
 (elpaca-wait)
 
 (use-package bob-utils
-  :commands (bob/eat-top-project bob/kill-this-buffer)
+  :commands (bob/eat-top-project bob/kill-this-buffer bob/jump-to-shell)
   :load-path "site-lisp"
   :ensure nil)
 
@@ -127,9 +127,11 @@
   (setq savehist-save-minibuffer-history t)
   (savehist-mode))
 
+(use-package recentf-mode
+  :ensure nil
+  :init (recentf-mode))
+
 (use-package markdown-ts-mode)
-
-
 
 (use-package ob-js
     :ensure nil
@@ -431,7 +433,31 @@
 
 (use-package vertico
   :init
-  (vertico-mode 1))
+  (vertico-mode))
+
+(use-package embark
+  :bind
+  (("C-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  ;; (setq prefix-help-command #'embark-prefix-help-command)
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+  ;; :config
+  ;; Hide the mode line of the Embark live/completions buffers
+  ;; (add-to-list 'display-buffer-alist
+  ;;              '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+  ;;                nil
+  ;;                (window-parameters (mode-line-format . none))))
+)
+
+(use-package embark-consult
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package hotfuzz
   :demand t
@@ -707,12 +733,13 @@
   :hook (dape-active-mode . repeat-mode))
 
 (use-package jest-ts-mode
+  :after (typescript-ts-mode)
   :ensure (:package "jest-ts-mode"
                     :fetcher github
                     :branch "main"
                     :repo "bobrowadam/jest-ts-mode"
                     :files ("jest-ts-mode.el"))
-  :bind 
+  :bind
   (:map typescript-ts-mode-map
         ("C-c C-t C-n" . jest-ts-mode/run-tests)
         ("C-c C-t C-p" . jest-ts-mode/run-test-at-point)
@@ -983,7 +1010,7 @@
   (global-ligature-mode t))
 
 (use-package eat
-  :commands (eat bob/jump-to-shell eat-project bob/eat-top-project)
+  :commands (eat eat-project bob/eat-top-project)
   :custom
   (eat-term-scrollback-size nil)
   :init
@@ -1041,6 +1068,7 @@
 
 (use-package hideshow
   :ensure nil
+  :hook (prog-mode . hs-minor-mode)
   :bind
   (:map prog-mode-map
         ("C-=" . hs-toggle-hiding)))

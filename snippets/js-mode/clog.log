@@ -3,5 +3,5 @@
 # key: clog
 # group: console
 # --
-console.log('#--------------------------------\n$1:')
-console.dir(${1:object}, { depth: Infinity })
+console.log('#--------------------------------\n$1:');
+console.dir(${1:object}, { depth: Infinity });

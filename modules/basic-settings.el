@@ -39,6 +39,10 @@
       enable-local-variables t
       dictionary-server "dict.org")
 
+(setq read-extended-command-predicate #'command-completion-default-include-p)
+(setq minibuffer-prompt-properties
+      '(read-only t cursor-intangible t face minibuffer-prompt))
+
 ;; FrogFind is a simple search engine for text based browsers
 (setq eww-search-prefix "http://frogfind.com/?q=")
 
@@ -157,15 +161,15 @@
 (setq custom-safe-themes t)
 (setq custom-theme-directory (concat user-emacs-directory "themes"))
 
-;; Set the fonts size according to monitor size
-(if (>= (nth 3 (assoc 'geometry (frame-monitor-attributes))) 1920)
-      (set-face-attribute 'default nil :height (* 10 27))
-    (set-face-attribute 'default nil :height (* 10 23)))
+(let ((calculated-font-size
+       (if (>= (nth 3 (assoc 'geometry (frame-monitor-attributes))) 1920)
+           27
+         23)))
+  ;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" calculated-font-size)
+  ;;                 'keep-size t)
+  (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)
+                  'keep-size t))
 
-;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" font-size)
-;;                 'keep-size t)
-(set-frame-font (format "Aporetic Sans Mono-%d" font-size)
-                'keep-size t)
 (setq initial-major-mode 'fundamental-mode)
 
 (provide 'basic-settings)

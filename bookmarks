@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("bob-utils.el"
+(("basic-settings.el"
+ (filename . "~/.emacs.d/modules/basic-settings.el")
+ (front-context-string . ";; Default was t")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26549 43360 773197 0))
+("bob-utils.el"
  (filename . "~/.emacs.d/site-lisp/bob-utils.el")
  (front-context-string . "\n\n(provide 'bob-")
  (rear-context-string . "uffer-string))))")

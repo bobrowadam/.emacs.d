@@ -22,10 +22,11 @@
   ("C-c g a f" . gptel-context-add-file)
   (:map gptel-mode-map ("C-c g s" . gptel-menu)))
 
+(use-package helm)
 (use-package aidermacs
   :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
   :custom
-  (aidermacs-subtree-only t)
+  (aidermacs-subtree-only nil)
   :config
   (setq
    aidermacs-args  (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
