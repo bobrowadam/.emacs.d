@@ -927,7 +927,13 @@
   (bob/install--grammer-if-missing 'python)
   (bob/install--grammer-if-missing 'c)
   (bob/install--grammer-if-missing 'cpp)
-  (bob/install--grammer-if-missing 'zig))
+  (bob/install--grammer-if-missing 'zig)
+  (bob/install--grammer-if-missing 'bash))
+
+(use-package sh-script
+  :ensure nil
+  :mode ("\\.sh\\'" . bash-ts-mode)
+  :interpreter ("bash" . bash-ts-mode))
 
 (use-package pgmacs
   :ensure (:repo "emarsden/pgmacs" :fetcher github :files ("*.el"))
