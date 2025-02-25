@@ -18,7 +18,7 @@
          (service-name (completing-read "Enter service name: " service-names))
          (run-service-command (bob/generate--run-service-command service-name))
          (output-buffer-name (format "%s %s" grain-service-output-buffer-prefix service-name))
-         (service-output-buffer-name (format "%s all but %s" grain-service-output-buffer-prefix service-name))
+         (service-output-buffer-name (format "%s [ALL] except %s" grain-service-output-buffer-prefix service-name))
          (grain-service-active-processes (--filter
                                           (->> it process-buffer buffer-name (s-starts-with? grain-service-output-buffer-prefix))
                                           (process-list))))

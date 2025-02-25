@@ -49,9 +49,6 @@
 (when (boundp 'pixel-scroll-precision-mode)
   (pixel-scroll-precision-mode 1))
 
-(setq scroll-conservatively 10)
-(setq scroll-margin 6)
-
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (unless (not (file-exists-p custom-file))
   (load custom-file))

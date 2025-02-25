@@ -571,6 +571,7 @@
 (use-package exec-path-from-shell)
 (use-package xref)
 (use-package buff-menu :ensure nil)
+
 (use-package project
   :custom
   (project-vc-extra-root-markers '("package.json"))
@@ -592,7 +593,8 @@
       (project-remember-projects-under "~/source/grain/apps/backend/" t)
       (project-remember-projects-under "~/source/grain/packages/" t)))
   :bind
-  ("C-x p C-m"  . project-dired))
+  ("C-x p C-m"  . project-dired)
+  ("C-x p b" . consult-project-buffer))
 
 (defun set-eslint-executable-name ()
   (setq flymake-eslint-executable-name
@@ -732,6 +734,19 @@
   (add-hook 'dape-compile-compile-hooks 'kill-buffer)
   :hook (dape-active-mode . repeat-mode))
 
+(use-package comment-tags
+  :custom
+  (comment-tags-keywords '("TODO"
+                           "FIXME"
+                           "BUG"
+                           "HACK"
+                           "KLUDGE"
+                           "XXX"
+                           "INFO"
+                           "DONE"))
+  (comment-tags-require-colon t)
+  :hook (prog-mode))
+
 (use-package jest-ts-mode
   :after (typescript-ts-mode)
   :ensure (:package "jest-ts-mode"
@@ -772,6 +787,11 @@
 
 (use-package roc-ts-mode)
 
+(use-package c-ts-mode
+  :custom
+  (c-ts-mode-indent-offset 4)
+  :ensure nil)
+
 (use-package prog-mode
   :ensure nil
   :hook
@@ -788,18 +808,20 @@
 (use-package yasnippet-snippets)
 
 (use-package yasnippet
-  :defer t
-  :ensure ( :package "yasnippet"
-            :repo "joaotavora/yasnippet"
-            :fetcher github
-            :files ("yasnippet.el" "snippets")
-            :source "MELPA")
+  :custom
+  (yas-wrap-around-region t)
+  (yas-also-auto-indent-first-line t)
+  :hook
+  (prog-mode . yas-minor-mode-on)
+  (emacs-lisp-mode . yas-minor-mode-on)
+  (text-mode . yas-minor-mode-on)
+  :bind (:map yas-minor-mode-map
+              ("C-<tab>" . yas-expand))
   :config
   (setq yas-snippet-dirs
         `(,(concat user-emacs-directory "snippets")
           ,yasnippet-snippets-dir))
-  :hook (prog-mode . yas-minor-mode-on)
-  :bind ("C-<tab>" . yas/expand))
+  (yas-reload-all))
 
 (use-package doom-modeline
   :demand t
@@ -910,7 +932,7 @@
           (java-mode       . java-ts-mode)
           (js-json-mode    . json-ts-mode)
           (python-mode     . python-ts-mode)
-          (sh-mode         . bash-ts-mode)
+          ;; (sh-mode         . bash-ts-mode)
           (typescript-mode . typescript-ts-mode)
           (rust-mode       . rust-mode)))
 
@@ -1098,4 +1120,31 @@
 (use-package proced-narrow
   :bind (:map proced-mode-map ("N" . proced-narrow)))
 
+;; ispell-completion-at-point suggestions are too broad so we remove it
+(add-hook 'text-mode-hook
+          (lambda ()
+            (remove-hook 'completion-at-point-functions
+                         'ispell-completion-at-point t)))
+(add-hook 'org-mode-hook
+          (lambda ()
+            (remove-hook 'completion-at-point-functions
+                         'ispell-completion-at-point t)))
+
+(use-package avy
+  :custom
+  (avy-case-fold-search t)
+  (avy-timeout-seconds 0.13)
+  :bind
+  ("C-c M-d" . avy-isearch)
+  ("C-c M-c" . avy-goto-char-timer))
+
+(use-package ace-window
+  :bind
+  ( "C-x o" . ace-window)
+  ( "M-o" . ace-window)
+  :config
+  (setq aw-scope 'frame)
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
 (put 'narrow-to-region 'disabled nil)
+(put 'upcase-region 'disabled nil)

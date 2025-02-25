@@ -374,3 +374,22 @@ Returns t if successful, nil otherwise with a message explaining why."
                      :type string
                      :description "The diff content to apply."))
  :category "buffers")
+
+(defun gptel-run-make-cb (path &optional args)
+  (let ((default-directory path))
+    (shell-command-to-string (format "make %s" (string-join args " ")))))
+
+(gptel-make-tool
+ :name "run_make"
+ :function 'gptel-run-make-cb
+ :description "Run make with optional flags in the current project."
+ :args (list
+        '(:name "path"
+               :type string
+               :description "The path to run in")
+        '(:name "arguments"
+                     :type array
+                     :value string
+                     :description "Optional extra arguments"
+                     :optional t))
+ :category "buffers")
