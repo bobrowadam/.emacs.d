@@ -207,12 +207,11 @@
   :bind
   ("C-c a" . org-agenda)
   ("C-c l" . org-store-link)
+  ("C-c c" . org-capture)        
   (:map org-mode-map
         ("M-p" . org-metaup)
         ("M-n" . org-metadown)
-        ;; ("C-c c" . org-capture)
-        ;; ("C-c S" . org-save-all-org-buffers)
-
+        ("C-c S" . org-save-all-org-buffers)
         ("M-," . org-mark-ring-goto)
         ("M-F" . org-shiftright)
         ("M-B" . org-shiftleft)
