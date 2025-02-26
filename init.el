@@ -79,7 +79,7 @@
   :after (dired)
   :bind
   ;; "C-u C-x D"
-  ("C-x D" . dired-sidebar-toggle-sidebar)
+  ("C-x C-d" . dired-sidebar-toggle-sidebar)
   :custom
   (dired-sidebar-width 40)
   (dired-sidebar-subtree-line-prefix "  ")
@@ -92,7 +92,6 @@
                             (auto-revert-mode))))
   :custom-face
   (dired-sidebar-face ((t (:family "Menlo"))))
-
   ;; :config
   ;; (push 'toggle-window-split dired-sidebar-toggle-hidden-commands)
   ;; (push 'rotate-windows dired-sidebar-toggle-hidden-commands)
