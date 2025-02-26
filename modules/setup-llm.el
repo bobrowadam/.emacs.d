@@ -33,7 +33,7 @@
                                              car
                                              (plist-get :secret)
                                              funcall)))
-                     `("--model" "anthropic/claude-3-5-sonnet-20241022" "--anthropic-api-key" ,credentials)))
+                     `("--anthropic-api-key" ,credentials)))
   :bind ("C-c g c" . aidermacs-transient-menu))
 
 (provide 'setup-llm)
