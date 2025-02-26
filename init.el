@@ -514,7 +514,7 @@
   (corfu-auto t)                 ;; Enable auto completion
   (corfu-separator ?\s)          ;; Orderless field separator
   (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  (corfu-quit-no-match t)      ;; Never quit, even if there is no match
+  (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
   (corfu-preview-current t)    ;; Disable current candidate preview
   (corfu-preselect-first nil)    ;; Disable candidate preselection
   (corfu-on-exact-match 'insert)     ;; Configure handling of exact matches
@@ -522,28 +522,8 @@
   (corfu-scroll-margin 8)        ;; Use scroll margin
   (corfu-auto-prefix 1)
 
-  ;; Recommended: Enable Corfu globally.
-  ;; This is recommended since Dabbrev can be used globally (M-/).
-  ;; See also `corfu-excluded-modes'.
   :init
-  (global-corfu-mode)
-  (defun corfu-enable-in-minibuffer ()
-    "Enable Corfu in the minibuffer if `completion-at-point' is bound."
-    (when (where-is-internal #'completion-at-point (list (current-local-map)))
-      ;; (setq-local corfu-auto nil) Enable/disable auto completion
-      (corfu-mode 1)))
-
-  (defun corfu-send-shell (&rest _)
-    "Send completion candidate when inside comint/eshell."
-    (cond
-     ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
-      (eshell-send-input))
-     ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
-      (comint-send-input))))
-
-  (advice-add #'corfu-insert :after #'corfu-send-shell)
-  :hook
-  (minibuffer-setup . corfu-enable-in-minibuffer))
+  (global-corfu-mode))
 
 (use-package cape
   :init
@@ -1058,15 +1038,11 @@
 (use-package elfeed
   :custom
   (elfeed-feeds
-   '(
-     ("https://feeds.megaphone.fm/POLTD9269001873" podcast funny rotner)
-     ("https://learncodethehardway.com/feed.rss" programming learning c)
-     ("https://feeds.resonaterecordings.com/software-unscripted" programming)
+   '(("https://learncodethehardway.com/feed.rss" programming learning c)
      ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
      ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
      ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
      ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
-     ("http://notarbut.co/feed/podcast" podcast)
      ("https://danluu.com/atom.xml" programming blog danluu)
      ("https://protesilaos.com/master.xml" programming blog emacs)))
   :bind
@@ -1119,14 +1095,14 @@
   :bind (:map proced-mode-map ("N" . proced-narrow)))
 
 ;; ispell-completion-at-point suggestions are too broad so we remove it
-(add-hook 'text-mode-hook
-          (lambda ()
-            (remove-hook 'completion-at-point-functions
-                         'ispell-completion-at-point t)))
-(add-hook 'org-mode-hook
-          (lambda ()
-            (remove-hook 'completion-at-point-functions
-                         'ispell-completion-at-point t)))
+;; (add-hook 'text-mode-hook
+;;           (lambda ()
+;;             (remove-hook 'completion-at-point-functions
+;;                          'ispell-completion-at-point t)))
+;; (add-hook 'org-mode-hook
+;;           (lambda ()
+;;             (remove-hook 'completion-at-point-functions
+;;                          'ispell-completion-at-point t)))
 
 (use-package avy
   :custom

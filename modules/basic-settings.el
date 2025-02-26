@@ -37,7 +37,10 @@
       tab-width 4
       enable-local-eval t
       enable-local-variables t
-      dictionary-server "dict.org")
+      dictionary-server "dict.org"
+      tab-always-indent 'complete
+      text-mode-ispell-word-completion nil)
+
 
 (setq read-extended-command-predicate #'command-completion-default-include-p)
 (setq minibuffer-prompt-properties
