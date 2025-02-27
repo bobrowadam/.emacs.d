@@ -1,9 +1,9 @@
 (use-package gptel
   :custom
-  (gptel-model 'gpt-4o)
+  (gptel-model 'claude-3-7-sonnet-20250219)
   (gptel-default-mode 'org-mode)
-  (gptel-max-tokens 8192)
-  ;; (gptel-max-tokens nil)
+  ;; (gptel-max-tokens 8192)
+  (gptel-max-tokens nil)
   :config
   (load "./llm-tools.el")
   (add-to-list 'gptel-directives (cons 'ai-assitant "You are a large language model living in Emacs and a helpful assistant. Respond concisely. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it."))

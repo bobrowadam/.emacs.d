@@ -41,7 +41,6 @@
       tab-always-indent 'complete
       text-mode-ispell-word-completion nil)
 
-
 (setq read-extended-command-predicate #'command-completion-default-include-p)
 (setq minibuffer-prompt-properties
       '(read-only t cursor-intangible t face minibuffer-prompt))
@@ -112,7 +111,6 @@
       kept-new-versions 5    ; keep some new versions
       kept-old-versions 2)   ; and some old ones, too
 
-
 (setq linum-format "%4d  ")
 
 ;; Set Emacs C source dir:
@@ -163,8 +161,8 @@
 
 (let ((calculated-font-size
        (if (>= (nth 3 (assoc 'geometry (frame-monitor-attributes))) 1920)
-           27
-         23)))
+           31
+         27)))
   ;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" calculated-font-size)
   ;;                 'keep-size t)
   (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)

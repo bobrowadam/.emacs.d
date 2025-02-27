@@ -2,6 +2,9 @@
   (elpaca-use-package-mode)
   (setq elpaca-use-package-by-default t))
 
+(use-package dash)
+(use-package s)
+
 (elpaca-wait)
 
 (use-package bob-utils
@@ -103,6 +106,7 @@
               ("TAB" . dired-subtree-toggle)))
 
 (use-package all-the-icons-dired
+  :if (window-system)
   :custom
   (all-the-icons-dired-monochrome nil)
   :after (dired)
@@ -553,8 +557,17 @@
 (use-package project
   :custom
   (project-vc-extra-root-markers '("package.json"))
-  :init
-  :init
+  :config
+  (defun project-buffers-list-files-only (project)
+    "Return a list of only file-visiting buffers belonging to PROJECT."
+    (let ((project-root (expand-file-name (project-root project))))
+      (cl-remove-if-not
+       (lambda (buffer)
+         (and (buffer-file-name buffer)
+              (string-prefix-p project-root
+                               (expand-file-name (buffer-file-name buffer)))))
+       (buffer-list))))
+  (advice-add 'project-buffers-list :override #'project-buffers-list-files-only)
   (setq project-switch-commands
         '((project-find-file "Find file")
           (project-dired "Root Directory" "d")
@@ -594,13 +607,13 @@
             :fetcher github
             :repo "jdtsmith/eglot-booster"))
 
-(unload-feature 'eldoc t)
-(setq custom-delayed-init-variables '())
-(defvar global-eldoc-mode nil)
+;; (unload-feature 'eldoc t)
+;; (setq custom-delayed-init-variables '())
+;; (defvar global-eldoc-mode nil)
 
-(elpaca eldoc
-  (require 'eldoc)
-  (global-eldoc-mode))
+;; (elpaca eldoc
+;;   (require 'eldoc)
+;;   (global-eldoc-mode))
 
 (use-package eldoc-box
   :after eglot
@@ -819,7 +832,6 @@
   :demand t
   :custom
   (setq doom-pine-padded-modeline t)
-
   :config
   (load-theme 'doom-pine))
 
