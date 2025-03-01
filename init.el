@@ -723,7 +723,7 @@
   :hook (prog-mode))
 
 (use-package jest-ts-mode
-  :after (typescript-ts-mode)
+  :commands (jest-ts-mode/run-tests jest-ts-mode/run-test-at-point jest-ts-mode/rerun-latest-test)
   :ensure (:package "jest-ts-mode"
                     :fetcher github
                     :branch "main"
@@ -1040,7 +1040,8 @@
      ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
      ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
      ("https://danluu.com/atom.xml" programming blog danluu)
-     ("https://protesilaos.com/master.xml" programming blog emacs)))
+     ("https://protesilaos.com/master.xml" programming blog emacs)
+     ("https://eshelyaron.com/rss.xml" programming blog emacs)))
   :bind
   ("C-c w" . elfeed)
   (:map elfeed-search-mode-map
@@ -1105,8 +1106,9 @@
   (avy-case-fold-search t)
   (avy-timeout-seconds 0.13)
   :bind
-  ("C-c M-d" . avy-isearch)
-  ("C-c M-c" . avy-goto-char-timer))
+  ("C-:" . avy-goto-char-timer)
+  (:map isearch-mode-map
+        ("C-:" . avy-isearch)))
 
 (use-package ace-window
   :bind
@@ -1115,6 +1117,20 @@
   :config
   (setq aw-scope 'frame)
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+(use-package golden-ratio
+  :bind
+  ("C-x -" . my/gloden-ratio)
+  :config
+  (add-to-list 'golden-ratio-extra-commands 'ace-window)
+  (defun my/gloden-ratio ()
+    "Toggle golden ratio"
+    (interactive)
+    (if golden-ratio-mode
+        (progn (golden-ratio-mode -1)
+               (balance-windows))
+      (progn (golden-ratio-mode)
+             (golden-ratio)))))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
