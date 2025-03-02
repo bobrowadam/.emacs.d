@@ -1,10 +1,13 @@
+(defvar ai-assistant-prompt "You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.")
+
 (use-package gptel
   :custom
   (gptel-default-mode 'org-mode)
   ;; (gptel-max-tokens 8192)
   (gptel-max-tokens nil)
   :config
-  (add-to-list 'gptel-directives (cons 'ai-assitant "You are a large language model living in Emacs and a helpful assistant. Respond concisely. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it."))
+  (add-to-list 'gptel-directives (cons 'default ai-assistant-prompt))
+  (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
   (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
                             car
                             (plist-get :secret)

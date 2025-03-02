@@ -1,3 +1,9 @@
+(defun bob/llm-cb-wraper (cb)
+  (condition-case err
+      (funcall cb)
+    (error
+     (message "An error occurred: %s" (error-message-string err)))))
+
 (defun buffer--content-with-line-numbers (&optional buffer)
   "Return content of BUFFER with line numbers prepended.
 If BUFFER is nil, use the current buffer."
@@ -204,26 +210,26 @@ If BUFFER is nil, use the current buffer."
  :args nil
  :category "Grain")
 
-(defun gptel-edit-buffer-content-cb (buffer-name new-content)
-  "Edit the content of the buffer specified by BUFFER-NAME and save it."
-  (when (get-buffer buffer-name)
-    (with-current-buffer buffer-name
-      (erase-buffer)
-      (insert new-content)
-      (save-buffer)
-      "Content updated and file saved successfully.")))
+;; (defun gptel-edit-buffer-content-cb (buffer-name new-content)
+;;   "Edit the content of the buffer specified by BUFFER-NAME and save it."
+;;   (when (get-buffer buffer-name)
+;;     (with-current-buffer buffer-name
+;;       (erase-buffer)
+;;       (insert new-content)
+;;       (save-buffer)
+;;       "Content updated and file saved successfully.")))
 
-(gptel-make-tool
- :name "edit_buffer"
- :function 'gptel-edit-buffer-content-cb
- :description "Edit the content of buffer BUFFER-NAME and save it"
- :args (list '(:name "buffer-name"
-                     :type string
-                     :description "The buffer name to edit")
-             '(:name "new-content"
-                     :type string
-                     :description "The new content for the buffer"))
- :category "buffers")
+;; (gptel-make-tool
+;;  :name "edit_buffer"
+;;  :function 'gptel-edit-buffer-content-cb
+;;  :description "Edit the content of buffer BUFFER-NAME and save it"
+;;  :args (list '(:name "buffer-name"
+;;                      :type string
+;;                      :description "The buffer name to edit")
+;;              '(:name "new-content"
+;;                      :type string
+;;                      :description "The new content for the buffer"))
+;;  :category "buffers")
 
 (defun gptel-open-file-buffer-cb (path filename &optional create-if-not-exists)
   "Open the given file into a buffer without switching.
@@ -239,6 +245,8 @@ If BUFFER is nil, use the current buffer."
             (buffer--content-with-line-numbers (buffer-name)))
         (if create-if-not-exists
             (let ((new-buffer (find-file-noselect full-path)))
+              (with-current-buffer (find-file-noselect full-path)
+                (save-buffer))
               (format "Created a new file. Buffer name is: %s" (buffer-name new-buffer)))
           (format "Buffer for file '%s' does not exist. Current directory: %s"
                   (file-name-nondirectory full-path) default-directory))))))
@@ -393,3 +401,20 @@ Returns t if successful, nil otherwise with a message explaining why."
                      :description "Optional extra arguments"
                      :optional t))
  :category "buffers")
+
+(defun gptel-create-dir-cb (path directory)
+  (let ((default-directory path))
+    (make-directory directory)))
+
+(gptel-make-tool
+ :name "create_directory"
+ :function 'gptel-create-dir-cb
+ :description "Create directory on path"
+ :args (list
+        '(:name "path"
+                :type string
+                :description "The path to make the directory at")
+        '(:name "directory"
+                :type string
+                :description "The directory name"))
+ :category "filesystem")
