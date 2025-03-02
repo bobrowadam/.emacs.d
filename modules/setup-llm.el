@@ -1,4 +1,5 @@
-(defvar ai-assistant-prompt "You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.")
+(defvar ai-assistant-prompt "You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.
+Be very aware of the tool API and the arguments it needs. failing to do so will cause an unrecoverable error in the flow.")
 
 (use-package gptel
   :custom
@@ -6,6 +7,10 @@
   ;; (gptel-max-tokens 8192)
   (gptel-max-tokens nil)
   :config
+  (defun bob/reset-tools ()
+    (interactive)
+    (setq gptel--known-tools nil)
+    (setq gptel-tools nil))
   (add-to-list 'gptel-directives (cons 'default ai-assistant-prompt))
   (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
   (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
