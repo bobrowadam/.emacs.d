@@ -1,9 +1,3 @@
-(defun bob/llm-cb-wraper (cb)
-  (condition-case err
-      (funcall cb)
-    (error
-     (message "An error occurred: %s" (error-message-string err)))))
-
 (defun buffer--content-with-line-numbers (&optional buffer)
   "Return content of BUFFER with line numbers prepended.
 If BUFFER is nil, use the current buffer."
@@ -372,6 +366,7 @@ Returns t if successful, nil otherwise with a message explaining why."
         (buffer--content-with-line-numbers)))))
 
 (gptel-make-tool
+ :include t
  :name "apply_diff_to_buffer"
  :function 'apply-diff-to-buffer
  :description "Apply a unified diff to a buffer. The diff should be in unified format with @@ headers, context lines, and +/- line changes. Returns t if successful, nil otherwise with error message."
@@ -388,6 +383,7 @@ Returns t if successful, nil otherwise with a message explaining why."
     (shell-command-to-string (format "make %s" (string-join args " ")))))
 
 (gptel-make-tool
+ :confirm t
  :name "run_make"
  :function 'gptel-run-make-cb
  :description "Run make with optional flags in the current project."
@@ -407,6 +403,7 @@ Returns t if successful, nil otherwise with a message explaining why."
     (make-directory directory)))
 
 (gptel-make-tool
+ :confirm t
  :name "create_directory"
  :function 'gptel-create-dir-cb
  :description "Create directory on path"
