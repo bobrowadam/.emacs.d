@@ -1,3 +1,5 @@
+;; -*- eval: (flymake-mode -1) -*-
+
 (elpaca elpaca-use-package
   (elpaca-use-package-mode)
   (setq elpaca-use-package-by-default t))
@@ -48,6 +50,13 @@
 
 (use-package consult
   :ensure t
+  :custom
+  (consult-buffer-filter
+   '("\\`\\magit.*\\'"
+     "^\\*.**$"
+     "^[[:space:]]\\*.**$"
+     )
+   )
   :init
   (setq consult--tofu-char #x100000
         consult--tofu-range #x00fffe)
@@ -212,7 +221,7 @@
   :bind
   ("C-c a" . org-agenda)
   ("C-c l" . org-store-link)
-  ("C-c c" . org-capture)        
+  ("C-c c" . org-capture)
   (:map org-mode-map
         ("M-p" . org-metaup)
         ("M-n" . org-metadown)
@@ -575,7 +584,17 @@
 
 (defun set-eslint-executable-name ()
   (setq flymake-eslint-executable-name
-        (format "%snode_modules/.bin/eslint" (locate-dominating-file "" "node_modules"))))
+        (if-let ((local-eslint-path (locate-dominating-file "" "node_modules")))
+            (format "%snode_modules/.bin/eslint" local-eslint-path)
+          "eslint")))
+
+(use-package flymake
+  :hook (emacs-lisp-mode)
+  :bind
+  (:map flymake-mode-map
+        ("C-c ! l" . flymake-show-buffer-diagnostics)
+        ("C-c ! n" . flymake-goto-next-error)
+        ("C-c ! p" . flymake-goto-prev-error)))
 
 (use-package flymake-eslint
   :after flyamke
@@ -639,10 +658,7 @@
         ("M-." . xref-find-definitions)
         ("M-?" . xref-find-references)
         ("C-<" . eglot-find-typeDefinition)
-        ("C-c C-a" . eglot-code-actions)
-        ("C-c ! l" . flymake-show-buffer-diagnostics)
-        ("C-c ! n" . flymake-goto-next-error)
-        ("C-c ! p" . flymake-goto-prev-error))
+        ("C-c C-a" . eglot-code-actions))
   :hook
   ((js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode) . eglot-ensure)
   (eglot-managed-mode .  (lambda ()
@@ -717,39 +733,27 @@
                            "FIXME"
                            "BUG"
                            "HACK"
-                           "KLUDGE"
-                           "XXX"
                            "INFO"
                            "DONE"))
   (comment-tags-require-colon t)
   :hook (prog-mode))
 
 (use-package jest-ts-mode
-  :commands (jest-ts-mode/run-tests jest-ts-mode/run-test-at-point jest-ts-mode/rerun-latest-test)
   :ensure (:package "jest-ts-mode"
                     :fetcher github
                     :branch "main"
                     :repo "bobrowadam/jest-ts-mode"
                     :files ("jest-ts-mode.el"))
-  :bind
-  (:map typescript-ts-mode-map
-        ("C-c C-t C-n" . jest-ts-mode/run-tests)
-        ("C-c C-t C-p" . jest-ts-mode/run-test-at-point)
-        ("C-c C-t C-r" . jest-ts-mode/rerun-latest-test)
-        ("C-c C-t C-j" . jest-ts-mode/jump-to-latest-test)))
+  :custom
+  (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true"))))
 
 (use-package typescript-mode
   :mode ("\\.ts\\'" . typescript-ts-mode)
-  :bind (("C-c C-b" . npm-run-build)
-         ;; ("C-c C-r" . npm-run)
-         :map typescript-ts-mode-map
-         ("C-c C-t C-n" . jest-ts-mode/run-tests)
-         ("C-c C-t C-p" . jest-ts-mode/run-test-at-point)
-         ("C-c C-t C-r" . jest-ts-mode/rerun-latest-test)
-         ("C-c C-t C-j" . jest-ts-mode/jump-to-latest-test))
+  :bind ("C-c C-b" . npm-run-build)
   :hook
   (typescript-ts-mode . (lambda ()
-                          (setq-local electric-pair-pairs (append electric-pair-pairs '((?< . ?>))))))
+                          (setq-local electric-pair-pairs (append electric-pair-pairs '((?< . ?>))))
+                          (jest-ts-mode 1)))
   :config
   (fnm-use)
   (setq typescript-ts-mode-indent-offset 2))
@@ -1086,6 +1090,19 @@
                         (yaml-ts-mode . conf-mode)))
   :config
   (add-to-list 'jinx-camel-modes 'roc-ts-mode)
+  (defun jinx--load-dicts ()
+    "Load dictionaries and setup syntax table."
+    (setq jinx--dicts (delq nil (mapcar #'jinx--mod-dict
+                                        (split-string jinx-languages)))
+          jinx--syntax-table (make-syntax-table jinx--base-syntax-table))
+    (unless jinx--dicts
+      (message "Jinx: No dictionaries available for %S" jinx-languages))
+    (dolist (dict jinx--dicts)
+      (cl-loop for c across (jinx--mod-wordchars dict) do
+               (modify-syntax-entry c "w" jinx--syntax-table)))
+    (modify-syntax-entry ?' "." jinx--syntax-table)
+    (modify-syntax-entry ?’ "w" jinx--syntax-table)
+    (modify-syntax-entry ?. "." jinx--syntax-table))
   :hook (prog-mode . global-jinx-mode)
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
@@ -1133,6 +1150,19 @@
                (balance-windows))
       (progn (golden-ratio-mode)
              (golden-ratio)))))
+
+(use-package breadcrumb
+  :hook (prog-mode))
+
+(use-package expand-region
+  :bind ("M-#" . er/expand-region))
+
+(use-package ts-comint
+  :custom
+  (ts-comint-program-command "ts-node"))
+
+(use-package ts-repl
+  :ensure (:repo "nverno/ts-repl" :fetcher github :files ("*.el")))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
