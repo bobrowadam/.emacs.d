@@ -39,6 +39,10 @@
   :demand t
   :load-path "./modules")
 
+(use-package ediff-setup
+  :demand t
+  :load-path "~/modules")
+
 (use-package scratch-pop
   :bind ("C-c r" . scratch-pop)
   :config
