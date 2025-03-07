@@ -26,12 +26,18 @@
   ("C-c g a f" . gptel-context-add-file)
   (:map gptel-mode-map ("C-c g s" . gptel-menu)))
 
+;; helm is an aidermacs dependency
 (use-package helm)
+(use-package vterm)
 (use-package aidermacs
   :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
   :custom
-  (aidermacs-subtree-only nil)
+  (aidermacs-subtree-only t)
+  (aidermacs-auto-commits nil)
+  (aidermacs-architect-model "o1")
+  (aidermacs-backend 'vterm)
   :config
+  (aidermacs-setup-minor-mode)
   (setq
    aidermacs-args  (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
                                              car
