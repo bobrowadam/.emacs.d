@@ -67,8 +67,7 @@
   :bind
   ("M-i" . consult-imenu)
   ("M-g r" . consult-ripgrep)
-  ("M-y" . consult-yank-from-kill-ring)
-  ("C-x b" . consult-buffer))
+  ("M-y" . consult-yank-from-kill-ring))
 
 (use-package casual)
 (use-package calc
