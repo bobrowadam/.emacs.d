@@ -81,9 +81,9 @@
 ("org-refile-last-stored"
  (filename
   . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* Call aquatech\n")
- (rear-context-string . "3-05 Wed 11:00>\n") (position . 1240)
- (last-modified 26567 9385 350983 0))
+ (front-context-string . "* TODO Start wor")
+ (rear-context-string . "2025-04-13 Sun>\n") (position . 1522)
+ (last-modified 26583 64609 46081 0))
 ("files-and-buffers.el"
  (filename . "~/.emacs.d/modules/files-and-buffers.el")
  (front-context-string . ";; Dired\n(use-pa") (rear-context-string)
@@ -101,9 +101,9 @@
 ("org-capture-last-stored"
  (filename
   . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Call aquatech\n")
+ (front-context-string . "* create a buffe")
  (rear-context-string . "20240104T120451\n") (position . 112)
- (last-modified 26565 63375 295255 0))
+ (last-modified 26584 8602 240196 0))
 ("setup-magit.el" (filename . "~/.emacs.d/modules/setup-magit.el")
  (front-context-string . "(defun bob/magit") (rear-context-string)
  (position . 1) (last-modified 25322 9259 17972 0))

@@ -395,6 +395,8 @@
   :hook (emacs-lisp-mode))
 
 (use-package puni
+  :custom
+  (puni-confirm-when-delete-unbalanced-active-region nil)
   :config
   (defun puni-rewrap (open-wrapper)
     (interactive (list (char-to-string (read-char "Enter wrapper character: "))))
@@ -532,18 +534,9 @@
 
 (use-package project
   :custom
+  (project-list-file (format "%sprojects" user-emacs-directory))
   (project-vc-extra-root-markers '("package.json"))
   :config
-  (defun project-buffers-list-files-only (project)
-    "Return a list of only file-visiting buffers belonging to PROJECT."
-    (let ((project-root (expand-file-name (project-root project))))
-      (cl-remove-if-not
-       (lambda (buffer)
-         (and (buffer-file-name buffer)
-              (string-prefix-p project-root
-                               (expand-file-name (buffer-file-name buffer)))))
-       (buffer-list))))
-  (advice-add 'project-buffers-list :override #'project-buffers-list-files-only)
   (setq project-switch-commands
         '((project-find-file "Find file")
           (project-dired "Root Directory" "d")
