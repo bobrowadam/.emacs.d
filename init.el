@@ -1,5 +1,3 @@
-;; -*- eval: (flymake-mode -1) -*-
-
 (elpaca elpaca-use-package
   (elpaca-use-package-mode)
   (setq elpaca-use-package-by-default t))
@@ -156,18 +154,9 @@
 
 (use-package ob-typescript)
 
+
 (use-package org
   :commands (org-agenda)
-  :ensure ( :package "org"
-            :repo ("https://git.savannah.gnu.org/git/emacs/org-mode.git" . "org")
-            :pre-build (progn (require 'elpaca-menu-org)
-                              (elpaca-menu-org--build))
-            :autoloads "org-loaddefs.el"
-            :depth 1
-            :build (:not elpaca--generate-autoloads-async)
-            :files (:defaults ("etc/styles/"
-                               "etc/styles/*" "doc/*.texi"))
-            :source "Org")
   :custom
   (org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
   (org-babel-python-command "python3")
@@ -205,7 +194,6 @@
    '((emacs-lisp . t)
      (js . t)
      (shell . t)
-     ;; (mongo . t)
      (python . t)
      (lisp . t)
      (verb . t)
@@ -315,21 +303,11 @@
                  :order 4)))
   (org-super-agenda-mode 1))
 
-(defun bob/denote-open-or-create (target)
-  "See `denote-open-or-create`"
-  (interactive (list (bob/completing-read "Select note: "
-                                          (denote-directory-files nil :omit-current)
-                                          'bob/truncate-denote-file-name
-                                          :file-history 'denote--file-history)))
-  (if (and target (file-exists-p target))
-      (find-file target)
-    (funcall #'denote)))
-
 (defun bob/truncate-denote-file-name (file-name hash-map)
   (s-replace-regexp "^.+--" "" file-name))
 
 (use-package denote
-  :commands (denote bob/denote-open-or-create denote-mode denote-open-or-create denote-directory-files)
+  :commands (denote denote-mode denote-open-or-create denote-directory-files)
   :custom
   ;; (denote-open-or-create-fn 'consult-file)
   (denote-directory org-directory)
