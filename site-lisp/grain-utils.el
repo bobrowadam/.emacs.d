@@ -16,7 +16,10 @@
          (service-name (completing-read "Enter service name: " service-names))
          (run-service-command (bob/generate--run-service-command service-name))
          (output-buffer-name (format "%s %s" grain-service-output-buffer-prefix service-name))
-         (service-output-buffer-name (format "%s all but %s" grain-service-output-buffer-prefix service-name))
+         (service-output-buffer-name (format "%s %s!%s"
+                                             grain-service-output-buffer-prefix
+                                             (propertize "ALL" 'face '(bold italic :foreground "red"))
+                                             service-name))
          (grain-service-active-processes (--filter
                                           (->> it process-buffer buffer-name (s-starts-with? grain-service-output-buffer-prefix))
                                           (process-list))))
@@ -24,9 +27,9 @@
       (interrupt-process process)
       (kill-buffer (process-buffer process)))
 
-    (async-shell-command run-service-command output-buffer-name)
     (async-shell-command (bob/generate--run-all-services-command service-name)
-                         service-output-buffer-name)))
+                         service-output-buffer-name)
+    (async-shell-command run-service-command output-buffer-name)))
 
 
 (ert-deftest generate-command ()
