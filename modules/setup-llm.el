@@ -37,10 +37,10 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
 (use-package aidermacs
   :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
   :custom
-  (aidermacs-subtree-only t)
+  (aidermacs-subtree-only nil)
   (aidermacs-auto-commits nil)
   (aidermacs-architect-model "o1")
-  (aidermacs-backend 'vterm)
+  ;; (aidermacs-backend 'vterm)
   :config
   (aidermacs-setup-minor-mode)
   (setq
@@ -50,5 +50,46 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
                                              funcall)))
                      `("--anthropic-api-key" ,credentials)))
   :bind ("C-c g c" . aidermacs-transient-menu))
+
+(use-package minuet
+  :custom
+  (minuet-provider 'claude)
+  :bind
+  (:map prog-mode-map ("C-M-i" . #'minuet-complete-with-minibuffer))
+  :config
+  (setenv
+   "ANTHROPIC_API_KEY"  (-some-> (auth-source-search :host "claude.ai" :max 1)
+                          car
+                          (plist-get :secret)
+                          funcall)))
+
+(use-package claude-code
+  :disabled t
+  :after eat
+  :ensure ( :repo "stevemolitor/claude-code.el"
+            :fetcher github
+            :files ("*.el" (:exclude "demo.gif")))
+  :bind-keymap
+  ("C-c g C" . claude-code-command-map)
+  :hook ((claude-code-start . sm-setup-claude-faces))
+  :config
+  (defun sm-setup-claude-faces ()
+    (let ((attrs '(:family "JuliaMono" :weight light :height 140)))
+      (dolist (face '(eat-shell-prompt-annotation-running
+                      eat-shell-prompt-annotation-success
+                      eat-shell-prompt-annotation-failure
+                      eat-term-bold
+                      eat-term-faint
+                      eat-term-italic
+                      eat-term-slow-blink
+                      eat-term-fast-blink))
+        (apply 'set-face-attribute face nil attrs))
+      (dotimes (i 10)
+        (apply 'set-face-attribute (intern (format "eat-term-font-%d" i)) nil attrs))
+      (dotimes (i 255)
+        (apply 'set-face-attribute (intern (format "eat-term-color-%d" i)) nil attrs))
+      (apply 'buffer-face-set attrs))
+    (setq line-spacing 0.25))
+  (claude-code-mode))
 
 (provide 'setup-llm)
