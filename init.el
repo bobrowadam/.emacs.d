@@ -728,20 +728,21 @@
   (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true"))))
 
 (use-package typescript-mode
-  :mode ("\\.ts\\'" . typescript-ts-mode)
+  :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
   :bind ("C-c C-b" . npm-run-build)
   :hook
   (typescript-ts-mode . (lambda ()
                           (setq-local electric-pair-pairs (append electric-pair-pairs '((?< . ?>))))
                           (jest-ts-mode 1)))
   :config
+  (setq electric-pair-pairs (append electric-pair-pairs '((?' . ?'))))
   (fnm-use)
   (setq typescript-ts-mode-indent-offset 2))
 
-(use-package web-mode
-  :mode
-  ("\\.jsx$" . web-mode)
-  ("\\.tsx$" . web-mode))
+;; (use-package web-mode
+;;   :mode
+;;   ("\\.jsx$" . web-mode)
+;;   ("\\.tsx$" . web-mode))
 
 
 (use-package zig-ts-mode)
@@ -760,7 +761,9 @@
 
 (use-package electric-pair-mode
   :ensure nil
-  :hook (prog-mode))
+  :hook (prog-mode . (lambda ()
+                       (unless (eq major-mode 'emacs-lisp-mode)
+                         (electric-pair-mode 1)))))
 
 (use-package display-line-numbers
   :ensure nil
@@ -1143,6 +1146,8 @@
 
 (use-package ts-repl
   :ensure (:repo "nverno/ts-repl" :fetcher github :files ("*.el")))
+
+(use-package kubed)
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
