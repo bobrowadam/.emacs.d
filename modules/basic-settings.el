@@ -152,6 +152,17 @@
 (global-set-key (kbd "C-v") 'consertive-page-down)
 (global-set-key (kbd "M-v") 'consertive-page-up)
 
+(defun scrol-forward-line ()
+  (interactive)
+  (forward-line 1)
+  (recenter))
+(defun scrol-backward-line ()
+  (interactive)
+  (forward-line -1)
+  (recenter))
+(global-set-key (kbd "C-s-p") 'scrol-backward-line)
+(global-set-key (kbd "C-s-n") 'scrol-forward-line)
+
 (setq xref-search-program 'ripgrep)
 
 (setq python-shell-interpreter (executable-find "python3.12"))
