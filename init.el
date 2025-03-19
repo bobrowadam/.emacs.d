@@ -68,11 +68,16 @@
   ("M-y" . consult-yank-from-kill-ring))
 
 (use-package casual)
+
+(use-package re-builder
+  :ensure nil
+  :bind
+  (:map reb-mode-map ("M-i" . casual-re-builder-tmenu)))
+
 (use-package calc
   :ensure nil
   :bind
-  (:map calc-mode-map ("M-i" . casual-calc-tmenu))
-  (:map reb-mode-map ("M-i" . casual-re-builder-tmenu)))
+  (:map calc-mode-map ("M-i" . casual-calc-tmenu)))
 
 (use-package dired
   :commands dired
