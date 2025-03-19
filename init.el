@@ -71,7 +71,8 @@
 (use-package calc
   :ensure nil
   :bind
-  (:map calc-mode-map ("M-i" . casual-calc-tmenu)))
+  (:map calc-mode-map ("M-i" . casual-calc-tmenu))
+  (:map reb-mode-map ("M-i" . casual-re-builder-tmenu)))
 
 (use-package dired
   :commands dired
@@ -314,8 +315,11 @@
   (denote-date-prompt-use-org-read-date t)
   (denote-prompts '(title keywords file-type))
   :bind
-  ("C-c d d" . denote-open-or-create)
-  ("C-c d t" . denote-journal-extras-new-or-existing-entry))
+  ("C-c d d" . denote-open-or-create))
+
+(use-package denote-journal
+  :ensure (:repo "protesilaos/denote-journal" :fetcher github :files ("*.el" "*.texi"))
+  :bind ("C-c d t" . denote-journal-new-or-existing-entry))
 
 (use-package uuid :demand t)
 (use-package verb
