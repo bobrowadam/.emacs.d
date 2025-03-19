@@ -763,10 +763,16 @@
   (c-ts-mode-indent-offset 4)
   :ensure nil)
 
+(use-package treesit-fold
+  :bind
+  (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle)))
 (use-package prog-mode
+  :after treesit-fold
   :ensure nil
   :hook
-  (prog-mode . (lambda () (display-line-numbers-mode 1))))
+  (prog-mode . (lambda () (display-line-numbers-mode 1)))
+  :config
+  (global-treesit-fold-indicators-mode 1))
 
 (use-package electric-pair-mode
   :ensure nil
@@ -1062,13 +1068,6 @@
 (use-package erefactor
   :bind-keymap ("C-c C-v" . erefactor-map)
   :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on))
-
-(use-package hideshow
-  :ensure nil
-  :hook (prog-mode . hs-minor-mode)
-  :bind
-  (:map prog-mode-map
-        ("C-=" . hs-toggle-hiding)))
 
 (use-package jinx
   :custom
