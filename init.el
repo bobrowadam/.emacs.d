@@ -821,9 +821,10 @@
 (use-package doom-themes
   :demand t
   :custom
-  (setq doom-pine-padded-modeline t)
+  (doom-monokai-classic-brighter-comments nil)
+  (doom-monokai-classic-comment-bg t)
   :config
-  (load-theme 'doom-pine))
+  (load-theme 'doom-monokai-classic))
 
 (use-package spacious-padding
   :demand t
