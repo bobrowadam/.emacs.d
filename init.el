@@ -8,7 +8,7 @@
 (elpaca-wait)
 
 (use-package bob-utils
-  :commands (bob/eat-top-project bob/kill-this-buffer bob/jump-to-shell)
+  :commands (bob/eat-top-project bob/kill-this-buffer bob/jump-to-shell assocdr)
   :load-path "site-lisp"
   :ensure nil)
 
@@ -546,6 +546,7 @@
   (project-list-file (format "%sprojects" user-emacs-directory))
   (project-vc-extra-root-markers '("package.json"))
   :config
+  (require 'project-extras)
   (setq project-switch-commands
         '((project-find-file "Find file")
           (project-dired "Root Directory" "d")
@@ -563,7 +564,8 @@
       (project-remember-projects-under "~/source/grain/packages/" t)))
   :bind
   ("C-x p C-m"  . project-dired)
-  ("C-x p b" . consult-project-buffer))
+  ("C-x p b" . consult-project-buffer)
+  ("C-x p w" . bob/switch-to-open-project-buffer))
 
 (defun set-eslint-executable-name ()
   (setq flymake-eslint-executable-name
