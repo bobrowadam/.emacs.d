@@ -740,7 +740,9 @@
 
 (use-package typescript-mode
   :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
-  :bind ("C-c C-b" . npm-run-build)
+  :bind
+  ("C-c C-b" . npm-run-build)
+  (:map typescript-ts-mode-map ("C-M-SPC" . er/mark-ts-node))
   :hook
   (typescript-ts-mode . (lambda ()
                           (setq-local electric-pair-pairs (append electric-pair-pairs '((?< . ?>))))
