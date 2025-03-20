@@ -1162,5 +1162,11 @@
 
 (use-package kubed)
 
+(use-package combobulate
+  :ensure (:repo "mickeynp/combobulate" :fetcher github :files ("*.el"))
+  :custom
+  (combobulate-key-prefix "C-c o")
+  :hook ((prog-mode . combobulate-mode)))
+
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
