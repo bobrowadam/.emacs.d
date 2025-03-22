@@ -1170,5 +1170,8 @@
   (combobulate-key-prefix "C-c o")
   :hook ((prog-mode . combobulate-mode)))
 
+(use-package macrostep
+  :bind (:map emacs-lisp-mode-map ("C-x E" . macrostep-expand)))
+
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
