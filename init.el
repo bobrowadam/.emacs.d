@@ -780,9 +780,11 @@
 
 (use-package electric-pair-mode
   :ensure nil
-  :hook (prog-mode . (lambda ()
+  :hook
+  (prog-mode . (lambda ()
                        (unless (eq major-mode 'emacs-lisp-mode)
-                         (electric-pair-mode 1)))))
+                         (electric-pair-local-mode 1))))
+  (minibuffer-mode . (lambda () (electric-pair-local-mode 1))))
 
 (use-package display-line-numbers
   :ensure nil
