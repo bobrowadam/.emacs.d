@@ -167,4 +167,10 @@ NORMAL-MODE is for not running with debugger"
   "Return the current Unix timestamp as an integer."
   (floor (float-time (current-time))))
 
+(defmacro bob/with-default-dir (directory &rest body)
+  "Evaluate BODY with 'default-dir' as DIRECTORY. keymap is \\{typescript-ts-mode-map}"
+  (declare (indent 1) (debug t))
+  `(let ((default-directory ,directory))
+     ,@body))
+
 (provide 'bob-utils)

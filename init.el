@@ -8,7 +8,7 @@
 (elpaca-wait)
 
 (use-package bob-utils
-  :commands (bob/eat-top-project bob/kill-this-buffer bob/jump-to-shell assocdr)
+  :commands (bob/eat-top-project bob/kill-this-buffer bob/jump-to-shell assocdr bob/with-default-dir)
   :load-path "site-lisp"
   :ensure nil)
 
