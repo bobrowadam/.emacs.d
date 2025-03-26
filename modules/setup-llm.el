@@ -4,9 +4,13 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
 (use-package gptel
   :custom
   (gptel-default-mode 'org-mode)
-  ;; (gptel-max-tokens 8192)
-  (gptel-max-tokens nil)
+  (gptel-max-tokens 8192)
+  ;; (gptel-max-tokens nil)
   :config
+  (use-package emacs-agent
+    :demand t
+    :load-path "~/source/emacs-agent/"
+    :ensure nil)
   (defun bob/reset-tools ()
     (interactive)
     (setq gptel--known-tools nil)
