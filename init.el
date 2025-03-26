@@ -743,7 +743,6 @@
   :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
   :bind
   ("C-c C-b" . npm-run-build)
-  (:map typescript-ts-mode-map ("C-M-SPC" . er/mark-ts-node))
   :hook
   (typescript-ts-mode . (lambda ()
                           (setq-local electric-pair-pairs (append electric-pair-pairs '((?< . ?>))))
@@ -1154,7 +1153,10 @@
   :hook (prog-mode))
 
 (use-package expand-region
-  :bind ("M-#" . er/expand-region))
+  :after (typescript-ts-mode)
+  :commands (er/mark-ts-node)
+  :bind ("M-#" . er/expand-region)
+  (:map typescript-ts-mode-map ("C-M-SPC" . er/mark-ts-node)))
 
 (use-package ts-comint
   :custom
