@@ -350,8 +350,54 @@
   (require 'uuid)
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 
+(use-package ghub
+  :commands (ghub-post))
+
 (use-package magit
+  :custom (magit-process-finish-apply-ansi-colors t)
   :config
+  (defun magit-process-filter (proc string)
+    "Default filter used by `magit-start-process'."
+    (with-current-buffer (process-buffer proc)
+      (let ((inhibit-read-only t))
+        (goto-char (process-mark proc))
+        ;; Find last ^M in string.  If one was found, ignore
+        ;; everything before it and delete the current line.
+        (when-let ((ret-pos (cl-position ?\r string :from-end t)))
+          (setq string (substring string (1+ ret-pos)))
+          (delete-region (line-beginning-position) (point)))
+        (setq string (magit-process-remove-bogus-errors string))
+        (setq string (ansi-color-apply string))
+        (insert (propertize string 'magit-section
+                            (process-get proc 'section)))
+        (set-marker (process-mark proc) (point))
+        ;; Make sure prompts are matched after removing ^M.
+        (magit-process-yes-or-no-prompt proc string)
+        (magit-process-username-prompt  proc string)
+        (magit-process-password-prompt  proc string)
+        (run-hook-with-args-until-success 'magit-process-prompt-functions
+                                          proc string))))
+  (defun bob/create-github-repo ()
+    "Create a new Github repo using the Github API."
+    (interactive)
+    (let ((repo-name (read-string "Repo name: " (get-dir-name (project-root (project-current)))))
+          (repo-description (read-string "Repo description: "))
+          (repo-homepage (read-string "Repo homepage: "))
+          (is-repo-private (yes-or-no-p "Is Repo private: "))
+          (repo-is_template (yes-or-no-p "Is Repo is_template: "))
+          (current-branch (magit-get-current-branch)))
+      (ghub-post "/user/repos" (list  :name repo-name
+                                      :description repo-description
+                                      :homepage repo-homepage
+                                      :private is-repo-private
+                                      :is_template repo-is_template))
+      (magit-remote-add "origin" (format "git@github.com:bobrowadam/%s.git" repo-name))
+      (magit-run-git-async "push"
+                           "-u"
+                           "origin"
+                           (format "refs/heads/%s:refs/heads/%s"
+                                   current-branch
+                                   current-branch))))
   (magit-wip-mode 1)
   (transient-append-suffix 'magit-file-dispatch
     "p"
