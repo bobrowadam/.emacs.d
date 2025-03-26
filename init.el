@@ -244,6 +244,7 @@
   (org-agenda-span 1)
   (org-agenda-files `(,(format "%sjournal" org-directory)
                       "beorg.org"
+                      "linear.org"
                       "20240104T120451--inbox__project.org"
                       "20240103T130349--reminders__project.org"
                       "20240103T130420--tasks__project.org"))
@@ -1173,5 +1174,11 @@
 (use-package macrostep
   :bind (:map emacs-lisp-mode-map ("C-x E" . macrostep-expand)))
 
+(use-package org-linear
+  :commands (linear/update-linear-issues)
+  :ensure nil
+  :load-path "~/source/org-linear/")
+
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
+(put 'set-goal-column 'disabled nil)
