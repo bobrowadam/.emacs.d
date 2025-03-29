@@ -3,6 +3,8 @@
 (setq use-package-enable-imenu-support t)
 (setq use-package-always-ensure t)
 (setq use-package-always-defer t)
+(setenv "PATH" "/Users/bob/.opam/default/bin:/Users/bob/.codeium/windsurf/bin:/Users/bob/.bun/bin:/Users/bob/Library/pnpm:/Users/bob/.local/state/fnm_multishells/91475_1743069517342/bin:/opt/local/bin:/opt/local/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/usr/local/go/bin:/opt/podman/bin:/opt/homebrew/opt/gcc/bin:/Users/bob/.pyenv/shims:/usr/local/zig:/opt/homebrew/opt/gcc:/Users/bob/.cabal/bin:/Users/bob/.ghcup/bin:/opt/homebrew/bin:/Users/bob/go/bin:/Users/bob/.local/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/Users/bob/.cargo/bin:/Users/bob/bin:/Users/bob/.local/lib/aws/bin/aws:/usr/local/opt/libxml2/bin:/Users/bob/.rvm/bin:/usr/local/sbin:/Users/bob/Library/Application Support/Coursier/bin:/usr/local/opt/llvm/bin:/Users/bob/.roswell/bin:/Users/bob/.qlot/bin:/Users/bob/.rustup/toolchains/stable-x86_64-apple-darwin/bin:/Users/bob/cmdline-tools/bin:/Users/bob/Library/Application Support/fnm:/Applications/iTerm.app/Contents/Resources/utilities:/Users/bob/environments/default_env/bin:/opt/homebrew/opt/libpq/bin:/opt/homebrew/opt/llvm/bin")
+(setq exec-path (split-string (getenv "PATH") path-separator))
 
 ;; Match theme color early on (smoother transition).
 ;; Theme loaded in features/ui.el.
