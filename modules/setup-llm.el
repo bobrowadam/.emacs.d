@@ -7,6 +7,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   (gptel-max-tokens 8192)
   ;; (gptel-max-tokens nil)
   :config
+  (exec-path-from-shell-initialize)
   (use-package emacs-agent
     :demand t
     :load-path "~/source/emacs-agent/"

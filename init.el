@@ -1,11 +1,11 @@
 (elpaca elpaca-use-package
   (elpaca-use-package-mode)
   (setq elpaca-use-package-by-default t))
+(elpaca-wait)
 
 (use-package dash)
-(use-package s)
-
-(elpaca-wait)
+(use-package s :ensure (:wait t) :demand t)
+(use-package llama :ensure (:wait t) :commands (##))
 
 (use-package bob-utils
   :commands (bob/eat-top-project bob/kill-this-buffer bob/jump-to-shell assocdr bob/with-default-dir)
@@ -37,7 +37,7 @@
   :demand t
   :load-path "./modules")
 
-(use-package ediff-setup
+(use-package setup-ediff
   :demand t
   :load-path "~/modules")
 
@@ -327,11 +327,12 @@
   :ensure (:repo "protesilaos/denote-journal" :fetcher github :files ("*.el" "*.texi"))
   :bind ("C-c d t" . denote-journal-new-or-existing-entry))
 
-(use-package uuid :demand t)
+;; (use-package uuid :demand t)
 (use-package verb
-  :after (org uuid)
+  :after (org)
   :mode ("\\.org\\'" . org-mode)
   :config
+  (use-package uuid :demand t)
   (defun parse-verb-response-to-alist ()
     (when verb-parse-json-to-alist
       (let ((response (slot-value verb-http-response :body)))
@@ -347,7 +348,6 @@
           (verb-response-body-mode +1)))))
   (setq verb-parse-json-to-alist nil)
   (setq verb-post-response-hook 'parse-verb-response-to-alist)
-  (require 'uuid)
   (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 
 (use-package ghub
@@ -355,6 +355,7 @@
 
 (use-package magit
   :custom (magit-process-apply-ansi-colors 'filter)
+  :config
   (defun bob/create-github-repo ()
     "Create a new Github repo using the Github API."
     (interactive)
@@ -552,7 +553,8 @@
   :init (which-key-mode 1))
 
 (use-package jsonrpc
-  :ensure (:wait t) :defer t)
+  ;; :ensure (:wait t)
+  )
 
 (use-package fnm
   :demand t
@@ -641,7 +643,7 @@
   :bind (:map eglot-mode-map ("C->" . eldoc-box-help-at-point)))
 
 (use-package eglot
-  :ensure (:wait t)
+  ;; :ensure (:wait t)
   :after (fnm exec-path-from-shell)
   :commands (eglot eglot-ensure eglot-shutdown-all)
   :custom
@@ -792,15 +794,16 @@
   :ensure nil)
 
 (use-package treesit-fold
+  :commands (global-treesit-fold-indicators-mode)
   :bind
-  (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle)))
+  (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
+  :hook
+  (typescript-ts-base-mode . treesit-fold-indicators-mode))
+
 (use-package prog-mode
-  :after treesit-fold
   :ensure nil
   :hook
-  (prog-mode . (lambda () (display-line-numbers-mode 1)))
-  :config
-  (global-treesit-fold-indicators-mode 1))
+  (prog-mode . (lambda () (display-line-numbers-mode 1))))
 
 (use-package electric-pair-mode
   :ensure nil
@@ -1145,7 +1148,7 @@
 (use-package avy
   :custom
   (avy-case-fold-search t)
-  (avy-timeout-seconds 0.13)
+  (avy-timeout-seconds 0.25)
   :bind
   ("C-:" . avy-goto-char-timer)
   (:map isearch-mode-map
@@ -1195,6 +1198,7 @@
   :ensure (:repo "mickeynp/combobulate" :fetcher github :files ("*.el"))
   :custom
   (combobulate-key-prefix "C-c o")
+  :bind (:map typescript-ts-mode-map ("C-M-SPC" . combobulate-mark-node-dwim))
   :hook ((prog-mode . combobulate-mode)))
 
 (use-package macrostep

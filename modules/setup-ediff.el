@@ -14,7 +14,6 @@
 
 (use-package ediff
   :ensure nil
-  :demand t
   :custom
   (ediff-keep-variants nil)
   (ediff-split-window-function 'split-window-horizontally)
@@ -118,6 +117,6 @@ the register."
 ;; for cleaning up ancillary buffers on quitting an Ediff session.
 (add-hook 'ediff-after-quit-hook-internal #'cc/restore-window-configuration-for-ediff)
 
-(provide 'ediff-setup)
+(provide 'setup-ediff)
 
 ;;; ediff-setup.el ends here

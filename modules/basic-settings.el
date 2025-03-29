@@ -57,22 +57,10 @@
 
 (setq-default indent-tabs-mode nil)
 
-(display-time-mode -1)
-(display-battery-mode -1)
-(menu-bar-mode -1)
-(line-number-mode 1)
-(column-number-mode 1)
-(setq ring-bell-function 'ignore)
-
 (when (window-system)
   (setq confirm-kill-emacs 'yes-or-no-p))
 
 (defalias 'yes-or-no-p 'y-or-n-p)
-
-(when window-system
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (tooltip-mode -1))
 
 (blink-cursor-mode 0)
 (global-subword-mode t)
@@ -178,7 +166,5 @@
   ;;                 'keep-size t)
   (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)
                   'keep-size t))
-
-(setq initial-major-mode 'fundamental-mode)
 
 (provide 'basic-settings)
