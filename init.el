@@ -1226,6 +1226,10 @@
 (use-package macrostep
   :bind (:map emacs-lisp-mode-map ("C-x E" . macrostep-expand)))
 
+(use-package hideshow :ensure nil
+  :hook (emacs-lisp-mode . (lambda () (hs-minor-mode 1)) )
+  :bind (:map emacs-lisp-mode-map ("C-=" . hs-toggle-hiding)))
+
 (use-package org-linear
   :commands (linear/update-linear-issues)
   :ensure nil
