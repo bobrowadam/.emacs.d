@@ -166,5 +166,5 @@
   ;;                 'keep-size t)
   (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)
                   'keep-size t))
-
+(setq kill-buffer-query-functions nil)
 (provide 'basic-settings)
