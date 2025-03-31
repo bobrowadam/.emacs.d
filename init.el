@@ -1,6 +1,12 @@
+(setq package-enable-at-startup nil)
+(setq use-package-enable-imenu-support t)
+(setq use-package-always-ensure t)
+(setq use-package-always-defer t)
+(setq use-package-compute-statistics t)
 (elpaca elpaca-use-package
   (elpaca-use-package-mode)
   (setq elpaca-use-package-by-default t))
+
 (elpaca-wait)
 (when window-system
     (server-start))
