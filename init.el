@@ -420,7 +420,10 @@
     "f"
     '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
 
-(use-package abridge-diff)
+(use-package abridge-diff
+  :demand t
+  :after magit
+  :config (abridge-diff-mode 1))
 
 (use-package forge
   :after magit
