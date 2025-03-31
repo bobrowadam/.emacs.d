@@ -425,6 +425,7 @@
   :after magit
   :config (abridge-diff-mode 1))
 
+(use-package pr-review)
 (use-package forge
   :after magit
   :custom
