@@ -808,7 +808,7 @@
   :bind
   (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
   :hook
-  (typescript-ts-base-mode . treesit-fold-indicators-mode))
+  (typescript-ts-base-mode . treesit-fold-mode))
 
 (use-package prog-mode
   :ensure nil
