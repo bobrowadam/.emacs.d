@@ -34,6 +34,10 @@
   ("M-SPC" . cycle-spacing)
   ("<s-return>" . toggle-frame-fullscreen))
 
+(use-package ibuffer
+  :ensure nil
+  :bind ("C-x C-b" . #'ibuffer))
+
 (use-package isearch
   :ensure nil
   :custom
