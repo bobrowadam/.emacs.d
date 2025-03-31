@@ -2,6 +2,8 @@
   (elpaca-use-package-mode)
   (setq elpaca-use-package-by-default t))
 (elpaca-wait)
+(when window-system
+    (server-start))
 
 (use-package dash)
 (use-package s :ensure (:wait t) :demand t)
