@@ -617,6 +617,12 @@
       (flymake-mode 1)))
 
 (use-package flymake
+  :config
+  (defun bob/flymake-mode-on ()
+    (when (and (buffer-file-name)
+               (not (equal (-some-> (project-current) project-root expand-file-name)
+                           user-emacs-directory)))
+      (flymake-mode 1)))
   :hook (emacs-lisp-mode . bob/flymake-mode-on)
   :bind
   (:map flymake-mode-map
