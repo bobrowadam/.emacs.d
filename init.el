@@ -1189,11 +1189,7 @@
 (use-package breadcrumb
   :hook (prog-mode))
 
-(use-package expand-region
-  :after (typescript-ts-mode)
-  :commands (er/mark-ts-node)
-  :bind ("M-#" . er/expand-region)
-  (:map typescript-ts-mode-map ("C-M-SPC" . er/mark-ts-node)))
+(use-package expand-region :bind ("M-#" . er/expand-region))
 
 (use-package ts-comint
   :custom
@@ -1209,7 +1205,7 @@
   :custom
   (combobulate-key-prefix "C-c o")
   :bind (:map typescript-ts-mode-map ("C-M-SPC" . combobulate-mark-node-dwim))
-  :hook ((prog-mode . combobulate-mode)))
+  :hook (typescript-ts-base-mode))
 
 (use-package macrostep
   :bind (:map emacs-lisp-mode-map ("C-x E" . macrostep-expand)))
