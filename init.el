@@ -1221,7 +1221,7 @@
   :custom
   (combobulate-key-prefix "C-c o")
   :bind (:map typescript-ts-mode-map ("C-M-SPC" . combobulate-mark-node-dwim))
-  :hook (typescript-ts-base-mode))
+  :hook (typescript-ts-mode))
 
 (use-package macrostep
   :bind (:map emacs-lisp-mode-map ("C-x E" . macrostep-expand)))
