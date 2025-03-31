@@ -4,10 +4,14 @@
 (elpaca-wait)
 (when window-system
     (server-start))
+(use-package dash
+  :config (defalias '-range '-iota))
 
-(use-package dash)
 (use-package s :ensure (:wait t) :demand t)
-(use-package llama :ensure (:wait t) :commands (##))
+(use-package llama
+  :ensure (:wait t)
+  :commands (## 𝝺)
+  :config (defalias '𝝺 'llama))
 
 (use-package bob-utils
   :commands (bob/eat-top-project bob/kill-this-buffer bob/jump-to-shell assocdr bob/with-default-dir)
