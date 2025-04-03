@@ -446,6 +446,35 @@
     "f"
     '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
 
+(defun bob/diff-kill-other-hunks ()
+    "Keep only the chunk around point."
+    (interactive)
+    (let ((current-hunk (diff-bounds-of-hunk)))
+      (save-excursion
+        (goto-char (point-min))
+        (diff--iterate-hunks (point-max)
+                             (𝝺 unless (equal (list %1 %2)
+                                              current-hunk)
+                                (diff-hunk-kill)))
+        (unless (equal (point-max)
+                       (cadr (diff-bounds-of-hunk)))
+          (bob/diff-kill-other-hunks)))))
+
+(use-package diff-mode
+  :ensure nil
+  :bind (:map diff-mode-shared-map
+              ("K" . #'bob/diff-kill-other-hunks))
+  :config
+  (defun bob/diff-kill-other-hunks ()
+    "Keep only the chunk around point."
+    (interactive)
+    (let ((current-hunk (diff-bounds-of-hunk)))
+      (save-excursion
+        (goto-char (point-min))
+        (diff--iterate-hunks (point-max)
+                             (𝝺 unless (equal (list %1 %2)
+                                              current-hunk)
+                                (diff-hunk-kill)))))))
 (use-package diff-hl
   :hook
   (prog-mode . #'turn-on-diff-hl-mode)
