@@ -1221,8 +1221,6 @@
 (use-package breadcrumb
   :hook (prog-mode))
 
-(use-package expand-region :bind ("M-#" . er/expand-region))
-
 (use-package ts-comint
   :custom
   (ts-comint-program-command "ts-node"))
