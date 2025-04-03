@@ -446,6 +446,12 @@
     "f"
     '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
 
+(use-package diff-hl
+  :hook
+  (prog-mode . #'turn-on-diff-hl-mode)
+  (vc-dir-mode . #'turn-on-diff-hl-mode)
+  (magit-post-refresh . #'diff-hl-magit-post-refresh))
+
 (use-package abridge-diff
   :demand t
   :after magit
