@@ -1094,7 +1094,7 @@
   (defun bob/advice-compilation-filter (f proc string)
     (funcall f proc (xterm-color-filter string)))
   (advice-add 'compilation-filter
-              :around #'my/advice-compilation-filter))
+              :around #'bob/advice-compilation-filter))
 
 (use-package elfeed
   :custom
