@@ -9,9 +9,9 @@
 (defconst grain-service-output-buffer-prefix "*grain/service*")
 
 ;;;###autoload
-(defun grain/run-service ()
+(defun grain/run-service (single-service)
   "Run a service in debug mode and run the other services separately"
-  (interactive)
+  (interactive "P")
   (let* ((default-directory "~/source/grain")
          (service-dir "/Users/bob/source/grain/apps/backend")
          (service-names (directory-files service-dir nil "^[^.]"))
@@ -19,16 +19,19 @@
          (run-service-command (bob/generate--run-service-command service-name))
          (output-buffer-name (format "%s %s" grain-service-output-buffer-prefix service-name))
          (service-output-buffer-name (format "%s [ALL] except %s" grain-service-output-buffer-prefix service-name))
-         (grain-service-active-processes (--filter
-                                          (->> it process-buffer buffer-name (s-starts-with? grain-service-output-buffer-prefix))
-                                          (process-list))))
+         (grain-service-active-processes (--filter (->> it 
+                                                        process-buffer
+                                                        buffer-name
+                                                        (s-starts-with? grain-service-output-buffer-prefix))
+                                                   (process-list))))
     (dolist (process grain-service-active-processes)
       (interrupt-process process)
       (kill-buffer (process-buffer process)))
 
     (async-shell-command run-service-command output-buffer-name)
-    (async-shell-command (bob/generate--run-all-services-command service-name)
-                         service-output-buffer-name)))
+    (unless single-service
+      (async-shell-command (bob/generate--run-all-services-command service-name)
+                           service-output-buffer-name))))
 
 
 (ert-deftest generate-command ()
