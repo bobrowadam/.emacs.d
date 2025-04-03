@@ -67,20 +67,35 @@
   (scratch-pop-initial-major-mode 'fundamental-mode)
   (scratch-pop-backup-directory (concat user-emacs-directory "scratch-pop")))
 
+(defvar bob/consult--source-project-buffer
+  `( :name     "Project Buffer"
+     :narrow   ?b
+     :category buffer
+     :face     consult-buffer
+     :history  buffer-name-history
+     :state    ,#'consult--buffer-state
+     :enabled  ,(lambda () consult-project-function)
+     :items
+     ,(lambda ()
+        (when-let (root (consult--project-root))
+          (consult--buffer-query :sort 'visibility
+                                 :directory root
+                                 :as #'consult--buffer-pair
+                                 :predicate #'buffer-file-name))))
+  "Project buffer source for `consult-buffer'.")
 (use-package consult
   :ensure t
-  :custom
-  (consult-buffer-filter
-   '("\\`\\magit.*\\'"
-     "^\\*.**$"
-     "^[[:space:]]\\*.**$"
-     )
-   )
   :init
   (setq consult--tofu-char #x100000
         consult--tofu-range #x00fffe)
+  :custom
+  (consult-project-buffer-sources
+    '(bob/consult--source-project-buffer
+      consult--source-project-recent-file
+      consult--source-project-root))
   :bind
   ("M-i" . consult-imenu)
+  ("C-x b" . consult-buffer)
   ("M-g r" . consult-ripgrep)
   ("M-y" . consult-yank-from-kill-ring))
 
