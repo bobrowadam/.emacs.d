@@ -1,6 +1,9 @@
-(defun bob/generate--run-service-command (service-name)
-  (format "TS_NODE_PROJECT='./apps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
-          service-name service-name))
+
+(defun bob/generate--run-service-command (service-name &optional env)
+  (format "NODE_ENV=%s TS_NODE_PROJECT='./apps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
+          (or env "")
+          service-name
+          service-name))
 
 (defun bob/generate--run-all-services-command (excluded-service-name)
   (format "npx nx run-many --target=start --parallel=20 --exclude=%s"
