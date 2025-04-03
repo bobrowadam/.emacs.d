@@ -173,4 +173,22 @@ NORMAL-MODE is for not running with debugger"
   `(let ((default-directory ,directory))
      ,@body))
 
+(defun get--processes-by-string (captured-string)
+  (-let [lines (-filter
+                (lambda (str)
+                  (not (string-match-p (regexp-quote "rg") str)))
+                (s-split "\n" (shell-command-to-string (format "ps aux | rg %s" captured-string)) t))]
+    (mapcar (lambda (line)
+              (nth 1 (s-split " " line t)))
+            lines)))
+
+(defun bob/kill-inspect-process ()
+  (interactive)
+  (-let ((process (get--processes-by-string "inspect")))
+    (if process
+      (progn (message "Found inspect processes: %s, killing them now" process)
+             (when (equal (shell-command (format "kill %s" (s-join " " process)))
+                          0)
+               (message "Killed inspect processes: %s" process)))
+      (message "No inspect processes found"))))
 (provide 'bob-utils)
