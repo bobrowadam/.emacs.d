@@ -38,7 +38,8 @@
   ("C-x f" . recentf-open-files)
   ("C-x k" . bob/kill-this-buffer)
   ("M-SPC" . cycle-spacing)
-  ("<s-return>" . toggle-frame-fullscreen))
+  ("<s-return>" . toggle-frame-fullscreen)
+  ("M-o" . other-frame))
 
 (use-package ibuffer
   :ensure nil
