@@ -191,4 +191,5 @@ NORMAL-MODE is for not running with debugger"
                           0)
                (message "Killed inspect processes: %s" process)))
       (message "No inspect processes found"))))
+
 (provide 'bob-utils)
