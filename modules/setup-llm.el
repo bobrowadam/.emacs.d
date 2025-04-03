@@ -42,18 +42,20 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
 (use-package aidermacs
   :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
   :custom
-  (aidermacs-subtree-only nil)
+  (aidermacs-subtree-only t)
   (aidermacs-auto-commits nil)
   (aidermacs-architect-model "o1")
   ;; (aidermacs-backend 'vterm)
   :config
   (aidermacs-setup-minor-mode)
-  (setq
-   aidermacs-args  (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
-                                             car
-                                             (plist-get :secret)
-                                             funcall)))
-                     `("--anthropic-api-key" ,credentials)))
+  (setenv "ANTHROPIC_API_KEY" (-some-> (auth-source-search :host "claude.ai" :max 1)
+              car
+              (plist-get :secret)
+              funcall))
+  (setenv "OPENAI_API_KEY" (-some-> (auth-source-search :host "api.openai.com" :max 1)
+                             car
+                             (plist-get :secret)
+                             funcall))
   :bind ("C-c g c" . aidermacs-transient-menu))
 
 (use-package minuet
@@ -66,7 +68,24 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
    "ANTHROPIC_API_KEY"  (-some-> (auth-source-search :host "claude.ai" :max 1)
                           car
                           (plist-get :secret)
-                          funcall)))
+                          funcall))
+  (defvar minuet-claude-options
+    `(:model "claude-3-5-haiku-20241022"
+             :max_tokens 512
+             :api-key "ANTHROPIC_API_KEY"
+             :system
+             (:template minuet-default-system-template
+                        :prompt minuet-default-prompt
+                        :guidelines minuet-default-guidelines
+                        :n-completions-template minuet-default-n-completion-template)
+             :fewshots minuet-default-fewshots
+             :chat-input
+             (:template minuet-default-chat-input-template
+                        :language-and-tab minuet--default-chat-input-language-and-tab-function
+                        :context-before-cursor minuet--default-chat-input-before-cursor-function
+                        :context-after-cursor minuet--default-chat-input-after-cursor-function)
+             :optional nil)
+    "config options for Minuet Claude provider"))
 
 (use-package claude-code
   :disabled t
