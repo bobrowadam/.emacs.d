@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: pure-function
+# key: fpure
+# --
+(defun $1-𝝺 ($2)
+  ($3))
