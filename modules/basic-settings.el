@@ -150,6 +150,9 @@
   (recenter))
 (global-set-key (kbd "C-s-p") 'scrol-backward-line)
 (global-set-key (kbd "C-s-n") 'scrol-forward-line)
+(global-set-key (kbd "C-x 8 l")
+                (lambda ()
+                  (interactive (insert "𝝺"))))
 
 (setq xref-search-program 'ripgrep)
 
