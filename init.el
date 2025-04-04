@@ -21,7 +21,7 @@
 
 (use-package bob-utils
   :commands (bob/eat-top-project bob/kill-this-buffer bob/jump-to-shell assocdr bob/with-default-dir)
-  :load-path "site-lisp"
+  :load-path "modules"
   :ensure nil)
 
 (setq custom-file (concat user-emacs-directory "./custom.el"))
