@@ -1,3 +1,5 @@
+;;; init.el -*- lexical-binding: t; -*-
+
 (setq package-enable-at-startup nil)
 (setq use-package-enable-imenu-support t)
 (setq use-package-always-ensure t)
@@ -673,25 +675,20 @@
             (format "%snode_modules/.bin/eslint" local-eslint-path)
           "eslint")))
 
-(defun bob/flymake-mode-on ()
-  (when (and (buffer-file-name)
-             (not (equal (-some-> (project-current) project-root expand-file-name)
-                     user-emacs-directory)))
-      (flymake-mode 1)))
-
 (use-package flymake
-  :config
-  (defun bob/flymake-mode-on ()
-    (when (and (buffer-file-name)
-               (not (equal (-some-> (project-current) project-root expand-file-name)
-                           user-emacs-directory)))
-      (flymake-mode 1)))
-  :hook (emacs-lisp-mode . bob/flymake-mode-on)
+  :ensure nil
   :bind
   (:map flymake-mode-map
         ("C-c ! l" . flymake-show-buffer-diagnostics)
         ("C-c ! n" . flymake-goto-next-error)
         ("C-c ! p" . flymake-goto-prev-error)))
+
+(use-package setup-flymake
+  ;; :commands (bob/elisp-flymake-setup)
+  :ensure nil
+  :demand t
+  :hook (emacs-lisp-mode . bob/elisp-flymake-setup)
+  :load-path "./modules")
 
 (use-package flymake-eslint
   :after flyamke

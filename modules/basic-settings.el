@@ -153,6 +153,9 @@
 (global-set-key (kbd "C-x 8 l")
                 (lambda ()
                   (interactive (insert "𝝺"))))
+(global-set-key (kbd "C-x 8 d")
+                (lambda ()
+                  (interactive (insert "δ"))))
 
 (setq xref-search-program 'ripgrep)
 
