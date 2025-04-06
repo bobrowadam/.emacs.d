@@ -2,7 +2,7 @@
 # name: short package header
 # key: sheader
 # --
-;;; ${1:name}.el --- ${2:summary} -*- lexical-binding: t -*-
+;;; ${1:`(buffer-name)`} --- ${2:summary} -*- lexical-binding: t -*-
 ;;; Commentary:
 
 ;; ${3:commentary}
@@ -11,6 +11,5 @@
 
 ${4:(message "Hello World!")}
 
-(provide '$1)
-
-;;; $1.el ends here
+(provide '`(file-name-base (buffer-file-name)))`)
+;;; $1 ends here
