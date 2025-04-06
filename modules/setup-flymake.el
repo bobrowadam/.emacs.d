@@ -5,9 +5,6 @@
 
 ;;; Code:
 
-
-(require 'flymake)
-
 (defun bob/elisp-function-naming-convention-δ (report-fn &rest _args)
   "Use REPORT-FN to create a naming convention flymake rule."
   (save-excursion
@@ -35,8 +32,8 @@
 
 ;;;###autoload
 (defun bob/elisp-flymake-setup-δ ()
-  "Setup flymake in 'emacs-lisp-mode'."
-  (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention nil t)
+  "Setup flymake in `emacs-lisp-mode'."
+  (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention-δ nil t)
   (unless
       (equal (file-name-nondirectory (buffer-file-name))
              "init.el")

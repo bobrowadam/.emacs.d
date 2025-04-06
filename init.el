@@ -676,10 +676,9 @@
         ("C-c ! p" . flymake-goto-prev-error)))
 
 (use-package setup-flymake
-  ;; :commands (bob/elisp-flymake-setup)
+  :commands (bob/elisp-flymake-setup-δ)
   :ensure nil
-  :demand t
-  :hook (emacs-lisp-mode . bob/elisp-flymake-setup)
+  :hook (emacs-lisp-mode . bob/elisp-flymake-setup-δ)
   :load-path "./modules")
 
 (use-package flymake-eslint

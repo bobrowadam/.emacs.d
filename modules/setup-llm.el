@@ -1,3 +1,9 @@
+;;; setup-llm.el --- summary -*- lexical-binding: t -*-
+;;; Commentary:
+
+;; commentary
+
+;;; Code:
 (defvar ai-assistant-prompt "You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.
 Be very aware of the tool API and the arguments it needs. failing to do so will cause an unrecoverable error in the flow.")
 
@@ -12,10 +18,11 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
     :demand t
     :load-path "~/source/emacs-agent/"
     :ensure nil)
-  (defun bob/reset-tools ()
+  (defun bob/reset-toolsδ ()
     (interactive)
     (setq gptel--known-tools nil)
     (setq gptel-tools nil))
+
   (add-to-list 'gptel-directives (cons 'default ai-assistant-prompt))
   (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
   (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
@@ -34,7 +41,12 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   ("C-c g r" . gptel-rewrite)
   ("C-c g a d" . gptel-context-add)
   ("C-c g a f" . gptel-context-add-file)
-  (:map gptel-mode-map ("C-c g s" . gptel-menu)))
+  (:map gptel-mode-map ("C-c g s" . gptel-menu))
+  :hook
+  (org-mode . (lambda ()
+                (when (-some-> (buffer-file-name)
+                           (s-match ".+\.gptel\.org$"))
+                    (gptel-mode)))))
 
 ;; helm is an aidermacs dependency
 (use-package helm)
@@ -97,7 +109,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   ("C-c g C" . claude-code-command-map)
   :hook ((claude-code-start . sm-setup-claude-faces))
   :config
-  (defun sm-setup-claude-faces ()
+  (defun sm-setup-claude-facesδ ()
     (let ((attrs '(:family "JuliaMono" :weight light :height 140)))
       (dolist (face '(eat-shell-prompt-annotation-running
                       eat-shell-prompt-annotation-success
@@ -117,3 +129,4 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   (claude-code-mode))
 
 (provide 'setup-llm)
+;;; setup-llm.el ends here

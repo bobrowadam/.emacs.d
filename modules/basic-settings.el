@@ -1,3 +1,9 @@
+;;; basic-settings.el --- summary -*- lexical-binding: t -*-
+;;; Commentary:
+
+;; commentary
+
+;;; Code:
 ;; Default was too low.
 ;; Increase for better lsp performance.
 (setq read-process-output-max (* 3 1024 1024)) ;; 3mb
@@ -123,33 +129,35 @@
 (global-set-key (kbd "C-c T") 'display-time-mode)
 
 ;; scroll pages conservatively
-(defun consertive-page-up ()
+(defun consertive-page-upδ ()
   "Scroll up half a page and try to preserve cursor position."
   (interactive)
   (let ((line-num (count-lines (window-start) (point))))
     (scroll-down-command (round (* (window-body-height) 0.25)))
     (move-to-window-line line-num)))
 
-(defun consertive-page-down ()
+(defun consertive-page-downδ ()
   "Scroll down half a page and try to preserve cursor position."
   (interactive)
   (let ((line-num (count-lines (window-start) (point))))
     (scroll-up-command (round (* (window-body-height) 0.25)))
     (move-to-window-line line-num)))
 
-(global-set-key (kbd "C-v") 'consertive-page-down)
-(global-set-key (kbd "M-v") 'consertive-page-up)
+(global-set-key (kbd "C-v") 'consertive-page-downδ)
+(global-set-key (kbd "M-v") 'consertive-page-upδ)
 
-(defun scrol-forward-line ()
+(defun scroll-forward-lineδ ()
+  "Scroll  forward a single line."
   (interactive)
   (forward-line 1)
   (recenter))
-(defun scrol-backward-line ()
+(defun scrol-backward-lineδ ()
+  "Scroll backward a single line."
   (interactive)
   (forward-line -1)
   (recenter))
-(global-set-key (kbd "C-s-p") 'scrol-backward-line)
-(global-set-key (kbd "C-s-n") 'scrol-forward-line)
+(global-set-key (kbd "C-s-p") 'scrol-backward-lineδ)
+(global-set-key (kbd "C-s-n") 'scroll-forward-lineδ)
 (global-set-key (kbd "C-x 8 l")
                 (lambda ()
                   (interactive (insert "𝝺"))))
@@ -174,3 +182,5 @@
                   'keep-size t))
 (setq kill-buffer-query-functions nil)
 (provide 'basic-settings)
+
+;;; basic-settings.el ends here
