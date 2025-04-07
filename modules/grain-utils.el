@@ -16,46 +16,48 @@
 (defconst *grain-project-root* "~/source/grain")
 (defconst *grain-services-root* "apps/backend/")
 
-(defun grain/run--service (run-service-command service-output-buffer-name)
-  "Run a service in debug mode and run the other services separately"
+(defun grain/run--serviceδ (run-service-command service-output-buffer-name)
+  "Run RUN-SERVICE-COMMAND in SERVICE-OUTPUT-BUFFER-NAME buffer."
   (let ((default-directory *grain-project-root*)
-        (process (get-buffer-process (get-buffer service-output-buffer-name)))
-        (service-process-buffer (get-buffer-process (get-buffer service-output-buffer-name))))
-    (when service-process-buffer
-      (progn (interrupt-process service-process-buffer)
-             (kill-buffer (process-buffer process))))
-
+        (process (get-buffer-process (get-buffer service-output-buffer-name))))
+    (when process
+      (interrupt-process process)
+      (kill-buffer (process-buffer process)))
     (async-shell-command run-service-command service-output-buffer-name)))
 
-(defun grain/get--service-name ()
+(defun grain/get--service-nameδ ()
+  "Use completing read to get a name of a known grain service."
   (completing-read "Enter service name: "
                    (directory-files (file-name-concat *grain-project-root* *grain-services-root*)
                                     nil
                                     "^[^.]")))
 ;;;###autoload
-(defun grain/run-service (single-service)
-  "Run a service in debug mode and run the other services separately"
+(defun grain/run-serviceδ (single-service-p)
+  "Run a service in debug mode.
+When SINGLE-SERVICE-P is nil, run all the other services as well."
   (interactive "P")
-  (let ((service-name (grain/get--service-name)))
-    (progn
-      (grain/run--service (bob/generate--run-service-command service-name "" 9230)
-                          (format "*SERVICE: %s*" service-name))
-      (unless single-service
-        (grain/run--service (bob/generate--run-all-services-command service-name)
-                            (format "*[ALL] except %s*"
-                                    service-name))))))
+  (let* ((service-name (grain/get--service-nameδ))
+         (service-output-buffer (format "*SERVICE: %s*" service-name))
+         (all-services-output-buffer (format "*[ALL] except %s*" service-name)))
+    (save-excursion (grain/run--serviceδ (bob/generate--run-service-command service-name "" 9230)
+                          service-output-buffer))
+    (unless single-service-p
+      (grain/run--serviceδ (bob/generate--run-all-services-command service-name)
+                          all-services-output-buffer))
+    (switch-to-buffer service-output-buffer)))
 
 ;;;###autoload
-(defun grain/run-e2e (single-service)
-  "Run a service in debug mode and run the other services separately."
+(defun grain/run-e2eδ (single-service-p)
+  "Run a service in debug mode.
+When SINGLE-SERVICE-P is nil, run all the other services as well."
   (interactive "P")
-  (let ((service-name (grain/get--service-name)))
+  (let ((service-name (grain/get--service-nameδ)))
     (progn
-      (grain/run--service (bob/generate--run-service-command service-name
+      (grain/run--serviceδ (bob/generate--run-service-command service-name
                                                              "test"
                                                              9232)
                           (format "*SERVICE: %s*" service-name))
-      (grain/run--service (bob/generate--run-all-services-e2e-command service-name)
+      (grain/run--serviceδ (bob/generate--run-all-services-e2e-command service-name)
                           (format "*[ALL] except %s*"
                                   service-name)))))
 
