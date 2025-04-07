@@ -51,10 +51,10 @@ When SINGLE-SERVICE-P is nil, run all the other services as well."
          (service-output-buffer (format "*SERVICE: %s*" service-name))
          (all-services-output-buffer (format "*[ALL] except %s*" service-name)))
     (save-excursion (grain/run--serviceδ (bob/generate--run-service-command-𝝺 service-name "" 9230)
-                          service-output-buffer))
+                                         service-output-buffer))
     (unless single-service-p
       (grain/run--serviceδ (bob/generate--run-all-services-command-δ service-name)
-                          all-services-output-buffer))
+                           all-services-output-buffer))
     (switch-to-buffer service-output-buffer)))
 
 ;;;###autoload
@@ -65,20 +65,20 @@ When SINGLE-SERVICE-P is nil, run all the other services as well."
   (let ((service-name (grain/get--service-nameδ)))
     (progn
       (grain/run--serviceδ (bob/generate--run-service-command-𝝺 service-name
-                                                             "test"
-                                                             9232)
-                          (format "*SERVICE: %s*" service-name))
+                                                                "test"
+                                                                9232)
+                           (format "*SERVICE: %s*" service-name))
       (grain/run--serviceδ (bob/generate--run-all-services-e2e-command-δ service-name)
-                          (format "*[ALL] except %s*"
-                                  service-name)))))
+                           (format "*[ALL] except %s*"
+                                   service-name)))))
 
 (defun pick-port-for-inspected-service-δ ()
   "Ask for a service and find it's debugging port for."
   (let ((inspected-services-map (get-inspected-node-processes-δ)))
-   (-> (completing-read "Service to debug: "
-                        inspected-services-map)
-       (assocdr inspected-services-map)
-       (or 9229))))
+    (-> (completing-read "Service to debug: "
+                         inspected-services-map)
+        (assocdr inspected-services-map)
+        (or 9229))))
 
 (defun get-inspected-node-processes-δ ()
   "Get node processes that is running using the --inspect flag."
