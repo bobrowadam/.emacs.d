@@ -1,15 +1,26 @@
-(defun bob/generate--run-service-command (service-name &optional env inspect-port)
+;;; grain-utils.el --- summary -*- lexical-binding: t -*-
+;;; Commentary:
+
+;; commentary
+;; Functions for running grain's services in local dev environment.
+
+;;; Code:
+(defun bob/generate--run-service-command-𝝺 (service-name &optional env inspect-port)
+  "Generate a shell command to run SERVICE-NAME.
+optionally, accept ENV and INSPECT-PORT arguments."
   (format "NODE_ENV=%s TS_NODE_PROJECT='./apps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect%s -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
           (or env "")
           service-name
           (if inspect-port (format "=%s" inspect-port) "")
           service-name))
 
-(defun bob/generate--run-all-services-command (excluded-service-name)
+(defun bob/generate--run-all-services-command-δ (excluded-service-name)
+  "Run all off grain services except EXCLUDED-SERVICE-NAME."
   (format "npx nx run-many --target=start --parallel=20 --exclude=%s"
           excluded-service-name))
 
-(defun bob/generate--run-all-services-e2e-command (excluded-service-name)
+(defun bob/generate--run-all-services-e2e-command-δ (excluded-service-name)
+  "Run all off grain services in e2e mode, except EXCLUDED-SERVICE-NAME."
   (format "npm run start:services:test -- --exclude %s"
           excluded-service-name))
 
@@ -39,10 +50,10 @@ When SINGLE-SERVICE-P is nil, run all the other services as well."
   (let* ((service-name (grain/get--service-nameδ))
          (service-output-buffer (format "*SERVICE: %s*" service-name))
          (all-services-output-buffer (format "*[ALL] except %s*" service-name)))
-    (save-excursion (grain/run--serviceδ (bob/generate--run-service-command service-name "" 9230)
+    (save-excursion (grain/run--serviceδ (bob/generate--run-service-command-𝝺 service-name "" 9230)
                           service-output-buffer))
     (unless single-service-p
-      (grain/run--serviceδ (bob/generate--run-all-services-command service-name)
+      (grain/run--serviceδ (bob/generate--run-all-services-command-δ service-name)
                           all-services-output-buffer))
     (switch-to-buffer service-output-buffer)))
 
@@ -53,35 +64,38 @@ When SINGLE-SERVICE-P is nil, run all the other services as well."
   (interactive "P")
   (let ((service-name (grain/get--service-nameδ)))
     (progn
-      (grain/run--serviceδ (bob/generate--run-service-command service-name
+      (grain/run--serviceδ (bob/generate--run-service-command-𝝺 service-name
                                                              "test"
                                                              9232)
                           (format "*SERVICE: %s*" service-name))
-      (grain/run--serviceδ (bob/generate--run-all-services-e2e-command service-name)
+      (grain/run--serviceδ (bob/generate--run-all-services-e2e-command-δ service-name)
                           (format "*[ALL] except %s*"
                                   service-name)))))
 
-(defun get-inspected-node-processes ()
-  (-flatten-n 1 (mapcar 'find-port-and-service-name-from-process
+(defun get-inspected-node-processes-δ ()
+  "Get node processes that is running using the --inspect flag."
+  (-flatten-n 1 (mapcar 'find--port-and-service-name-from-process-δ
                         (process-list))))
 
-(defun find-port-and-service-name-from-process (proc)
+(defun find--port-and-service-name-from-process-δ (grain-service-proc)
+  "Extract the service-name and port from GRAIN-SERVICE-PROC."
   (mapcar (𝝺 when
-                  (string-match (rx (and 
-                                     "./apps/backend/" (group (one-or-more (not (any "/" ".")))) "/"
-                                     (zero-or-more anything)
-                                     "node --inspect=" (group (one-or-more digit))))
-                                %)
-                  (let ((service-name (match-string 1 %))
-                        (port (match-string 2 %)))
-                    (list service-name port)))
-               (process-command proc)))
+             (string-match (rx (and
+                                "./apps/backend/" (group (one-or-more (not (any "/" ".")))) "/"
+                                (zero-or-more anything)
+                                "node --inspect=" (group (one-or-more digit))))
+                           %)
+             (let ((service-name (match-string 1 %))
+                   (port (match-string 2 %)))
+               (list service-name port)))
+          (process-command grain-service-proc)))
 
 (ert-deftest generate-command ()
-  (should (equal (bob/generate--run-service-command "mail-service") "NODE_ENV= TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
+  (should (equal (bob/generate--run-service-command-𝝺 "mail-service") "NODE_ENV= TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
 
 ;;;###autoload
-(defun debug-migration ()
+(defun debug-migration-δ ()
+  "Debug a grain migration script."
   (interactive)
   (let ((runOrRevert (completing-read "Command: " '("run" "revert")))
         (default-directory "/Users/bob/source/grain/packages/rdb/"))
@@ -90,3 +104,4 @@ When SINGLE-SERVICE-P is nil, run all the other services as well."
                          "*migration-shell*")))
 
 (provide 'grain-utils)
+;;; grain-utils.el ends here
