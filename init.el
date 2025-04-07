@@ -769,7 +769,7 @@
                  ;; command-cwd "~/source/vscode-js-debug/dist/"
                  command-cwd "~/.emacs.d/debug-adapters/js-debug"
                  command-args ("src/dapDebugServer.js")
-                 :port 9229
+                 :port pick-port-for-inspected-service-δ
                  :sourceMaps t
                  :resolveSourceMapLocations ["**/dist/**/*"]
                  :cwd dape-cwd-fn
@@ -790,6 +790,7 @@
                  command "node"
                  command-cwd "~/.emacs.d/debug-adapters/js-debug"
                  command-args ("src/dapDebugServer.js")
+                 :port pick-port-for-inspected-service-δ
                  :sourceMaps t
                  :resolveSourceMapLocations ["**","!**/node_modules/**"]
                  :cwd dape-cwd-fn

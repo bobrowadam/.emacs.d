@@ -72,23 +72,34 @@ When SINGLE-SERVICE-P is nil, run all the other services as well."
                           (format "*[ALL] except %s*"
                                   service-name)))))
 
+(defun pick-port-for-inspected-service-δ ()
+  "Ask for a service and find it's debugging port for."
+  (let ((inspected-services-map (get-inspected-node-processes-δ)))
+   (-> (completing-read "Service to debug: "
+                        inspected-services-map)
+       (assocdr inspected-services-map)
+       (or 9229))))
+
 (defun get-inspected-node-processes-δ ()
   "Get node processes that is running using the --inspect flag."
-  (-flatten-n 1 (mapcar 'find--port-and-service-name-from-process-δ
-                        (process-list))))
+  (-keep 'identity
+         (-flatten-n 1 (mapcar 'find--port-and-service-name-from-process-δ
+                               (process-list)))))
 
 (defun find--port-and-service-name-from-process-δ (grain-service-proc)
   "Extract the service-name and port from GRAIN-SERVICE-PROC."
-  (mapcar (𝝺 when
-             (string-match (rx (and
-                                "./apps/backend/" (group (one-or-more (not (any "/" ".")))) "/"
-                                (zero-or-more anything)
-                                "node --inspect=" (group (one-or-more digit))))
-                           %)
-             (let ((service-name (match-string 1 %))
-                   (port (match-string 2 %)))
-               (list service-name port)))
-          (process-command grain-service-proc)))
+  (mapcar
+   (𝝺 when
+      (string-match (rx (and "./apps/backend/"
+                             (group (one-or-more (not (any "/" "."))))
+                             "/"
+                             (zero-or-more anything)
+                             "node --inspect=" (group (one-or-more digit))))
+                    %)
+      (let ((service-name (match-string 1 %))
+            (port (match-string 2 %)))
+        (cons service-name port)))
+   (process-command grain-service-proc)))
 
 (ert-deftest generate-command ()
   (should (equal (bob/generate--run-service-command-𝝺 "mail-service") "NODE_ENV= TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
