@@ -35,7 +35,7 @@
   "Setup flymake in `emacs-lisp-mode'."
   (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention-δ nil t)
   (unless
-      (equal (file-name-nondirectory (buffer-file-name))
+      (equal (-some-> (buffer-file-name) file-name-nondirectory)
              "init.el")
     (flymake-mode t)))
 
