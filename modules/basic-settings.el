@@ -181,6 +181,10 @@
   (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)
                   'keep-size t))
 (setq kill-buffer-query-functions nil)
+
+;; Trust the ~/source/ file so flymake byte compile will work.
+(add-to-list 'trusted-content "~/source/")
+
 (provide 'basic-settings)
 
 ;;; basic-settings.el ends here
