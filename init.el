@@ -1132,12 +1132,10 @@
   ("C-x p S" . bob/eat-top-project))
 
 (use-package xterm-color
-  :config
-  (setq compilation-environment '("TERM=xterm-256color"))
-  (defun bob/advice-compilation-filter (f proc string)
-    (funcall f proc (xterm-color-filter string)))
-  (advice-add 'compilation-filter
-              :around #'bob/advice-compilation-filter))
+  :hook
+  (compilation-filter . #'xterm-color-colorize-buffer)
+  :custom
+  (compilation-environment '("TERM=xterm-256color")))
 
 (use-package elfeed
   :custom
