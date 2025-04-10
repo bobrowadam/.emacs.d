@@ -930,8 +930,10 @@
   :config (spacious-padding-mode 1))
 
 (use-package rg
+  :custom
+  (wgrep-auto-save-buffer t)
   :bind
-  ("M-g d" . rg))
+  ("M-g d" . rg-dwim))
 
 (use-package wgrep)
 
@@ -1045,11 +1047,11 @@
   (setenv "POSTGRES_PASSWORD" "grain"))
 
 (use-package grain-utils
-  :commands (grain/run-service debug-migration)
+  :commands (grain/run-serviceδ debug-migration-δ pick-port-for-inspected-service-δ)
   :ensure nil
   :load-path "modules"
   :bind
-  ("C-c C-r" . grain/run-service))
+  ("C-c C-r" . grain/run-serviceδ))
 
 (use-package multiple-cursors
   :bind
