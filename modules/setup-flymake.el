@@ -16,9 +16,11 @@
       (while (re-search-forward "(\\(cl-\\)?def\\(un\\|subst\\|macro\\|advice\\)\\s-+\\([^[:space:]\n]+\\)" nil t)
         (let* ((func-name (match-string 3))
                (has-pure-suffix (string-suffix-p pure-suffix func-name))
-               (has-impure-suffix (string-suffix-p impure-suffix func-name)))
-
-          (unless (or has-pure-suffix has-impure-suffix)
+               (has-impure-suffix (string-suffix-p impure-suffix func-name))
+               (has-autoload-comment (save-excursion
+                                       (forward-line -1)
+                                       (looking-at-p "\\s-*;;;###autoload"))))
+          (unless (or has-pure-suffix has-impure-suffix has-autoload-comment)
             (let* ((pos (match-beginning 3))
                    (diag (flymake-make-diagnostic
                           (current-buffer)
@@ -35,7 +37,7 @@
   "Setup flymake in `emacs-lisp-mode'."
   (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention-δ nil t)
   (unless
-      (equal (-some-> (buffer-file-name) file-name-nondirectory)
+      (equal (-some-> (buffer-file-name) (file-name-nondirectory))
              "init.el")
     (flymake-mode t)))
 
