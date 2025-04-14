@@ -106,7 +106,8 @@
 (use-package re-builder
   :ensure nil
   :bind
-  (:map reb-mode-map ("M-i" . casual-re-builder-tmenu)))
+  (:map reb-mode-map ("M-i" . casual-re-builder-tmenu))
+  (:map reb-lisp-mode-map ("M-i" . casual-re-builder-tmenu)))
 
 (use-package calc
   :ensure nil
@@ -769,7 +770,7 @@
                  ;; command-cwd "~/source/vscode-js-debug/dist/"
                  command-cwd "~/.emacs.d/debug-adapters/js-debug"
                  command-args ("src/dapDebugServer.js")
-                 :port pick-port-for-inspected-service-δ
+                 :port pick-port-for-inspected-service
                  :sourceMaps t
                  :resolveSourceMapLocations ["**/dist/**/*"]
                  :cwd dape-cwd-fn
@@ -790,7 +791,7 @@
                  command "node"
                  command-cwd "~/.emacs.d/debug-adapters/js-debug"
                  command-args ("src/dapDebugServer.js")
-                 :port pick-port-for-inspected-service-δ
+                 :port pick-port-for-inspected-service
                  :sourceMaps t
                  :resolveSourceMapLocations ["**","!**/node_modules/**"]
                  :cwd dape-cwd-fn
@@ -831,7 +832,8 @@
                     :repo "bobrowadam/jest-ts-mode"
                     :files ("jest-ts-mode.el"))
   :custom
-  (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true"))))
+  (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true")))
+  (jest-ts/inspect-port #'get-next-available-inspect-port-δ))
 
 (use-package typescript-mode
   :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
@@ -845,12 +847,6 @@
   (setq electric-pair-pairs (append electric-pair-pairs '((?' . ?'))))
   (fnm-use)
   (setq typescript-ts-mode-indent-offset 2))
-
-;; (use-package web-mode
-;;   :mode
-;;   ("\\.jsx$" . web-mode)
-;;   ("\\.tsx$" . web-mode))
-
 
 (use-package zig-ts-mode)
 
@@ -1047,7 +1043,7 @@
   (setenv "POSTGRES_PASSWORD" "grain"))
 
 (use-package grain-utils
-  :commands (grain/run-serviceδ debug-migration-δ pick-port-for-inspected-service-δ)
+  :commands (grain/run-serviceδ debug-migration-δ pick-port-for-inspected-service get-next-available-inspect-port-δ)
   :ensure nil
   :load-path "modules"
   :bind
