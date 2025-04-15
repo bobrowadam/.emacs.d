@@ -767,7 +767,6 @@
                  host "localhost"
                  port 8123
                  command "node"
-                 ;; command-cwd "~/source/vscode-js-debug/dist/"
                  command-cwd "~/.emacs.d/debug-adapters/js-debug"
                  command-args ("src/dapDebugServer.js")
                  :port pick-port-for-inspected-service
