@@ -73,8 +73,9 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
 
 (use-package aider
   :ensure (:repo "tninja/aider.el" :fetcher github :files ("*.el"))
+  :custom
+  (aider-args '("--model" "sonnet" "--no-auto-accept-architect" "--auto-commits" "false"))
   :config
-  (setq aider-args '("--model" "sonnet" "--no-auto-accept-architect"))
   (setenv
    "ANTHROPIC_API_KEY"  (-some-> (auth-source-search :host "claude.ai" :max 1)
                           car
