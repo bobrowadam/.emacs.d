@@ -52,6 +52,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
 (use-package helm)
 (use-package vterm)
 (use-package aidermacs
+  :disabled t
   :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
   :custom
   (aidermacs-subtree-only t)
@@ -69,6 +70,19 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
                              (plist-get :secret)
                              funcall))
   :bind ("C-c g c" . aidermacs-transient-menu))
+
+(use-package aider
+  :ensure (:repo "tninja/aider.el" :fetcher github :files ("*.el"))
+  :config
+  (setq aider-args '("--model" "sonnet" "--no-auto-accept-architect"))
+  (setenv
+   "ANTHROPIC_API_KEY"  (-some-> (auth-source-search :host "claude.ai" :max 1)
+                          car
+                          (plist-get :secret)
+                          funcall))
+  :bind ("C-c g c" . 'aider-transient-menu)
+  :hook (transient-setup-buffer . (lambda ()
+            (face-remap-add-relative 'default :height 0.9))))
 
 (use-package minuet
   :custom
