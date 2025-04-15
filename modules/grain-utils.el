@@ -65,7 +65,7 @@ When SINGLE-SERVICE-P is nil, run all the other services as well."
     (switch-to-buffer service-output-buffer)))
 
 ;;;###autoload
-(defun grain/run-e2eδ ()
+(defun grain/run-e2e ()
   "Run a service in debug mode and all the other services as well."
   (interactive)
   (let ((service-name (grain/get--service-nameδ)))
@@ -155,7 +155,7 @@ When all ports are available use DEFAULT-PORT or return 9229."
   (should (equal (bob/generate--run-service-command-𝝺 "mail-service") "NODE_ENV= TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
 
 ;;;###autoload
-(defun debug-migration-δ ()
+(defun debug-migration ()
   "Debug a grain migration script."
   (interactive)
   (let ((runOrRevert (completing-read "Command: " '("run" "revert")))
