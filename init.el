@@ -1128,8 +1128,9 @@
   ("C-x p S" . bob/eat-top-project))
 
 (use-package xterm-color
-  :hook
-  (compilation-filter . #'xterm-color-colorize-buffer)
+  ;; :demand t
+  ;; :hook
+  ;; (compilation-filter . #'xterm-color-filter)
   :custom
   (compilation-environment '("TERM=xterm-256color")))
 
