@@ -1,6 +1,5 @@
 ;;; init.el -*- lexical-binding: t; -*-
 
-(setq package-enable-at-startup nil)
 (setq use-package-enable-imenu-support t)
 (setq use-package-always-ensure t)
 (setq use-package-always-defer t)
@@ -760,6 +759,11 @@
   :custom
   (dape-info-buffer-window-groups '((dape-info-scope-mode dape-info-watch-mode)))
   :config
+  (defun dape-set-available-port (config)
+    (when-let ((available-port (pick-port-for-inspected-service)))
+      (plist-put config :port (string-to-number available-port)))
+    config)
+  (add-to-list 'dape-default-config-functions 'dape-set-available-port)
   (setq dape-inlay-hints nil)
   (add-to-list 'dape-configs
                `(vscode-ts-js-attach
@@ -769,7 +773,6 @@
                  command "node"
                  command-cwd "~/.emacs.d/debug-adapters/js-debug"
                  command-args ("src/dapDebugServer.js")
-                 :port pick-port-for-inspected-service
                  :sourceMaps t
                  :resolveSourceMapLocations ["**/dist/**/*"]
                  :cwd dape-cwd-fn
@@ -790,7 +793,6 @@
                  command "node"
                  command-cwd "~/.emacs.d/debug-adapters/js-debug"
                  command-args ("src/dapDebugServer.js")
-                 :port pick-port-for-inspected-service
                  :sourceMaps t
                  :resolveSourceMapLocations ["**","!**/node_modules/**"]
                  :cwd dape-cwd-fn
@@ -1042,7 +1044,7 @@
   (setenv "POSTGRES_PASSWORD" "grain"))
 
 (use-package grain-utils
-  :commands (grain/run-serviceδ debug-migration-δ pick-port-for-inspected-service get-next-available-inspect-port-δ)
+  :commands (grain/run-serviceδ debug-migration pick-port-for-inspected-service get-next-available-inspect-port-δ grain/run-e2e)
   :ensure nil
   :load-path "modules"
   :bind
