@@ -175,7 +175,7 @@
 (let ((calculated-font-size
        (if (>= (nth 3 (assoc 'geometry (frame-monitor-attributes))) 1920)
            29
-         27)))
+         23)))
   ;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" calculated-font-size)
   ;;                 'keep-size t)
   (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)
