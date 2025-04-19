@@ -362,6 +362,8 @@
 
 (use-package denote-journal
   :ensure (:repo "protesilaos/denote-journal" :fetcher github :files ("*.el" "*.texi"))
+  :config
+  (add-hook 'calendar-mode-hook #'denote-journal-calendar-mode)
   :bind ("C-c d t" . denote-journal-new-or-existing-entry))
 
 ;; (use-package uuid :demand t)
@@ -1196,7 +1198,9 @@
     (modify-syntax-entry ?' "." jinx--syntax-table)
     (modify-syntax-entry ?’ "w" jinx--syntax-table)
     (modify-syntax-entry ?. "." jinx--syntax-table))
-  :hook (prog-mode . global-jinx-mode)
+  :init
+  (message "Loading Jinx")
+  (global-jinx-mode)
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
 
