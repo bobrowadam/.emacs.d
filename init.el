@@ -51,6 +51,9 @@
   :custom
   (isearch-lazy-count t))
 
+(use-package swiper
+  :bind ("C-c C-s" . swiper))
+
 (use-package setup-llm
   :demand t
   :load-path "./modules")
