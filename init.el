@@ -125,12 +125,10 @@
   (dired-use-ls-dired t)
   (delete-by-moving-to-trash t)
   (dired-dwim-target t)
-  :config
-  (setq insert-directory-program
-        (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
+  (insert-directory-program
+   (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
   :hook
   (dired-mode . (lambda () (dired-hide-details-mode 1)))
-  (dired-mode . diff-hl-dired-mode)
   :bind
   (:map dired-mode-map ("M-i" . casual-dired-tmenu)))
 
@@ -477,7 +475,8 @@
 (use-package diff-hl
   :hook
   (prog-mode . #'turn-on-diff-hl-mode)
-  (vc-dir-mode . #'turn-on-diff-hl-mode)
+  (vc-dir-mode . (lambda () (diff-hl-dir-mode 1)))
+  (dired-mode . diff-hl-dired-mode)
   (magit-post-refresh . #'diff-hl-magit-post-refresh))
 
 (use-package abridge-diff
