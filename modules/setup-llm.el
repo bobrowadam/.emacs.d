@@ -96,8 +96,9 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
                           car
                           (plist-get :secret)
                           funcall))
+
   (defvar minuet-claude-options
-    `(:model "claude-3-5-haiku-20241022"
+    `(:model "claude-3-haiku-20240307"
              :max_tokens 512
              :api-key "ANTHROPIC_API_KEY"
              :system
