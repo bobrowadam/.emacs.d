@@ -1040,6 +1040,7 @@
   :mode ("\\.sh\\'" . bash-ts-mode)
   :interpreter ("bash" . bash-ts-mode))
 
+(use-package pg)
 (use-package pgmacs
   :ensure (:repo "emarsden/pgmacs" :fetcher github :files ("*.el"))
   :config
