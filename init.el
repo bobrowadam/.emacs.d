@@ -673,7 +673,6 @@
           "eslint")))
 
 (use-package flymake
-  :ensure nil
   :bind
   (:map flymake-mode-map
         ("C-c ! l" . flymake-show-buffer-diagnostics)
