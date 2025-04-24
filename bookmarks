@@ -3,11 +3,11 @@
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-refile-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO fix runni")
- (rear-context-string . "2025-04-02 Wed>\n")
- (position . 1954)
- (last-modified 26604 62594 737073 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org")
+ (front-context-string . "* TODO להחזיר למ")
+ (rear-context-string . "2026-02-08 Sun>\n")
+ (position . 4533)
+ (last-modified 26631 31923 466927 0))
 ("linear.org"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/linear.org")
  (front-context-string . "* NEXT Add Tests")
@@ -16,10 +16,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Schedule Moshi")
- (rear-context-string . "t place holders\n")
- (position . 189)
- (last-modified 26622 48000 761298 0))
+ (front-context-string . "* Try out dired-")
+ (rear-context-string . "AI assistant)]]\n")
+ (position . 220)
+ (last-modified 26624 47125 369507 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
