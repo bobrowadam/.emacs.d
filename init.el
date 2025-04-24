@@ -1280,6 +1280,10 @@
   :ensure nil
   :load-path "~/source/org-linear/")
 
+(use-package p-search
+  :commands p-search
+  :ensure (:repo "zkry/p-search" :fetcher github :files ("*.el")))
+
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
