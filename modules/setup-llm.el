@@ -82,8 +82,10 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
                           (plist-get :secret)
                           funcall))
   :bind ("C-c g c" . 'aider-transient-menu)
-  :hook (transient-setup-buffer . (lambda ()
-            (face-remap-add-relative 'default :height 0.9))))
+  :hook
+  ;; This is a workaround for making the aider transient menu readable
+  (transient-setup-buffer . (lambda ()
+                              (face-remap-add-relative 'default :height 0.9))))
 
 (use-package minuet
   :custom
@@ -114,35 +116,6 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
                         :context-after-cursor minuet--default-chat-input-after-cursor-function)
              :optional nil)
     "config options for Minuet Claude provider"))
-
-(use-package claude-code
-  :disabled t
-  :after eat
-  :ensure ( :repo "stevemolitor/claude-code.el"
-            :fetcher github
-            :files ("*.el" (:exclude "demo.gif")))
-  :bind-keymap
-  ("C-c g C" . claude-code-command-map)
-  :hook ((claude-code-start . sm-setup-claude-faces))
-  :config
-  (defun sm-setup-claude-facesδ ()
-    (let ((attrs '(:family "JuliaMono" :weight light :height 140)))
-      (dolist (face '(eat-shell-prompt-annotation-running
-                      eat-shell-prompt-annotation-success
-                      eat-shell-prompt-annotation-failure
-                      eat-term-bold
-                      eat-term-faint
-                      eat-term-italic
-                      eat-term-slow-blink
-                      eat-term-fast-blink))
-        (apply 'set-face-attribute face nil attrs))
-      (dotimes (i 10)
-        (apply 'set-face-attribute (intern (format "eat-term-font-%d" i)) nil attrs))
-      (dotimes (i 255)
-        (apply 'set-face-attribute (intern (format "eat-term-color-%d" i)) nil attrs))
-      (apply 'buffer-face-set attrs))
-    (setq line-spacing 0.25))
-  (claude-code-mode))
 
 (provide 'setup-llm)
 ;;; setup-llm.el ends here
