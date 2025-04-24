@@ -96,7 +96,7 @@ When all ports are available use DEFAULT-PORT or return 9229."
     (-> (completing-read "Service to debug: "
                          inspected-services-map)
         (assocdr inspected-services-map)
-        (or 9229))))
+        (or "9229"))))
 
 (defun get-inspected-node-processes-δ ()
   "Get node processes that is running using the --inspect flag."
