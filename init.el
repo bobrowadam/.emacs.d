@@ -487,6 +487,7 @@
   :config (abridge-diff-mode 1))
 
 (use-package pr-review)
+(use-package github-review)
 (use-package forge
   :after magit
   :custom
