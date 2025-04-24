@@ -1276,9 +1276,16 @@
   :bind (:map emacs-lisp-mode-map ("C-=" . hs-toggle-hiding)))
 
 (use-package org-linear
-  :commands (linear/update-linear-issues)
-  :ensure nil
-  :load-path "~/source/org-linear/")
+  :ensure (org-linear
+           :host github
+           :repo "bobrowadam/org-linear"
+           :main "org-linear.el"
+           :files ("org-linear.el"
+                   "index.ts"
+                   "package.json"
+                   "tsconfig.json")
+           :build (:not elpaca--compile-info)
+           :pre-build (("bun" "install"))))
 
 (use-package p-search
   :commands p-search
