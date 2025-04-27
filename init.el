@@ -366,12 +366,12 @@
   (add-hook 'calendar-mode-hook #'denote-journal-calendar-mode)
   :bind ("C-c d t" . denote-journal-new-or-existing-entry))
 
-;; (use-package uuid :demand t)
+(use-package uuid)
 (use-package verb
   :after (org)
   :mode ("\\.org\\'" . org-mode)
   :config
-  (use-package uuid :demand t)
+  (require 'uuid)
   (defun parse-verb-response-to-alist ()
     (when verb-parse-json-to-alist
       (let ((response (slot-value verb-http-response :body)))
