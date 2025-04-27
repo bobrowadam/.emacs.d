@@ -11,8 +11,9 @@
 (defun bob/generate--run-service-command-𝝺 (service-name &optional env inspect-port)
   "Generate a shell command to run SERVICE-NAME.
 optionally, accept ENV and INSPECT-PORT arguments."
-  (format "NODE_ENV=%s TS_NODE_PROJECT='./apps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect%s -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
+  (format "NODE_ENV=%s TS_NODE_PROJECT='./apps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/%s/src/**/*' --exec \"node --inspect%s -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
           (or env "")
+          service-name
           service-name
           (if inspect-port (format "=%s" inspect-port) "")
           service-name))
