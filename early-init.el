@@ -51,14 +51,24 @@
   '((t :inherit info-title-3 :height 300))
   "A face For the initial Emacs title.")
 
-(setq gc-cons-percentage-before-init gc-cons-percentage)
-(setq gc-cons-threshold-before-init gc-cons-threshold)
+;; Save original GC values
+(defvar bob/gc-cons-percentage-original gc-cons-percentage
+  "Original value of `gc-cons-percentage'.")
+(defvar bob/gc-cons-threshold-original gc-cons-threshold
+  "Original value of `gc-cons-threshold'.")
+
+;; Set high GC threshold during startup for faster loading
 (setq gc-cons-percentage 0.6)
-(setq gc-cons-threshold (* gc-cons-threshold 1000))
+(setq gc-cons-threshold (* 100 1024 1024)) ;; 100MB, more explicit than multiplier
+
+;; Restore after startup
 (add-hook 'emacs-startup-hook
           (lambda ()
-            (progn (setq gc-cons-percentage gc-cons-percentage-before-init)
-                   (setq gc-cons-threshold gc-cons-threshold-before-init))))
+            (setq gc-cons-percentage bob/gc-cons-percentage-original)
+            (setq gc-cons-threshold bob/gc-cons-threshold-original)
+            (message "Emacs loaded in %s with %d garbage collections."
+                     (format "%.2f seconds" (float-time (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
 
 (defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
