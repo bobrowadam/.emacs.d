@@ -291,7 +291,8 @@
   :bind
   (:map org-agenda-mode-map
         ("M-F" . org-agenda-do-date-later)
-        ("M-B" . org-agenda-do-date-earlier))
+        ("M-B" . org-agenda-do-date-earlier)
+        ("C-c C-g" . linear/update-linear-issues))
   :ensure nil
   :config
   (org-super-agenda-mode 1))
@@ -323,6 +324,10 @@
 
 (use-package org-super-agenda
   :config
+  (defun bob/org-super-agenda-custom-header-format (header)
+    (progn (string-match ".+?:[[:space:]]\\(.+?$\\)"
+                         header)
+           (match-string 1 header)))
   (setq org-super-agenda-groups
         '((:name "Reminders"
                  :file-path "reminders"
@@ -347,8 +352,6 @@
                  :order 4)))
   (org-super-agenda-mode 1))
 
-(defun bob/truncate-denote-file-name (file-name hash-map)
-  (s-replace-regexp "^.+--" "" file-name))
 
 (use-package denote
   :commands (denote denote-mode denote-open-or-create denote-directory-files)
@@ -530,7 +533,7 @@
         ("C-}" . puni-barf-forward)
         ("C-{" . puni-barf-backward)
         ("C-'" . puni-rewrap))
-  :hook (typescript-ts-mode c-ts-mode js-ts-mode minibuffer-mode))
+  :hook (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode minibuffer-mode))
 
 (use-package transient)
 
@@ -692,7 +695,7 @@
   (typescript-js-mode . flymake-eslint-enable))
 
 (use-package prettier
-  :hook (typescript-ts-mode js2-mode js-ts-mode))
+  :hook (typescript-ts-mode tsx-ts-mode js2-mode js-ts-mode))
 
 (use-package eglot-booster
   :ensure ( :package "eglot-booster"
@@ -1265,8 +1268,9 @@
   :ensure (:repo "mickeynp/combobulate" :fetcher github :files ("*.el"))
   :custom
   (combobulate-key-prefix "C-c o")
-  :bind (:map typescript-ts-mode-map ("C-M-SPC" . combobulate-mark-node-dwim))
-  :hook (typescript-ts-mode))
+  :bind
+  (:map typescript-ts-mode-map ("C-M-SPC" . combobulate-mark-node-dwim))
+  (:map tsx-ts-mode-map ("C-M-SPC" . combobulate-mark-node-dwim)) :hook (typescript-ts-mode))
 
 (use-package macrostep
   :bind (:map emacs-lisp-mode-map ("C-x E" . macrostep-expand)))
