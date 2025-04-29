@@ -35,7 +35,7 @@
   ("C-x j" . whitespace-cleanup)
   ("C-^" . (lambda () (interactive (delete-indentation -1))))
   ("M-C-h" . backward-kill-sexp)
-  ("C-x -" . my/gloden-ratio)
+  ("C-x -" . bob/golden-ratio)
   ("C-x f" . recentf-open-files)
   ("C-x k" . bob/kill-this-buffer)
   ("M-SPC" . cycle-spacing)
@@ -1240,10 +1240,10 @@
 
 (use-package golden-ratio
   :bind
-  ("C-x -" . my/gloden-ratio)
+  ("C-x -" . bob/golden-ratio)
   :config
   (add-to-list 'golden-ratio-extra-commands 'ace-window)
-  (defun my/gloden-ratio ()
+  (defun bob/golden-ratio ()
     "Toggle golden ratio"
     (interactive)
     (if golden-ratio-mode
