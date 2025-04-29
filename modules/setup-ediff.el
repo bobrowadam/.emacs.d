@@ -1,11 +1,11 @@
-;;; ediff-setup.el --- Ediff configuration for Charles Choi
+;;; setup-ediff.el --- Ediff configuration for Adam Bobrow
 ;; ediff-mode
 
 ;;; Commentary:
 ;;
 
 ;;; Code:
-;; these defvars are here to let ediff-setup.el compile clean
+;; these defvars are here to let setup-ediff.el compile clean
 (defvar ediff-buffer-A)
 (defvar ediff-buffer-B)
 (defvar ediff-buffer-C)

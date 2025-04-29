@@ -60,7 +60,7 @@
 
 (use-package setup-ediff
   :demand t
-  :load-path "~/modules")
+  :load-path "./modules")
 
 (use-package scratch-pop
   :bind ("C-c r" . scratch-pop)
