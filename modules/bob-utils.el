@@ -1,13 +1,17 @@
 (defun assocdr (prop cons-cell)
+  "Get the cdr of an association with key PROP in CONS-CELL.
+This is a shorthand for (cdr (assoc prop cons-cell))."
   (cdr (assoc prop cons-cell)))
 
 (defun get-dir-name (&optional path)
-  "Get the current directly name on PATH."
+  "Get the current directory name from PATH.
+If PATH is nil, use `default-directory'."
   (file-name-nondirectory
      (directory-file-name
-      (file-name-directory path))))
+      (file-name-directory (or path default-directory)))))
 
 (defun bob/read-file-content (file-name)
+  "Read the content of FILE-NAME and return it as a string."
   (with-temp-buffer
     (insert-file-contents file-name)
     (buffer-string)))
