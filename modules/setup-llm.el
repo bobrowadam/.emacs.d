@@ -7,6 +7,12 @@
 (defvar ai-assistant-prompt "You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.
 Be very aware of the tool API and the arguments it needs. failing to do so will cause an unrecoverable error in the flow.")
 
+
+(use-package llm-tools
+  :ensure nil
+  :demand t
+  :after gptel)
+
 (use-package gptel
   :custom
   (gptel-default-mode 'org-mode)
@@ -35,7 +41,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
                        "Claude"
                      :stream t
                      :key credentials)))
-  (load "./llm-tools.el")
+
   :bind
   ("C-c g g" . gptel)
   ("C-c g r" . gptel-rewrite)
