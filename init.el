@@ -678,6 +678,8 @@
           "eslint")))
 
 (use-package flymake
+  :config
+  (setq elisp-flymake-byte-compile-load-path load-path)
   :bind
   (:map flymake-mode-map
         ("C-c ! l" . flymake-show-buffer-diagnostics)
