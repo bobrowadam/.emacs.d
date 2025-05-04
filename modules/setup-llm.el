@@ -122,5 +122,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
              :optional nil)
     "config options for Minuet Claude provider"))
 
+(use-package llm)
+
 (provide 'setup-llm)
 ;;; setup-llm.el ends here
