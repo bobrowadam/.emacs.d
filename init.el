@@ -841,7 +841,7 @@
                     :files ("jest-ts-mode.el"))
   :custom
   (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true")))
-  (jest-ts/inspect-port #'get-next-available-inspect-port-δ))
+  (jest-ts/inspect-port #'get-next-available-inspect-port))
 
 (use-package typescript-mode
   :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
@@ -1052,11 +1052,11 @@
   (setenv "POSTGRES_PASSWORD" "grain"))
 
 (use-package grain-utils
-  :commands (grain/run-serviceδ debug-migration pick-port-for-inspected-service get-next-available-inspect-port-δ grain/run-e2e)
+  :commands (grain/run-service debug-migration pick-port-for-inspected-service get-next-available-inspect-port grain/run-e2e)
   :ensure nil
   :load-path "modules"
   :bind
-  ("C-c C-r" . grain/run-serviceδ))
+  ("C-c C-r" . grain/run-service))
 
 (use-package multiple-cursors
   :bind
