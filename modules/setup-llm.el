@@ -50,9 +50,8 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   (:map gptel-mode-map ("C-c g s" . gptel-menu))
   :hook
   (org-mode . (lambda ()
-                (when (-some-> (buffer-file-name)
-                           (s-match ".+\.gptel\.org$"))
-                    (gptel-mode)))))
+                (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
+                    (gptel-mode 1)))))
 
 ;; helm is an aidermacs dependency
 (use-package helm)
