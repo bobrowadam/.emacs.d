@@ -11,6 +11,7 @@
 (elpaca-wait)
 (when window-system
     (server-start))
+
 (use-package dash
   :config (defalias '-range '-iota))
 
@@ -18,6 +19,7 @@
 (use-package llama
   :ensure (:wait t)
   :commands (## 𝝺)
+  :hook (emacs-lisp . llama-fontify-mode)
   :config (defalias '𝝺 'llama))
 
 (use-package bob-utils
