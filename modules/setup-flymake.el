@@ -33,9 +33,9 @@
       (funcall report-fn (nreverse diagnostics)))))
 
 ;;;###autoload
-(defun bob/elisp-flymake-setup-δ ()
+(defun bob/elisp-flymake-setup ()
   "Setup flymake in `emacs-lisp-mode'."
-  (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention-δ nil t)
+  ;; (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention nil t)
   (unless
       (equal (-some-> (buffer-file-name) (file-name-nondirectory))
              "init.el")
