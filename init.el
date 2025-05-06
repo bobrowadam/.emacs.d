@@ -1193,19 +1193,6 @@
                         (yaml-ts-mode . conf-mode)))
   :config
   (add-to-list 'jinx-camel-modes 'roc-ts-mode)
-  (defun jinx--load-dicts ()
-    "Load dictionaries and setup syntax table."
-    (setq jinx--dicts (delq nil (mapcar #'jinx--mod-dict
-                                        (split-string jinx-languages)))
-          jinx--syntax-table (make-syntax-table jinx--base-syntax-table))
-    (unless jinx--dicts
-      (message "Jinx: No dictionaries available for %S" jinx-languages))
-    (dolist (dict jinx--dicts)
-      (cl-loop for c across (jinx--mod-wordchars dict) do
-               (modify-syntax-entry c "w" jinx--syntax-table)))
-    (modify-syntax-entry ?' "." jinx--syntax-table)
-    (modify-syntax-entry ?’ "w" jinx--syntax-table)
-    (modify-syntax-entry ?. "." jinx--syntax-table))
   :init
   (message "Loading Jinx")
   (global-jinx-mode)
@@ -1214,16 +1201,6 @@
 
 (use-package proced-narrow
   :bind (:map proced-mode-map ("N" . proced-narrow)))
-
-;; ispell-completion-at-point suggestions are too broad so we remove it
-;; (add-hook 'text-mode-hook
-;;           (lambda ()
-;;             (remove-hook 'completion-at-point-functions
-;;                          'ispell-completion-at-point t)))
-;; (add-hook 'org-mode-hook
-;;           (lambda ()
-;;             (remove-hook 'completion-at-point-functions
-;;                          'ispell-completion-at-point t)))
 
 (use-package avy
   :custom
