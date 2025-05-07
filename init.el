@@ -887,7 +887,8 @@
   (prog-mode . (lambda ()
                        (unless (eq major-mode 'emacs-lisp-mode)
                          (electric-pair-local-mode 1))))
-  (minibuffer-mode . (lambda () (electric-pair-local-mode 1))))
+  (minibuffer-mode . (lambda () (electric-pair-local-mode 1)))
+  (text-mode . (lambda () (electric-pair-local-mode 1))))
 
 (use-package display-line-numbers
   :ensure nil
