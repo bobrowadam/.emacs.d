@@ -52,7 +52,7 @@
       '(read-only t cursor-intangible t face minibuffer-prompt))
 
 ;; FrogFind is a simple search engine for text based browsers
-(setq eww-search-prefix "http://frogfind.com/?q=")
+(setq eww-search-prefix "https://duckduckgo.com/html/?q=")
 
 (when (boundp 'pixel-scroll-precision-mode)
   (pixel-scroll-precision-mode 1))
