@@ -18,7 +18,7 @@
 (use-package s :ensure (:wait t) :demand t)
 (use-package llama
   :ensure (:wait t)
-  :commands (## 𝝺)
+  :commands (𝝺)
   :hook (emacs-lisp . llama-fontify-mode)
   :config (defalias '𝝺 'llama))
 
