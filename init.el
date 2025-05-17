@@ -1256,6 +1256,20 @@
   :commands p-search
   :ensure (:repo "zkry/p-search" :fetcher github :files ("*.el")))
 
+(use-package sly
+  :custom
+  (inferior-lisp-program "sbcl")
+  :config
+  (setq sly-lisp-implementations
+        '((nyxt ("sbcl" "--dynamic-space-size 3072")
+                :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//")))))
+
+(use-package sly-repl-ansi-color
+  :after (sly)
+  :init (push 'sly-repl-ansi-color sly-contribs))
+
+(use-package sly-asdf)
+
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
 (put 'set-goal-column 'disabled nil)
