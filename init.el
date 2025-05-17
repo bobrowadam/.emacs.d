@@ -1033,6 +1033,7 @@
 (use-package pg)
 (use-package pgmacs
   :ensure (:repo "emarsden/pgmacs" :fetcher github :files ("*.el"))
+  :custom (pgmacs-row-limit 600)
   :config
   (setenv "POSTGRES_DATABASE" "grain")
   (setenv "POSTGRES_USER" "postgres")
