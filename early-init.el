@@ -59,7 +59,7 @@
 
 ;; Set high GC threshold during startup for faster loading
 (setq gc-cons-percentage 0.6)
-(setq gc-cons-threshold (* 100 1024 1024)) ;; 100MB, more explicit than multiplier
+(setq gc-cons-threshold (* 100 1024 1024))
 
 ;; Restore after startup
 (add-hook 'emacs-startup-hook

@@ -27,6 +27,9 @@
   :load-path "modules"
   :ensure nil)
 
+(use-package gcmh
+  :init (gcmh-mode 1))
+
 (setq custom-file (concat user-emacs-directory "./custom.el"))
 
 (use-package basic-settings
