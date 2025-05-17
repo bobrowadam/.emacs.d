@@ -509,36 +509,26 @@
 (use-package paredit
   :hook (emacs-lisp-mode))
 
-(use-package puni
-  :custom
-  (puni-confirm-when-delete-unbalanced-active-region nil)
+(use-package smartparens
   :config
-  (defun puni-rewrap (open-wrapper)
-    (interactive (list (char-to-string (read-char "Enter wrapper character: "))))
-    (let* ((close-wrapper (cond ((string= open-wrapper "(") ")")
-                                ((string= open-wrapper "{") "}")
-                                ((string= open-wrapper "[") "]")
-                                ((string= open-wrapper "<") ">")
-                                (t open-wrapper))))
-      (puni-squeeze)
-      (insert open-wrapper)
-      (save-excursion
-        (yank)
-        (insert close-wrapper))))
-  :bind
-  (:map puni-mode-map
-        ("M-(" . puni-wrap-round)
-        ("M-{" . puni-wrap-curly)
-        ("M-[" . puni-wrap-square)
-        ("M-s" . puni-splice)
-        ("M-S" . puni-split)
-        ("M-J" . paredit-join-sexps)
-        ("C-)" . puni-slurp-forward)
-        ("C-(" . puni-slurp-backward)
-        ("C-}" . puni-barf-forward)
-        ("C-{" . puni-barf-backward)
-        ("C-'" . puni-rewrap))
-  :hook (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode minibuffer-mode))
+  (setq sp-ignore-modes-list
+        '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode))
+  (require 'smartparens-config)
+  (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
+  (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
+  :hook
+  (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode text-mode comint-mode minibuffer-mode)
+  :bind (:map smartparens-mode-map
+              ("M-(" . sp-wrap-round)
+              ("M-s" . sp-unwrap-sexp)
+              ("C-)" . sp-forward-slurp-sexp)
+              ("C-}" . sp-forward-barf-sexp)
+              ("C-{" . sp-backward-barf-sexp)
+              ("C-(" . sp-backward-slurp-sexp)
+              ("C-'" . sp-rewrap-sexp)
+              ("M-S" . sp-split-sexp)
+              ("M-J" . sp-join-sexp)
+              ("M-W" . sp-copy-sexp)))
 
 (use-package transient)
 
@@ -696,7 +686,7 @@
   :load-path "./modules")
 
 (use-package flymake-eslint
-  :after flyamke
+  :after flymake
   :hook
   (typescript-ts-mode . flymake-eslint-enable)
   (typescript-js-mode . flymake-eslint-enable))
@@ -854,12 +844,7 @@
   :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
   :bind
   ("C-c C-b" . npm-run-build)
-  :hook
-  (typescript-ts-mode . (lambda ()
-                          (setq-local electric-pair-pairs (append electric-pair-pairs '((?< . ?>))))
-                          (jest-ts-mode 1)))
   :config
-  (setq electric-pair-pairs (append electric-pair-pairs '((?' . ?'))))
   (fnm-use)
   (setq typescript-ts-mode-indent-offset 2))
 
@@ -883,15 +868,6 @@
   :ensure nil
   :hook
   (prog-mode . (lambda () (display-line-numbers-mode 1))))
-
-(use-package electric-pair-mode
-  :ensure nil
-  :hook
-  (prog-mode . (lambda ()
-                       (unless (eq major-mode 'emacs-lisp-mode)
-                         (electric-pair-local-mode 1))))
-  (minibuffer-mode . (lambda () (electric-pair-local-mode 1)))
-  (text-mode . (lambda () (electric-pair-local-mode 1))))
 
 (use-package display-line-numbers
   :ensure nil
