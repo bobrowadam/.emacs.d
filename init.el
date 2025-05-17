@@ -56,7 +56,10 @@
   :custom
   (isearch-lazy-count t))
 
+(use-package flx)
 (use-package swiper
+  :config
+  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
   :bind ("C-c C-s" . swiper))
 
 (use-package setup-llm
