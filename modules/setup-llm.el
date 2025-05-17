@@ -124,5 +124,11 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
 
 (use-package llm)
 
+(use-package mcp
+  :ensure (:repo "lizqwerscott/mcp.el" :fetcher github :files ("*.el"))
+  :config
+  (setq mcp-hub-servers
+        '(("linear" . (:url "https://mcp.linear.app/sse")))))
+
 (provide 'setup-llm)
 ;;; setup-llm.el ends here
