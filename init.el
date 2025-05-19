@@ -579,7 +579,7 @@
 (use-package orderless
   :demand t
   :init
-  (setq completion-ignore-case nil)
+  (setq completion-ignore-case t)
   (setq read-file-name-completion-ignore-case nil)
   (setq orderless-component-separator " +")
   (setq orderless-matching-styles
@@ -839,6 +839,7 @@
                     :branch "main"
                     :repo "bobrowadam/jest-ts-mode"
                     :files ("jest-ts-mode.el"))
+  :hook (typescript-ts-mode)
   :custom
   (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true")))
   (jest-ts/inspect-port #'get-next-available-inspect-port))
@@ -1263,6 +1264,7 @@
 (use-package sly
   :custom
   (inferior-lisp-program "sbcl")
+  :hook (sly-mode . paredit-mode)
   :config
   (setq sly-lisp-implementations
         '((nyxt ("sbcl" "--dynamic-space-size 3072")
