@@ -127,8 +127,18 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
 (use-package mcp
   :ensure (:repo "lizqwerscott/mcp.el" :fetcher github :files ("*.el"))
   :config
+  (require 'gptel-integrations)
   (setq mcp-hub-servers
-        '(("linear" . (:url "https://mcp.linear.app/sse")))))
+        `(("linear" . (
+                       :command "npx"
+                       :args ("-y" "mcp-remote" "https://mcp.linear.app/sse")
+                       ))
+          ("postgres" . (
+                         :command  "postgres-mcp"
+                         :args ("--access-mode=unrestricted")
+                         :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain")
+                         )
+           ))))
 
 (provide 'setup-llm)
 ;;; setup-llm.el ends here
