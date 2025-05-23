@@ -490,7 +490,8 @@
   (prog-mode . #'turn-on-diff-hl-mode)
   (vc-dir-mode . (lambda () (diff-hl-dir-mode 1)))
   (dired-mode . diff-hl-dired-mode)
-  (magit-post-refresh . #'diff-hl-magit-post-refresh))
+  (magit-post-refresh . #'diff-hl-magit-post-refresh)
+  :bind (:map diff-hl-mode-map ("C-x v A" . diff-hl-set-reference-rev)))
 
 (use-package abridge-diff
   :demand t
