@@ -9,11 +9,11 @@
  (position . 1)
  (last-modified 26653 64343 171721 0))
 ("org-refile-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130349--reminders__project.org")
- (front-context-string . "* TODO Remind me")
- (rear-context-string . "5-05 Mon 11:42]\n")
- (position . 5791)
- (last-modified 26657 44061 242813 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
+ (front-context-string . "* TODO Add cycle")
+ (rear-context-string . "2025-05-22 Thu>\n")
+ (position . 2900)
+ (last-modified 26670 64661 383893 0))
 ("linear.org"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/linear.org")
  (front-context-string . "* NEXT Add Tests")
@@ -22,10 +22,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* TODO Remind me")
- (rear-context-string . "20240104T120451\n")
- (position . 112)
- (last-modified 26657 44052 785485 0))
+ (front-context-string . "* Add cycle head")
+ (rear-context-string . "out debug level\n")
+ (position . 248)
+ (last-modified 26670 64601 777737 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
