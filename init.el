@@ -510,7 +510,8 @@
   :init (setq forge-bug-reference-hooks nil))
 
 (use-package paredit
-  :hook (emacs-lisp-mode))
+  :hook
+  (emacs-lisp-mode lisp-mode))
 
 (use-package smartparens
   :config
@@ -1264,7 +1265,6 @@
 (use-package sly
   :custom
   (inferior-lisp-program "sbcl")
-  :hook (sly-mode . paredit-mode)
   :config
   (setq sly-lisp-implementations
         '((nyxt ("sbcl" "--dynamic-space-size 3072")
@@ -1275,6 +1275,7 @@
   :init (push 'sly-repl-ansi-color sly-contribs))
 
 (use-package sly-asdf)
+(use-package sly-macrostep)
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
