@@ -7,16 +7,10 @@
 (defvar ai-assistant-prompt "You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible. When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.
 Be very aware of the tool API and the arguments it needs. failing to do so will cause an unrecoverable error in the flow.")
 
-
-(use-package llm-tools
-  :ensure nil
-  :demand t
-  :after gptel)
-
 (use-package gptel
   :custom
   (gptel-default-mode 'org-mode)
-  (gptel-max-tokens 8192)
+  ;; (gptel-max-tokens 8192)
   ;; (gptel-max-tokens nil)
   :config
   (exec-path-from-shell-initialize)
@@ -24,19 +18,13 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
     :demand t
     :load-path "~/source/emacs-agent/"
     :ensure nil)
-  (defun bob/reset-toolsδ ()
-    (interactive)
-    (setq gptel--known-tools nil)
-    (setq gptel-tools nil))
-
-  (add-to-list 'gptel-directives (cons 'default ai-assistant-prompt))
   (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
   (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
                             car
                             (plist-get :secret)
                             funcall)))
     (setq
-     gptel-model 'claude-3-7-sonnet-20250219
+     gptel-model 'claude-opus-4-20250514
      gptel-backend (gptel-make-anthropic
                        "Claude"
                      :stream t
@@ -51,7 +39,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   :hook
   (org-mode . (lambda ()
                 (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
-                    (gptel-mode 1)))))
+                  (gptel-mode 1)))))
 
 ;; helm is an aidermacs dependency
 (use-package helm)
@@ -60,9 +48,9 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   :disabled t
   :ensure (:fetcher github :repo "MatthewZMD/aidermacs" :files ("*.el"))
   :custom
-  (aidermacs-subtree-only t)
+  (aidermacs-subtree-only nil)
   (aidermacs-auto-commits nil)
-  (aidermacs-architect-model "o1")
+  (aidermacs-architect-model "o3")
   ;; (aidermacs-backend 'vterm)
   :config
   (aidermacs-setup-minor-mode)
@@ -87,10 +75,11 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
                           (plist-get :secret)
                           funcall))
   :bind ("C-c g c" . 'aider-transient-menu)
-  :hook
-  ;; This is a workaround for making the aider transient menu readable
-  (transient-setup-buffer . (lambda ()
-                              (face-remap-add-relative 'default :height 0.9))))
+  ;; :hook
+  ;; ;; This is a workaround for making the aider transient menu readable
+  ;; (transient-setup-buffer . (lambda ()
+  ;;                             (face-remap-add-relative 'default :height 0.9)))
+)
 
 (use-package minuet
   :custom
