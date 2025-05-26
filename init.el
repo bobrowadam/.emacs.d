@@ -512,7 +512,7 @@
 
 (use-package paredit
   :hook
-  (emacs-lisp-mode lisp-mode))
+  (emacs-lisp-mode lisp-mode lisp-data-mode))
 
 (use-package smartparens
   :config
