@@ -739,6 +739,13 @@
   (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
   (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
   (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
+  (unless (executable-find "pyright-langserver")
+    (progn
+      (print "Installing pyright-langserver for python eglot support")
+      (async-shell-command "npm install -g pyright"
+                           "*pyright-installation-stdout*"
+                           "*pyright-installation-error*")))
+  (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
   (cl-defmethod project-root ((project (head eglot-project)))
     (cdr project))
@@ -754,7 +761,7 @@
         ("C-<" . eglot-find-typeDefinition)
         ("C-c C-a" . eglot-code-actions))
   :hook
-  ((js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode) . eglot-ensure)
+  ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode) . eglot-ensure)
   (eglot-managed-mode .  (lambda ()
                            (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
                                      (eq (derived-mode-p major-mode) 'js-ts-mode))
