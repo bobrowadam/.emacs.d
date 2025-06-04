@@ -19,10 +19,20 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
     :load-path "~/source/emacs-agent/"
     :ensure nil)
   (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
-  (when-let ((credentials (-some-> (auth-source-search :host "claude.ai" :max 1)
-                            car
-                            (plist-get :secret)
-                            funcall)))
+  (defun bob/gptel-switch-to-gptel-buffer ()
+    "Switch to a buffer with `gptel-mode' active."
+    (interactive)
+    (if-let ((gptel-buffers
+              (seq-filter
+               (lambda (buff)
+                 (with-current-buffer buff
+                   (bound-and-true-p gptel-mode)))
+               (buffer-list)))
+             (gptel-buffer (completing-read "GPT buffer: " (mapcar 'buffer-name gptel-buffers))))
+        (switch-to-buffer gptel-buffer)
+      (message "No GPTel buffers found.")))
+  (when-let ((credentials (setenv "ANTHROPIC_API_KEY"
+                                  (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))))
     (setq
      gptel-model 'claude-opus-4-20250514
      gptel-backend (gptel-make-anthropic
@@ -35,6 +45,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   ("C-c g r" . gptel-rewrite)
   ("C-c g a d" . gptel-context-add)
   ("C-c g a f" . gptel-context-add-file)
+  ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
   (:map gptel-mode-map ("C-c g s" . gptel-menu))
   :hook
   (org-mode . (lambda ()
@@ -54,14 +65,10 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   ;; (aidermacs-backend 'vterm)
   :config
   (aidermacs-setup-minor-mode)
-  (setenv "ANTHROPIC_API_KEY" (-some-> (auth-source-search :host "claude.ai" :max 1)
-              car
-              (plist-get :secret)
-              funcall))
-  (setenv "OPENAI_API_KEY" (-some-> (auth-source-search :host "api.openai.com" :max 1)
-                             car
-                             (plist-get :secret)
-                             funcall))
+  (setenv "ANTHROPIC_API_KEY"
+          (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
+  (setenv "OPENAI_API_KEY"
+          (plist-get (car (auth-source-search :host "api.openai.com")) :secret))
   :bind ("C-c g c" . aidermacs-transient-menu))
 
 (use-package aider
@@ -69,17 +76,9 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   :custom
   (aider-args '("--model" "sonnet" "--no-auto-accept-architect" "--no-auto-commits"))
   :config
-  (setenv
-   "ANTHROPIC_API_KEY"  (-some-> (auth-source-search :host "claude.ai" :max 1)
-                          car
-                          (plist-get :secret)
-                          funcall))
-  :bind ("C-c g c" . 'aider-transient-menu)
-  ;; :hook
-  ;; ;; This is a workaround for making the aider transient menu readable
-  ;; (transient-setup-buffer . (lambda ()
-  ;;                             (face-remap-add-relative 'default :height 0.9)))
-)
+  (setenv "ANTHROPIC_API_KEY"
+          (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
+  :bind ("C-c g c" . 'aider-transient-menu))
 
 (use-package minuet
   :custom
@@ -87,11 +86,8 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   :bind
   (:map prog-mode-map ("C-M-i" . #'minuet-complete-with-minibuffer))
   :config
-  (setenv
-   "ANTHROPIC_API_KEY"  (-some-> (auth-source-search :host "claude.ai" :max 1)
-                          car
-                          (plist-get :secret)
-                          funcall))
+  (setenv "ANTHROPIC_API_KEY"
+          (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
 
   (defvar minuet-claude-options
     `(:model "claude-3-haiku-20240307"
@@ -111,7 +107,29 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
              :optional nil)
     "config options for Minuet Claude provider"))
 
-(use-package llm)
+(use-package llm
+  :custom
+  (llm-warn-on-nonfree nil))
+
+(use-package llm-tool-collection
+  :ensure (:repo "skissue/llm-tool-collection" :fetcher github :files ("*.el")))
+
+(use-package ai-org-chat
+  :ensure (:repo "ultronozm/ai-org-chat.el" :fetcher github :files ("*.el"))
+  :custom
+  (ai-org-chat-user-name "Adam")
+  (ai-org-chat-dir "~/ai-chats")
+  :config
+  (dolist (tool-config (llm-tool-collection-get-all))
+    (ai-org-chat-register-tool (apply #'llm-make-tool tool-config)))
+  (setenv
+   "ANTHROPIC_KEY"  (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
+  (ai-org-chat-select-model "sonnet 4")
+  :bind
+  (:map global-map
+        ("C-c /" . ai-org-chat-new))
+  (:map ai-org-chat-minor-mode-map
+        ("C-c C-m" . ai-org-chat-respond)))
 
 (use-package mcp
   :ensure (:repo "lizqwerscott/mcp.el" :fetcher github :files ("*.el"))
@@ -126,8 +144,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
                          :command  "postgres-mcp"
                          :args ("--access-mode=unrestricted")
                          :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain")
-                         )
-           ))))
+                         )))))
 
 (provide 'setup-llm)
 ;;; setup-llm.el ends here
