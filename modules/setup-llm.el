@@ -34,7 +34,7 @@ Be very aware of the tool API and the arguments it needs. failing to do so will 
   (when-let ((credentials (setenv "ANTHROPIC_API_KEY"
                                   (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))))
     (setq
-     gptel-model 'claude-opus-4-20250514
+     gptel-model 'claude-sonnet-4-20250514
      gptel-backend (gptel-make-anthropic
                        "Claude"
                      :stream t
