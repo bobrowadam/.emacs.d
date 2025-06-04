@@ -60,11 +60,15 @@ If PATH is nil, use `default-directory'."
                                 (equal (with-current-buffer b major-mode) 'pgmacs-mode)))
                 (mapcar (function buffer-name)
                         (buffer-list))))))
-            (shell-buffer (completing-read "Shell: " shell-buffers)))
+            (shell-buffer (consult--read shell-buffers
+                                         :prompt "Shell: "
+                                         :category 'buffer
+                                         :state (consult--buffer-state)
+                                         :sort nil)))
       (progn
         (setq bob/last-shell-buffer shell-buffer)
         (switch-to-buffer shell-buffer))
-    (message "No Shell bufers exists")))
+    (message "No Shell buffers exists")))
 
 (defun get--inspect-processes-port ()
   (cl-remove-if-not 'identity
