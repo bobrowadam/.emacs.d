@@ -22,10 +22,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Add cycle head")
- (rear-context-string . "out debug level\n")
- (position . 248)
- (last-modified 26670 64601 777737 0))
+ (front-context-string . "* Rename \"pegged")
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 26684 4010 201196 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
@@ -33,11 +33,11 @@
  (position . 1)
  (last-modified 26549 43360 773197 0))
 ("bob-utils.el"
- (filename . "~/.emacs.d/site-lisp/bob-utils.el")
+ (filename . "~/.emacs.d/modules/bob-utils.el")
  (front-context-string . "\n\n(provide 'bob-")
  (rear-context-string . "uffer-string))))")
  (position . 6259)
- (last-modified 26548 24454 681798 0))
+ (last-modified 26683 18107 735648 0))
 ("setup-llm.el"
  (filename . "~/.emacs.d/modules/setup-llm.el")
  (front-context-string . "(defun gptel-run")
