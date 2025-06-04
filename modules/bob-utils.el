@@ -103,7 +103,7 @@ If PATH is nil, use `default-directory'."
               (get-dir-name projcet-path))))
 
 (defun npm-run (&optional normal-mode)
-  "Debug typescript project on watch mode
+  "Debug typescript project on watch mode.
 NORMAL-MODE is for not running with debugger"
   (interactive "P")
   (when (check-types-command)
