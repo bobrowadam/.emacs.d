@@ -197,7 +197,8 @@
   :ensure nil
   :init (recentf-mode))
 
-(use-package markdown-ts-mode)
+(use-package markdown-mode
+  :custom (markdown-fontify-code-blocks-natively t))
 
 (use-package ob-js
     :ensure nil
@@ -989,7 +990,6 @@
           (json . ("https://github.com/tree-sitter/tree-sitter-json"))
           (lua . ("https://github.com/Azganoth/tree-sitter-lua"))
           (make . ("https://github.com/alemuller/tree-sitter-make"))
-          (markdown . ("https://github.com/MDeiml/tree-sitter-markdown" nil "tree-sitter-markdown/src"))
           (ocaml . ("https://github.com/tree-sitter/tree-sitter-ocaml" nil "ocaml/src"))
           (org . ("https://github.com/milisims/tree-sitter-org"))
           (python . ("https://github.com/tree-sitter/tree-sitter-python"))
