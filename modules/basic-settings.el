@@ -85,6 +85,12 @@
 
 ;; Deal with editing large files:
 (global-so-long-mode 1)
+(defun disable-modes-for-large-files ()
+  "Disable minor modes for large files."
+  (when (and buffer-file-name
+             (> (buffer-size) (* 1024 1024)))
+    (fundamental-mode)))
+(add-hook 'find-file-hook 'disable-modes-for-large-files)
 
 ;; Put backup files neatly away
 (let ((backup-dir "~/tmp/emacs/backups")
