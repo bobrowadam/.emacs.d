@@ -191,6 +191,31 @@
 ;; Trust the ~/source/ file so flymake byte compile will work.
 (add-to-list 'trusted-content "~/source/")
 
+(defun bob/emacs-keyboard-quit (&optional force)
+  "`keyboard-quit' that kill the minibuffer but doesn't FORCE quit kmacros."
+  (interactive "P")
+
+  ;; Inspiration from
+  ;; https://emacsredux.com/blog/2025/06/01/let-s-make-keyboard-quit-smarter/
+  (when (derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+  (when (> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+
+  ;; Do the regular `keyboard-quit' unless defining or executing a keyboard 
+  ;; macro in which case we do the subset of `keyboard-quit' that *doesn't*
+  ;; kill kmacros.
+  (if (or force (not (or defining-kbd-macro executing-kbd-macro)))
+      (keyboard-quit)
+
+    (setq saved-region-selection nil)
+    (let (select-active-regions)
+      (deactivate-mark))
+    (when completion-in-region-mode
+      (completion-in-region-mode -1))))
+
+(global-set-key [remap keyboard-quit] #'bob/emacs-keyboard-quit)
+
 (provide 'basic-settings)
 
 ;;; basic-settings.el ends here
