@@ -22,10 +22,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Rename \"pegged")
+ (front-context-string . "* Check out Wieg")
  (rear-context-string . "20240104T120451\n")
  (position . 112)
- (last-modified 26684 4010 201196 0))
+ (last-modified 26693 17040 377220 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
