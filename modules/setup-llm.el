@@ -14,12 +14,11 @@ Since I'm paying for the LLM usage and my workplace doesn't help me, try to use 
   (gptel-default-mode 'org-mode)
   (gptel-max-tokens 400)
   :config
+  (require 'llm-tools)
   (exec-path-from-shell-initialize)
-  (use-package emacs-agent
-    :demand t
-    :load-path "~/source/emacs-agent/"
-    :ensure nil)
   (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
+  (mapcar (apply-partially #'apply #'gptel-make-tool)
+          (llm-tool-collection-get-all))
   (defun bob/gptel-switch-to-gptel-buffer ()
     "Switch to a buffer with `gptel-mode' active."
     (interactive)
@@ -32,14 +31,22 @@ Since I'm paying for the LLM usage and my workplace doesn't help me, try to use 
              (gptel-buffer (completing-read "GPT buffer: " (mapcar 'buffer-name gptel-buffers))))
         (switch-to-buffer gptel-buffer)
       (message "No GPTel buffers found.")))
-  (when-let ((credentials (setenv "ANTHROPIC_API_KEY"
-                                  (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))))
-    (setq
-     gptel-model 'claude-sonnet-4-20250514
-     gptel-backend (gptel-make-anthropic
-                       "Claude"
-                     :stream t
-                     :key credentials)))
+  (when-let ((credentials
+              (setenv "ANTHROPIC_API_KEY"
+                      (-some->
+                          (plist-get (car (auth-source-search :host "claude.ai")) :secret)
+                        funcall))))
+    (gptel-make-anthropic
+        "Claude"
+      :stream t
+      :key credentials))
+  (setq
+     gptel-model 'llama3.2:latest
+     gptel-backend
+     (gptel-make-ollama "Ollama"
+       :host "localhost:11434"
+       :stream t
+       :models '(mistral:latest llama3.2:latest)))
 
   :bind
   ("C-c g g" . gptel)
@@ -115,6 +122,38 @@ Since I'm paying for the LLM usage and my workplace doesn't help me, try to use 
 (use-package llm-tool-collection
   :ensure (:repo "skissue/llm-tool-collection" :fetcher github :files ("*.el")))
 
+(defun bob/tool-find-files-by-regex (regex)
+    "Find files in the current project matching REGEX pattern.
+Returns a list of absolute file paths that match the provided regex."
+    (if-let ((proj (project-current)))
+        (let* ((default-directory (project-root proj))
+               (all-files (project-files proj))
+               (matching-files (seq-filter (lambda (file)
+                                             (string-match-p regex (file-name-nondirectory file)))
+                                           all-files)))
+          (if matching-files
+              matching-files
+            "No files matching the pattern were found."))
+      "No project found. Please open a file within a project first."))
+
+(defun bob/tool-run-rg (pattern &optional file-pattern)
+  "Run ripgrep (rg) on the current project.
+PATTERN is the search pattern.
+FILE-PATTERN is an optional file pattern to filter files."
+  (if-let ((proj (project-current)))
+      (let* ((default-directory (project-root proj))
+             (cmd (if file-pattern
+                      (format "rg --no-heading --line-number --with-filename %s %s"
+                              (shell-quote-argument pattern)
+                              (shell-quote-argument file-pattern))
+                    (format "rg --no-heading --line-number --with-filename %s"
+                            (shell-quote-argument pattern))))
+             (result (shell-command-to-string cmd)))
+        (if (string-empty-p result)
+            "No matches found."
+          result))
+    "No project found. Please open a file within a project first."))
+
 (use-package ai-org-chat
   :ensure (:repo "ultronozm/ai-org-chat.el" :fetcher github :files ("*.el"))
   :custom
@@ -125,7 +164,11 @@ Since I'm paying for the LLM usage and my workplace doesn't help me, try to use 
     (ai-org-chat-register-tool (apply #'llm-make-tool tool-config)))
   (setenv
    "ANTHROPIC_KEY"  (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
+  (add-to-list 'ai-org-chat-models  '("llama 3.2" :package llm-ollama :provider make-llm-ollama
+                                    :chat-model "llama3.2:latest"))
+  (ai-org-chat-select-model "llama 3.2")
   (ai-org-chat-select-model "sonnet 4")
+
   :bind
   (:map global-map
         ("C-c /" . ai-org-chat-new))

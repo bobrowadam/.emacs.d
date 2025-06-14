@@ -20,9 +20,9 @@
     :description "The full file name including the path"))
   "Returns the content of the given file if it exists, otherwise returns nil."
   (if (file-exists-p file-name)
-    (with-current-buffer (find-file-noselect file-name nil nil)
-      (buffer-substring-no-properties (point-min)
-                                      (point-max)))
+      (with-current-buffer (find-file-noselect file-name nil nil)
+        (buffer-substring-no-properties (point-min)
+                                        (point-max)))
     (format "File %s does not exists. Maybe you meant to find a buffer with this name?" file-name)))
 
 (llm-tool-collection-deftool create-file
@@ -134,8 +134,8 @@ exist."
       (let* ((default-directory (project-root proj))
              (all-files (project-files proj))
              (matching-files (seq-filter (lambda (file)
-                                          (string-match-p regex (file-name-nondirectory file)))
-                                        all-files)))
+                                           (string-match-p regex (file-name-nondirectory file)))
+                                         all-files)))
         (if matching-files
             matching-files
           "No files matching the pattern were found."))
@@ -183,9 +183,9 @@ optionally filtering by file type."
   (if-let ((buff (get-buffer buffer-name)))
       (with-current-buffer buff
         (mapconcat (## format "%s   %s"
-                      (line-number-at-pos (flymake-diagnostic-beg %))
-                      (substring-no-properties
-                       (flymake-diagnostic-message %)))
+                       (line-number-at-pos (flymake-diagnostic-beg %))
+                       (substring-no-properties
+                        (flymake-diagnostic-message %)))
                    (flymake-diagnostics (point-min)
                                         (point-max))
                    "\n"))
@@ -212,13 +212,13 @@ optionally filtering by file type."
                            :position (eglot--pos-to-lsp-position point)
                            :context '(:includeDeclaration t)))))
     (seq-mapcat (## let ((ref-uri (plist-get % :uri))
-                           (ref-range (plist-get % :range)))
-                      (with-current-buffer (find-file-noselect (eglot-uri-to-path ref-uri))
-                        (format "In %s\nContext:\n%s"
-                                (file-name-nondirectory (buffer-file-name))
-                                (gptel-eglot--extract-context ref-range))))
-                  refs
-                  'string)))
+                         (ref-range (plist-get % :range)))
+                    (with-current-buffer (find-file-noselect (eglot-uri-to-path ref-uri))
+                      (format "In %s\nContext:\n%s"
+                              (file-name-nondirectory (buffer-file-name))
+                              (gptel-eglot--extract-context ref-range))))
+                refs
+                'string)))
 
 (defun gptel-eglot--get-hover-context (point)
   "Get hover documentation context for symbol at POINT."
