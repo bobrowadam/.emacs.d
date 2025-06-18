@@ -3,8 +3,6 @@
 ;; Extending llm-tool-collection
 
 ;;; Code:
-(require 'llm-tool-collection)
-(require 'gptel)
 (require 's)
 (require 'dash)
 (require 'project)
@@ -13,63 +11,9 @@
 (require 'eglot)
 (require 'magit)
 
-(llm-tool-collection-deftool read-file
-  (:category "file-system" :tags (filesystem) :include t)
-  ((file-name
-    :type string
-    :description "The full file name including the path"))
-  "Returns the content of the given file if it exists, otherwise returns nil."
-  (if (file-exists-p file-name)
-      (with-current-buffer (find-file-noselect file-name nil nil)
-        (buffer-substring-no-properties (point-min)
-                                        (point-max)))
-    (format "File %s does not exists. Maybe you meant to find a buffer with this name?" file-name)))
-
-(llm-tool-collection-deftool create-file
-  (:category "file-system" :tags (filesystem editing) :include t)
-  ((filename
-    :type string
-    :description "The full filename including the path to create")
-   (parents
-    :type array
-    :items (:type string)
-    :optional t
-    :description "Optional array of parents directories.
-When you want to create a file and also it's parent directories you should use this function.
-Example:
-creating the file `router.ts' in directory `src/routes' you should pass parents as [\"src\", \"routes\"]"))
-  "Create an empty file"
-  (if (stringp filename)
-      (condition-case err
-          (progn (make-empty-file filename (cl-coerce parents 'list))
-                 (format "Created the file %s successfully" filename))
-        (error (format "got an unexpected error in create_file: %s" err)))
-    (format "Error: filename must be a string. actual value: %s" filename)))
-
-(llm-tool-collection-deftool create-dir
-  (:category "file-system" :tags (filesystem editing) :include t)
-  ((dir
-    :type string
-    :description "The directory path to create")
-   (parents
-    :type array
-    :items (:type string)
-    :optional t
-    :description "Optional array of parent directories"))
-  "Create the directory and optionally any nonexistent parent dirs."
-  (if (stringp dir)
-      (condition-case err
-          (progn (make-directory dir (cl-coerce parents 'list))
-                 (format "Created the directory %s successfully" dir))
-        (error (format "got an unexpected error in create_dir: %s" err)))
-    (format "Error: dir must be a string. actual value: %s" dir)))
-
-
 (llm-tool-collection-deftool delete-file
-  (:category "file-system" :tags (filesystem editing) :confirm t :include t)
-  ((filename
-    :type string
-    :description "The full filename including the path to create"))
+  (:category "filesystem" :tags (filesystem editing) :confirm t :include t)
+  ((filename "The full filename including the path to create" :type string))
   "Create a new directory at the specified path if it does not already
 exist."
   (if (file-exists-p filename)
@@ -78,22 +22,18 @@ exist."
     (format "No such file: %s" filename)))
 
 (llm-tool-collection-deftool delete-dir
-  (:category "filesystem" :tags (filesystem editing) :confirm t :include t :description "Deletes directory recursively")
-  ((dirname
-    :type string
-    ))
-  "Create a new directory at the specified path if it does not already
-exist."
+  (:category "filesystem" :tags (filesystem editing) :confirm t :include t)
+  ((dirname "The full dir path to delete"
+            :type string))
+  "Deletes directory recursively"
   (if (file-exists-p dirname)
       (progn (delete-directory dirname t)
              (format "Deleted directory %s successfully." dirname))
     (format "No such directory %s." dirname)))
 
 (llm-tool-collection-deftool get-buffer
-  (:category "file-system" :tags (filesystem) :confirm t :include t)
-  ((buffer-name
-    :type string
-    :description "The buffer name"))
+  (:category "filesystem" :tags (filesystem editing) :confirm t :include t)
+  ((buffer-name "The buffer name" :type string))
   "Get a buffer content"
   (if (get-buffer buffer-name)
       (with-current-buffer buffer-name
@@ -101,36 +41,45 @@ exist."
                                         (point-max)))
     (format "buffer %s does not exists" buffer-name)))
 
-
 (llm-tool-collection-deftool get-buffer-file-name
-  (:category "file-system" :tags (filesystem) :include t)
-  ((buffer-name
-    :type string
-    :description "The buffer name"))
+  (:category "filesystem" :tags (filesystem) :include t)
+  ((buffer-name "The buffer name" :type string))
   "Get the file name of the file visiting buffer."
   (if-let (buff (get-buffer buffer-name))
       (buffer-file-name buff)
     (format "buffer %s does not exists" buffer-name)))
 
+(llm-tool-collection-deftool summarize-chat-buffer
+  (:category "buffer" :tags (editing) :confirm t :include t)
+  ((summary "The context summary" :type string)
+   (chat-buffer "The buffer name in which the chat takes place" :type string))
+  "Replace content of the chat buffer with a summary."
+  (let ((buffer (get-buffer chat-buffer)))
+    (when buffer
+      (with-current-buffer buffer
+        (erase-buffer)
+        (insert summary)))))
+
 (llm-tool-collection-deftool get-buffers-name-in-project
-  (:category "file-system" :tags (filesystem project) :include t)
-  ((file-visiting-p
-    :type boolean
-    :optional t
-    :description "When true, return only the names of a file visiting buffers."))
+  (:category "filesystem" :tags (filesystem project) :include t)
+  ((file-visiting-p "When true, return only the names of file visiting buffers."
+                    :type boolean
+                    :optional t)
+   (project-root-path "The project root path. Accept path with \"~\""
+                      :type string
+                      :optional t))
   "Get the list of buffers in the current project.
  optionally get only file visiting buffers"
   (mapcar #'buffer-name
           (-filter (## if file-visiting-p (buffer-file-name %) t)
-                   (project-buffers (project-current)))))
+                   (project-buffers (project-current nil project-root-path)))))
 
-(llm-tool-collection-deftool find-files-by-regex
-  (:category "file-system" :tags (filesystem project search) :include t)
-  ((regex
-    :type string
-    :description "Emacs lisp regular expression pattern to match against file names"))
+(llm-tool-collection-deftool find-files-by-regex-in-project
+  (:category "filesystem" :tags (filesystem project search) :include t)
+  ((regex "Emacs lisp regular expression pattern to match against file names"
+          :type string))
   "Search for files in the current project that match a regex pattern."
-  (if-let ((proj (project-current)))
+  (if-let ((proj (project-current nil project-root-path)))
       (let* ((default-directory (project-root proj))
              (all-files (project-files proj))
              (matching-files (seq-filter (lambda (file)
@@ -142,43 +91,45 @@ exist."
     "No project found. Please open a file within a project first."))
 
 (llm-tool-collection-deftool get-project-root
-  (:category "file-system" :tags (filesystem project) :include t)
-  ()
+  (:category "filesystem" :tags (filesystem project) :include t)
+  ((project-root-path "The project root path. Accept path with \"~\""
+                      :type string
+                      :optional t))
   "Get the absolute path of the current project's root directory."
-  (if-let ((proj (project-current)))
+  (if-let ((proj (project-current nil project-root-path)))
       (project-root proj)
     "No project found. Please open a file within a project first."))
 
 (llm-tool-collection-deftool run-rg
-  (:category "file-system" :tags (filesystem search project) :include t)
-  ((pattern
-    :type string
-    :description "The search pattern to look for in files")
-   (file-pattern
-    :type string
-    :optional t
-    :description "Optional file pattern to filter which files to search (e.g., '*.js', 'src/*.py')"))
+  (:category "filesystem" :tags (filesystem search project) :include t)
+  ((pattern "The search pattern to look for in files"
+            :type string)
+   (file-pattern "Optional file pattern to filter which files to search (e.g., '*.js', 'src/*.py')"
+                 :type string
+                 :optional t)
+   (project-root-path "The project root path. Accept path with \"~\""
+                      :type string
+                      :optional t))
   "Run ripgrep (rg) to search for a pattern in the current project.
 optionally filtering by file type."
-  (if-let ((proj (project-current)))
-      (let* ((default-directory (project-root proj))
-             (cmd (if file-pattern
-                      (format "rg --no-heading --line-number --with-filename %s %s"
-                              (shell-quote-argument pattern)
-                              (shell-quote-argument file-pattern))
-                    (format "rg --no-heading --line-number --with-filename %s"
-                            (shell-quote-argument pattern))))
-             (result (shell-command-to-string cmd)))
-        (if (string-empty-p result)
-            "No matches found."
-          result))
+  (if-let* ((proj (project-current nil project-root-path))
+            (default-directory (project-root proj))
+            (cmd (if file-pattern
+                     (format "rg --no-heading --line-number --with-filename %s %s"
+                             (shell-quote-argument pattern)
+                             (shell-quote-argument file-pattern))
+                   (format "rg --no-heading --line-number --with-filename %s"
+                           (shell-quote-argument pattern))))
+            (result (shell-command-to-string cmd)))
+      (if (string-empty-p result)
+          "No matches found."
+        result)
     "No project found. Please open a file within a project first."))
 
 (llm-tool-collection-deftool get-flymake-diagnostics
   (:category "diagnostics" :tags (diagnostics flymake) :include t)
-  ((buffer-name
-    :type string
-    :description "The buffer name to get the diagnostic for."))
+  ((buffer-name "The buffer name to get the diagnostic for."
+                :type string))
   "Get the content of the flymake diagnostics a specific buffer."
   (if-let ((buff (get-buffer buffer-name)))
       (with-current-buffer buff
@@ -255,16 +206,11 @@ optionally filtering by file type."
 
 (llm-tool-collection-deftool eglot-context
   (:category "code-intelligence" :tags (eglot lsp code-analysis) :include t)
-  ((buffer-name
-    :type string
-    :description "The buffer name in which we want to inspect context around point")
-   (symbol
-    :type string
-    :description "The symbol to examine")
-   (line-number
-    :type string
-    :optional t
-    :description "The line number on which the symbol is on"))
+  ((buffer-name "The buffer name in which we want to inspect context around point" :type string)
+   (symbol "The symbol to examine" :type string)
+   (line-number "The line number on which the symbol is on"
+                :type string
+                :optional t))
   "Retrieves code context using Eglot (LSP) for the given symbol
 Including definitions, references, and documentation."
   (with-current-buffer buffer-name
@@ -274,20 +220,29 @@ Including definitions, references, and documentation."
         (format "symbol definition:\n%s\nsymbol references:\n%s\nsymbol info:\n%s"
                 (gptel-eglot--get-definition-context point)
                 (gptel-eglot--get-references-context point)
-                (gptel-eglot--get-hover-context point)
-                )))))
+                (gptel-eglot--get-hover-context point))))))
+
+(llm-tool-collection-deftool summarize-chat-buffer
+  (:category "buffer" :tags (editing) :confirm t :include t)
+  ((summary "The context summary" :type string)
+   (chat-buffer "The buffer name in which the chat takes place" :type string))
+  "Summarize and replace content of the specified chat buffer."
+  (if-let ((buffer (get-buffer chat-buffer)))
+      (with-current-buffer buffer
+        (erase-buffer)
+        (insert summary))
+    (format "No such buffer: %s" chat-buffer)))
 
 ;; Magit tools
 (llm-tool-collection-deftool magit-diff-with-main
   (:category "git" :tags (git magit diff) :include t)
-  ((target-branch
-    :type string
-    :optional t
-    :description "The target branch to diff against (defaults to 'main')"))
+  ((target-branch "The target branch to diff against (defaults to 'main')"
+                  :type string
+                  :optional t))
   "Get the diff between current branch and main branch (or specified target branch)"
   (condition-case err
       (if (not (magit-git-repo-p default-directory))
-          "Not in a git repository"
+          (format "Not in a git repository. default-directory: %s" default-directory)
         (let* ((main-branch (or target-branch "main"))
                (current-branch (magit-get-current-branch)))
           (if (not current-branch)
@@ -332,10 +287,9 @@ Including definitions, references, and documentation."
 
 (llm-tool-collection-deftool magit-log
   (:category "git" :tags (git magit log) :include t)
-  ((limit
-    :type number
-    :optional t
-    :description "Number of commits to show (defaults to 10)"))
+  ((limit "Number of commits to show (defaults to 10)"
+          :type number
+          :optional t))
   "Get recent git commits log"
   (condition-case err
       (if (not (magit-git-repo-p default-directory))
@@ -379,5 +333,24 @@ Including definitions, references, and documentation."
             (format "Staged changes:\n\n%s" diff-output))))
     (error (format "Error getting staged changes: %s" err))))
 
+(llm-tool-collection-deftool summarize-chat-buffer
+  (:category "context" :tags (editing) :confirm nil :include nil)
+  ((summary "The context summary." :type string))
+  "Replace the chat buffer content with a context summary to compact the context."
+  (when-let ((buffer (current-buffer)))
+    (message "here")
+    (with-current-buffer buffer
+      (erase-buffer)
+      (insert summary)
+      (save-buffer)
+      (goto-char (point-min))
+      (while (re-search-forward "**?:PROPERTIES:.*\n\\(?:.*\n\\)*?:END:\n" nil t)
+        (delete-region (match-beginning 0) (match-end 0)))
+      (save-buffer)
+      (goto-char (point-max)))))
+
 (provide 'llm-tools)
 ;;; llm-tools.el ends here
+
+(setq \? 1)
+(+ \? 2)

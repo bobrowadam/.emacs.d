@@ -4,17 +4,48 @@
 ;; commentary
 
 ;;; Code:
-(defvar ai-assistant-prompt "You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible.
+(defvar ai-assistant-prompt "
+You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible.
+
+TOOL USAGE STRATEGY:
+When handling code-related requests, follow this analysis approach:
+
+1. CONTEXT GATHERING:
+   - When the context is >~500 lines, use the `summarize-chat-buffer` to compact the context. This is very important!
+   - Use `get_project_root` and `get_buffers_name_in_project` to understand project structure
+   - Use `run_rg` to search for patterns, functions, or specific code constructs
+   - Use `find_files_by_regex_in_project` to locate relevant files
+
+2. CODE ANALYSIS:
+   - Use `eglot_context` for precise symbol analysis (definitions, references, documentation)
+   - Always specify buffer_name, symbol, and line_number when available
+   - Use `get_flymake_diagnostics` to check for errors/warnings in relevant buffers
+
+3. INVESTIGATION WORKFLOW:
+   - Start broad (search patterns with rg)
+   - Narrow down (examine specific files/buffers)
+   - Go deep (use LSP for symbol-level analysis)
+   - Cross-reference (check related symbols and dependencies)
+
+4. RESPONSE STRUCTURE:
+   - State what you're investigating
+   - Show the analysis steps taken
+   - Provide findings with LSP-backed evidence
+   - Suggest next actions if applicable
+
+When code issues arise, prioritize LSP-based analysis over assumptions. Use the structured knowledge from eglot_context to provide precise, compiler-grade insights rather than generic advice.
+
+[rest of original prompt about conciseness, error handling, etc.]
+Respond concisely and as short as possible.
 When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.
 Be very aware of the tool API and the arguments it needs. failing to do so will cause an unrecoverable error in the flow.
 Since I'm paying for the LLM usage and my workplace doesn't help me, try to use as little tokens as you can. thanks!")
-
 (use-package gptel
   :custom
   (gptel-default-mode 'org-mode)
   (gptel-max-tokens 400)
   :config
-  (require 'llm-tools)
+
   (exec-path-from-shell-initialize)
   (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
   (mapcar (apply-partially #'apply #'gptel-make-tool)
@@ -120,7 +151,10 @@ Since I'm paying for the LLM usage and my workplace doesn't help me, try to use 
   (llm-warn-on-nonfree nil))
 
 (use-package llm-tool-collection
-  :ensure (:repo "skissue/llm-tool-collection" :fetcher github :files ("*.el")))
+  :demand t
+  :ensure (:repo "skissue/llm-tool-collection" :fetcher github :files ("*.el"))
+  :config
+  (require 'llm-tools))
 
 (defun bob/tool-find-files-by-regex (regex)
     "Find files in the current project matching REGEX pattern.
