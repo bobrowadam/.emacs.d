@@ -864,8 +864,7 @@
 
 (use-package jtsx
   :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
-         ("\\.tsx\\'" . jtsx-tsx-mode)
-         ("\\.ts\\'" . jtsx-typescript-mode))
+         ("\\.tsx\\'" . jtsx-tsx-mode))
   :commands jtsx-install-treesit-language
   :hook ((jtsx-jsx-mode . hs-minor-mode)
          (jtsx-tsx-mode . hs-minor-mode)
