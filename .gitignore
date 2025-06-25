@@ -79,3 +79,4 @@ transient/*
 /elpaca/
 *.elc
 /modules/modules-autoloads.el
+/init.el
