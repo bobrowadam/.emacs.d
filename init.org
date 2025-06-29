@@ -475,6 +475,10 @@ NORMAL-MODE is for not running with debugger"
 
   (global-set-key [remap keyboard-quit] #'bob/emacs-keyboard-quit)
 
+  (eval-when-compile
+    (dolist (sym '(cl-flet lisp-complete-symbol))
+      (setplist sym (use-package-plist-delete
+                     (symbol-plist sym) 'byte-obsolete-info))))
   (use-package emacs
     :ensure nil
     :demand
