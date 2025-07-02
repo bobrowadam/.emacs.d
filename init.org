@@ -1,6 +1,7 @@
 #+title: Bob's Emacs init file
 
 * Startup
+** Set lexical binding
 #+begin_src emacs-lisp
   ;;; -*- lexical-binding: t -*-
 #+end_src
@@ -30,8 +31,13 @@
 #+end_src
 * Init Server
 #+begin_src elisp
-(when window-system
-    (server-start))
+  (use-package server
+    :ensure nil
+    :demand t
+    :when window-system
+    :config
+    (unless (server-running-p)
+      (server-start)))
 #+end_src
 
 * Global elisp dependencies
@@ -54,207 +60,207 @@
 
 * My elisp utils
 #+begin_src elisp
-(defun assocdr (prop cons-cell)
-  "Get the cdr of an association with key PROP in CONS-CELL.
-This is a shorthand for (cdr (assoc prop cons-cell))."
-  (cdr (assoc prop cons-cell)))
+  (defun assocdr (prop cons-cell)
+    "Get the cdr of an association with key PROP in CONS-CELL.
+  This is a shorthand for (cdr (assoc prop cons-cell))."
+    (cdr (assoc prop cons-cell)))
 
-(defun get-dir-name (&optional path)
-  "Get the current directory name from PATH.
-If PATH is nil, use `default-directory'."
-  (file-name-nondirectory
-     (directory-file-name
-      (file-name-directory (or path default-directory)))))
+  (defun get-dir-name (&optional path)
+    "Get the current directory name from PATH.
+  If PATH is nil, use `default-directory'."
+    (file-name-nondirectory
+       (directory-file-name
+        (file-name-directory (or path default-directory)))))
 
-(defun bob/read-file-content (file-name)
-  "Read the content of FILE-NAME and return it as a string."
-  (with-temp-buffer
-    (insert-file-contents file-name)
-    (buffer-string)))
+  (defun bob/read-file-content (file-name)
+    "Read the content of FILE-NAME and return it as a string."
+    (with-temp-buffer
+      (insert-file-contents file-name)
+      (buffer-string)))
 
-  (defun bob/drop-buffer (buffers)
-  (seq-remove (lambda (buf)
-                (cond ((equal buf (buffer-name)) t)))
+    (defun bob/drop-buffer (buffers)
+    (seq-remove (lambda (buf)
+                  (cond ((equal buf (buffer-name)) t)))
+                buffers))
+
+  (defun bob/kill-this-buffer ()
+    (interactive)
+    (if (one-window-p)
+        (kill-buffer)
+      (kill-buffer-and-window)))
+
+  (defun bob/eat-top-project ()
+    "Open an Eat shell on the highest project"
+    (interactive)
+    (if-let* ((project--root (bob/monorepo-root))
+               (default-directory project--root))
+        (eat-project)
+      (error "Not in project")))
+
+  (defvar bob/last-shell-buffer nil)
+
+  (defun set-last-shell-buffer-as-first (buffers)
+    (seq-sort (lambda (a b)
+                (equal a bob/last-shell-buffer))
               buffers))
 
-(defun bob/kill-this-buffer ()
-  (interactive)
-  (if (one-window-p)
-      (kill-buffer)
-    (kill-buffer-and-window)))
 
-(defun bob/eat-top-project ()
-  "Open an Eat shell on the highest project"
-  (interactive)
-  (if-let* ((project--root (bob/monorepo-root))
-             (default-directory project--root))
-      (eat-project)
-    (error "Not in project")))
+  (defun bob/jump-to-shell ()
+    "Jump to a shell buffer."
+    (interactive)
+    (if-let* ((shell-buffers
+               (bob/drop-buffer
+                (set-last-shell-buffer-as-first
+                 (seq-filter
+                  (lambda (b) (or (equal (with-current-buffer b major-mode) 'vterm-mode)
+                                  (equal (with-current-buffer b major-mode) 'eshell-mode)
+                                  (with-current-buffer b (derived-mode-p 'comint-mode))
+                                  (with-current-buffer b (derived-mode-p 'compilation-mode))
+                                  (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
+                                  (equal (with-current-buffer b major-mode) 'eat-mode)
+                                  (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
+                                  (equal (with-current-buffer b major-mode) 'pgmacs-mode)))
+                  (mapcar (function buffer-name)
+                          (buffer-list))))))
+              (shell-buffer (consult--read shell-buffers
+                                           :prompt "Shell: "
+                                           :category 'buffer
+                                           :state (consult--buffer-state)
+                                           :sort nil)))
+        (progn
+          (setq bob/last-shell-buffer shell-buffer)
+          (switch-to-buffer shell-buffer))
+      (message "No Shell buffers exists")))
 
-(defvar bob/last-shell-buffer nil)
+  (defun get--inspect-processes-port ()
+    (cl-remove-if-not 'identity
+                      (mapcar
+                       (lambda (process)
+                         (if-let ((match (s-match "inspect=\\([0-9]+\\)" (nth 2 (process-command process)))))
+                             (string-to-number (cadr match))))
+                       (cl-remove-if-not
+                        (lambda (p) (s-contains? "comint" (process-name p)))
+                        (process-list)))))
 
-(defun set-last-shell-buffer-as-first (buffers)
-  (seq-sort (lambda (a b)
-              (equal a bob/last-shell-buffer))
-            buffers))
+  (defun get--available-inspect-port ()
+    (if-let (inspect-processes (get--inspect-processes-port))
+        (1+ (car (-sort '> inspect-processes)))
+      9229))
 
+  (defun check-types-command ()
+    "Returns the command for running check-types NPM script if available"
+    (when-let* ((default-directory (locate-dominating-file default-directory "package.json"))
+                (package-json-raw (bob/read-file-content "package.json"))
+                (package-json (json-parse-string package-json-raw
+                                                 :object-type 'alist)))
+      (assocdr 'check-types (assocdr 'scripts package-json))))
 
-(defun bob/jump-to-shell ()
-  "Jump to a shell buffer."
-  (interactive)
-  (if-let* ((shell-buffers
-             (bob/drop-buffer
-              (set-last-shell-buffer-as-first
-               (seq-filter
-                (lambda (b) (or (equal (with-current-buffer b major-mode) 'vterm-mode)
-                                (equal (with-current-buffer b major-mode) 'eshell-mode)
-                                (with-current-buffer b (derived-mode-p 'comint-mode))
-                                (with-current-buffer b (derived-mode-p 'compilation-mode))
-                                (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
-                                (equal (with-current-buffer b major-mode) 'eat-mode)
-                                (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
-                                (equal (with-current-buffer b major-mode) 'pgmacs-mode)))
-                (mapcar (function buffer-name)
-                        (buffer-list))))))
-            (shell-buffer (consult--read shell-buffers
-                                         :prompt "Shell: "
-                                         :category 'buffer
-                                         :state (consult--buffer-state)
-                                         :sort nil)))
-      (progn
-        (setq bob/last-shell-buffer shell-buffer)
-        (switch-to-buffer shell-buffer))
-    (message "No Shell buffers exists")))
+  (defun bob/npm--project-name ()
+    "Get the current project name from the package json file."
+    (when-let ((project-root-path (project-root (project-current)))
+               (package-json (json-parse-string (bob/read-file-content
+                                                 (format "%s/package.json" project-root-path))
+                                                :object-type 'alist)))
+      (assocdr 'name package-json)))
 
-(defun get--inspect-processes-port ()
-  (cl-remove-if-not 'identity
-                    (mapcar
-                     (lambda (process)
-                       (if-let ((match (s-match "inspect=\\([0-9]+\\)" (nth 2 (process-command process)))))
-                           (string-to-number (cadr match))))
-                     (cl-remove-if-not
-                      (lambda (p) (s-contains? "comint" (process-name p)))
-                      (process-list)))))
+  (defun bob/compilation-buffer-name ()
+    (if-let ((projcet-path (nth 2 (project-current))))
+        (format "TS-COMPILE -- %s"
+                (get-dir-name projcet-path))))
 
-(defun get--available-inspect-port ()
-  (if-let (inspect-processes (get--inspect-processes-port))
-      (1+ (car (-sort '> inspect-processes)))
-    9229))
-
-(defun check-types-command ()
-  "Returns the command for running check-types NPM script if available"
-  (when-let* ((default-directory (locate-dominating-file default-directory "package.json"))
-              (package-json-raw (bob/read-file-content "package.json"))
-              (package-json (json-parse-string package-json-raw
-                                               :object-type 'alist)))
-    (assocdr 'check-types (assocdr 'scripts package-json))))
-
-(defun bob/npm--project-name ()
-  "Get the current project name from the package json file."
-  (when-let ((project-root-path (project-root (project-current)))
-             (package-json (json-parse-string (bob/read-file-content
-                                               (format "%s/package.json" project-root-path))
-                                              :object-type 'alist)))
-    (assocdr 'name package-json)))
-
-(defun bob/compilation-buffer-name ()
-  (if-let ((projcet-path (nth 2 (project-current))))
-      (format "TS-COMPILE -- %s"
-              (get-dir-name projcet-path))))
-
-(defun npm-run (&optional normal-mode)
-  "Debug typescript project on watch mode.
-NORMAL-MODE is for not running with debugger"
-  (interactive "P")
-  (when (check-types-command)
-    (let ((default-directory (project-root (project-current t)))
-          (comint-scroll-to-bottom-on-input t)
-          (comint-scroll-to-bottom-on-output t)
-          (comint-process-echoes t)
-          (compilation-buffer-name (bob/compilation-buffer-name))
-          (project-main-file (bob/npm--project-name)))
-      (cond ((and (not (eq major-mode 'comint-mode))
-                  (car (memq (get-buffer compilation-buffer-name)
-                             (buffer-list))))
-             (switch-to-buffer (get-buffer compilation-buffer-name)))
-            ((and (eq major-mode 'comint-mode)
-                  (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
-             (switch-to-prev-buffer))
-            (t
-             (let ((compilation-command (if normal-mode
-                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./dist/%s.js"
-                                                    project-main-file)
-                                          (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./dist/%s.js"
-                                                  (get--available-inspect-port)
-                                                  project-main-file))))
-               (with-temporary-node-version
-                   (fnm-current-node-version)
-                 (compilation-start compilation-command
-                                    t (lambda (mode)
-                                        compilation-buffer-name)))))))))
-
-(defun npm-run-build ()
-  "Build typescript project on watch mode"
-  (interactive)
-  (if-let* ((default-directory (locate-dominating-file default-directory "package.json"))
-            (local-check-types-command (check-types-command))
+  (defun npm-run (&optional normal-mode)
+    "Debug typescript project on watch mode.
+  NORMAL-MODE is for not running with debugger"
+    (interactive "P")
+    (when (check-types-command)
+      (let ((default-directory (project-root (project-current t)))
             (comint-scroll-to-bottom-on-input t)
             (comint-scroll-to-bottom-on-output t)
             (comint-process-echoes t)
-            (compilation-buffer-name (format "TS-COMPILE -- %s"
-                                             (get-dir-name default-directory))))
-      (cond ((and (not (eq major-mode 'comint-mode))
-                  (car (memq (get-buffer compilation-buffer-name)
-                             (buffer-list))))
-             (switch-to-buffer (get-buffer compilation-buffer-name)))
-            ((and (eq major-mode 'comint-mode)
-                  (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
-             (switch-to-prev-buffer))
-            ((s-starts-with-p "nx" local-check-types-command)
-             (compilation-start "npm run check-types"
-                                t (lambda (_)
-                                    compilation-buffer-name)))
-            (t
-             (compilation-start "npm run check-types -- -w"
-                                t (lambda (_)
-                                    compilation-buffer-name))))
-    (error "probably not a typescript application")))
+            (compilation-buffer-name (bob/compilation-buffer-name))
+            (project-main-file (bob/npm--project-name)))
+        (cond ((and (not (eq major-mode 'comint-mode))
+                    (car (memq (get-buffer compilation-buffer-name)
+                               (buffer-list))))
+               (switch-to-buffer (get-buffer compilation-buffer-name)))
+              ((and (eq major-mode 'comint-mode)
+                    (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
+               (switch-to-prev-buffer))
+              (t
+               (let ((compilation-command (if normal-mode
+                                              (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./dist/%s.js"
+                                                      project-main-file)
+                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./dist/%s.js"
+                                                    (get--available-inspect-port)
+                                                    project-main-file))))
+                 (with-temporary-node-version
+                     (fnm-current-node-version)
+                   (compilation-start compilation-command
+                                      t (lambda (mode)
+                                          compilation-buffer-name)))))))))
 
-(defun read-file (file-name)
-  "Return the contents of FILE-NAME as a lisp data type."
-  (when (file-exists-p file-name)
-   (with-temp-buffer
-     (insert-file-contents file-name)
-     (buffer-string))))
+  (defun npm-run-build ()
+    "Build typescript project on watch mode"
+    (interactive)
+    (if-let* ((default-directory (locate-dominating-file default-directory "package.json"))
+              (local-check-types-command (check-types-command))
+              (comint-scroll-to-bottom-on-input t)
+              (comint-scroll-to-bottom-on-output t)
+              (comint-process-echoes t)
+              (compilation-buffer-name (format "TS-COMPILE -- %s"
+                                               (get-dir-name default-directory))))
+        (cond ((and (not (eq major-mode 'comint-mode))
+                    (car (memq (get-buffer compilation-buffer-name)
+                               (buffer-list))))
+               (switch-to-buffer (get-buffer compilation-buffer-name)))
+              ((and (eq major-mode 'comint-mode)
+                    (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
+               (switch-to-prev-buffer))
+              ((s-starts-with-p "nx" local-check-types-command)
+               (compilation-start "npm run check-types"
+                                  t (lambda (_)
+                                      compilation-buffer-name)))
+              (t
+               (compilation-start "npm run check-types -- -w"
+                                  t (lambda (_)
+                                      compilation-buffer-name))))
+      (error "probably not a typescript application")))
 
-(defun bob/get-unix-timestamp ()
-  "Return the current Unix timestamp as an integer."
-  (floor (float-time (current-time))))
+  (defun read-file (file-name)
+    "Return the contents of FILE-NAME as a lisp data type."
+    (when (file-exists-p file-name)
+     (with-temp-buffer
+       (insert-file-contents file-name)
+       (buffer-string))))
 
-(defmacro bob/with-default-dir (directory &rest body)
-  "Evaluate BODY with 'default-dir' as DIRECTORY. keymap is \\{typescript-ts-mode-map}"
-  (declare (indent 1) (debug t))
-  `(let ((default-directory ,directory))
-     ,@body))
+  (defun bob/get-unix-timestamp ()
+    "Return the current Unix timestamp as an integer."
+    (floor (float-time (current-time))))
 
-(defun get--processes-by-string (captured-string)
-  (-let [lines (-filter
-                (lambda (str)
-                  (not (string-match-p (regexp-quote "rg") str)))
-                (s-split "\n" (shell-command-to-string (format "ps aux | rg %s" captured-string)) t))]
-    (mapcar (lambda (line)
-              (nth 1 (s-split " " line t)))
-            lines)))
+  (defmacro bob/with-default-dir (directory &rest body)
+    "Evaluate BODY with 'default-dir' as DIRECTORY. keymap is \\{typescript-ts-mode-map}"
+    (declare (indent 1) (debug t))
+    `(let ((default-directory ,directory))
+       ,@body))
 
-(defun bob/kill-inspect-process ()
-  (interactive)
-  (-let ((process (get--processes-by-string "inspect")))
-    (if process
-      (progn (message "Found inspect processes: %s, killing them now" process)
-             (when (equal (shell-command (format "kill %s" (s-join " " process)))
-                          0)
-               (message "Killed inspect processes: %s" process)))
-      (message "No inspect processes found"))))
+  (defun get--processes-by-string (captured-string)
+    (-let [lines (-filter
+                  (lambda (str)
+                    (not (string-match-p (regexp-quote "rg") str)))
+                  (s-split "\n" (shell-command-to-string (format "ps aux | rg %s" captured-string)) t))]
+      (mapcar (lambda (line)
+                (nth 1 (s-split " " line t)))
+              lines)))
+
+  (defun bob/kill-inspect-process ()
+    (interactive)
+    (-let ((process (get--processes-by-string "inspect")))
+      (if process
+        (progn (message "Found inspect processes: %s, killing them now" process)
+               (when (equal (shell-command (format "kill %s" (s-join " " process)))
+                            0)
+                 (message "Killed inspect processes: %s" process)))
+        (message "No inspect processes found"))))
 #+end_src
 
 * GC improvements
@@ -605,14 +611,15 @@ NORMAL-MODE is for not running with debugger"
   #+end_src
 ** Aider
   #+begin_src elisp
-  (use-package aider
-    :ensure (:repo "tninja/aider.el" :fetcher github :files ("*.el"))
-    :custom
-    (aider-args '("--model" "sonnet" "--no-auto-accept-architect" "--no-auto-commits"))
-    :config
-    (setenv "ANTHROPIC_API_KEY"
-            (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
-    :bind ("C-c g c" . 'aider-transient-menu))
+    (use-package aider
+      :ensure (:repo "tninja/aider.el" :fetcher github :files ("*.el"))
+      :custom
+      (aider-args '("--model" "sonnet" "--no-auto-accept-architect" "--no-auto-commits"))
+      :config
+      (setenv "ANTHROPIC_API_KEY"
+              (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
+      :bind ("C-c g c" . 'aider-transient-menu)
+      (:map prog-mode-map ("C-c g C" . 'aider-code-change)))
   #+end_src
 
 ** Minuet - ai code completion
@@ -1278,9 +1285,14 @@ the register."
 #+end_src
 
 * Markdown
+** markdown-mode
 #+begin_src elisp
-(use-package markdown-mode
-  :custom (markdown-fontify-code-blocks-natively t))
+  (use-package markdown-mode
+    :custom (markdown-fontify-code-blocks-natively t))
+#+end_src
+** edit-indirect (a markdown mode dependency for editing code blocks)
+#+begin_src elisp
+  (use-package edit-indirect)
 #+end_src
 
 * Org Mode
@@ -1499,66 +1511,66 @@ the register."
 
 ** Magit
 #+begin_src elisp
-(use-package magit
-  :custom (magit-process-apply-ansi-colors 'filter)
-  :config
-  (defun bob/create-github-repo ()
-    "Create a new Github repo using the Github API."
-    (interactive)
-    (let ((repo-name (read-string "Repo name: " (get-dir-name (project-root (project-current)))))
-          (repo-description (read-string "Repo description: "))
-          (repo-homepage (read-string "Repo homepage: "))
-          (is-repo-private (yes-or-no-p "Is Repo private: "))
-          (repo-is_template (yes-or-no-p "Is Repo is_template: "))
-          (current-branch (magit-get-current-branch)))
-      (ghub-post "/user/repos" (list  :name repo-name
-                                      :description repo-description
-                                      :homepage repo-homepage
-                                      :private is-repo-private
-                                      :is_template repo-is_template))
-      (magit-remote-add "origin" (format "git@github.com:bobrowadam/%s.git" repo-name))
-      (magit-run-git-async "push"
-                           "-u"
-                           "origin"
-                           (format "refs/heads/%s:refs/heads/%s"
-                                   current-branch
-                                   current-branch))))
-  (magit-wip-mode 1)
-  (transient-append-suffix 'magit-file-dispatch
-    "p"
-    '("P" "Push" magit-push))
-  (transient-append-suffix 'magit-file-dispatch
-    "P"
-    '("F" "Pull" magit-pull))
-  (defun bob/magit-commit-message (message)
-    (interactive "sCommit message: ")
-    (magit-commit-create `("-am" ,message)))
-  (transient-append-suffix 'magit-commit
-    "c"
-    '("m" "Quick commit using minibuffer for commit message." bob/magit-commit-message))
-  (defun bob/magit-buffers ()
-    "Jump to a magit buffer."
-    (interactive)
-    (if-let* ((magit-buffers
-               (bob/drop-buffer
-                (set-last-magit-buffer-as-first
-                 (seq-filter
-                  (lambda (b) (or (equal (with-current-buffer b major-mode) 'magit-status-mode)))
-                  (mapcar (function buffer-name) (buffer-list))))))
-              (magit-buffer (completing-read "Magit: " magit-buffers)))
-        (progn
-          (setq bob/last-magit-buffer magit-buffer)
-          (switch-to-buffer magit-buffer))
-      (message "No Magit buffers exists")))
-  (defun bob/magit-fetch-and-rebase ()
-    "Fetch \"origin/main and\" rebase current branch onto \"main\"."
-    (interactive)
-    (message "Running 'git fetch origin main:main'")
-    (magit-run-git "fetch" "origin" "main:main")
-    (magit-rebase-branch "main" nil))
-  (transient-append-suffix 'magit-rebase
-    "f"
-    '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
+  (use-package magit
+    :custom (magit-process-apply-ansi-colors 'filter)
+    :config
+    (defun bob/create-github-repo ()
+      "Create a new Github repo using the Github API."
+      (interactive)
+      (let ((repo-name (read-string "Repo name: " (get-dir-name (project-root (project-current)))))
+            (repo-description (read-string "Repo description: "))
+            (repo-homepage (read-string "Repo homepage: "))
+            (is-repo-private (yes-or-no-p "Is Repo private: "))
+            (repo-is_template (yes-or-no-p "Is Repo is_template: "))
+            (current-branch (magit-get-current-branch)))
+        (ghub-post "/user/repos" (list  :name repo-name
+                                        :description repo-description
+                                        :homepage repo-homepage
+                                        :private is-repo-private
+                                        :is_template repo-is_template))
+        (magit-remote-add "origin" (format "git@github.com:bobrowadam/%s.git" repo-name))
+        (magit-run-git-async "push"
+                             "-u"
+                             "origin"
+                             (format "refs/heads/%s:refs/heads/%s"
+                                     current-branch
+                                     current-branch))))
+    (magit-wip-mode 1)
+    (transient-append-suffix 'magit-file-dispatch
+      "p"
+      '("P" "Push" magit-push))
+    (transient-append-suffix 'magit-file-dispatch
+      "P"
+      '("F" "Pull" magit-pull))
+    (defun bob/magit-commit-message (message)
+      (interactive "sCommit message: ")
+      (magit-commit-create `("-am" ,message)))
+    (transient-append-suffix 'magit-commit
+      "c"
+      '("m" "Quick commit using minibuffer for commit message." bob/magit-commit-message))
+    (defun bob/magit-buffers ()
+      "Jump to a magit buffer."
+      (interactive)
+      (if-let* ((magit-buffers
+                 (bob/drop-buffer
+                  (set-last-magit-buffer-as-first
+                   (seq-filter
+                    (lambda (b) (or (equal (with-current-buffer b major-mode) 'magit-status-mode)))
+                    (mapcar (function buffer-name) (buffer-list))))))
+                (magit-buffer (completing-read "Magit: " magit-buffers)))
+          (progn
+            (setq bob/last-magit-buffer magit-buffer)
+            (switch-to-buffer magit-buffer))
+        (message "No Magit buffers exists")))
+    (defun bob/magit-fetch-and-rebase ()
+      "Fetch \"origin/main and\" rebase current branch onto \"main\"."
+      (interactive)
+      (message "Running 'git rebase origin/main'")
+      (magit-run-git "fetch" "origin" "main")
+      (magit-rebase-branch "origin/main" nil))
+    (transient-append-suffix 'magit-rebase
+      "f"
+      '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
 #+end_src
 ** Forge
 #+begin_src elisp
@@ -2297,12 +2309,11 @@ the register."
     (format "npm run start:services:test -- --exclude %s"
             excluded-service-name))
 
-  (defconst *grain-project-root* "~/source/grain")
   (defconst *grain-services-root* "apps/backend/")
 
   (defun grain/run--service (run-service-command service-output-buffer-name)
     "Run RUN-SERVICE-COMMAND in SERVICE-OUTPUT-BUFFER-NAME buffer."
-    (let ((default-directory *grain-project-root*)
+    (let ((default-directory (bob/monorepo-root))
           (process (get-buffer-process (get-buffer service-output-buffer-name))))
       (when process
         (interrupt-process process)
@@ -2312,7 +2323,7 @@ the register."
   (defun grain/get--service-name ()
     "Use completing read to get a name of a known grain service."
     (completing-read "Enter service name: "
-                     (directory-files (file-name-concat *grain-project-root* *grain-services-root*)
+                     (directory-files (file-name-concat (bob/monorepo-root) *grain-services-root*)
                                       nil
                                       "^[^.]")))
   ;;;###autoload
