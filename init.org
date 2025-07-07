@@ -75,8 +75,8 @@
   (defun bob/read-file-content (file-name)
     "Read the content of FILE-NAME and return it as a string."
     (with-temp-buffer
-      (insert-file-contents file-name)
-      (buffer-string)))
+      (when (insert-file-contents file-name)
+      (buffer-string))))
 
     (defun bob/drop-buffer (buffers)
     (seq-remove (lambda (buf)
@@ -157,10 +157,14 @@
 
   (defun bob/npm--project-name ()
     "Get the current project name from the package json file."
-    (when-let ((project-root-path (project-root (project-current)))
-               (package-json (json-parse-string (bob/read-file-content
+    (when-let ((project (project-current))
+               (project-root-path (project-root project))
+               (package-json-file-path (format "%s/package.json" project-root-path))
+               (package-json (and
+                              (file-exists-p package-json-file-path)
+                              (json-parse-string (bob/read-file-content
                                                  (format "%s/package.json" project-root-path))
-                                                :object-type 'alist)))
+                                                :object-type 'alist))))
       (assocdr 'name package-json)))
 
   (defun bob/compilation-buffer-name ()
@@ -261,6 +265,13 @@
                             0)
                  (message "Killed inspect processes: %s" process)))
         (message "No inspect processes found"))))
+
+  (defun make-sentence (string)
+    "Create a sentence out of any STRING."
+    (let* ((lowerCamelCased (string-inflection-underscore-function string))
+           (splitted (string-split lowerCamelCased "_")))
+      (s-capitalize (string-join splitted
+                    " "))))
 #+end_src
 
 * GC improvements
@@ -467,7 +478,7 @@
     (when (> (minibuffer-depth) 0)
       (abort-recursive-edit))
 
-    ;; Do the regular `keyboard-quit' unless defining or executing a keyboard 
+    ;; Do the regular `keyboard-quit' unless defining or executing a keyboard
     ;; macro in which case we do the subset of `keyboard-quit' that *doesn't*
     ;; kill kmacros.
     (if (or force (not (or defining-kbd-macro executing-kbd-macro)))
@@ -1020,8 +1031,31 @@ My llm tools defintion with an init function
             ("postgres" . (
                            :command  "postgres-mcp"
                            :args ("--access-mode=unrestricted")
-                           :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain")
-                           )))))
+                           :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain"))))))
+#+end_src
+** Greger
+#+begin_src elisp
+  (use-package greger
+    :ensure (:repo "andreasjansson/greger.el" :fetcher github :files ("*.el"))
+    :disabled t
+    :config
+    (setenv "ANTHROPIC_API_KEY"
+            (-some->
+                (plist-get (car (auth-source-search :host "claude.ai")) :secret)
+              funcall))
+    :bind ("C-M-;" . greger))
+#+end_src
+** Claude Code
+#+begin_src elisp
+  (use-package claude-code
+    :ensure (:type git :host github :repo "stevemolitor/claude-code.el" :branch "main"
+                     :files ("*.el" (:exclude "images/*")))
+    :init
+    (autoload 'claude-code-command-map "claude-code" nil t 'keymap)
+    :bind-keymap
+    ("C-M-;" . claude-code-command-map)
+    :config
+    (claude-code-mode))
 #+end_src
 * Ediff
 #+begin_src elisp
@@ -1478,7 +1512,7 @@ the register."
   :bind ("C-c d t" . denote-journal-new-or-existing-entry))
 #+end_src
 
-* Verb: Rest api interface 
+* Verb: Rest api interface
 #+begin_src elisp
 (use-package verb
   :after (org)
@@ -1535,6 +1569,41 @@ the register."
                              (format "refs/heads/%s:refs/heads/%s"
                                      current-branch
                                      current-branch))))
+    (defun bob/remove-project-roots-advice (orig-fun worktree)
+      "Remove project roots when deleting git worktrees."
+      (project-forget-projects-under worktree)
+      (funcall orig-fun worktree))
+
+    (defun bob/is-grain-project (path)
+      (let ((default-directory path))
+        (equal (bob/npm--project-name) "grain")))
+
+    (defun bob/setup-grain-project-for-worktree (path)
+      (message "Setup grain worktree in %s path" path)
+      (copy-directory "~/source/grain/.claude"
+                      (format "%s/.claude" path))
+      (copy-file "~/source/grain/CLAUDE.md"
+                 (format "%s/CLAUDE.md" path))
+      (copy-file "~/source/grain/.env"
+                 (format "%s/.env" path))
+      (copy-file "~/source/grain/build.number"
+                 (format "%s/build.number" path)))
+
+    (defun bob/setup-worktree-checkout (orig-fun path worktree)
+      (funcall orig-fun path worktree)
+      (message "checkout worktree %s in path %s" worktree path)
+      (when (bob/is-grain-project path)
+        (bob/setup-grain-project-for-worktree path)))
+
+    (defun bob/setup-worktree-branch (orig-fun path worktree starting-point)
+      (funcall orig-fun path worktree starting-point)
+      (message (format "created worktree %s in path %s starting at %s" worktree path starting-point))
+      (when (bob/is-grain-project path)
+        (bob/setup-grain-project-for-worktree path)))
+
+    (advice-add 'magit-worktree-delete :around #'bob/remove-project-roots-advice)
+    (advice-add 'magit-worktree-checkout :around #'bob/setup-worktree-checkout)
+    (advice-add 'magit-worktree-branch :around #'bob/setup-worktree-branch)
     (magit-wip-mode 1)
     (transient-append-suffix 'magit-file-dispatch
       "p"
@@ -2622,7 +2691,7 @@ the register."
                  (balance-windows))
         (progn (golden-ratio-mode)
                (golden-ratio)))))
-  
+
 #+end_src
 * Kubed
 #+begin_src elisp
@@ -2645,7 +2714,7 @@ the register."
     :bind (:map emacs-lisp-mode-map ("C-x E" . macrostep-expand)))
 
 #+end_src
-* hide-show  
+* hide-show
 #+begin_src elisp
 (use-package hideshow :ensure nil
     :hook (emacs-lisp-mode . (lambda () (hs-minor-mode 1)) )
@@ -2653,7 +2722,7 @@ the register."
 #+end_src
 
 #+end_src
-* org-linear  
+* org-linear
 #+begin_src elisp
 (use-package org-linear
     :ensure (org-linear
@@ -2669,7 +2738,7 @@ the register."
 #+end_src
 
 #+end_src
-* linear  
+* linear
 #+begin_src elisp
 (use-package linear
     :custom (linear-api-key (getenv "LINEAR_API_KEY"))
@@ -2677,7 +2746,7 @@ the register."
 #+end_src
 
 #+end_src
-* p-search  
+* p-search
 #+begin_src elisp
 (use-package p-search
     :commands p-search
@@ -2685,7 +2754,7 @@ the register."
 #+end_src
 
 #+end_src
-* sly  
+* sly
 #+begin_src elisp
 (use-package sly
     :custom
