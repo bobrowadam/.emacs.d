@@ -26,8 +26,8 @@
 #+end_src
 * Which key
 #+begin_src elisp
-(use-package which-key
-  :init (which-key-mode 1))
+  (use-package which-key
+    :init (which-key-mode 1))
 #+end_src
 * Init Server
 #+begin_src elisp
@@ -42,20 +42,20 @@
 
 * Global elisp dependencies
 #+begin_src elisp
-(use-package dash
-  :config (defalias '-range '-iota))
-(use-package s :ensure (:wait t) :demand t)
-(use-package llama
-  :ensure (:wait t)
-  :commands (𝝺)
-  :hook (emacs-lisp . llama-fontify-mode)
-  :config (defalias '𝝺 'llama))
-(use-package uuid)
-(use-package transient)
-(use-package exec-path-from-shell)
-(use-package xref)
-(use-package buff-menu :ensure nil)
-(use-package jsonrpc)
+  (use-package dash
+    :config (defalias '-range '-iota))
+  (use-package s :ensure (:wait t) :demand t)
+  (use-package llama
+    :ensure (:wait t)
+    :commands (𝝺)
+    :hook (emacs-lisp . llama-fontify-mode)
+    :config (defalias '𝝺 'llama))
+  (use-package uuid)
+  (use-package transient)
+  (use-package exec-path-from-shell)
+  (use-package xref)
+  (use-package buff-menu :ensure nil)
+  (use-package jsonrpc)
 #+end_src
 
 * My elisp utils
@@ -69,16 +69,16 @@
     "Get the current directory name from PATH.
   If PATH is nil, use `default-directory'."
     (file-name-nondirectory
-       (directory-file-name
-        (file-name-directory (or path default-directory)))))
+     (directory-file-name
+      (file-name-directory (or path default-directory)))))
 
   (defun bob/read-file-content (file-name)
     "Read the content of FILE-NAME and return it as a string."
     (with-temp-buffer
       (when (insert-file-contents file-name)
-      (buffer-string))))
+        (buffer-string))))
 
-    (defun bob/drop-buffer (buffers)
+  (defun bob/drop-buffer (buffers)
     (seq-remove (lambda (buf)
                   (cond ((equal buf (buffer-name)) t)))
                 buffers))
@@ -93,7 +93,7 @@
     "Open an Eat shell on the highest project"
     (interactive)
     (if-let* ((project--root (bob/monorepo-root))
-               (default-directory project--root))
+              (default-directory project--root))
         (eat-project)
       (error "Not in project")))
 
@@ -163,8 +163,8 @@
                (package-json (and
                               (file-exists-p package-json-file-path)
                               (json-parse-string (bob/read-file-content
-                                                 (format "%s/package.json" project-root-path))
-                                                :object-type 'alist))))
+                                                  (format "%s/package.json" project-root-path))
+                                                 :object-type 'alist))))
       (assocdr 'name package-json)))
 
   (defun bob/compilation-buffer-name ()
@@ -233,9 +233,9 @@
   (defun read-file (file-name)
     "Return the contents of FILE-NAME as a lisp data type."
     (when (file-exists-p file-name)
-     (with-temp-buffer
-       (insert-file-contents file-name)
-       (buffer-string))))
+      (with-temp-buffer
+        (insert-file-contents file-name)
+        (buffer-string))))
 
   (defun bob/get-unix-timestamp ()
     "Return the current Unix timestamp as an integer."
@@ -260,10 +260,10 @@
     (interactive)
     (-let ((process (get--processes-by-string "inspect")))
       (if process
-        (progn (message "Found inspect processes: %s, killing them now" process)
-               (when (equal (shell-command (format "kill %s" (s-join " " process)))
-                            0)
-                 (message "Killed inspect processes: %s" process)))
+          (progn (message "Found inspect processes: %s, killing them now" process)
+                 (when (equal (shell-command (format "kill %s" (s-join " " process)))
+                              0)
+                   (message "Killed inspect processes: %s" process)))
         (message "No inspect processes found"))))
 
   (defun make-sentence (string)
@@ -271,7 +271,7 @@
     (let* ((lowerCamelCased (string-inflection-underscore-function string))
            (splitted (string-split lowerCamelCased "_")))
       (s-capitalize (string-join splitted
-                    " "))))
+                                 " "))))
 #+end_src
 
 * GC improvements
@@ -514,127 +514,127 @@
 
 * Ibuffer
 #+begin_src elisp
-(use-package ibuffer
-  :ensure nil
-  :bind ("C-x C-b" . #'ibuffer))
+  (use-package ibuffer
+    :ensure nil
+    :bind ("C-x C-b" . #'ibuffer))
 #+end_src
 
 * Search
 #+begin_src elisp
-(use-package isearch
-  :ensure nil
-  :custom
-  (isearch-lazy-count t))
-(use-package flx)
-(use-package swiper
-  :config
-  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
-  :bind ("C-c C-s" . swiper))
+  (use-package isearch
+    :ensure nil
+    :custom
+    (isearch-lazy-count t))
+  (use-package flx)
+  (use-package swiper
+    :config
+    (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
+    :bind ("C-c C-s" . swiper))
 #+end_src
 
 * AI and LLM integrations
 ** GPTEL
-  #+begin_src elisp
-    (defvar ai-assistant-prompt "
-    You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible.
+#+begin_src elisp
+  (defvar ai-assistant-prompt "
+  You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible.
 
-    TOOL USAGE STRATEGY:
-    When handling code-related requests, follow this analysis approach:
+  TOOL USAGE STRATEGY:
+  When handling code-related requests, follow this analysis approach:
 
-    1. CONTEXT GATHERING:
-       - When the context is >~500 lines, use the `summarize-chat-buffer` to compact the context. This is very important!
-       - Use `get_project_root` and `get_buffers_name_in_project` to understand project structure
-       - Use `run_rg` to search for patterns, functions, or specific code constructs
-       - Use `find_files_by_regex_in_project` to locate relevant files
+  1. CONTEXT GATHERING:
+     - When the context is >~500 lines, use the `summarize-chat-buffer` to compact the context. This is very important!
+     - Use `get_project_root` and `get_buffers_name_in_project` to understand project structure
+     - Use `run_rg` to search for patterns, functions, or specific code constructs
+     - Use `find_files_by_regex_in_project` to locate relevant files
 
-    2. CODE ANALYSIS:
-       - Use `eglot_context` for precise symbol analysis (definitions, references, documentation)
-       - Always specify buffer_name, symbol, and line_number when available
-       - Use `get_flymake_diagnostics` to check for errors/warnings in relevant buffers
+  2. CODE ANALYSIS:
+     - Use `eglot_context` for precise symbol analysis (definitions, references, documentation)
+     - Always specify buffer_name, symbol, and line_number when available
+     - Use `get_flymake_diagnostics` to check for errors/warnings in relevant buffers
 
-    3. INVESTIGATION WORKFLOW:
-       - Start broad (search patterns with rg)
-       - Narrow down (examine specific files/buffers)
-       - Go deep (use LSP for symbol-level analysis)
-       - Cross-reference (check related symbols and dependencies)
+  3. INVESTIGATION WORKFLOW:
+     - Start broad (search patterns with rg)
+     - Narrow down (examine specific files/buffers)
+     - Go deep (use LSP for symbol-level analysis)
+     - Cross-reference (check related symbols and dependencies)
 
-    4. RESPONSE STRUCTURE:
-       - State what you're investigating
-       - Show the analysis steps taken
-       - Provide findings with LSP-backed evidence
-       - Suggest next actions if applicable
+  4. RESPONSE STRUCTURE:
+     - State what you're investigating
+     - Show the analysis steps taken
+     - Provide findings with LSP-backed evidence
+     - Suggest next actions if applicable
 
-    When code issues arise, prioritize LSP-based analysis over assumptions. Use the structured knowledge from eglot_context to provide precise, compiler-grade insights rather than generic advice.
+  When code issues arise, prioritize LSP-based analysis over assumptions. Use the structured knowledge from eglot_context to provide precise, compiler-grade insights rather than generic advice.
 
-    [rest of original prompt about conciseness, error handling, etc.]
-    Respond concisely and as short as possible.
-    When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.
-    Be very aware of the tool API and the arguments it needs. failing to do so will cause an unrecoverable error in the flow.
-    Since I'm paying for the LLM usage and my workplace doesn't help me, try to use as little tokens as you can. thanks!")
-    (use-package gptel
-      :custom
-      (gptel-default-mode 'org-mode)
-      (gptel-max-tokens 600)
-      :config
-      (exec-path-from-shell-initialize)
-      (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
-      (mapcar (apply-partially #'apply #'gptel-make-tool)
-              (llm-tool-collection-get-all))
-      (defun bob/gptel-switch-to-gptel-buffer ()
-        "Switch to a buffer with `gptel-mode' active."
-        (interactive)
-        (if-let ((gptel-buffers
-                  (seq-filter
-                   (lambda (buff)
-                     (with-current-buffer buff
-                       (bound-and-true-p gptel-mode)))
-                   (buffer-list)))
-                 (gptel-buffer (completing-read "GPT buffer: " (mapcar 'buffer-name gptel-buffers))))
-            (switch-to-buffer gptel-buffer)
-          (message "No GPTel buffers found.")))
-      (gptel-make-ollama "Ollama"
-        :host "localhost:11434"
-        :stream t
-        :models '(mistral:latest llama3.2:latest))
-      (when-let ((credentials
-                  (setenv "ANTHROPIC_API_KEY"
-                          (-some->
-                              (plist-get (car (auth-source-search :host "claude.ai")) :secret)
-                            funcall))))
-        (setq
-         gptel-model 'claude-sonnet-4-20250514
-         gptel-backend
-         (gptel-make-anthropic
-             "Claude"
-           :stream t
-           :key credentials)))
-      :bind
-      ("C-c g g" . gptel)
-      ("C-c g r" . gptel-rewrite)
-      ("C-c g a d" . gptel-context-add)
-      ("C-c g a f" . gptel-context-add-file)
-      ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
-      (:map gptel-mode-map ("C-c g s" . gptel-menu))
-      :hook
-      (org-mode . (lambda ()
-                    (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
-                      (gptel-mode 1)))))
-  #+end_src
+  [rest of original prompt about conciseness, error handling, etc.]
+  Respond concisely and as short as possible.
+  When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.
+  Be very aware of the tool API and the arguments it needs. failing to do so will cause an unrecoverable error in the flow.
+  Since I'm paying for the LLM usage and my workplace doesn't help me, try to use as little tokens as you can. thanks!")
+  (use-package gptel
+    :custom
+    (gptel-default-mode 'org-mode)
+    (gptel-max-tokens 600)
+    :config
+    (exec-path-from-shell-initialize)
+    (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
+    (mapcar (apply-partially #'apply #'gptel-make-tool)
+            (llm-tool-collection-get-all))
+    (defun bob/gptel-switch-to-gptel-buffer ()
+      "Switch to a buffer with `gptel-mode' active."
+      (interactive)
+      (if-let ((gptel-buffers
+                (seq-filter
+                 (lambda (buff)
+                   (with-current-buffer buff
+                     (bound-and-true-p gptel-mode)))
+                 (buffer-list)))
+               (gptel-buffer (completing-read "GPT buffer: " (mapcar 'buffer-name gptel-buffers))))
+          (switch-to-buffer gptel-buffer)
+        (message "No GPTel buffers found.")))
+    (gptel-make-ollama "Ollama"
+      :host "localhost:11434"
+      :stream t
+      :models '(mistral:latest llama3.2:latest))
+    (when-let ((credentials
+                (setenv "ANTHROPIC_API_KEY"
+                        (-some->
+                            (plist-get (car (auth-source-search :host "claude.ai")) :secret)
+                          funcall))))
+      (setq
+       gptel-model 'claude-sonnet-4-20250514
+       gptel-backend
+       (gptel-make-anthropic
+           "Claude"
+         :stream t
+         :key credentials)))
+    :bind
+    ("C-c g g" . gptel)
+    ("C-c g r" . gptel-rewrite)
+    ("C-c g a d" . gptel-context-add)
+    ("C-c g a f" . gptel-context-add-file)
+    ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
+    (:map gptel-mode-map ("C-c g s" . gptel-menu))
+    :hook
+    (org-mode . (lambda ()
+                  (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
+                    (gptel-mode 1)))))
+#+end_src
 ** Aider
-  #+begin_src elisp
-    (use-package aider
-      :ensure (:repo "tninja/aider.el" :fetcher github :files ("*.el"))
-      :custom
-      (aider-args '("--model" "sonnet" "--no-auto-accept-architect" "--no-auto-commits"))
-      :config
-      (setenv "ANTHROPIC_API_KEY"
-              (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
-      :bind ("C-c g c" . 'aider-transient-menu)
-      (:map prog-mode-map ("C-c g C" . 'aider-code-change)))
-  #+end_src
+#+begin_src elisp
+  (use-package aider
+    :ensure (:repo "tninja/aider.el" :fetcher github :files ("*.el"))
+    :custom
+    (aider-args '("--model" "sonnet" "--no-auto-accept-architect" "--no-auto-commits"))
+    :config
+    (setenv "ANTHROPIC_API_KEY"
+            (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
+    :bind ("C-c g c" . 'aider-transient-menu)
+    (:map prog-mode-map ("C-c g C" . 'aider-code-change)))
+#+end_src
 
 ** Minuet - ai code completion
-  #+begin_src elisp
+#+begin_src elisp
   (use-package minuet
     :custom
     (minuet-provider 'claude)
@@ -661,7 +661,7 @@
                           :context-after-cursor minuet--default-chat-input-after-cursor-function)
                :optional nil)
       "config options for Minuet Claude provider"))
-  #+end_src
+#+end_src
 ** My llm-tools
 My llm tools defintion with an init function
 #+begin_src elisp
@@ -1007,7 +1007,7 @@ My llm tools defintion with an init function
       ))
 #+end_src
 ** LLM package
-  #+begin_src elisp
+#+begin_src elisp
   (use-package llm
     :custom
     (llm-warn-on-nonfree nil))
@@ -1016,7 +1016,7 @@ My llm tools defintion with an init function
     :ensure (:repo "skissue/llm-tool-collection" :fetcher github :files ("*.el"))
     :config
     (init-llm-tools))
-  #+end_src
+#+end_src
 ** MCP
 #+begin_src elisp
   (use-package mcp
@@ -1049,7 +1049,7 @@ My llm tools defintion with an init function
 #+begin_src elisp
   (use-package claude-code
     :ensure (:type git :host github :repo "stevemolitor/claude-code.el" :branch "main"
-                     :files ("*.el" (:exclude "images/*")))
+                   :files ("*.el" (:exclude "images/*")))
     :init
     (autoload 'claude-code-command-map "claude-code" nil t 'keymap)
     :bind-keymap
@@ -1059,116 +1059,116 @@ My llm tools defintion with an init function
 #+end_src
 * Ediff
 #+begin_src elisp
-(defvar ediff-buffer-A)
-(defvar ediff-buffer-B)
-(defvar ediff-buffer-C)
-(defvar ediff-merge-job)
-(defvar ediff-ancestor-buffer)
+  (defvar ediff-buffer-A)
+  (defvar ediff-buffer-B)
+  (defvar ediff-buffer-C)
+  (defvar ediff-merge-job)
+  (defvar ediff-ancestor-buffer)
 
-(use-package ediff
-  :ensure nil
-  :custom
-  (ediff-keep-variants nil)
-  (ediff-split-window-function 'split-window-horizontally)
-  (ediff-window-setup-function 'ediff-setup-windows-plain))
+  (use-package ediff
+    :ensure nil
+    :custom
+    (ediff-keep-variants nil)
+    (ediff-split-window-function 'split-window-horizontally)
+    (ediff-window-setup-function 'ediff-setup-windows-plain))
 
-(defvar cc/ediff-revision-session-p nil
-  "If t then `cc/ediff-revision-actual' has been called.
-This state variable is used to insert added behavior to the overridden
-function `ediff-janitor'.")
+  (defvar cc/ediff-revision-session-p nil
+    "If t then `cc/ediff-revision-actual' has been called.
+  This state variable is used to insert added behavior to the overridden
+  function `ediff-janitor'.")
 
-(defun cc/ediff-revision-from-menu (e)
-  "Invoke `ediff-revision' on E with variable `buffer-file-name'."
-  (interactive "e")
-  (cc/ediff-revision))
+  (defun cc/ediff-revision-from-menu (e)
+    "Invoke `ediff-revision' on E with variable `buffer-file-name'."
+    (interactive "e")
+    (cc/ediff-revision))
 
-(defun cc/ediff-revision ()
-  "Run Ediff on the current `buffer-file-name' provided that it is `vc-registered'.
-This function handles the interactive concerns found in `ediff-revision'.
-This function will also test if a diff should apply to the current buffer."
-  (interactive)
-  (when (and (bound-and-true-p buffer-file-name)
-             (vc-registered (buffer-file-name)))
-    (if (and (buffer-modified-p)
-             (y-or-n-p (format "Buffer %s is modified.  Save buffer? "
-                               (buffer-name))))
-      (save-buffer (current-buffer)))
-    (message buffer-file-name)
-    (cc/ediff-revision-actual))
+  (defun cc/ediff-revision ()
+    "Run Ediff on the current `buffer-file-name' provided that it is `vc-registered'.
+  This function handles the interactive concerns found in `ediff-revision'.
+  This function will also test if a diff should apply to the current buffer."
+    (interactive)
+    (when (and (bound-and-true-p buffer-file-name)
+               (vc-registered (buffer-file-name)))
+      (if (and (buffer-modified-p)
+               (y-or-n-p (format "Buffer %s is modified.  Save buffer? "
+                                 (buffer-name))))
+          (save-buffer (current-buffer)))
+      (message buffer-file-name)
+      (cc/ediff-revision-actual))
 
-  (cond ((not (bound-and-true-p buffer-file-name))
-         (message (concat (buffer-name) " is not a file that can be diffed.")))
-        ((not (vc-registered buffer-file-name))
-         (message (concat buffer-file-name " is not under version control.")))))
+    (cond ((not (bound-and-true-p buffer-file-name))
+           (message (concat (buffer-name) " is not a file that can be diffed.")))
+          ((not (vc-registered buffer-file-name))
+           (message (concat buffer-file-name " is not under version control.")))))
 
-(defun cc/ediff-revision-actual ()
-  "Invoke Ediff logic to diff the modified repo file
-to its counterpart in the current branch.
-This function handles the actual diff behavior called by `ediff-revision'."
-  (let ((rev1 "")
-        (rev2 ""))
-    (setq cc/ediff-revision-session-p t)
-    (ediff-load-version-control)
-    (funcall
-     (intern (format "ediff-%S-internal" ediff-version-control-package))
-     rev1 rev2 nil)))
+  (defun cc/ediff-revision-actual ()
+    "Invoke Ediff logic to diff the modified repo file
+  to its counterpart in the current branch.
+  This function handles the actual diff behavior called by `ediff-revision'."
+    (let ((rev1 "")
+          (rev2 ""))
+      (setq cc/ediff-revision-session-p t)
+      (ediff-load-version-control)
+      (funcall
+       (intern (format "ediff-%S-internal" ediff-version-control-package))
+       rev1 rev2 nil)))
 
-(defun ediff-janitor (ask keep-variants)
-  "Kill buffers A, B, and, possibly, C, if these buffers aren't modified.
-In merge jobs, buffer C is not deleted here, but rather according to
-`ediff-quit-merge-hook'.
-ASK non-nil means ask the user whether to keep each unmodified buffer, unless
-KEEP-VARIANTS is non-nil, in which case buffers are never killed.
-A side effect of cleaning up may be that you should be careful when comparing
-the same buffer in two separate Ediff sessions: quitting one of them might
-delete this buffer in another session as well.
+  (defun ediff-janitor (ask keep-variants)
+    "Kill buffers A, B, and, possibly, C, if these buffers aren't modified.
+  In merge jobs, buffer C is not deleted here, but rather according to
+  `ediff-quit-merge-hook'.
+  ASK non-nil means ask the user whether to keep each unmodified buffer, unless
+  KEEP-VARIANTS is non-nil, in which case buffers are never killed.
+  A side effect of cleaning up may be that you should be careful when comparing
+  the same buffer in two separate Ediff sessions: quitting one of them might
+  delete this buffer in another session as well.
 
-CC MODIFICATION: This method overrides the original Ediff function."
-  (let ((ask (if (and (boundp 'cc/ediff-revision-session-p)
-                      cc/ediff-revision-session-p)
-                 nil
-               ask)))
-    (ediff-dispose-of-variant-according-to-user
-     ediff-buffer-A 'A ask keep-variants)
-    ;; !!!: CC Note: Test global state variable `cc/ediff-revision-session-p' to
-    ;; determine if the modified repo file should be kept.
-    ;; Guarding in place to hopefully avoid side-effects when `ediff-janitor' is
-    ;; called from other Ediff functions. Informal testing has not revealed any
-    ;; side-effects but YOLO.
-    (if (and (boundp 'cc/ediff-revision-session-p)
-             cc/ediff-revision-session-p)
-        (ediff-dispose-of-variant-according-to-user
-         ;; CC Note: keep-variants argument is hard-coded to t to keep
-         ;; buffer holding modified repo file around.
-         ediff-buffer-B 'B t t)
+  CC MODIFICATION: This method overrides the original Ediff function."
+    (let ((ask (if (and (boundp 'cc/ediff-revision-session-p)
+                        cc/ediff-revision-session-p)
+                   nil
+                 ask)))
       (ediff-dispose-of-variant-according-to-user
-       ediff-buffer-B 'B ask keep-variants))
-    (if ediff-merge-job  ; don't del buf C if merging--del ancestor buf instead
+       ediff-buffer-A 'A ask keep-variants)
+      ;; !!!: CC Note: Test global state variable `cc/ediff-revision-session-p' to
+      ;; determine if the modified repo file should be kept.
+      ;; Guarding in place to hopefully avoid side-effects when `ediff-janitor' is
+      ;; called from other Ediff functions. Informal testing has not revealed any
+      ;; side-effects but YOLO.
+      (if (and (boundp 'cc/ediff-revision-session-p)
+               cc/ediff-revision-session-p)
+          (ediff-dispose-of-variant-according-to-user
+           ;; CC Note: keep-variants argument is hard-coded to t to keep
+           ;; buffer holding modified repo file around.
+           ediff-buffer-B 'B t t)
         (ediff-dispose-of-variant-according-to-user
-         ediff-ancestor-buffer 'Ancestor ask keep-variants)
-      (ediff-dispose-of-variant-according-to-user
-       ediff-buffer-C 'C ask keep-variants))
-    ;; CC Note: Reset global state variable `cc/ediff-revision-session-p'.
-    (if (and (boundp 'cc/ediff-revision-session-p)
-             cc/ediff-revision-session-p)
-        (setq cc/ediff-revision-session-p nil))))
+         ediff-buffer-B 'B ask keep-variants))
+      (if ediff-merge-job  ; don't del buf C if merging--del ancestor buf instead
+          (ediff-dispose-of-variant-according-to-user
+           ediff-ancestor-buffer 'Ancestor ask keep-variants)
+        (ediff-dispose-of-variant-according-to-user
+         ediff-buffer-C 'C ask keep-variants))
+      ;; CC Note: Reset global state variable `cc/ediff-revision-session-p'.
+      (if (and (boundp 'cc/ediff-revision-session-p)
+               cc/ediff-revision-session-p)
+          (setq cc/ediff-revision-session-p nil))))
 
-(defun cc/stash-window-configuration-for-ediff ()
-  "Store window configuration to register 🧊.
-Use of emoji is to avoid potential use of keyboard character to reference
-the register."
-  (window-configuration-to-register ?🧊))
+  (defun cc/stash-window-configuration-for-ediff ()
+    "Store window configuration to register 🧊.
+  Use of emoji is to avoid potential use of keyboard character to reference
+  the register."
+    (window-configuration-to-register ?🧊))
 
-(defun cc/restore-window-configuration-for-ediff ()
-  "Restore window configuration from register 🧊.
-Use of emoji is to avoid potential use of keyboard character to reference
-the register."
-  (jump-to-register ?🧊))
+  (defun cc/restore-window-configuration-for-ediff ()
+    "Restore window configuration from register 🧊.
+  Use of emoji is to avoid potential use of keyboard character to reference
+  the register."
+    (jump-to-register ?🧊))
 
-(add-hook 'ediff-before-setup-hook #'cc/stash-window-configuration-for-ediff)
-;; !!!: CC Note: Why this is not `ediff-quit-hook' I do not know. But this works
-;; for cleaning up ancillary buffers on quitting an Ediff session.
-(add-hook 'ediff-after-quit-hook-internal #'cc/restore-window-configuration-for-ediff)
+  (add-hook 'ediff-before-setup-hook #'cc/stash-window-configuration-for-ediff)
+  ;; !!!: CC Note: Why this is not `ediff-quit-hook' I do not know. But this works
+  ;; for cleaning up ancillary buffers on quitting an Ediff session.
+  (add-hook 'ediff-after-quit-hook-internal #'cc/restore-window-configuration-for-ediff)
 #+end_src
 
 * Scratch Pop
@@ -1184,58 +1184,58 @@ the register."
 #+end_src
 * Consult
 #+begin_src elisp
-(defvar bob/consult--source-project-buffer
-  `( :name     "Project Buffer"
-     :narrow   ?b
-     :category buffer
-     :face     consult-buffer
-     :history  buffer-name-history
-     :state    ,#'consult--buffer-state
-     :enabled  ,(lambda () consult-project-function)
-     :items
-     ,(lambda ()
-        (when-let (root (consult--project-root))
-          (consult--buffer-query :sort 'visibility
-                                 :directory root
-                                 :as #'consult--buffer-pair
-                                 :predicate #'buffer-file-name))))
-  "Project buffer source for `consult-buffer'.")
-(use-package consult
-  :ensure t
-  :init
-  (setq consult--tofu-char #x100000
-        consult--tofu-range #x00fffe)
-  :custom
-  (consult-project-buffer-sources
-    '(bob/consult--source-project-buffer
-      consult--source-project-recent-file
-      consult--source-project-root))
-  :bind
-  ("M-i" . consult-imenu)
-  ("C-x b" . consult-buffer)
-  ("M-g r" . consult-ripgrep)
-  ("M-y" . consult-yank-from-kill-ring))
+  (defvar bob/consult--source-project-buffer
+    `( :name     "Project Buffer"
+       :narrow   ?b
+       :category buffer
+       :face     consult-buffer
+       :history  buffer-name-history
+       :state    ,#'consult--buffer-state
+       :enabled  ,(lambda () consult-project-function)
+       :items
+       ,(lambda ()
+          (when-let (root (consult--project-root))
+            (consult--buffer-query :sort 'visibility
+                                   :directory root
+                                   :as #'consult--buffer-pair
+                                   :predicate #'buffer-file-name))))
+    "Project buffer source for `consult-buffer'.")
+  (use-package consult
+    :ensure t
+    :init
+    (setq consult--tofu-char #x100000
+          consult--tofu-range #x00fffe)
+    :custom
+    (consult-project-buffer-sources
+     '(bob/consult--source-project-buffer
+       consult--source-project-recent-file
+       consult--source-project-root))
+    :bind
+    ("M-i" . consult-imenu)
+    ("C-x b" . consult-buffer)
+    ("M-g r" . consult-ripgrep)
+    ("M-y" . consult-yank-from-kill-ring))
 #+end_src
 
 * Casual packages
 #+begin_src elisp
-(use-package casual)
+  (use-package casual)
 #+end_src
 ** Re builder
 #+begin_src elisp
-(use-package re-builder
-  :ensure nil
-  :bind
-  (:map reb-mode-map ("M-i" . casual-re-builder-tmenu))
-  (:map reb-lisp-mode-map ("M-i" . casual-re-builder-tmenu)))
+  (use-package re-builder
+    :ensure nil
+    :bind
+    (:map reb-mode-map ("M-i" . casual-re-builder-tmenu))
+    (:map reb-lisp-mode-map ("M-i" . casual-re-builder-tmenu)))
 #+end_src
 
 ** Calc
 #+begin_src elisp
-(use-package calc
-  :ensure nil
-  :bind
-  (:map calc-mode-map ("M-i" . casual-calc-tmenu)))
+  (use-package calc
+    :ensure nil
+    :bind
+    (:map calc-mode-map ("M-i" . casual-calc-tmenu)))
 #+end_src
 
 * Dired
@@ -1294,7 +1294,7 @@ the register."
     (add-to-list 'all-the-icons-extension-icon-alist
                  '("roc" all-the-icons-fileicon "elm" :face all-the-icons-blue))
     (add-to-list 'all-the-icons-mode-icon-alist
-               '(roc-mode all-the-icons-fileicon "elm" :face all-the-icons-blue))
+                 '(roc-mode all-the-icons-fileicon "elm" :face all-the-icons-blue))
     :hook (dired-mode . all-the-icons-dired-mode))
 
   (use-package diredfl
@@ -1304,18 +1304,18 @@ the register."
 
 * Save History
 #+begin_src elisp
-(use-package savehist
-  :ensure nil
-  :init
-  (setq savehist-file (locate-user-emacs-file "savehist"))
-  (setq history-length 10000)
-  (setq history-delete-duplicates t)
-  (setq savehist-save-minibuffer-history t)
-  (savehist-mode))
+  (use-package savehist
+    :ensure nil
+    :init
+    (setq savehist-file (locate-user-emacs-file "savehist"))
+    (setq history-length 10000)
+    (setq history-delete-duplicates t)
+    (setq savehist-save-minibuffer-history t)
+    (savehist-mode))
 
-(use-package recentf-mode
-  :ensure nil
-  :init (recentf-mode))
+  (use-package recentf-mode
+    :ensure nil
+    :init (recentf-mode))
 #+end_src
 
 * Markdown
@@ -1333,8 +1333,8 @@ the register."
 ** Org mode configuration
 #+begin_src elisp
   (use-package ob-js
-      :ensure nil
-      :custom (org-babel-js-cmd "node"))
+    :ensure nil
+    :custom (org-babel-js-cmd "node"))
   (use-package ob-typescript)
 
   (use-package org
@@ -1411,136 +1411,136 @@ the register."
 
 ** Agenda
 #+begin_src elisp
-(use-package org-agenda
-  :commands (org-agenda)
-  :after (org)
-  :custom
-  (org-agenda-span 1)
-  (org-agenda-files `(,(format "%sjournal" org-directory)
-                      "beorg.org"
-                      "linear.org"
-                      "20240104T120451--inbox__project.org"
-                      "20240103T130349--reminders__project.org"
-                      "20240103T130420--tasks__project.org"))
-  (org-agenda-custom-commands
-        '(("b" tags "+OngoingBugs")
-          ("n" "Todo next" ((todo "NEXT")))))
-  :bind
-  (:map org-agenda-mode-map
-        ("M-F" . org-agenda-do-date-later)
-        ("M-B" . org-agenda-do-date-earlier)
-        ("C-c C-g" . linear/update-linear-issues))
-  :ensure nil
-  :config
-  (org-super-agenda-mode 1))
+  (use-package org-agenda
+    :commands (org-agenda)
+    :after (org)
+    :custom
+    (org-agenda-span 1)
+    (org-agenda-files `(,(format "%sjournal" org-directory)
+                        "beorg.org"
+                        "linear.org"
+                        "20240104T120451--inbox__project.org"
+                        "20240103T130349--reminders__project.org"
+                        "20240103T130420--tasks__project.org"))
+    (org-agenda-custom-commands
+     '(("b" tags "+OngoingBugs")
+       ("n" "Todo next" ((todo "NEXT")))))
+    :bind
+    (:map org-agenda-mode-map
+          ("M-F" . org-agenda-do-date-later)
+          ("M-B" . org-agenda-do-date-earlier)
+          ("C-c C-g" . linear/update-linear-issues))
+    :ensure nil
+    :config
+    (org-super-agenda-mode 1))
 
-(use-package org-super-agenda
-  :config
-  (defun bob/org-super-agenda-custom-header-format (header)
-    (progn (string-match ".+?:[[:space:]]\\(.+?$\\)"
-                         header)
-           (match-string 1 header)))
-  (setq org-super-agenda-groups
-        '((:name "Reminders"
-                 :file-path "reminders"
-                 :order 4)
-          (:name "Calendar"
-                 :discard (:file-path "reminders")
-                 :discard (:tag "chennofar@gmailcom")
-                 :time-grid t
-                 :order 2)
-          (:name "Today Journal"
-                 :file-path "journal"
-                 :order 1.1
-                 :transformer bob/org-super-agenda-custom-header-format)
-          (:name "Do Next"
-                 :todo "NEXT"
-                 :order 2)
-          (:name "Do Later"
-                 :todo "TODO"
-                 :order 3)
-          (:name "Waiting"
-                 :todo "WAITING"
-                 :order 4)))
-  (org-super-agenda-mode 1))
+  (use-package org-super-agenda
+    :config
+    (defun bob/org-super-agenda-custom-header-format (header)
+      (progn (string-match ".+?:[[:space:]]\\(.+?$\\)"
+                           header)
+             (match-string 1 header)))
+    (setq org-super-agenda-groups
+          '((:name "Reminders"
+                   :file-path "reminders"
+                   :order 4)
+            (:name "Calendar"
+                   :discard (:file-path "reminders")
+                   :discard (:tag "chennofar@gmailcom")
+                   :time-grid t
+                   :order 2)
+            (:name "Today Journal"
+                   :file-path "journal"
+                   :order 1.1
+                   :transformer bob/org-super-agenda-custom-header-format)
+            (:name "Do Next"
+                   :todo "NEXT"
+                   :order 2)
+            (:name "Do Later"
+                   :todo "TODO"
+                   :order 3)
+            (:name "Waiting"
+                   :todo "WAITING"
+                   :order 4)))
+    (org-super-agenda-mode 1))
 #+end_src
 
 ** Org Superstar
 #+begin_src elisp
-(use-package org-superstar
-  :after org
-  :hook (org-mode . org-superstar-mode)
-  :config
-  (set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
-  :custom
-  ;; set the leading bullet to be a space. For alignment purposes I use an em-quad space (U+2001)
-  (org-superstar-headline-bullets-list '("❍"  9673 9675 10040 10047))
-  (org-superstar-todo-bullet-alist '(("DONE" . ?✔)
-                                     ("NEXT" . ?☞)
-                                     ("TODO" . ?⌖)
-                                     ("ISSUE" . ?)
-                                     ("BRANCH" . ?)
-                                     ("FORK" . ?)
-                                     ("MR" . ?)
-                                     ("MERGED" . ?)
-                                     ("GITHUB" . ?A)
-                                     ("WRITING" . ?✍)
-                                     ("WRITE" . ?✍)
-                                     ))
-  (org-superstar-special-todo-items t)
-  (org-superstar-leading-bullet " ")
-  (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces)
-  (org-hide-leading-stars nil))
+  (use-package org-superstar
+    :after org
+    :hook (org-mode . org-superstar-mode)
+    :config
+    (set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
+    :custom
+    ;; set the leading bullet to be a space. For alignment purposes I use an em-quad space (U+2001)
+    (org-superstar-headline-bullets-list '("❍"  9673 9675 10040 10047))
+    (org-superstar-todo-bullet-alist '(("DONE" . ?✔)
+                                       ("NEXT" . ?☞)
+                                       ("TODO" . ?⌖)
+                                       ("ISSUE" . ?)
+                                       ("BRANCH" . ?)
+                                       ("FORK" . ?)
+                                       ("MR" . ?)
+                                       ("MERGED" . ?)
+                                       ("GITHUB" . ?A)
+                                       ("WRITING" . ?✍)
+                                       ("WRITE" . ?✍)
+                                       ))
+    (org-superstar-special-todo-items t)
+    (org-superstar-leading-bullet " ")
+    (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces)
+    (org-hide-leading-stars nil))
 #+end_src
 
 * Denote
 #+begin_src elisp
-(use-package denote
-  :commands (denote denote-mode denote-open-or-create denote-directory-files)
-  :custom
-  ;; (denote-open-or-create-fn 'consult-file)
-  (denote-directory org-directory)
-  (denote-date-prompt-use-org-read-date t)
-  (denote-prompts '(title keywords file-type))
-  :bind
-  ("C-c d d" . denote-open-or-create))
+  (use-package denote
+    :commands (denote denote-mode denote-open-or-create denote-directory-files)
+    :custom
+    ;; (denote-open-or-create-fn 'consult-file)
+    (denote-directory org-directory)
+    (denote-date-prompt-use-org-read-date t)
+    (denote-prompts '(title keywords file-type))
+    :bind
+    ("C-c d d" . denote-open-or-create))
 
-(use-package denote-journal
-  :ensure (:repo "protesilaos/denote-journal" :fetcher github :files ("*.el" "*.texi"))
-  :config
-  (add-hook 'calendar-mode-hook #'denote-journal-calendar-mode)
-  :bind ("C-c d t" . denote-journal-new-or-existing-entry))
+  (use-package denote-journal
+    :ensure (:repo "protesilaos/denote-journal" :fetcher github :files ("*.el" "*.texi"))
+    :config
+    (add-hook 'calendar-mode-hook #'denote-journal-calendar-mode)
+    :bind ("C-c d t" . denote-journal-new-or-existing-entry))
 #+end_src
 
 * Verb: Rest api interface
 #+begin_src elisp
-(use-package verb
-  :after (org)
-  :mode ("\\.org\\'" . org-mode)
-  :config
-  (require 'uuid)
-  (defun parse-verb-response-to-alist ()
-    (when verb-parse-json-to-alist
-      (let ((response (slot-value verb-http-response :body)))
-        (progn
-          (erase-buffer)
-          (when response
-            (insert (condition-case nil
-                        (pp-to-string (json-parse-string response
-                                                         :object-type 'alist
-                                                         :array-type 'list
-                                                         :null-object 'nil))
-                      (json-parse-error response))))
-          (verb-response-body-mode +1)))))
-  (setq verb-parse-json-to-alist nil)
-  (setq verb-post-response-hook 'parse-verb-response-to-alist)
-  (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
+  (use-package verb
+    :after (org)
+    :mode ("\\.org\\'" . org-mode)
+    :config
+    (require 'uuid)
+    (defun parse-verb-response-to-alist ()
+      (when verb-parse-json-to-alist
+        (let ((response (slot-value verb-http-response :body)))
+          (progn
+            (erase-buffer)
+            (when response
+              (insert (condition-case nil
+                          (pp-to-string (json-parse-string response
+                                                           :object-type 'alist
+                                                           :array-type 'list
+                                                           :null-object 'nil))
+                        (json-parse-error response))))
+            (verb-response-body-mode +1)))))
+    (setq verb-parse-json-to-alist nil)
+    (setq verb-post-response-hook 'parse-verb-response-to-alist)
+    (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 #+end_src
 * Git
 ** Ghub
 #+begin_src elisp
-(use-package ghub
-  :commands (ghub-post))
+  (use-package ghub
+    :commands (ghub-post))
 #+end_src
 
 ** Magit
@@ -1643,86 +1643,86 @@ the register."
 #+end_src
 ** Forge
 #+begin_src elisp
-(use-package forge
-  :after magit
-  :custom
-  (forge-status-buffer-default-topic-filters
-   (forge--topics-spec
-    :type 'topic :active nil :state 'open :order 'newest
-    :author "bobrowadam"
-    :limit 10))
-  :init (setq forge-bug-reference-hooks nil))
+  (use-package forge
+    :after magit
+    :custom
+    (forge-status-buffer-default-topic-filters
+     (forge--topics-spec
+      :type 'topic :active nil :state 'open :order 'newest
+      :author "bobrowadam"
+      :limit 10))
+    :init (setq forge-bug-reference-hooks nil))
 #+end_src
 ** Pr Reviews
 #+begin_src elisp
-(use-package pr-review)
-(use-package github-review)
+  (use-package pr-review)
+  (use-package github-review)
 #+end_src
 
 * Diff
 #+begin_src elisp
-(use-package diff-mode
-  :ensure nil
-  :bind (:map diff-mode-shared-map
-              ("K" . #'bob/diff-kill-other-hunks))
-  :config
-  (defun bob/diff-kill-other-hunks ()
-    "Keep only the chunk around point."
-    (interactive)
-    (let ((current-hunk (diff-bounds-of-hunk)))
-      (save-excursion
-        (goto-char (point-min))
-        (diff--iterate-hunks (point-max)
-                             (𝝺 unless (equal (list %1 %2)
-                                              current-hunk)
-                                (diff-hunk-kill)))
-        (unless (equal (point-max)
-                       (cadr (diff-bounds-of-hunk)))
-          (bob/diff-kill-other-hunks))))))
+  (use-package diff-mode
+    :ensure nil
+    :bind (:map diff-mode-shared-map
+                ("K" . #'bob/diff-kill-other-hunks))
+    :config
+    (defun bob/diff-kill-other-hunks ()
+      "Keep only the chunk around point."
+      (interactive)
+      (let ((current-hunk (diff-bounds-of-hunk)))
+        (save-excursion
+          (goto-char (point-min))
+          (diff--iterate-hunks (point-max)
+                               (𝝺 unless (equal (list %1 %2)
+                                                current-hunk)
+                                  (diff-hunk-kill)))
+          (unless (equal (point-max)
+                         (cadr (diff-bounds-of-hunk)))
+            (bob/diff-kill-other-hunks))))))
 
-(use-package diff-hl
-  :hook
-  (prog-mode . #'turn-on-diff-hl-mode)
-  (vc-dir-mode . (lambda () (diff-hl-dir-mode 1)))
-  (dired-mode . diff-hl-dired-mode)
-  (magit-post-refresh . #'diff-hl-magit-post-refresh)
-  :bind (:map diff-hl-mode-map ("C-x v A" . diff-hl-set-reference-rev)))
+  (use-package diff-hl
+    :hook
+    (prog-mode . #'turn-on-diff-hl-mode)
+    (vc-dir-mode . (lambda () (diff-hl-dir-mode 1)))
+    (dired-mode . diff-hl-dired-mode)
+    (magit-post-refresh . #'diff-hl-magit-post-refresh)
+    :bind (:map diff-hl-mode-map ("C-x v A" . diff-hl-set-reference-rev)))
 
-(use-package abridge-diff
-  :demand t
-  :after magit
-  :config (abridge-diff-mode 1))
+  (use-package abridge-diff
+    :demand t
+    :after magit
+    :config (abridge-diff-mode 1))
 #+end_src
 
 * Handle parentesis editing
 ** Paredit
 #+begin_src elisp
-(use-package paredit
-  :hook
-  (emacs-lisp-mode lisp-mode lisp-data-mode))
+  (use-package paredit
+    :hook
+    (emacs-lisp-mode lisp-mode lisp-data-mode))
 #+end_src
 ** Smart arens
 #+begin_src elisp
-(use-package smartparens
-  :config
-  (setq sp-ignore-modes-list
-        '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode))
-  (require 'smartparens-config)
-  (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
-  (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
-  :hook
-  (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode text-mode comint-mode minibuffer-mode)
-  :bind (:map smartparens-mode-map
-              ("M-(" . sp-wrap-round)
-              ("M-s" . sp-unwrap-sexp)
-              ("C-)" . sp-forward-slurp-sexp)
-              ("C-}" . sp-forward-barf-sexp)
-              ("C-{" . sp-backward-barf-sexp)
-              ("C-(" . sp-backward-slurp-sexp)
-              ("C-'" . sp-rewrap-sexp)
-              ("M-S" . sp-split-sexp)
-              ("M-J" . sp-join-sexp)
-              ("M-W" . sp-copy-sexp)))
+  (use-package smartparens
+    :config
+    (setq sp-ignore-modes-list
+          '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode))
+    (require 'smartparens-config)
+    (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
+    (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
+    :hook
+    (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode text-mode comint-mode minibuffer-mode)
+    :bind (:map smartparens-mode-map
+                ("M-(" . sp-wrap-round)
+                ("M-s" . sp-unwrap-sexp)
+                ("C-)" . sp-forward-slurp-sexp)
+                ("C-}" . sp-forward-barf-sexp)
+                ("C-{" . sp-backward-barf-sexp)
+                ("C-(" . sp-backward-slurp-sexp)
+                ("C-'" . sp-rewrap-sexp)
+                ("M-S" . sp-split-sexp)
+                ("M-J" . sp-join-sexp)
+                ("M-W" . sp-copy-sexp)))
 #+end_src
 
 * Auto Completion and Minibuffer actions
@@ -1778,23 +1778,23 @@ the register."
 #+end_src
 ** Embark
 #+begin_src elisp
-(use-package embark
-  :bind
-  (("C-." . embark-act)
-   ("C-h B" . embark-bindings)))
+  (use-package embark
+    :bind
+    (("C-." . embark-act)
+     ("C-h B" . embark-bindings)))
 
-(use-package embark-consult
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+  (use-package embark-consult
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 ** Marginalia
 #+begin_src elisp
-(use-package marginalia
-  :after vertico
-  :custom
-  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
-  :init
-  (marginalia-mode 1))
+  (use-package marginalia
+    :after vertico
+    :custom
+    (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+    :init
+    (marginalia-mode 1))
 #+end_src
 ** Corfu
 #+begin_src elisp
@@ -1827,63 +1827,63 @@ the register."
 
 * Programming
 #+begin_src elisp
-(use-package prog-mode
-  :ensure nil
-  :hook
-  (prog-mode . (lambda () (display-line-numbers-mode 1))))
+  (use-package prog-mode
+    :ensure nil
+    :hook
+    (prog-mode . (lambda () (display-line-numbers-mode 1))))
 
-(use-package display-line-numbers
-  :ensure nil
-  :hook (prog-mode))
+  (use-package display-line-numbers
+    :ensure nil
+    :hook (prog-mode))
 
-(use-package breadcrumb
+  (use-package breadcrumb
     :hook (prog-mode))
 #+end_src
 ** FNM - node version manager (like nvm replacment)
 #+begin_src elisp
-(use-package fnm
-  :demand t
-  :ensure
-  (:fetcher github
-            :repo "bobrowadam/fnm.el"
-            :branch "main"
-            :files ("fnm.el")))
+  (use-package fnm
+    :demand t
+    :ensure
+    (:fetcher github
+              :repo "bobrowadam/fnm.el"
+              :branch "main"
+              :files ("fnm.el")))
 #+end_src
 ** Project
 #+begin_src elisp
-(use-package project
-  :custom
-  (project-list-file (format "%sprojects" user-emacs-directory))
-  (project-vc-extra-root-markers '("package.json"))
-  :config
-  (require 'project-extras)
-  (setq project-switch-commands
-        '((project-find-file "Find file")
-          (project-dired "Root Directory" "d")
-          (eat-project "Eat" "s")
-          (bob/eat-top-project "Eat Top" "S")
-          (magit-project-status "Magit" "g")
-          (consult-ripgrep "RipGrep" "r")
-          (consult-project-buffer "Buffers" "b")
-          (browse-current-project "Browse" "B")))
-  (unless (project-known-project-roots)
-    (message "No project file found, indexing projects")
-    (progn
-      (project-remember-projects-under user-emacs-directory)
-      (project-remember-projects-under "~/source/grain/apps/backend/" t)
-      (project-remember-projects-under "~/source/grain/packages/" t)))
-  :bind
-  ("C-x p C-m"  . project-dired)
-  ("C-x p b" . consult-project-buffer)
-  ("C-x p w" . bob/switch-to-open-project-buffer))
+  (use-package project
+    :custom
+    (project-list-file (format "%sprojects" user-emacs-directory))
+    (project-vc-extra-root-markers '("package.json"))
+    :config
+    (require 'project-extras)
+    (setq project-switch-commands
+          '((project-find-file "Find file")
+            (project-dired "Root Directory" "d")
+            (eat-project "Eat" "s")
+            (bob/eat-top-project "Eat Top" "S")
+            (magit-project-status "Magit" "g")
+            (consult-ripgrep "RipGrep" "r")
+            (consult-project-buffer "Buffers" "b")
+            (browse-current-project "Browse" "B")))
+    (unless (project-known-project-roots)
+      (message "No project file found, indexing projects")
+      (progn
+        (project-remember-projects-under user-emacs-directory)
+        (project-remember-projects-under "~/source/grain/apps/backend/" t)
+        (project-remember-projects-under "~/source/grain/packages/" t)))
+    :bind
+    ("C-x p C-m"  . project-dired)
+    ("C-x p b" . consult-project-buffer)
+    ("C-x p w" . bob/switch-to-open-project-buffer))
 #+end_src
 ** eslint
 #+begin_src elisp
-(defun set-eslint-executable-name ()
-  (setq flymake-eslint-executable-name
-        (if-let ((local-eslint-path (locate-dominating-file "" "node_modules/.bin/eslint")))
-            (format "%snode_modules/.bin/eslint" local-eslint-path)
-          "eslint")))
+  (defun set-eslint-executable-name ()
+    (setq flymake-eslint-executable-name
+          (if-let ((local-eslint-path (locate-dominating-file "" "node_modules/.bin/eslint")))
+              (format "%snode_modules/.bin/eslint" local-eslint-path)
+            "eslint")))
 #+end_src
 ** Flymake
 #+begin_src elisp
@@ -1900,279 +1900,279 @@ the register."
     "Setup flymake in `emacs-lisp-mode'."
     ;; (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention nil t)
     (unless (seq-contains-p '("init.el" "init-literate.el")
-                  (-some-> (buffer-file-name) (file-name-nondirectory)))
+                            (-some-> (buffer-file-name) (file-name-nondirectory)))
       (flymake-mode t)))
 #+end_src
 ** Eslint
 #+begin_src elisp
-(use-package flymake-eslint
-  :after flymake
-  :hook
-  (typescript-ts-mode . flymake-eslint-enable)
-  (typescript-js-mode . flymake-eslint-enable))
+  (use-package flymake-eslint
+    :after flymake
+    :hook
+    (typescript-ts-mode . flymake-eslint-enable)
+    (typescript-js-mode . flymake-eslint-enable))
 #+end_src
 ** Prettier
 #+begin_src elisp
-(use-package prettier
-  :hook (typescript-ts-mode tsx-ts-mode js2-mode js-ts-mode))
+  (use-package prettier
+    :hook (typescript-ts-mode tsx-ts-mode js2-mode js-ts-mode))
 
-(use-package eglot-booster
-  :ensure ( :package "eglot-booster"
-            :protocol https
-            :files ("eglot-booster.el")
-            :fetcher github
-            :repo "jdtsmith/eglot-booster"))
+  (use-package eglot-booster
+    :ensure ( :package "eglot-booster"
+              :protocol https
+              :files ("eglot-booster.el")
+              :fetcher github
+              :repo "jdtsmith/eglot-booster"))
 #+end_src
 ** Eldoc
 #+begin_src elisp
-(use-package eldoc-box
-  :after eglot
-  :bind (:map eglot-mode-map ("C->" . eldoc-box-help-at-point)))
+  (use-package eldoc-box
+    :after eglot
+    :bind (:map eglot-mode-map ("C->" . eldoc-box-help-at-point)))
 #+end_src
 ** Eglot
 #+begin_src elisp
-(use-package eglot
-  ;; :ensure (:wait t)
-  :after (fnm exec-path-from-shell)
-  :commands (eglot eglot-ensure eglot-shutdown-all)
-  :custom
-  (eglot-events-buffer-config '(:size 0 :format full))
-  (eglot-sync-connect 0)
-  :config
-  (exec-path-from-shell-initialize)
-  (eglot-booster-mode)
-  (add-to-list 'eglot-server-programs
-               `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
-                 . ("typescript-language-server" "--stdio")))
-  (add-to-list 'eglot-server-programs
-               `((json-mode)
-                 . ("vscode-json-languageserver" "--stdio")))
-  (add-to-list 'eglot-server-programs
-               '(sql-mode . (eglot-sqls "sqls" "-config" ".sqls-config")))
-  (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-  (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
-  (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
-  (unless (executable-find "pyright-langserver")
-    (progn
-      (print "Installing pyright-langserver for python eglot support")
-      (async-shell-command "npm install -g pyright"
-                           "*pyright-installation-stdout*"
-                           "*pyright-installation-error*")))
-  (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
+  (use-package eglot
+    ;; :ensure (:wait t)
+    :after (fnm exec-path-from-shell)
+    :commands (eglot eglot-ensure eglot-shutdown-all)
+    :custom
+    (eglot-events-buffer-config '(:size 0 :format full))
+    (eglot-sync-connect 0)
+    :config
+    (exec-path-from-shell-initialize)
+    (eglot-booster-mode)
+    (add-to-list 'eglot-server-programs
+                 `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
+                   . ("typescript-language-server" "--stdio")))
+    (add-to-list 'eglot-server-programs
+                 `((json-mode)
+                   . ("vscode-json-languageserver" "--stdio")))
+    (add-to-list 'eglot-server-programs
+                 '(sql-mode . (eglot-sqls "sqls" "-config" ".sqls-config")))
+    (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+    (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
+    (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
+    (unless (executable-find "pyright-langserver")
+      (progn
+        (print "Installing pyright-langserver for python eglot support")
+        (async-shell-command "npm install -g pyright"
+                             "*pyright-installation-stdout*"
+                             "*pyright-installation-error*")))
+    (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
-  (cl-defmethod project-root ((project (head eglot-project)))
-    (cdr project))
-  :bind
-  (:map eglot-mode-map
-        ("C->" . eldoc-print-current-symbol-info)
-        ("C-c C-f" . eglot-format)
-        ("C-c C-n" . eglot-rename)
-        ("M-n" . forward-paragraph)
-        ("M-p" . backward-paragraph)
-        ("M-." . xref-find-definitions)
-        ("M-?" . xref-find-references)
-        ("C-<" . eglot-find-typeDefinition)
-        ("C-c C-a" . eglot-code-actions))
-  :hook
-  ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode) . eglot-ensure)
-  (eglot-managed-mode .  (lambda ()
-                           (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
-                                     (eq (derived-mode-p major-mode) 'js-ts-mode))
-                             (set-eslint-executable-name)
-                             (flymake-eslint-enable)))))
+    (cl-defmethod project-root ((project (head eglot-project)))
+      (cdr project))
+    :bind
+    (:map eglot-mode-map
+          ("C->" . eldoc-print-current-symbol-info)
+          ("C-c C-f" . eglot-format)
+          ("C-c C-n" . eglot-rename)
+          ("M-n" . forward-paragraph)
+          ("M-p" . backward-paragraph)
+          ("M-." . xref-find-definitions)
+          ("M-?" . xref-find-references)
+          ("C-<" . eglot-find-typeDefinition)
+          ("C-c C-a" . eglot-code-actions))
+    :hook
+    ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode) . eglot-ensure)
+    (eglot-managed-mode .  (lambda ()
+                             (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
+                                       (eq (derived-mode-p major-mode) 'js-ts-mode))
+                               (set-eslint-executable-name)
+                               (flymake-eslint-enable)))))
 
 #+end_src
 ** Dape
 #+begin_src elisp
-(use-package dape
-  :bind
-  ("C-x C-a d" . dape)
-  ("C-x C-a b" . dape-breakpoint-toggle)
-  :custom
-  (dape-info-buffer-window-groups '((dape-info-scope-mode dape-info-watch-mode)))
-  :config
-  (defun dape-set-available-port (config)
-    (when-let ((available-port (pick-port-for-inspected-service)))
-      (plist-put config :port (string-to-number available-port)))
-    config)
-  (add-to-list 'dape-default-config-functions 'dape-set-available-port)
-  (setq dape-inlay-hints nil)
-  (add-to-list 'dape-configs
-               `(vscode-ts-js-attach
-                 modes (js-mode js-ts-mode typescript-ts-mode)
-                 host "localhost"
-                 port 8123
-                 command "node"
-                 command-cwd "~/.emacs.d/debug-adapters/js-debug"
-                 command-args ("src/dapDebugServer.js")
-                 :sourceMaps t
-                 :resolveSourceMapLocations ["**/dist/**/*"]
-                 :cwd dape-cwd-fn
-                 :autoAttachChildProcesses t
-                 :type "pwa-node"
-                 :request "attach"
-                 :outputCapture "console"
-                 :sourceMapRenames t
-                 :autoAttachChildProcesses t
-                 :console "internalConsole"
-                 :killBehavior "forceful"))
+  (use-package dape
+    :bind
+    ("C-x C-a d" . dape)
+    ("C-x C-a b" . dape-breakpoint-toggle)
+    :custom
+    (dape-info-buffer-window-groups '((dape-info-scope-mode dape-info-watch-mode)))
+    :config
+    (defun dape-set-available-port (config)
+      (when-let ((available-port (pick-port-for-inspected-service)))
+        (plist-put config :port (string-to-number available-port)))
+      config)
+    (add-to-list 'dape-default-config-functions 'dape-set-available-port)
+    (setq dape-inlay-hints nil)
+    (add-to-list 'dape-configs
+                 `(vscode-ts-js-attach
+                   modes (js-mode js-ts-mode typescript-ts-mode)
+                   host "localhost"
+                   port 8123
+                   command "node"
+                   command-cwd "~/.emacs.d/debug-adapters/js-debug"
+                   command-args ("src/dapDebugServer.js")
+                   :sourceMaps t
+                   :resolveSourceMapLocations ["**/dist/**/*"]
+                   :cwd dape-cwd-fn
+                   :autoAttachChildProcesses t
+                   :type "pwa-node"
+                   :request "attach"
+                   :outputCapture "console"
+                   :sourceMapRenames t
+                   :autoAttachChildProcesses t
+                   :console "internalConsole"
+                   :killBehavior "forceful"))
 
-  (add-to-list 'dape-configs
-               `(ts-node-attach
-                 modes (js-mode js-ts-mode typescript-ts-mode)
-                 host "localhost"
-                 port 8123
-                 command "node"
-                 command-cwd "~/.emacs.d/debug-adapters/js-debug"
-                 command-args ("src/dapDebugServer.js")
-                 :sourceMaps t
-                 :resolveSourceMapLocations ["**","!**/node_modules/**"]
-                 :cwd dape-cwd-fn
-                 :autoAttachChildProcesses t
-                 :type "pwa-node"
-                 :request "attach"
-                 :outputCapture "console"
-                 :sourceMapRenames t
-                 :autoAttachChildProcesses t
-                 :console "internalConsole"
-                 :killBehavior "forceful"))
+    (add-to-list 'dape-configs
+                 `(ts-node-attach
+                   modes (js-mode js-ts-mode typescript-ts-mode)
+                   host "localhost"
+                   port 8123
+                   command "node"
+                   command-cwd "~/.emacs.d/debug-adapters/js-debug"
+                   command-args ("src/dapDebugServer.js")
+                   :sourceMaps t
+                   :resolveSourceMapLocations ["**","!**/node_modules/**"]
+                   :cwd dape-cwd-fn
+                   :autoAttachChildProcesses t
+                   :type "pwa-node"
+                   :request "attach"
+                   :outputCapture "console"
+                   :sourceMapRenames t
+                   :autoAttachChildProcesses t
+                   :console "internalConsole"
+                   :killBehavior "forceful"))
     ;; To not display info and/or buffers on startup
-  (remove-hook 'dape-on-start-hooks 'dape-info)
-  (remove-hook 'dape-on-start-hooks 'dape-repl)
+    (remove-hook 'dape-on-start-hooks 'dape-info)
+    (remove-hook 'dape-on-start-hooks 'dape-repl)
 
-  ;; Use n for next etc. in REPL
-  (setq dape-repl-use-shorthand t)
+    ;; Use n for next etc. in REPL
+    (setq dape-repl-use-shorthand t)
 
-  ;; Kill compile buffer on build success
-  (add-hook 'dape-compile-compile-hooks 'kill-buffer)
-  :hook (dape-active-mode . repeat-mode))
+    ;; Kill compile buffer on build success
+    (add-hook 'dape-compile-compile-hooks 'kill-buffer)
+    :hook (dape-active-mode . repeat-mode))
 #+end_src
 ** Code Comments
 #+begin_src elisp
-(use-package comment-tags
-  :custom
-  (comment-tags-keywords '("TODO"
-                           "FIXME"
-                           "BUG"
-                           "HACK"
-                           "INFO"
-                           "DONE"))
-  (comment-tags-require-colon t)
-  :hook (prog-mode))
+  (use-package comment-tags
+    :custom
+    (comment-tags-keywords '("TODO"
+                             "FIXME"
+                             "BUG"
+                             "HACK"
+                             "INFO"
+                             "DONE"))
+    (comment-tags-require-colon t)
+    :hook (prog-mode))
 #+end_src
 ** Jest
 #+begin_src elisp
-(use-package jest-ts-mode
-  :ensure (:package "jest-ts-mode"
-                    :fetcher github
-                    :branch "main"
-                    :repo "bobrowadam/jest-ts-mode"
-                    :files ("jest-ts-mode.el"))
-  :hook (typescript-ts-mode)
-  :custom
-  (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true")))
-  (jest-ts/inspect-port #'get-next-available-inspect-port))
+  (use-package jest-ts-mode
+    :ensure (:package "jest-ts-mode"
+                      :fetcher github
+                      :branch "main"
+                      :repo "bobrowadam/jest-ts-mode"
+                      :files ("jest-ts-mode.el"))
+    :hook (typescript-ts-mode)
+    :custom
+    (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true")))
+    (jest-ts/inspect-port #'get-next-available-inspect-port))
 
 #+end_src
 ** Typescript
 #+begin_src elisp
-(use-package typescript-mode
-  :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
-  :bind
-  ("C-c C-b" . npm-run-build)
-  :config
-  (fnm-use)
-  (setq typescript-ts-mode-indent-offset 2))
+  (use-package typescript-mode
+    :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
+    :bind
+    ("C-c C-b" . npm-run-build)
+    :config
+    (fnm-use)
+    (setq typescript-ts-mode-indent-offset 2))
 
-(use-package jtsx
-  :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
-         ("\\.tsx\\'" . jtsx-tsx-mode))
-  :commands jtsx-install-treesit-language
-  :hook ((jtsx-jsx-mode . hs-minor-mode)
-         (jtsx-tsx-mode . hs-minor-mode)
-         (jtsx-typescript-mode . hs-minor-mode))
-  :custom
-  ;; Optional customizations
-  (js-indent-level 2)
-  (typescript-ts-mode-indent-offset 2)
-  ;; (jtsx-switch-indent-offset 0)
-  (jtsx-indent-statement-block-regarding-standalone-parent nil)
-  (jtsx-jsx-element-move-allow-step-out t)
-  (jtsx-enable-jsx-electric-closing-element t)
-  (jtsx-enable-electric-open-newline-between-jsx-element-tags t)
-  (jtsx-enable-jsx-element-tags-auto-sync nil)
-  (jtsx-enable-all-syntax-highlighting-features t)
-  :config
-  (defun jtsx-bind-keys-to-mode-map (mode-map)
-    "Bind keys to MODE-MAP."
-    (define-key mode-map (kbd "C-c C-j") 'jtsx-jump-jsx-element-tag-dwim)
-    (define-key mode-map (kbd "C-c j o") 'jtsx-jump-jsx-opening-tag)
-    (define-key mode-map (kbd "C-c j c") 'jtsx-jump-jsx-closing-tag)
-    (define-key mode-map (kbd "C-c j r") 'jtsx-rename-jsx-element)
-    (define-key mode-map (kbd "C-c j w") 'jtsx-wrap-in-jsx-element)
-    (define-key mode-map (kbd "C-c j u") 'jtsx-unwrap-jsx)
-    (define-key mode-map (kbd "C-c j d n") 'jtsx-delete-jsx-node)
-    (define-key mode-map (kbd "C-c j d a") 'jtsx-delete-jsx-attribute)
-    (define-key mode-map (kbd "C-c j t") 'jtsx-toggle-jsx-attributes-orientation)
-    (define-key mode-map (kbd "C-c j h") 'jtsx-rearrange-jsx-attributes-horizontally)
-    (define-key mode-map (kbd "C-c j v") 'jtsx-rearrange-jsx-attributes-vertically))
+  (use-package jtsx
+    :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
+           ("\\.tsx\\'" . jtsx-tsx-mode))
+    :commands jtsx-install-treesit-language
+    :hook ((jtsx-jsx-mode . hs-minor-mode)
+           (jtsx-tsx-mode . hs-minor-mode)
+           (jtsx-typescript-mode . hs-minor-mode))
+    :custom
+    ;; Optional customizations
+    (js-indent-level 2)
+    (typescript-ts-mode-indent-offset 2)
+    ;; (jtsx-switch-indent-offset 0)
+    (jtsx-indent-statement-block-regarding-standalone-parent nil)
+    (jtsx-jsx-element-move-allow-step-out t)
+    (jtsx-enable-jsx-electric-closing-element t)
+    (jtsx-enable-electric-open-newline-between-jsx-element-tags t)
+    (jtsx-enable-jsx-element-tags-auto-sync nil)
+    (jtsx-enable-all-syntax-highlighting-features t)
+    :config
+    (defun jtsx-bind-keys-to-mode-map (mode-map)
+      "Bind keys to MODE-MAP."
+      (define-key mode-map (kbd "C-c C-j") 'jtsx-jump-jsx-element-tag-dwim)
+      (define-key mode-map (kbd "C-c j o") 'jtsx-jump-jsx-opening-tag)
+      (define-key mode-map (kbd "C-c j c") 'jtsx-jump-jsx-closing-tag)
+      (define-key mode-map (kbd "C-c j r") 'jtsx-rename-jsx-element)
+      (define-key mode-map (kbd "C-c j w") 'jtsx-wrap-in-jsx-element)
+      (define-key mode-map (kbd "C-c j u") 'jtsx-unwrap-jsx)
+      (define-key mode-map (kbd "C-c j d n") 'jtsx-delete-jsx-node)
+      (define-key mode-map (kbd "C-c j d a") 'jtsx-delete-jsx-attribute)
+      (define-key mode-map (kbd "C-c j t") 'jtsx-toggle-jsx-attributes-orientation)
+      (define-key mode-map (kbd "C-c j h") 'jtsx-rearrange-jsx-attributes-horizontally)
+      (define-key mode-map (kbd "C-c j v") 'jtsx-rearrange-jsx-attributes-vertically))
 
-  (defun jtsx-bind-keys-to-jtsx-jsx-mode-map ()
+    (defun jtsx-bind-keys-to-jtsx-jsx-mode-map ()
       (jtsx-bind-keys-to-mode-map jtsx-jsx-mode-map))
 
-  (defun jtsx-bind-keys-to-jtsx-tsx-mode-map ()
+    (defun jtsx-bind-keys-to-jtsx-tsx-mode-map ()
       (jtsx-bind-keys-to-mode-map jtsx-tsx-mode-map))
 
-  (add-hook 'jtsx-jsx-mode-hook 'jtsx-bind-keys-to-jtsx-jsx-mode-map)
-  (add-hook 'jtsx-tsx-mode-hook 'jtsx-bind-keys-to-jtsx-tsx-mode-map))
+    (add-hook 'jtsx-jsx-mode-hook 'jtsx-bind-keys-to-jtsx-jsx-mode-map)
+    (add-hook 'jtsx-tsx-mode-hook 'jtsx-bind-keys-to-jtsx-tsx-mode-map))
 #+end_src
 *** Typescript REPL
 #+begin_src elisp
   (use-package ts-comint
-  :custom
-  (ts-comint-program-command "ts-node"))
+    :custom
+    (ts-comint-program-command "ts-node"))
 
   (use-package ts-repl
-  :ensure (:repo "nverno/ts-repl" :fetcher github :files ("*.el")))
+    :ensure (:repo "nverno/ts-repl" :fetcher github :files ("*.el")))
 #+end_src
 ** Roc
 #+begin_src elisp
-(use-package roc-ts-mode)
+  (use-package roc-ts-mode)
 #+end_src
 ** C
 #+begin_src elisp
-(use-package c-ts-mode
-  :custom
-  (c-ts-mode-indent-offset 4)
-  :ensure nil)
+  (use-package c-ts-mode
+    :custom
+    (c-ts-mode-indent-offset 4)
+    :ensure nil)
 #+end_src
 ** Code folding
 #+begin_src elisp
-(use-package treesit-fold
-  :commands (global-treesit-fold-indicators-mode)
-  :bind
-  (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
-  :hook
-  (typescript-ts-base-mode . treesit-fold-mode))
+  (use-package treesit-fold
+    :commands (global-treesit-fold-indicators-mode)
+    :bind
+    (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
+    :hook
+    (typescript-ts-base-mode . treesit-fold-mode))
 #+end_src
 ** Snippets
 #+begin_src elisp
-(use-package yasnippet-snippets)
-(use-package yasnippet
-  :custom
-  (yas-wrap-around-region t)
-  (yas-also-auto-indent-first-line t)
-  :hook
-  (prog-mode . yas-minor-mode-on)
-  (emacs-lisp-mode . yas-minor-mode-on)
-  (text-mode . yas-minor-mode-on)
-  :bind (:map yas-minor-mode-map
-              ("C-<tab>" . yas-expand))
-  :config
-  (setq yas-snippet-dirs
-        `(,(concat user-emacs-directory "snippets")
-          ,yasnippet-snippets-dir))
-  (yas-reload-all))
+  (use-package yasnippet-snippets)
+  (use-package yasnippet
+    :custom
+    (yas-wrap-around-region t)
+    (yas-also-auto-indent-first-line t)
+    :hook
+    (prog-mode . yas-minor-mode-on)
+    (emacs-lisp-mode . yas-minor-mode-on)
+    (text-mode . yas-minor-mode-on)
+    :bind (:map yas-minor-mode-map
+                ("C-<tab>" . yas-expand))
+    :config
+    (setq yas-snippet-dirs
+          `(,(concat user-emacs-directory "snippets")
+            ,yasnippet-snippets-dir))
+    (yas-reload-all))
 #+end_src
 ** Highlight indent guides
 #+begin_src elisp
@@ -2198,16 +2198,16 @@ the register."
 * Appearance
 ** Mode line
 #+begin_src elisp
-(use-package doom-modeline
-  :demand t
-  :custom
-  (doom-modeline-percent-position nil)
-  (doom-modeline-time-icon nil)
-  (doom-modeline-time nil)
-  (doom-modeline-buffer-encoding nil)
+  (use-package doom-modeline
+    :demand t
+    :custom
+    (doom-modeline-percent-position nil)
+    (doom-modeline-time-icon nil)
+    (doom-modeline-time nil)
+    (doom-modeline-buffer-encoding nil)
 
-  :config
-  (doom-modeline-mode 1))
+    :config
+    (doom-modeline-mode 1))
 #+end_src
 ** Theme
 #+begin_src elisp
@@ -2406,12 +2406,12 @@ the register."
       (save-excursion
         (grain/run--service
          (bob/generate--run-service-command service-name
-                                              ""
-                                              (get-next-available-inspect-port))
-                             service-output-buffer))
+                                            ""
+                                            (get-next-available-inspect-port))
+         service-output-buffer))
       (unless single-service-p
         (grain/run--service (bob/generate--run-all-services-command service-name)
-                             all-services-output-buffer))
+                            all-services-output-buffer))
       (switch-to-buffer service-output-buffer)))
 
   ;;;###autoload
@@ -2421,12 +2421,12 @@ the register."
     (let ((service-name (grain/get--service-name)))
       (progn
         (grain/run--service (bob/generate--run-service-command service-name
-                                                                  "test"
-                                                                  (get-next-available-inspect-port))
-                             (format "*SERVICE: %s*" service-name))
+                                                               "test"
+                                                               (get-next-available-inspect-port))
+                            (format "*SERVICE: %s*" service-name))
         (grain/run--service (bob/generate--run-all-services-e2e-command service-name)
-                             (format "*[ALL] except %s*"
-                                     service-name)))))
+                            (format "*[ALL] except %s*"
+                                    service-name)))))
   ;;;###autoload
   (defun get-next-available-inspect-port (&optional default-port)
     "Calculate the next available port for node inspector to use.
@@ -2451,7 +2451,7 @@ the register."
   (defun get-inspected-node-processes ()
     "Get node processes that is running using the --inspect flag."
     (-filter 'identity (mapcar 'find--port-and-service-name-from-process-command
-             (mapcar #'process-command (process-list)))))
+                               (mapcar #'process-command (process-list)))))
 
   (defun find--port-and-service-name-from-process-command (process-command)
     "Extract the service-name and port from PROCESS-COMMAND."
@@ -2469,16 +2469,16 @@ the register."
 
   (defconst jest-port-and-service-name-regex
     (rx (: "node --inspect"
-             (*? anychar)
-             "="
-             (group (1+ digit))
-             space
-             (*? anychar)
-             "jest"
-             (*? anychar)
-             "apps/backend/"
-             (group (+? anychar))
-             "/")))
+           (*? anychar)
+           "="
+           (group (1+ digit))
+           space
+           (*? anychar)
+           "jest"
+           (*? anychar)
+           "apps/backend/"
+           (group (+? anychar))
+           "/")))
 
   (defun port-and-service-name (proc-command)
     "Get the inspected port and service name from PROC-COMMAND."
@@ -2600,35 +2600,35 @@ the register."
 #+end_src
 * RSS feed
 #+begin_src elisp
-    (use-package elfeed
-      :custom
-      (elfeed-feeds
-       '(("https://learncodethehardway.com/feed.rss" programming learning c)
-         ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
-         ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
-         ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
-         ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
-         ("https://danluu.com/atom.xml" programming blog danluu)
-         ("https://protesilaos.com/master.xml" programming blog emacs)
-         ("https://eshelyaron.com/rss.xml" programming blog emacs)))
-      :bind
-      ("C-c w" . elfeed)
-      (:map elfeed-search-mode-map
-            ("T" . bob/elfeed-search-by-current-entry-tags)
-            ("t". bob/elfeed-reset-search-by-current-entry-tags))
-      :config
-      (defun bob/elfeed-search-by-current-entry-tags ()
-        "Display elfeed entries that have the same tags as the entry under the cursor."
-        (interactive)
-        (elfeed-search-set-filter
-         (s-trim (mapconcat
-                  (lambda (tag)
-                    (format " +%s" tag))
-                  (elfeed-entry-tags (elfeed-search-selected :ignore-region))))))
+  (use-package elfeed
+    :custom
+    (elfeed-feeds
+     '(("https://learncodethehardway.com/feed.rss" programming learning c)
+       ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
+       ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
+       ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
+       ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
+       ("https://danluu.com/atom.xml" programming blog danluu)
+       ("https://protesilaos.com/master.xml" programming blog emacs)
+       ("https://eshelyaron.com/rss.xml" programming blog emacs)))
+    :bind
+    ("C-c w" . elfeed)
+    (:map elfeed-search-mode-map
+          ("T" . bob/elfeed-search-by-current-entry-tags)
+          ("t". bob/elfeed-reset-search-by-current-entry-tags))
+    :config
+    (defun bob/elfeed-search-by-current-entry-tags ()
+      "Display elfeed entries that have the same tags as the entry under the cursor."
+      (interactive)
+      (elfeed-search-set-filter
+       (s-trim (mapconcat
+                (lambda (tag)
+                  (format " +%s" tag))
+                (elfeed-entry-tags (elfeed-search-selected :ignore-region))))))
 
-      (defun bob/elfeed-reset-search-by-current-entry-tags ()
-        (interactive)
-        (elfeed-search-set-filter "+unread")))
+    (defun bob/elfeed-reset-search-by-current-entry-tags ()
+      (interactive)
+      (elfeed-search-set-filter "+unread")))
 #+end_src
 * Spelling
 #+begin_src elisp
@@ -2716,7 +2716,7 @@ the register."
 #+end_src
 * hide-show
 #+begin_src elisp
-(use-package hideshow :ensure nil
+  (use-package hideshow :ensure nil
     :hook (emacs-lisp-mode . (lambda () (hs-minor-mode 1)) )
     :bind (:map emacs-lisp-mode-map ("C-=" . hs-toggle-hiding)))
 #+end_src
@@ -2724,7 +2724,7 @@ the register."
 #+end_src
 * org-linear
 #+begin_src elisp
-(use-package org-linear
+  (use-package org-linear
     :ensure (org-linear
              :host github
              :repo "bobrowadam/org-linear"
@@ -2740,7 +2740,7 @@ the register."
 #+end_src
 * linear
 #+begin_src elisp
-(use-package linear
+  (use-package linear
     :custom (linear-api-key (getenv "LINEAR_API_KEY"))
     :ensure (:repo "anegg0/linear-emacs" :fetcher github :files ("*.el")))
 #+end_src
@@ -2748,7 +2748,7 @@ the register."
 #+end_src
 * p-search
 #+begin_src elisp
-(use-package p-search
+  (use-package p-search
     :commands p-search
     :ensure (:repo "zkry/p-search" :fetcher github :files ("*.el")))
 #+end_src
@@ -2756,7 +2756,7 @@ the register."
 #+end_src
 * sly
 #+begin_src elisp
-(use-package sly
+  (use-package sly
     :custom
     (inferior-lisp-program "sbcl")
     :config
@@ -2769,11 +2769,11 @@ the register."
 * common-lisp
 ** Sly
 #+begin_src elisp
-(use-package sly-repl-ansi-color
+  (use-package sly-repl-ansi-color
     :after (sly)
     :init (push 'sly-repl-ansi-color sly-contribs))
-(use-package sly-asdf)
-(use-package sly-macrostep)
+  (use-package sly-asdf)
+  (use-package sly-macrostep)
 #+end_src
 * Enabled commands that are disabled by default
 #+begin_src eslip
