@@ -1934,6 +1934,7 @@ My llm tools defintion with an init function
   (use-package eglot
     ;; :ensure (:wait t)
     :after (fnm exec-path-from-shell)
+    :custom-face (eglot-highlight-symbol-face ((t (:inherit bold :underline t :slant italic))))
     :commands (eglot eglot-ensure eglot-shutdown-all)
     :custom
     (eglot-events-buffer-config '(:size 0 :format full))
