@@ -2196,6 +2196,12 @@ My llm tools defintion with an init function
     :bind-keymap ("C-c C-v" . erefactor-map)
     :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on))
 #+end_src
+** Yaml
+#+begin_src elisp
+  (use-package yaml-ts-mode
+    :ensure nil
+    :mode ("\\.gotmpl\\'"))
+#+end_src
 * Appearance
 ** Mode line
 #+begin_src elisp
