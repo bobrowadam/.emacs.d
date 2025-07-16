@@ -1658,7 +1658,11 @@ My llm tools defintion with an init function
   (use-package pr-review)
   (use-package github-review)
 #+end_src
-
+** Git Time Machinie
+#+begin_src elisp
+  (use-package git-timemachine
+    :ensure t)
+#+end_src
 * Diff
 #+begin_src elisp
   (use-package diff-mode
