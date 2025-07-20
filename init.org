@@ -2152,7 +2152,9 @@ My llm tools defintion with an init function
 #+end_src
 ** Roc
 #+begin_src elisp
-  (use-package roc-ts-mode)
+  (use-package roc-ts-mode
+    :mode ("\\.roc\\'" . roc-ts-mode)
+    :ensure (:repo "tad-lispy/roc-ts-mode" :fetcher gitlab :files ("*.el")))
 #+end_src
 ** C
 #+begin_src elisp
