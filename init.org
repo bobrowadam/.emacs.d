@@ -1864,6 +1864,7 @@ My llm tools defintion with an init function
 ** Project
 #+begin_src elisp
   (use-package project
+    :ensure nil
     :custom
     (project-list-file (format "%sprojects" user-emacs-directory))
     (project-vc-extra-root-markers '("package.json"))
@@ -1900,6 +1901,7 @@ My llm tools defintion with an init function
 ** Flymake
 #+begin_src elisp
   (use-package flymake
+    :ensure nil
     :config
     (setq elisp-flymake-byte-compile-load-path load-path)
     :bind
