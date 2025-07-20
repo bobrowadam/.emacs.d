@@ -1055,7 +1055,15 @@ My llm tools defintion with an init function
     :bind-keymap
     ("C-M-;" . claude-code-command-map)
     :config
-    (claude-code-mode))
+    (claude-code-mode)
+    (defun claude-code-send-file (file-path)
+      "Send the specified FILE-PATH to Claude prefixed with `@'.
+  FILE-PATH should be an absolute path to the file to send."
+      (interactive
+       (list (completing-read "File: "
+                              (project-files (project-current t)))))
+      (let ((command (format "Add the file @%s to the context" file-path)))
+        (claude-code--do-send-command command))))
 #+end_src
 * Ediff
 #+begin_src elisp
