@@ -2423,6 +2423,12 @@ My llm tools defintion with an init function
       (unless single-service-p
         (grain/run--service (bob/generate--run-all-services-command service-name)
                             all-services-output-buffer))
+      (unless (get-buffer "*Dashboard*")
+          (grain/run--service "npm run dev -w @grain/dashboard"
+                           "*Dashboard*"))
+      (unless (get-buffer "*Admin Console*")
+        (grain/run--service "npm run dev -w @grain/admin-console"
+                           "*Admin Console*"))
       (switch-to-buffer service-output-buffer)))
 
   ;;;###autoload
