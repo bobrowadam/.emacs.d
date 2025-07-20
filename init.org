@@ -2218,6 +2218,26 @@ My llm tools defintion with an init function
     :ensure nil
     :mode ("\\.gotmpl\\'"))
 #+end_src
+** Ocaml
+#+begin_src elisp
+(use-package tuareg
+  :mode (("\\.ocamlinit\\'" . tuareg-mode))
+  :custom-face
+  (tuareg-font-lock-constructor-face ((t (:inherit font-lock-type-face))))
+  :bind (:map tuareg-mode-map
+              ("C-c C-N" . xref-find-references-and-replace)
+              ("C-c C-e" . tuareg-eval-phrase)
+              ("C-c C-R" . tuareg-eval-region)))
+
+(use-package merlin
+  :config
+  (exec-path-from-shell-initialize)
+  (setq merlin-error-after-save nil)
+  :hook (tuareg-mode))
+
+(use-package merlin-eldoc
+  :hook (tuareg-mode . merlin-eldoc-setup))
+#+end_src
 * Appearance
 ** Mode line
 #+begin_src elisp
