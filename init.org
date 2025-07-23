@@ -2453,11 +2453,11 @@ My llm tools defintion with an init function
         (grain/run--service (bob/generate--run-all-services-command service-name)
                             all-services-output-buffer))
       (unless (get-buffer "*Dashboard*")
-          (grain/run--service "npm run dev -w @grain/dashboard"
-                           "*Dashboard*"))
+        (grain/run--service "npm run dev -w @grain/dashboard"
+                            "*Dashboard*"))
       (unless (get-buffer "*Admin Console*")
         (grain/run--service "npm run dev -w @grain/admin-console"
-                           "*Admin Console*"))
+                            "*Admin Console*"))
       (switch-to-buffer service-output-buffer)))
 
   ;;;###autoload
@@ -2561,6 +2561,47 @@ My llm tools defintion with an init function
                            "*migration-shell*")))
 
   (global-set-key (kbd "C-c C-r") 'grain/run-service)
+
+  (defvar *local-pg-connection* nil
+    "Connection to local PostgreSQL database.")
+  (defvar *prod-pg-connection* nil
+    "Connection to production PostgreSQL database.")
+  (defconst *grain-select-from-prod-query-template* "select * from historical_exchange_rates where from_currency = '%s' and to_currency = '%s' order by timestamp DESC limit 1;")
+  (defconst *grain-insert-from-prod-query-template*
+    "INSERT INTO historical_exchange_rates (from_currency, to_currency,\"timestamp\",\"quote\",created_at,updated_at,deleted_at) VALUES
+  	 ('%s','%s','%s',%f,'%s','%s',NULL);")
+  (defun pg--date-string (timestamp)
+    (format-time-string "%Y-%m-%d %H:%M:%S" timestamp))
+  (defun grain-insert-rates-query (prod-rates)
+    (let ((from-currency (nth 0 prod-rates))
+          (to-currency (nth 1 prod-rates))
+          (timestamp (pg--date-string (nth 2 prod-rates)))
+          (quote (nth 3 prod-rates))
+          (created-at (pg--date-string (nth 4 prod-rates)))
+          (updated-at (pg--date-string (nth 5 prod-rates))))
+      (format *grain-insert-from-prod-query-template*
+              to-currency
+              from-currency
+              timestamp
+              quote
+              created-at
+              updated-at)))
+
+  (defun import-rate-from-prod (from to)
+    "Import rate from prod using FROM as and TO currencies"
+    (interactive "sFrom currency: \nsTo currency: ")
+    (let* ((auth-entry (auth-source-search :host "grain-prod-postgres" :max 1))
+           (user (plist-get (car auth-entry) :user))
+           (password (funcall (plist-get (car auth-entry) :secret)))
+           (url (plist-get (car auth-entry) :url))
+           (prod-rates (with-pg-connection prod-pg-connection
+                         ("grain" user password url 5432)
+                         (pg-result (pg-exec prod-pg-connection (format *grain-select-from-prod-query-template* from to))
+                                    :tuple 0 ))))
+      (with-pg-connection local-pg-connection ("grain" "postgres" "grain" "localhost" 5432)
+        (pg-result (pg-exec local-pg-connection
+                            (grain-insert-rates-query prod-rates))
+                   :tuples))))
 #+end_src
 * Multiple Cursors
 #+begin_src elisp
