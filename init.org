@@ -1385,7 +1385,6 @@ My llm tools defintion with an init function
        (shell . t)
        (python . t)
        (lisp . t)
-       (verb . t)
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("ts" . typescript))
     :hook
@@ -1524,9 +1523,7 @@ My llm tools defintion with an init function
 #+begin_src elisp
   (use-package verb
     :after (org)
-    :mode ("\\.org\\'" . org-mode)
     :config
-    (require 'uuid)
     (defun parse-verb-response-to-alist ()
       (when verb-parse-json-to-alist
         (let ((response (slot-value verb-http-response :body)))
