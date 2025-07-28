@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(emacsclient:*)"
+      "Bash(emacsclient:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

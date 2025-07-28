@@ -1063,7 +1063,83 @@ My llm tools defintion with an init function
        (list (completing-read "File: "
                               (project-files (project-current t)))))
       (let ((command (format "Add the file @%s to the context" file-path)))
-        (claude-code--do-send-command command))))
+        (claude-code--do-send-command command)))
+
+    (defun claude-eglot-context (&optional buffer-name symbol line-number)
+      "Get comprehensive eglot context for a symbol in a buffer.
+  If BUFFER-NAME is nil, use current buffer.
+  If SYMBOL is nil, use symbol at point.
+  If LINE-NUMBER is provided, go to that line first.
+  Returns definition location, references, type info, and hover information."
+      (let ((target-buffer (or buffer-name (current-buffer))))
+        (with-current-buffer target-buffer
+          (if (not (eglot-current-server))
+              "No Eglot server active for this buffer."
+            (save-excursion
+              (when line-number
+                (goto-line (if (stringp line-number)
+                               (string-to-number line-number)
+                             line-number)))
+
+              ;; Find symbol - either provided, at point, or search for it
+              (let ((target-symbol (cond
+                                    (symbol
+                                     (when (search-forward symbol nil t)
+                                       (backward-word))
+                                     symbol)
+                                    (t (thing-at-point 'symbol)))))
+
+                (if (not target-symbol)
+                    "No symbol found at point or provided."
+
+                  (let* ((definitions (condition-case err
+                                          (xref-backend-definitions 'eglot target-symbol)
+                                        (error (format "Error getting definitions: %s" err))))
+                         (references (condition-case err
+                                         (xref-backend-references 'eglot target-symbol)
+                                       (error (format "Error getting references: %s" err))))
+                         (hover-info (condition-case err
+                                         (eglot--hover-info (eglot--TextDocumentPositionParams))
+                                       (error "No hover info available")))
+                         (type-info (condition-case err
+                                        (when (eglot--server-capable :typeDefinitionProvider)
+                                          (eglot--request (eglot--current-server-or-lose)
+                                                          :textDocument/typeDefinition
+                                                          (eglot--TextDocumentPositionParams)))
+                                      (error nil))))
+
+                    (format "=== Eglot Context for Symbol: %s ===\n\nBuffer: %s\nLine: %s\n\n--- Definitions ---\n%s\n\n--- References ---\n%s\n\n--- Type Information ---\n%s\n\n--- Hover Information ---\n%s"
+                            target-symbol
+                            (buffer-name target-buffer)
+                            (line-number-at-pos)
+                            (if (and definitions (listp definitions) (not (stringp definitions)))
+                                (mapconcat (lambda (def)
+                                             (let ((loc (xref-item-location def)))
+                                               (format "  • %s:%s - %s"
+                                                       (xref-location-group loc)
+                                                       (xref-location-line loc)
+                                                       (xref-item-summary def))))
+                                           definitions "\n")
+                              (if (stringp definitions) definitions "  No definitions found"))
+
+                            (if (and references (listp references) (not (stringp references)))
+                                (let ((ref-count (length references)))
+                                  (concat (format "  Found %d reference%s:\n" ref-count (if (= ref-count 1) "" "s"))
+                                          (mapconcat (lambda (ref)
+                                                       (let ((loc (xref-item-location ref)))
+                                                         (format "  • %s:%s - %s"
+                                                                 (xref-location-group loc)
+                                                                 (xref-location-line loc)
+                                                                 (xref-item-summary ref))))
+                                                     (seq-take references 10) "\n")
+                                          (if (> ref-count 10) "\n  ... (showing first 10)" "")))
+                              (if (stringp references) references "  No references found"))
+
+                            (if type-info
+                                (format "  Type: %s" type-info)
+                              "  No type information available")
+
+                            (or hover-info "  No hover information available")))))))))))
 #+end_src
 * Ediff
 #+begin_src elisp
