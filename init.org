@@ -1585,10 +1585,10 @@ My llm tools defintion with an init function
 
     (defun bob/setup-grain-project-for-worktree (path)
       (message "Setup grain worktree in %s path" path)
-      (copy-directory "~/source/grain/.claude"
-                      (format "%s/.claude" path))
-      (copy-file "~/source/grain/CLAUDE.md"
-                 (format "%s/CLAUDE.md" path))
+      (make-symbolic-link "~/source/grain/.claude"
+                          (format "%s/.claude" path))
+      (make-symbolic-link "~/source/grain/CLAUDE.md"
+                          (format "%s/CLAUDE.md" path))
       (copy-file "~/source/grain/.env"
                  (format "%s/.env" path))
       (copy-file "~/source/grain/build.number"
@@ -1898,7 +1898,6 @@ My llm tools defintion with an init function
 ** Flymake
 #+begin_src elisp
   (use-package flymake
-    :ensure nil
     :config
     (setq elisp-flymake-byte-compile-load-path load-path)
     :bind
@@ -2827,7 +2826,7 @@ My llm tools defintion with an init function
 #+end_src
 * linear
 #+begin_src elisp
-  (use-package linear
+  (use-package linear-emacs
     :custom (linear-api-key (getenv "LINEAR_API_KEY"))
     :ensure (:repo "anegg0/linear-emacs" :fetcher github :files ("*.el")))
 #+end_src
