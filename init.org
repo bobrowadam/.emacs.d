@@ -1054,7 +1054,11 @@ My llm tools defintion with an init function
     (autoload 'claude-code-command-map "claude-code" nil t 'keymap)
     :bind-keymap
     ("C-M-;" . claude-code-command-map)
+    :bind (:map claude-code-command-map ("F" . claude-code-send-file))
     :config
+    ;; This is required for the `claude-eglot-context'
+    (require 'eglot)
+    (exec-path-from-shell-initialize)
     (claude-code-mode)
     (defun claude-code-send-file (file-path)
       "Send the specified FILE-PATH to Claude prefixed with `@'.
@@ -1077,7 +1081,7 @@ My llm tools defintion with an init function
               "No Eglot server active for this buffer."
             (save-excursion
               (when line-number
-                (goto-line (if (stringp line-number)
+                (forward-line (if (stringp line-number)
                                (string-to-number line-number)
                              line-number)))
 
@@ -1102,7 +1106,7 @@ My llm tools defintion with an init function
                                          (eglot--hover-info (eglot--TextDocumentPositionParams))
                                        (error "No hover info available")))
                          (type-info (condition-case err
-                                        (when (eglot--server-capable :typeDefinitionProvider)
+                                        (when (eglot-server-capable :typeDefinitionProvider)
                                           (eglot--request (eglot--current-server-or-lose)
                                                           :textDocument/typeDefinition
                                                           (eglot--TextDocumentPositionParams)))
