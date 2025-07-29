@@ -516,7 +516,8 @@
 #+begin_src elisp
   (use-package ibuffer
     :ensure nil
-    :bind ("C-x C-b" . #'ibuffer))
+    :bind ("C-x C-b" . #'ibuffer)
+    :hook (ibuffer-mode . ibuffer-auto-mode))
 #+end_src
 
 * Search
