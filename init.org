@@ -518,6 +518,15 @@
     :ensure nil
     :bind ("C-x C-b" . #'ibuffer)
     :hook (ibuffer-mode . ibuffer-auto-mode))
+
+  (use-package ibuffer-project
+    :hook (ibuffer-mode . (lambda ()
+                            (print "Here")
+                            (setq ibuffer-filter-groups (ibuffer-project-generate-filter-groups))
+                            (unless (eq ibuffer-sorting-mode 'project-file-relative)
+                              (ibuffer-do-sort-by-project-file-relative)))))
+  (use-package nerd-icons-ibuffer
+    :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 #+end_src
 
 * Search
@@ -1061,6 +1070,20 @@ My llm tools defintion with an init function
     (require 'eglot)
     (exec-path-from-shell-initialize)
     (claude-code-mode)
+    (defun claude-code-get-flymake-diagnostics (buffer-or-file-name)
+      "Get the content of the flymake diagnostics for a specific buffer."
+      (if-let ((buff (or (get-buffer buffer-or-file-name)
+                         (get-file-buffer buffer-or-file-name))))
+          (with-current-buffer buff
+            (mapconcat (lambda (diag)
+                         (format "%s   %s"
+                                 (line-number-at-pos (flymake-diagnostic-beg diag))
+                                 (substring-no-properties
+                                  (flymake-diagnostic-message diag))))
+                       (flymake-diagnostics (point-min)
+                                            (point-max))
+                       "\n"))
+        (format "buffer %s does not exist" buffer-or-file-name)))
     (defun claude-code-send-file (file-path)
       "Send the specified FILE-PATH to Claude prefixed with `@'.
   FILE-PATH should be an absolute path to the file to send."
@@ -1605,6 +1628,7 @@ My llm tools defintion with an init function
   (use-package verb
     :after (org)
     :config
+    (require 'uuid)
     (defun parse-verb-response-to-alist ()
       (when verb-parse-json-to-alist
         (let ((response (slot-value verb-http-response :body)))
@@ -2247,7 +2271,8 @@ My llm tools defintion with an init function
     :bind
     (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
     :hook
-    (typescript-ts-base-mode . treesit-fold-mode))
+    (typescript-ts-base-mode . treesit-fold-mode)
+    (js-ts-mode . treesit-fold-mode))
 #+end_src
 ** Snippets
 #+begin_src elisp
