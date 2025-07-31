@@ -1697,7 +1697,7 @@ My llm tools defintion with an init function
                                      current-branch))))
     (defun bob/remove-project-roots-advice (orig-fun worktree)
       "Remove project roots when deleting git worktrees."
-      (project-forget-projects-under worktree)
+      (project-forget-projects-under worktree t)
       (funcall orig-fun worktree))
 
     (defun bob/is-grain-project (path)
