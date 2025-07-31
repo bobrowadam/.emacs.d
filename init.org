@@ -2040,7 +2040,8 @@ My llm tools defintion with an init function
     :after flymake
     :hook
     (typescript-ts-mode . flymake-eslint-enable)
-    (typescript-js-mode . flymake-eslint-enable))
+    (typescript-js-mode . flymake-eslint-enable)
+    (jtsx-tsx-mode . flymake-eslint-enable))
 #+end_src
 ** Prettier
 #+begin_src elisp
