@@ -1070,6 +1070,7 @@ My llm tools defintion with an init function
     (require 'eglot)
     (exec-path-from-shell-initialize)
     (claude-code-mode)
+
     (defun claude-code-get-flymake-diagnostics (buffer-or-file-name)
       "Get the content of the flymake diagnostics for a specific buffer."
       (if-let ((buff (or (get-buffer buffer-or-file-name)
@@ -1084,6 +1085,7 @@ My llm tools defintion with an init function
                                             (point-max))
                        "\n"))
         (format "buffer %s does not exist" buffer-or-file-name)))
+
     (defun claude-code-send-file (file-path)
       "Send the specified FILE-PATH to Claude prefixed with `@'.
   FILE-PATH should be an absolute path to the file to send."
@@ -1167,7 +1169,21 @@ My llm tools defintion with an init function
                                 (format "  Type: %s" type-info)
                               "  No type information available")
 
-                            (or hover-info "  No hover information available")))))))))))
+                            (or hover-info "  No hover information available"))))))))))
+    ;; Monkey patching: (maybe send a PR)
+    (defun claude-code--directory ()
+      "Get get the root Claude directory for the current buffer.
+
+  If not in a project and no buffer file return `default-directory'."
+      (let* ((project (bob/monorepo-root))
+             (current-file (buffer-file-name)))
+        (cond
+         ;; Case 1: In a project
+         (project project)
+         ;; Case 2: Has buffer file (when not in VC repo)
+         (current-file (file-name-directory current-file))
+         ;; Case 3: No project and no buffer file
+         (t default-directory)))))
 #+end_src
 * Ediff
 #+begin_src elisp
@@ -2674,7 +2690,7 @@ My llm tools defintion with an init function
   (defconst *grain-select-from-prod-query-template* "select * from historical_exchange_rates where from_currency = '%s' and to_currency = '%s' order by timestamp DESC limit 1;")
   (defconst *grain-insert-from-prod-query-template*
     "INSERT INTO historical_exchange_rates (from_currency, to_currency,\"timestamp\",\"quote\",created_at,updated_at,deleted_at) VALUES
-  	 ('%s','%s','%s',%f,'%s','%s',NULL);")
+         ('%s','%s','%s',%f,'%s','%s',NULL);")
   (defun pg--date-string (timestamp)
     (format-time-string "%Y-%m-%d %H:%M:%S" timestamp))
   (defun grain-insert-rates-query (prod-rates)
