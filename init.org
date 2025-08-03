@@ -2150,7 +2150,8 @@ My llm tools defintion with an init function
                              "BUG"
                              "HACK"
                              "INFO"
-                             "DONE"))
+                             "DONE"
+                             "MAYBE"))
     (comment-tags-require-colon t)
     :hook (prog-mode))
 #+end_src
