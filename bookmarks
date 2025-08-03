@@ -28,10 +28,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Speak about Ra")
+ (front-context-string . "* Schedule appoi")
  (rear-context-string . "20240104T120451\n")
  (position . 112)
- (last-modified 26712 63629 100339 0))
+ (last-modified 26767 3910 924278 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
