@@ -2795,6 +2795,10 @@ My llm tools defintion with an init function
 * Terminal emulation
 #+begin_src elisp
   (use-package eat
+    :ensure ( :package "eat"
+              :repo ("https://codeberg.org/akib/emacs-eat" . "eat")
+              :files ("*.el" "eat.texi")
+              :source "NonGNU ELPA")
     :commands (eat eat-project bob/eat-top-project)
     :custom
     (eat-term-scrollback-size nil)
