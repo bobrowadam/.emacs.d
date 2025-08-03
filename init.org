@@ -1706,9 +1706,9 @@ My llm tools defintion with an init function
 
     (defun bob/setup-grain-project-for-worktree (path)
       (message "Setup grain worktree in %s path" path)
-      (make-symbolic-link "~/source/grain/.claude"
-                          (format "%s/.claude" path))
-      (make-symbolic-link "~/source/grain/CLAUDE.md"
+      (make-symbolic-link "~/dotfiles/.claude/"
+                          (format "%s/.claude/" path))
+      (make-symbolic-link "~/dotfiles/CLAUDE.md"
                           (format "%s/CLAUDE.md" path))
       (copy-file "~/source/grain/.env"
                  (format "%s/.env" path))
