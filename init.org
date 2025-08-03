@@ -2716,6 +2716,8 @@ My llm tools defintion with an init function
   (defun import-rate-from-prod (from to)
     "Import rate from prod using FROM as and TO currencies"
     (interactive "sFrom currency: \nsTo currency: ")
+    (unless (boundp 'pg)
+      (require 'pg))
     (let* ((auth-entry (auth-source-search :host "grain-prod-postgres" :max 1))
            (user (plist-get (car auth-entry) :user))
            (password (funcall (plist-get (car auth-entry) :secret)))
