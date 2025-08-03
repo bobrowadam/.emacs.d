@@ -1954,8 +1954,8 @@ My llm tools defintion with an init function
     (add-hook 'completion-at-point-functions #'cape-history)
     (add-hook 'completion-at-point-functions #'cape-elisp-block))
 #+end_src
-
 * Programming
+** General Settings
 #+begin_src elisp
   (use-package prog-mode
     :ensure nil
@@ -1968,16 +1968,6 @@ My llm tools defintion with an init function
 
   (use-package breadcrumb
     :hook (prog-mode))
-#+end_src
-** FNM - node version manager (like nvm replacment)
-#+begin_src elisp
-  (use-package fnm
-    :demand t
-    :ensure
-    (:fetcher github
-              :repo "bobrowadam/fnm.el"
-              :branch "main"
-              :files ("fnm.el")))
 #+end_src
 ** Project
 #+begin_src elisp
@@ -2008,14 +1998,6 @@ My llm tools defintion with an init function
     ("C-x p b" . consult-project-buffer)
     ("C-x p w" . bob/switch-to-open-project-buffer))
 #+end_src
-** eslint
-#+begin_src elisp
-  (defun set-eslint-executable-name ()
-    (setq flymake-eslint-executable-name
-          (if-let ((local-eslint-path (locate-dominating-file "" "node_modules/.bin/eslint")))
-              (format "%snode_modules/.bin/eslint" local-eslint-path)
-            "eslint")))
-#+end_src
 ** Flymake
 #+begin_src elisp
   (use-package flymake
@@ -2033,27 +2015,6 @@ My llm tools defintion with an init function
     (unless (seq-contains-p '("init.el" "init-literate.el")
                             (-some-> (buffer-file-name) (file-name-nondirectory)))
       (flymake-mode t)))
-#+end_src
-** Eslint
-#+begin_src elisp
-  (use-package flymake-eslint
-    :after flymake
-    :hook
-    (typescript-ts-mode . flymake-eslint-enable)
-    (typescript-js-mode . flymake-eslint-enable)
-    (jtsx-tsx-mode . flymake-eslint-enable))
-#+end_src
-** Prettier
-#+begin_src elisp
-  (use-package prettier
-    :hook (typescript-ts-mode tsx-ts-mode js2-mode js-ts-mode))
-
-  (use-package eglot-booster
-    :ensure ( :package "eglot-booster"
-              :protocol https
-              :files ("eglot-booster.el")
-              :fetcher github
-              :repo "jdtsmith/eglot-booster"))
 #+end_src
 ** Eldoc
 #+begin_src elisp
@@ -2193,21 +2154,61 @@ My llm tools defintion with an init function
     (comment-tags-require-colon t)
     :hook (prog-mode))
 #+end_src
-** Jest
+** Code folding
+*** Treesit Fold
 #+begin_src elisp
-  (use-package jest-ts-mode
-    :ensure (:package "jest-ts-mode"
-                      :fetcher github
-                      :branch "main"
-                      :repo "bobrowadam/jest-ts-mode"
-                      :files ("jest-ts-mode.el"))
-    :hook (typescript-ts-mode)
-    :custom
-    (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true")))
-    (jest-ts/inspect-port #'get-next-available-inspect-port))
-
+  (use-package treesit-fold
+    :commands (global-treesit-fold-indicators-mode)
+    :bind
+    (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
+    :hook
+    (typescript-ts-base-mode . treesit-fold-mode)
+    (js-ts-mode . treesit-fold-mode))
 #+end_src
-** Typescript
+*** Hide Show
+#+begin_src elisp
+  (use-package hideshow :ensure nil
+    :hook (emacs-lisp-mode . (lambda () (hs-minor-mode 1)) )
+    :bind (:map emacs-lisp-mode-map ("C-=" . hs-toggle-hiding)))
+#+end_src
+
+** Snippets
+#+begin_src elisp
+  (use-package yasnippet-snippets)
+  (use-package yasnippet
+    :custom
+    (yas-wrap-around-region t)
+    (yas-also-auto-indent-first-line t)
+    :hook
+    (prog-mode . yas-minor-mode-on)
+    (emacs-lisp-mode . yas-minor-mode-on)
+    (text-mode . yas-minor-mode-on)
+    :bind (:map yas-minor-mode-map
+                ("C-<tab>" . yas-expand))
+    :config
+    (setq yas-snippet-dirs
+          `(,(concat user-emacs-directory "snippets")
+            ,yasnippet-snippets-dir))
+    (yas-reload-all))
+#+end_src
+** Highlight indent guides
+#+begin_src elisp
+  (use-package highlight-indent-guides
+    :custom
+    (highlight-indent-guides-auto-even-face-perc 19)
+    (highlight-indent-guides-auto-odd-face-perc 11)
+    (highlight-indent-guides-auto-top-even-face-perc 30)
+    (highlight-indent-guides-auto-top-odd-face-perc 25)
+    :config
+    (setq highlight-indent-guides-method 'fill
+          highlight-indent-guides-responsive 'top
+          highlight-indent-guides-auto-enabled t)
+    ;; (set-face-foreground 'highlight-indent-guides-character-face "dimgray")
+    :hook (prog-mode . highlight-indent-guides-mode))
+#+end_src
+** Specific Languages Support
+*** Typescript
+**** General Settings 
 #+begin_src elisp
   (use-package typescript-mode
     :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
@@ -2259,7 +2260,17 @@ My llm tools defintion with an init function
     (add-hook 'jtsx-jsx-mode-hook 'jtsx-bind-keys-to-jtsx-jsx-mode-map)
     (add-hook 'jtsx-tsx-mode-hook 'jtsx-bind-keys-to-jtsx-tsx-mode-map))
 #+end_src
-*** Typescript REPL
+**** Eslint
+#+begin_src elisp
+  (use-package flymake-eslint
+    :after flymake
+    :hook
+    (typescript-ts-mode . flymake-eslint-enable)
+    (typescript-js-mode . flymake-eslint-enable)
+    (jtsx-tsx-mode . flymake-eslint-enable))
+#+end_src
+
+**** Typescript REPL
 #+begin_src elisp
   (use-package ts-comint
     :custom
@@ -2268,76 +2279,69 @@ My llm tools defintion with an init function
   (use-package ts-repl
     :ensure (:repo "nverno/ts-repl" :fetcher github :files ("*.el")))
 #+end_src
-** Roc
+**** Jest
+#+begin_src elisp
+  (use-package jest-ts-mode
+    :ensure (:package "jest-ts-mode"
+                      :fetcher github
+                      :branch "main"
+                      :repo "bobrowadam/jest-ts-mode"
+                      :files ("jest-ts-mode.el"))
+    :hook (typescript-ts-mode)
+    :custom
+    (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true")))
+    (jest-ts/inspect-port #'get-next-available-inspect-port))
+
+#+end_src
+**** Prettier
+#+begin_src elisp
+  (use-package prettier
+    :hook (typescript-ts-mode tsx-ts-mode js2-mode js-ts-mode))
+
+  (use-package eglot-booster
+    :ensure ( :package "eglot-booster"
+              :protocol https
+              :files ("eglot-booster.el")
+              :fetcher github
+              :repo "jdtsmith/eglot-booster"))
+#+end_src
+**** FNM - node version manager (like nvm replacment)
+#+begin_src elisp
+  (use-package fnm
+    :demand t
+    :ensure
+    (:fetcher github
+              :repo "bobrowadam/fnm.el"
+              :branch "main"
+              :files ("fnm.el")))
+#+end_src
+
+*** Roc
 #+begin_src elisp
   (use-package roc-ts-mode
     :mode ("\\.roc\\'" . roc-ts-mode)
     :ensure (:repo "tad-lispy/roc-ts-mode" :fetcher gitlab :files ("*.el")))
 #+end_src
-** C
+*** C
 #+begin_src elisp
   (use-package c-ts-mode
     :custom
     (c-ts-mode-indent-offset 4)
     :ensure nil)
 #+end_src
-** Code folding
-#+begin_src elisp
-  (use-package treesit-fold
-    :commands (global-treesit-fold-indicators-mode)
-    :bind
-    (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
-    :hook
-    (typescript-ts-base-mode . treesit-fold-mode)
-    (js-ts-mode . treesit-fold-mode))
-#+end_src
-** Snippets
-#+begin_src elisp
-  (use-package yasnippet-snippets)
-  (use-package yasnippet
-    :custom
-    (yas-wrap-around-region t)
-    (yas-also-auto-indent-first-line t)
-    :hook
-    (prog-mode . yas-minor-mode-on)
-    (emacs-lisp-mode . yas-minor-mode-on)
-    (text-mode . yas-minor-mode-on)
-    :bind (:map yas-minor-mode-map
-                ("C-<tab>" . yas-expand))
-    :config
-    (setq yas-snippet-dirs
-          `(,(concat user-emacs-directory "snippets")
-            ,yasnippet-snippets-dir))
-    (yas-reload-all))
-#+end_src
-** Highlight indent guides
-#+begin_src elisp
-  (use-package highlight-indent-guides
-    :custom
-    (highlight-indent-guides-auto-even-face-perc 19)
-    (highlight-indent-guides-auto-odd-face-perc 11)
-    (highlight-indent-guides-auto-top-even-face-perc 30)
-    (highlight-indent-guides-auto-top-odd-face-perc 25)
-    :config
-    (setq highlight-indent-guides-method 'fill
-          highlight-indent-guides-responsive 'top
-          highlight-indent-guides-auto-enabled t)
-    ;; (set-face-foreground 'highlight-indent-guides-character-face "dimgray")
-    :hook (prog-mode . highlight-indent-guides-mode))
-#+end_src
-** Elisp
+*** Elisp
 #+begin_src elisp
   (use-package erefactor
     :bind-keymap ("C-c C-v" . erefactor-map)
     :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on))
 #+end_src
-** Yaml
+*** Yaml
 #+begin_src elisp
   (use-package yaml-ts-mode
     :ensure nil
     :mode ("\\.gotmpl\\'"))
 #+end_src
-** Ocaml
+*** OCaml
 #+begin_src elisp
 (use-package tuareg
   :mode (("\\.ocamlinit\\'" . tuareg-mode))
@@ -2923,14 +2927,7 @@ My llm tools defintion with an init function
     :bind (:map emacs-lisp-mode-map ("C-x E" . macrostep-expand)))
 
 #+end_src
-* hide-show
-#+begin_src elisp
-  (use-package hideshow :ensure nil
-    :hook (emacs-lisp-mode . (lambda () (hs-minor-mode 1)) )
-    :bind (:map emacs-lisp-mode-map ("C-=" . hs-toggle-hiding)))
-#+end_src
 
-#+end_src
 * org-linear
 #+begin_src elisp
   (use-package org-linear
