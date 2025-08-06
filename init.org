@@ -2217,7 +2217,7 @@ My llm tools defintion with an init function
 #+end_src
 ** Specific Languages Support
 *** Typescript
-**** General Settings 
+**** General Settings
 #+begin_src elisp
   (use-package typescript-mode
     :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
@@ -2533,11 +2533,11 @@ My llm tools defintion with an init function
 #+end_src
 * Grain utils
 #+begin_src elisp
-  (defun bob/generate--run-service-command (service-name &optional env inspect-port)
+  (defun bob/generate--run-service-command (service-name env inspect-port)
     "Generate a shell command to run SERVICE-NAME.
   optionally, accept ENV and INSPECT-PORT arguments."
     (format "NODE_ENV=%s TS_NODE_PROJECT='./apps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/%s/src/**/*' --exec \"node --inspect%s -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
-            (or env "")
+            (or env "development")
             service-name
             service-name
             (if inspect-port (format "=%s" inspect-port) "")
@@ -2566,22 +2566,25 @@ My llm tools defintion with an init function
 
   (defun grain/get--service-name ()
     "Use completing read to get a name of a known grain service."
-    (completing-read "Enter service name: "
-                     (directory-files (file-name-concat (bob/monorepo-root) *grain-services-root*)
-                                      nil
-                                      "^[^.]")))
+    (if-let* ((repo-root (bob/monorepo-root))
+              (is-grain-project (bob/is-grain-project repo-root)))
+        (completing-read "Enter service name: "
+                         (directory-files (file-name-concat repo-root *grain-services-root*)
+                                          nil
+                                          "^[^.]"))
+      (ignore (message "Not in a grain monorepo worktree"))))
   ;;;###autoload
   (defun grain/run-service (single-service-p)
     "Run a service in debug mode.
   When SINGLE-SERVICE-P is nil, run all the other services as well."
     (interactive "P")
-    (let* ((service-name (grain/get--service-name))
-           (service-output-buffer (format "*SERVICE: %s*" service-name))
-           (all-services-output-buffer (format "*[ALL] except %s*" service-name)))
+    (when-let* ((service-name (grain/get--service-name))
+                (service-output-buffer (format "*SERVICE: %s*" service-name))
+                (all-services-output-buffer (format "*[ALL] except %s*" service-name)))
       (save-excursion
         (grain/run--service
          (bob/generate--run-service-command service-name
-                                            ""
+                                            "development"
                                             (get-next-available-inspect-port))
          service-output-buffer))
       (unless single-service-p
@@ -2599,7 +2602,7 @@ My llm tools defintion with an init function
   (defun grain/run-e2e ()
     "Run a service in debug mode and all the other services as well."
     (interactive)
-    (let ((service-name (grain/get--service-name)))
+    (when-let ((service-name (grain/get--service-name)))
       (progn
         (grain/run--service (bob/generate--run-service-command service-name
                                                                "test"
@@ -2683,7 +2686,7 @@ My llm tools defintion with an init function
            (*? anychar))))
 
   (ert-deftest generate-command ()
-    (should (equal (bob/generate--run-service-command "mail-service") "NODE_ENV= TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
+    (should (equal (bob/generate--run-service-command "mail-service" "development") "NODE_ENV=development TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
 
   ;;;###autoload
   (defun debug-migration ()
@@ -2695,7 +2698,7 @@ My llm tools defintion with an init function
                                    runOrRevert)
                            "*migration-shell*")))
 
-  (global-set-key (kbd "C-c C-r") 'grain/run-service)
+  (global-set-key (kbd "C-c b r") 'grain/run-service)
 
   (defvar *local-pg-connection* nil
     "Connection to local PostgreSQL database.")
