@@ -2734,7 +2734,10 @@ My llm tools defintion with an init function
            (url (plist-get (car auth-entry) :url))
            (prod-rates (with-pg-connection prod-pg-connection
                                            ("grain" user password url 5432)
-                                           (pg-result (pg-exec prod-pg-connection (format *grain-select-from-prod-query-template* from to))
+                                           (pg-result (pg-exec prod-pg-connection
+                                                               (format *grain-select-from-prod-query-template*
+                                                                       (upcase from)
+                                                                       (upcase to)))
                                                       :tuple 0 ))))
       (with-pg-connection local-pg-connection ("grain" "postgres" "grain" "localhost" 5432)
                           (pg-result (pg-exec local-pg-connection
