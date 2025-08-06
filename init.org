@@ -1721,8 +1721,9 @@ My llm tools defintion with an init function
       (when (bob/is-grain-project path)
         (bob/setup-grain-project-for-worktree path)))
 
-    (defun bob/setup-worktree-branch (orig-fun path worktree starting-point)
-      (funcall orig-fun path worktree starting-point)
+    (defun bob/setup-worktree-branch (orig-fun path worktree &optional starting-point)
+      (if starting-point (funcall orig-fun path worktree starting-point)
+        (funcall orig-fun path worktree))
       (message (format "created worktree %s in path %s starting at %s" worktree path starting-point))
       (when (bob/is-grain-project path)
         (bob/setup-grain-project-for-worktree path)))
@@ -1730,6 +1731,13 @@ My llm tools defintion with an init function
     (advice-add 'magit-worktree-delete :around #'bob/remove-project-roots-advice)
     (advice-add 'magit-worktree-checkout :around #'bob/setup-worktree-checkout)
     (advice-add 'magit-worktree-branch :around #'bob/setup-worktree-branch)
+    (advice-add 'magit-worktree-move :around
+                (lambda (orig-fun worktree path)
+                  (funcall orig-fun worktree path)
+                  (message (format "moving worktree %s to path %s" worktree path))
+                  (when (bob/is-grain-project path)
+                    (bob/setup-grain-project-for-worktree path))))
+
     (magit-wip-mode 1)
     (transient-append-suffix 'magit-file-dispatch
       "p"
