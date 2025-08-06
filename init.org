@@ -2080,7 +2080,7 @@ My llm tools defintion with an init function
     (eglot-managed-mode .  (lambda ()
                              (when (or (eq (derived-mode-p major-mode) 'typescript-ts-mode)
                                        (eq (derived-mode-p major-mode) 'js-ts-mode))
-                               (set-eslint-executable-name)
+                               ;; (set-eslint-executable-name)
                                (flymake-eslint-enable)))))
 
 #+end_src
