@@ -1,0 +1,362 @@
+#+TITLE: Grain Utils
+#+AUTHOR: Bob
+#+PROPERTY: header-args:elisp :tangle grain-utils.el :comments link
+
+This module contains utilities for working with the Grain financial services platform.
+
+* Grain Project Detection and Setup
+
+#+begin_src elisp
+(defun bob/is-grain-project (path)
+  "Check if PATH is a grain project."
+  (let ((default-directory path))
+    (equal (bob/npm--project-name) "grain")))
+
+(defun bob/setup-grain-project-for-worktree (path)
+  "Setup grain worktree in PATH."
+  (message "Setup grain worktree in %s path" path)
+  (let ((default-directory path))
+    (shell-command "npm install")
+    (shell-command "cp .env.example .env")
+    (shell-command "npx nx reset"))
+  (copy-file (expand-file-name "~/source/grain/.env")
+             (expand-file-name ".env" path) t)
+  (copy-file (expand-file-name "~/source/grain/build.number")
+             (expand-file-name "build.number" path) t))
+#+end_src
+
+* Service Management
+
+#+begin_src elisp
+(defconst *grain-services-root* "apps/backend/")
+
+(defun bob/generate--run-service-command (service-name env inspect-port)
+  "Generate a shell command to run SERVICE-NAME.
+optionally, accept ENV and INSPECT-PORT arguments."
+  (format "NODE_ENV=%s TS_NODE_PROJECT='./apps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/%s/src/**/*' --exec \"node --inspect%s -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
+          (or env "development")
+          service-name
+          service-name
+          (if inspect-port (format "=%s" inspect-port) "")
+          service-name))
+
+(defun bob/generate--run-all-services-command (excluded-service-name)
+  "Run all off grain services except EXCLUDED-SERVICE-NAME."
+  (format "npx nx run-many --target=start --parallel=20 --exclude=%s"
+          excluded-service-name))
+
+(defun bob/generate--run-all-services-e2e-command (excluded-service-name)
+  "Run all off grain services in e2e mode, except EXCLUDED-SERVICE-NAME."
+  (format "npm run start:services:test -- --exclude %s"
+          excluded-service-name))
+
+(defun grain/run--service (run-service-command service-output-buffer-name)
+  "Run RUN-SERVICE-COMMAND in SERVICE-OUTPUT-BUFFER-NAME buffer."
+  (let ((default-directory (bob/monorepo-root))
+        (process (get-buffer-process (get-buffer service-output-buffer-name))))
+    (when process
+      (interrupt-process process)
+      (kill-buffer (process-buffer process)))
+    (async-shell-command run-service-command service-output-buffer-name)))
+
+(defun grain/get--service-name ()
+  "Use completing read to get a name of a known grain service."
+  (if-let* ((repo-root (bob/monorepo-root))
+            (is-grain-project (bob/is-grain-project repo-root)))
+      (completing-read "Enter service name: "
+                       (directory-files (file-name-concat repo-root *grain-services-root*)
+                                        nil
+                                        "^[^.]"))
+    (ignore (message "Not in a grain monorepo worktree"))))
+
+;;;###autoload
+(defun grain/run-service (single-service-p)
+  "Run a service in debug mode.
+When SINGLE-SERVICE-P is nil, run all the other services as well."
+  (interactive "P")
+  (when-let* ((service-name (grain/get--service-name))
+              (service-output-buffer (format "*SERVICE: %s*" service-name))
+              (all-services-output-buffer (format "*[ALL] except %s*" service-name)))
+    (save-excursion
+      (grain/run--service
+       (bob/generate--run-service-command service-name
+                                          "development"
+                                          (get-next-available-inspect-port))
+       service-output-buffer))
+    (unless single-service-p
+      (grain/run--service (bob/generate--run-all-services-command service-name)
+                          all-services-output-buffer))
+    (unless (get-buffer "*Dashboard*")
+      (grain/run--service "npm run dev -w @grain/dashboard"
+                          "*Dashboard*"))
+    (unless (get-buffer "*Admin Console*")
+      (grain/run--service "npm run dev -w @grain/admin-console"
+                          "*Admin Console*"))
+    (switch-to-buffer service-output-buffer)))
+
+;;;###autoload
+(defun grain/run-e2e ()
+  "Run a service in debug mode and all the other services as well."
+  (interactive)
+  (when-let ((service-name (grain/get--service-name)))
+    (progn
+      (grain/run--service (bob/generate--run-service-command service-name
+                                                             "test"
+                                                             (get-next-available-inspect-port))
+                          (format "*SERVICE: %s*" service-name))
+      (grain/run--service (bob/generate--run-all-services-e2e-command service-name)
+                          (format "*[ALL] except %s*"
+                                  service-name)))))
+#+end_src
+
+* Debug Port Management
+
+#+begin_src elisp
+;;;###autoload
+(defun get-next-available-inspect-port (&optional default-port)
+  "Calculate the next available port for node inspector to use.
+When all ports are available use DEFAULT-PORT or return 9229."
+  (if-let ((inspected-ports (mapcar 'cdr (get-inspected-node-processes))))
+      (->> inspected-ports
+           (-sort #'string>)
+           (car)
+           (string-to-number)
+           (1+))
+    (or default-port 9229)))
+
+;;;###autoload
+(defun pick-port-for-inspected-service ()
+  "Ask for a service and find it's debugging port for."
+  (let ((inspected-services-map (get-inspected-node-processes)))
+    (-> (completing-read "Service to debug: "
+                         inspected-services-map)
+        (assocdr inspected-services-map)
+        (or "9229"))))
+
+(defun get-inspected-node-processes ()
+  "Get node processes that is running using the --inspect flag."
+  (-filter 'identity (mapcar 'find--port-and-service-name-from-process-command
+                             (mapcar #'process-command (process-list)))))
+
+(defun find--port-and-service-name-from-process-command (process-command)
+  "Extract the service-name and port from PROCESS-COMMAND."
+  (--some (or (port-and-service-name it)
+              (jest-port-and-service-name it))
+          process-command))
+
+(defun jest-port-and-service-name (proc-command)
+  "Get the inspected port and service name when PROC-COMMAND is a Jest run command."
+  (when-let* ((port-and-name (string-match jest-port-and-service-name-regex
+                                           proc-command))
+              (service-name (match-string 2 proc-command))
+              (port (match-string 1 proc-command)))
+    (cons (format "jest/%s" service-name) port)))
+
+(defconst jest-port-and-service-name-regex
+  (rx (: "node --inspect"
+         (*? anychar)
+         "="
+         (group (1+ digit))
+         space
+         (*? anychar)
+         "jest"
+         (*? anychar)
+         "apps/backend/"
+         (group (+? anychar))
+         "/")))
+
+(defun port-and-service-name (proc-command)
+  "Get the inspected port and service name from PROC-COMMAND."
+  (when-let ((port-and-name (string-match port-and-service-name
+                                          proc-command)))
+    (let ((service-name (match-string 2 proc-command))
+          (port (match-string 1 proc-command)))
+      (cons service-name port))))
+
+(defconst port-and-service-name
+  (rx (: "node --inspect"
+         (*? anychar)
+         "="
+         (group (1+ digit))
+         space
+         "-r ts-node/register"
+         (*? anychar)
+         "apps/backend/"
+         (group (+? anychar))
+         "/"
+         (*? anychar))))
+#+end_src
+
+* Migration Debugging
+
+#+begin_src elisp
+;;;###autoload
+(defun debug-migration ()
+  "Debug a grain migration script."
+  (interactive)
+  (let ((runOrRevert (completing-read "Command: " '("run" "revert")))
+        (default-directory "/Users/bob/source/grain/packages/rdb/"))
+    (async-shell-command (format "node --inspect --require ts-node/register ../../node_modules/typeorm/cli.js migration:%s -d src/data-source.ts"
+                                 runOrRevert)
+                         "*migration-shell*")))
+#+end_src
+
+* Database Utilities
+
+#+begin_src elisp
+(defvar *local-pg-connection* nil
+  "Connection to local PostgreSQL database.")
+(defvar *prod-pg-connection* nil
+  "Connection to production PostgreSQL database.")
+
+(defconst *grain-select-from-prod-query-template* 
+  "select * from historical_exchange_rates where from_currency = '%s' and to_currency = '%s' order by timestamp DESC limit 1;")
+
+(defconst *grain-insert-from-prod-query-template*
+  "INSERT INTO historical_exchange_rates (from_currency, to_currency,\"timestamp\",\"quote\",created_at,updated_at,deleted_at) VALUES
+       ('%s','%s','%s',%f,'%s','%s',NULL);")
+
+(defun pg--date-string (timestamp)
+  "Format TIMESTAMP as a PostgreSQL date string."
+  (format-time-string "%Y-%m-%d %H:%M:%S" timestamp))
+
+(defun grain-insert-rates-query (prod-rates)
+  "Generate an insert query for PROD-RATES."
+  (let ((from-currency (nth 0 prod-rates))
+        (to-currency (nth 1 prod-rates))
+        (timestamp (pg--date-string (nth 2 prod-rates)))
+        (quote (nth 3 prod-rates))
+        (created-at (pg--date-string (nth 4 prod-rates)))
+        (updated-at (pg--date-string (nth 5 prod-rates))))
+    (format *grain-insert-from-prod-query-template*
+            to-currency
+            from-currency
+            timestamp
+            quote
+            created-at
+            updated-at)))
+
+(defun import-rate-from-prod (from to)
+  "Import rate from prod using FROM as and TO currencies."
+  (interactive "sFrom currency: \nsTo currency: ")
+  (unless (boundp 'pg)
+    (require 'pg))
+  (let* ((auth-entry (auth-source-search :host "grain-prod-postgres" :max 1))
+         (user (plist-get (car auth-entry) :user))
+         (password (funcall (plist-get (car auth-entry) :secret)))
+         (url (plist-get (car auth-entry) :url))
+         (prod-rates (with-pg-connection prod-pg-connection
+                                         ("grain" user password url 5432)
+                                         (pg-result (pg-exec prod-pg-connection
+                                                             (format *grain-select-from-prod-query-template*
+                                                                     (upcase from)
+                                                                     (upcase to)))
+                                                    :tuple 0 ))))
+    (with-pg-connection local-pg-connection ("grain" "postgres" "grain" "localhost" 5432)
+                        (pg-result (pg-exec local-pg-connection
+                                            (grain-insert-rates-query prod-rates))
+                                   :tuples))))
+#+end_src
+
+* API Connection Utilities
+
+#+begin_src elisp
+(require 'cl)
+
+(cl-defun bob/create-authenticated-api-connection (password username &key (type "POST"))
+  "Create a closure with authenticated http connection for PASSWORD and USERNAME."
+  (lexical-let ((password password)
+                (username username))
+    (cl-function (lambda (url &key (iterations 10) (data '()))
+                   (dotimes (i iterations)
+                     (request url
+                       :type type
+                       :data (when data (json-encode data))
+                       :parser 'json-read
+                       :headers `(("X-Customer-IP" . "213.8.10.146")
+                                  ("Content-Type" . "application/json")
+                                  ("Authorization" . ,(format "Basic %s"
+                                                              (base64-encode-string (format "%s:%s"
+                                                                                            username
+                                                                                            password)
+                                                                                    t))))
+                       :success 'bob/on-success
+                       :error 'bob/on-error
+                       :complete 'bob/on-complete))))))
+
+(cl-defun bob/on-success (&key data &allow-other-keys)
+  "Success callback for DATA."
+  (f-write (prin1-to-string data) 'utf-8 "/Users/bob/exchange-rates.el"))
+
+(cl-defun bob/on-error (&key error-thrown &allow-other-keys)
+  "Error callback for ERROR-THROWN."
+    (message "Error:\n%s" (cdr error-thrown)))
+
+(cl-defun bob/on-complete (&key response error-thrown symbol-status &allow-other-keys)
+  "Completion callback for RESPONSE or ERROR-THROWN with SYMBOL-STATUS."
+  (message "Done with status code: %s, symbol-status: %s"
+           (request-response-status-code response)
+           (request-response-symbol-status response)))
+
+(defun bob/update-historical-rates ()
+  "Insert historical-exchange-rates records with rates from currency pairs file."
+  (interactive)
+  (unless (boundp 'pg)
+    (require 'pg))
+
+  ;; Read and parse the data files
+  (let* ((rates-data (read (f-read "~/exchange-rates.el")))
+         (currency-pairs (read (f-read "~/currency-pairs-for-historical-exchange-update.el")))
+         (rates-alist (cdr (assoc 'rates rates-data)))
+         (current-timestamp (format-time-string "%Y-%m-%d %H:%M:%S.000")))
+
+    ;; Set up database connection
+    (let* ((auth-entry (auth-source-search :host "grain-prod-postgres-write!" :max 1))
+           (user (plist-get (car auth-entry) :user))
+           (password (funcall (plist-get (car auth-entry) :secret)))
+           (url (plist-get (car auth-entry) :url)))
+
+      ;; Connect to database and insert rates
+      (with-pg-connection pg-connection ("grain" user password url 5432)
+        (dolist (pair currency-pairs)
+          (let* ((from-currency (symbol-name (car pair)))
+                 (to-currency (symbol-name (cadr pair)))
+                 (from-rates (cdr (assoc (car pair) rates-alist)))
+                 (rate (when from-rates
+                         (cdr (assoc (cadr pair) from-rates)))))
+
+            (when rate
+              (message "Inserting rate for %s to %s: %s" from-currency to-currency rate)
+
+              ;; Insert query matching your table structure
+              (let ((insert-query
+                     (format "INSERT INTO historical_exchange_rates (to_currency, from_currency, \"timestamp\", \"quote\", created_at, updated_at, deleted_at) VALUES ('%s', '%s', '%s', %f, NOW(), NOW(), NULL)"
+                             to-currency from-currency current-timestamp rate)))
+
+                (condition-case err
+                    (pg-exec pg-connection insert-query)
+                  (error
+                   (message "Error inserting %s->%s: %s" from-currency to-currency err)))))))
+
+        (message "Historical exchange rates insertion completed")))))
+#+end_src
+
+* Key Bindings
+
+#+begin_src elisp
+(global-set-key (kbd "C-c b r") 'grain/run-service)
+#+end_src
+
+* Tests
+
+#+begin_src elisp
+(ert-deftest generate-command ()
+  (should (equal (bob/generate--run-service-command "mail-service" "development" nil) 
+                 "NODE_ENV=development TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/mail-service/src/**/*' --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
+#+end_src
+
+* Provide Feature
+
+#+begin_src elisp
+(provide 'grain-utils)
+#+end_src

@@ -80,3 +80,4 @@ transient/*
 *.elc
 /modules/modules-autoloads.el
 /init.el
+/modules/grain-utils.el
