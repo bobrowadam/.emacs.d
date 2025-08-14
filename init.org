@@ -16,10 +16,17 @@
     (elpaca-use-package-mode)
     (setq elpaca-use-package-by-default t))
   (defun compile-init-file ()
-    "Compile init.org file."
+    "Tangle init.org file and modules."
     (when (get-buffer "init.org")
       (kill-buffer "init.org"))
-    (org-babel-load-file "/Users/bob/.emacs.d/init.org"))
+    ;; Tangle modules first
+    (dolist (module-file (directory-files (expand-file-name "modules" user-emacs-directory) t "\\.org$"))
+      (let ((module-buffer (get-file-buffer module-file)))
+        (when module-buffer
+          (kill-buffer module-buffer)))
+      (org-babel-tangle-file module-file))
+    ;; Then tangle the main init file
+    (org-babel-tangle-file (expand-file-name "init.org" user-emacs-directory)))
   (add-hook 'kill-emacs-hook 'compile-init-file)
   (elpaca-wait)
   (setq custom-file (concat user-emacs-directory "./custom.el"))
