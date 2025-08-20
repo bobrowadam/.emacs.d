@@ -18,6 +18,8 @@ This module contains utilities for working with the Grain financial services pla
                         (expand-file-name (format "%s/.claude/" path)))
     (make-symbolic-link (expand-file-name "~/dotfiles/CLAUDE.md")
                         (expand-file-name (format "%s/CLAUDE.md" path)))
+    (make-symbolic-link (expand-file-name "~/dotfiles/CLAUDE.local.md")
+                        (expand-file-name (format "%s/CLAUDE.local.md" path)))
     (copy-file (expand-file-name "~/source/grain/.env")
                (expand-file-name ".env" path) t)
     (copy-file (expand-file-name "~/source/grain/build.number")
