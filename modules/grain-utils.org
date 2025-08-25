@@ -24,6 +24,7 @@ This module contains utilities for working with the Grain financial services pla
                (expand-file-name ".env" path) t)
     (copy-file (expand-file-name "~/source/grain/build.number")
                (expand-file-name "build.number" path) t))
+
   (defun bob/is-grain-project (path)
     "Check if PATH is a grain project."
     (let ((default-directory path))
@@ -54,7 +55,7 @@ This module contains utilities for working with the Grain financial services pla
 #+end_src
 
 * Service Management
-
+** Logic
 #+begin_src elisp
   (defconst *grain-services-root* "apps/backend/")
 
@@ -137,8 +138,20 @@ This module contains utilities for working with the Grain financial services pla
                                     service-name)))))
 #+end_src
 
-* Debug Port Management
+** Tests
+#+begin_src elisp
+  (ert-deftest generate-command ()
+    (should (equal (bob/generate--run-service-command "mail-service" "development" nil)
+                   "NODE_ENV=development TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/mail-service/src/**/*' --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
+#+end_src
 
+** Key Bindings
+
+#+begin_src elisp
+  (global-set-key (kbd "C-c b r") 'grain/run-service)
+#+end_src
+
+* Debug Port Management
 #+begin_src elisp
   ;;;###autoload
   (defun get-next-available-inspect-port (&optional default-port)
@@ -367,20 +380,6 @@ This module contains utilities for working with the Grain financial services pla
                                        (message "Error inserting %s->%s: %s" from-currency to-currency err)))))))
 
                             (message "Historical exchange rates insertion completed")))))
-#+end_src
-
-* Key Bindings
-
-#+begin_src elisp
-  (global-set-key (kbd "C-c b r") 'grain/run-service)
-#+end_src
-
-* Tests
-
-#+begin_src elisp
-  (ert-deftest generate-command ()
-    (should (equal (bob/generate--run-service-command "mail-service" "development" nil)
-                   "NODE_ENV=development TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/mail-service/src/**/*' --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
 #+end_src
 
 * Provide Feature

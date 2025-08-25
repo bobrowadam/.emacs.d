@@ -552,51 +552,12 @@
 * AI and LLM integrations
 ** GPTEL
 #+begin_src elisp
-  (defvar ai-assistant-prompt "
-  You are a large language model living in Emacs and a helpful assistant. Respond concisely and as short as possible.
-
-  TOOL USAGE STRATEGY:
-  When handling code-related requests, follow this analysis approach:
-
-  1. CONTEXT GATHERING:
-     - When the context is >~500 lines, use the `summarize-chat-buffer` to compact the context. This is very important!
-     - Use `get_project_root` and `get_buffers_name_in_project` to understand project structure
-     - Use `run_rg` to search for patterns, functions, or specific code constructs
-     - Use `find_files_by_regex_in_project` to locate relevant files
-
-  2. CODE ANALYSIS:
-     - Use `eglot_context` for precise symbol analysis (definitions, references, documentation)
-     - Always specify buffer_name, symbol, and line_number when available
-     - Use `get_flymake_diagnostics` to check for errors/warnings in relevant buffers
-
-  3. INVESTIGATION WORKFLOW:
-     - Start broad (search patterns with rg)
-     - Narrow down (examine specific files/buffers)
-     - Go deep (use LSP for symbol-level analysis)
-     - Cross-reference (check related symbols and dependencies)
-
-  4. RESPONSE STRUCTURE:
-     - State what you're investigating
-     - Show the analysis steps taken
-     - Provide findings with LSP-backed evidence
-     - Suggest next actions if applicable
-
-  When code issues arise, prioritize LSP-based analysis over assumptions. Use the structured knowledge from eglot_context to provide precise, compiler-grade insights rather than generic advice.
-
-  [rest of original prompt about conciseness, error handling, etc.]
-  Respond concisely and as short as possible.
-  When using tools, tell me what you are about to do. don't ever apologize if some error happened or if you were wrong in working with the tool. If you are not able to use the tool let me know what you think is the problem and let me debug it.
-  Be very aware of the tool API and the arguments it needs. failing to do so will cause an unrecoverable error in the flow.
-  Since I'm paying for the LLM usage and my workplace doesn't help me, try to use as little tokens as you can. thanks!")
   (use-package gptel
     :custom
     (gptel-default-mode 'org-mode)
-    (gptel-max-tokens 600)
+    (gptel-max-tokens 800)
     :config
     (exec-path-from-shell-initialize)
-    (add-to-list 'gptel-directives (cons 'ai-assitant ai-assistant-prompt))
-    (mapcar (apply-partially #'apply #'gptel-make-tool)
-            (llm-tool-collection-get-all))
     (defun bob/gptel-switch-to-gptel-buffer ()
       "Switch to a buffer with `gptel-mode' active."
       (interactive)
@@ -609,10 +570,6 @@
                (gptel-buffer (completing-read "GPT buffer: " (mapcar 'buffer-name gptel-buffers))))
           (switch-to-buffer gptel-buffer)
         (message "No GPTel buffers found.")))
-    (gptel-make-ollama "Ollama"
-      :host "localhost:11434"
-      :stream t
-      :models '(mistral:latest llama3.2:latest))
     (when-let ((credentials
                 (setenv "ANTHROPIC_API_KEY"
                         (-some->
@@ -637,19 +594,6 @@
                   (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
                     (gptel-mode 1)))))
 #+end_src
-** Aider
-#+begin_src elisp
-  (use-package aider
-    :ensure (:repo "tninja/aider.el" :fetcher github :files ("*.el"))
-    :custom
-    (aider-args '("--model" "sonnet" "--no-auto-accept-architect" "--no-auto-commits"))
-    :config
-    (setenv "ANTHROPIC_API_KEY"
-            (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
-    :bind ("C-c g c" . 'aider-transient-menu)
-    (:map prog-mode-map ("C-c g C" . 'aider-code-change)))
-#+end_src
-
 ** Minuet - ai code completion
 #+begin_src elisp
   (use-package minuet
@@ -762,8 +706,8 @@ For claude code protocol via web-sockets
   (use-package monet
     :ensure (:repo "stevemolitor/monet" :fetcher github :files ("*.el") :branch "main")
     :custom
-    (monet-diff-tool 'monet-simple-diff-tool)
-    (monet-ediff-cleanup-tool 'monet-simple-diff-cleanup-tool))
+    (monet-diff-tool 'monet-ediff-tool)
+    (monet-ediff-cleanup-tool 'monet-ediff-cleanup-tool))
 #+end_src
 *** claude-code-ide (another wrapper)
 #+begin_src elisp
@@ -787,10 +731,11 @@ For claude code protocol via web-sockets
 
   (use-package ediff
     :ensure nil
-    :custom
-    (ediff-keep-variants nil)
-    (ediff-split-window-function 'split-window-horizontally)
-    (ediff-window-setup-function 'ediff-setup-windows-plain))
+    ;; :custom
+    ;; (ediff-keep-variants nil)
+    ;; (ediff-split-window-function 'split-window-horizontally)
+    ;; (ediff-window-setup-function 'ediff-setup-windows-plain)
+  )
 
   (defvar cc/ediff-revision-session-p nil
     "If t then `cc/ediff-revision-actual' has been called.
@@ -1025,7 +970,6 @@ For claude code protocol via web-sockets
 * Tramp
 #+begin_src elisp
   (use-package tramp
-    :demand t
     :ensure nil
     :custom
     (remote-file-name-inhibit-locks t)
@@ -1931,8 +1875,10 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 *** C
 #+begin_src elisp
   (use-package c-ts-mode
+    :mode ("\\.c\\'")
     :custom
     (c-ts-mode-indent-offset 4)
+    :bind (:map c-ts-mode-map ("C-c C-b" . compile))
     :ensure nil)
 #+end_src
 *** Elisp
@@ -1967,77 +1913,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 (use-package merlin-eldoc
   :hook (tuareg-mode . merlin-eldoc-setup))
 #+end_src
-* Appearance
-** Mode line
-#+begin_src elisp
-  (use-package doom-modeline
-    :demand t
-    :custom
-    (doom-modeline-percent-position nil)
-    (doom-modeline-time-icon nil)
-    (doom-modeline-time nil)
-    (doom-modeline-buffer-encoding nil)
-
-    :config
-    (doom-modeline-mode 1))
-#+end_src
-** Theme
-#+begin_src elisp
-  (use-package doom-themes
-    :demand t
-    :custom
-    (doom-monokai-classic-brighter-comments nil)
-    (doom-monokai-classic-comment-bg t)
-    :config
-    (load-theme 'doom-monokai-classic))
-#+end_src
-** Spacious padding
-#+begin_src elisp
-  (use-package spacious-padding
-    :demand t
-    :config (spacious-padding-mode 1))
-
-  (use-package iedit
-    :bind ("C-;" . iedit-mode))
-#+end_src
-* Grep
-#+begin_src elisp
-  (use-package rg
-    :custom
-    (wgrep-auto-save-buffer t)
-    :bind
-    ("M-g d" . rg-dwim))
-
-  (use-package wgrep)
-
-  (defun bob/monorepo-root ()
-    "Finds the topmost root in a multi-project structure."
-    (or (-some--> (project-current nil (file-name-parent-directory default-directory))
-          project-root
-          (let ((default-directory it))
-            (bob/monorepo-root)))
-        (-some-> (project-current) project-root)))
-
-  (defun bob/deadgrep-project ()
-    "Open an Eat shell on the highest project"
-    (interactive)
-    (if-let* ((project--root (bob/monorepo-root)))
-        (deadgrep--lookup-override project--root)
-      (error "Not in project")))
-
-  (use-package deadgrep
-    :init
-    (setq deadgrep--skip-if-hidden t)
-    :custom
-    (deadgrep-project-root-function #'bob/deadgrep-project)
-    (deadgrep--skip-if-hidden t)
-    :bind ("M-g D" . deadgrep))
-#+end_src
-* CSV
-#+begin_src elisp
-  (use-package csv-mode)
-#+end_src
-* Treesiter
+** Treesiter
 #+begin_src elisp
   (defun bob/install--grammer-if-missing (language)
     (unless (treesit-language-available-p language)
@@ -2110,6 +1986,81 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (bob/install--grammer-if-missing 'zig)
     (bob/install--grammer-if-missing 'bash))
 #+end_src
+* Appearance
+** Mode line
+#+begin_src elisp
+  (use-package doom-modeline
+    :demand t
+    :custom
+    (doom-modeline-percent-position nil)
+    (doom-modeline-time-icon nil)
+    (doom-modeline-time nil)
+    (doom-modeline-buffer-encoding nil)
+
+    :config
+    (doom-modeline-mode 1))
+#+end_src
+** Theme
+#+begin_src elisp
+  (use-package doom-themes
+    :demand t
+    :custom
+    (doom-monokai-classic-brighter-comments nil)
+    (doom-monokai-classic-comment-bg t)
+    :config
+    (load-theme 'doom-monokai-classic))
+#+end_src
+** Spacious padding
+#+begin_src elisp
+  (use-package spacious-padding
+    :demand t
+    :config (spacious-padding-mode 1))
+
+  (use-package iedit
+    :bind ("C-;" . iedit-mode))
+#+end_src
+* Grep
+#+begin_src elisp
+  (use-package rg
+    :custom
+    (wgrep-auto-save-buffer t)
+    :bind
+    ("M-g d" . rg-dwim))
+
+  (use-package wgrep)
+
+  (defun bob/monorepo-root ()
+    "Finds the topmost root in a multi-project structure."
+    (let ((current-root (-some-> (project-current) project-root)))
+      (when (and current-root 
+                 (not (string= (expand-file-name current-root)
+                               (expand-file-name "~/"))))
+        (or (-some--> (project-current nil (file-name-parent-directory default-directory))
+              project-root
+              (unless (string= (expand-file-name it) (expand-file-name "~/"))
+                (let ((default-directory it))
+                  (bob/monorepo-root))))
+            current-root))))
+
+  (defun bob/deadgrep-project ()
+    "Open an Eat shell on the highest project"
+    (interactive)
+    (if-let* ((project--root (bob/monorepo-root)))
+        (deadgrep--lookup-override project--root)
+      (error "Not in project")))
+
+  (use-package deadgrep
+    :init
+    (setq deadgrep--skip-if-hidden t)
+    :custom
+    (deadgrep-project-root-function #'bob/deadgrep-project)
+    (deadgrep--skip-if-hidden t)
+    :bind ("M-g D" . deadgrep))
+#+end_src
+* CSV
+#+begin_src elisp
+  (use-package csv-mode)
+#+end_src
 * Bash mode
 #+begin_src elisp
   (use-package sh-script
@@ -2130,7 +2081,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 #+end_src
 * Grain utils
 #+begin_src elisp
-  (use-package grain-utils :demand t :ensure nil)
+  (use-package grain-utils :demand t :ensure nil :after (:any (eglot dired magit)))
 #+end_src
 * Multiple Cursors
 #+begin_src elisp
@@ -2143,7 +2094,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 #+end_src
 * String inflection
 #+begin_src elisp
-  (use-package string-inflection)
+(use-package string-inflection)
 #+end_src
 * Move lines
 #+begin_src elisp
@@ -2321,6 +2272,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 #+begin_src elisp
   (use-package combobulate
     :ensure (:repo "mickeynp/combobulate" :fetcher github :files ("*.el"))
+    :disabled t
     :custom
     (combobulate-key-prefix "C-c o")
     :bind
