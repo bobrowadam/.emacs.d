@@ -1234,6 +1234,7 @@ For claude code protocol via web-sockets
 
 ** Magit
 #+begin_src elisp
+  (use-package cond-let :ensure (:repo "tarsius/cond-let" :fetcher github :files ("*.el" "*.texi")))
   (use-package magit
     :custom
     (magit-process-apply-ansi-colors 'filter)
