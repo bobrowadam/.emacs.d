@@ -720,7 +720,12 @@ For claude code protocol via web-sockets
     (exec-path-from-shell-initialize)
     (claude-code-ide-emacs-tools-setup))
 #+end_src
-
+** ECA
+ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more.
+#+begin_src elisp
+  (use-package eca
+    :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el")))
+#+end_src
 * Ediff
 #+begin_src elisp
   (defvar ediff-buffer-A)
