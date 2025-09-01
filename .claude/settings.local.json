@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(emacsclient:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
