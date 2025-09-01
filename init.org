@@ -1933,6 +1933,15 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 (use-package merlin-eldoc
   :hook (tuareg-mode . merlin-eldoc-setup))
 #+end_src
+*** Clojure
+**** Clojure TS mode
+#+begin_src elisp
+  (use-package clojure-ts-mode)
+#+end_src
+**** Cider
+#+begin_src elisp
+  (use-package cider)
+#+end_src
 ** Treesiter
 #+begin_src elisp
   (defun bob/install--grammer-if-missing (language)
