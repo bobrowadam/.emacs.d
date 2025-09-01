@@ -706,8 +706,7 @@ For claude code protocol via web-sockets
   (use-package monet
     :ensure (:repo "stevemolitor/monet" :fetcher github :files ("*.el") :branch "main")
     :custom
-    (monet-diff-tool 'monet-ediff-tool)
-    (monet-ediff-cleanup-tool 'monet-ediff-cleanup-tool))
+    (monet-diff-tool 'monet-simple-diff-tool))
 #+end_src
 *** claude-code-ide (another wrapper)
 #+begin_src elisp
@@ -736,11 +735,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 
   (use-package ediff
     :ensure nil
-    ;; :custom
-    ;; (ediff-keep-variants nil)
-    ;; (ediff-split-window-function 'split-window-horizontally)
-    ;; (ediff-window-setup-function 'ediff-setup-windows-plain)
-  )
+    :custom
+    (ediff-keep-variants nil)
+    (ediff-split-window-function 'split-window-horizontally)
+    (ediff-window-setup-function 'ediff-setup-windows-plain))
 
   (defvar cc/ediff-revision-session-p nil
     "If t then `cc/ediff-revision-actual' has been called.
