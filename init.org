@@ -63,6 +63,7 @@
   (use-package xref)
   (use-package buff-menu :ensure nil)
   (use-package jsonrpc)
+  (use-package posframe)
 #+end_src
 
 * My elisp utils
@@ -1569,7 +1570,9 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 *** Basic settings
 #+begin_src elisp
   (use-package flymake
-    :custom (flymake-show-diagnostics-at-end-of-line 'fancy)
+    :custom
+    (flymake-show-diagnostics-at-end-of-line nil)
+    ;; (flymake-show-diagnostics-at-end-of-line 'fancy)
     :config
     (setq elisp-flymake-byte-compile-load-path load-path)
     :bind
@@ -1584,6 +1587,12 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (unless (seq-contains-p '("init.el" "init-literate.el")
                             (-some-> (buffer-file-name) (file-name-nondirectory)))
       (flymake-mode t)))
+#+end_src
+*** Flymake Posframe
+#+begin_src elisp
+  (use-package flymake-posframe
+    :ensure (:repo "Ladicle/flymake-posframe" :fetcher github :files ("*.el"))
+    :hook (flymake-mode . flymake-posframe-mode))
 #+end_src
 *** Flyover
 A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover is a full featured package with tons of features for you to customize.
