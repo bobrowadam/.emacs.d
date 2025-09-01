@@ -1399,18 +1399,27 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
     (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
     :hook
-    (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode text-mode comint-mode minibuffer-mode)
-    :bind (:map smartparens-mode-map
-                ("M-(" . sp-wrap-round)
-                ("M-s" . sp-unwrap-sexp)
-                ("C-)" . sp-forward-slurp-sexp)
-                ("C-}" . sp-forward-barf-sexp)
-                ("C-{" . sp-backward-barf-sexp)
-                ("C-(" . sp-backward-slurp-sexp)
-                ("C-'" . sp-rewrap-sexp)
-                ("M-S" . sp-split-sexp)
-                ("M-J" . sp-join-sexp)
-                ("M-W" . sp-copy-sexp)))
+    (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode text-mode comint-mode)
+    :bind
+    (:map smartparens-mode-map
+          ("M-(" . sp-wrap-round)
+          ("M-s" . sp-unwrap-sexp)
+          ("C-)" . sp-forward-slurp-sexp)
+          ("C-}" . sp-forward-barf-sexp)
+          ("C-{" . sp-backward-barf-sexp)
+          ("C-(" . sp-backward-slurp-sexp)
+          ("C-'" . sp-rewrap-sexp)
+          ("M-S" . sp-split-sexp)
+          ("M-J" . sp-join-sexp)
+          ("M-W" . sp-copy-sexp))
+    (:map typescript-ts-base-mode-map
+          ("C-M-f" . sp-forward-sexp)
+          ("C-M-b" . sp-backward-sexp)
+          ("C-M-SPC" . sp-mark-sexp))
+    (:map js-ts-mode-map
+          ("C-M-f" . sp-forward-sexp)
+          ("C-M-b" . sp-backward-sexp)
+          ("C-M-SPC" . sp-mark-sexp)))
 #+end_src
 
 * Auto Completion and Minibuffer actions
