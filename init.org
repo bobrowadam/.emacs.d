@@ -1388,7 +1388,17 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package paredit
     :hook
-    (emacs-lisp-mode lisp-mode lisp-data-mode))
+    (emacs-lisp-mode lisp-mode lisp-data-mode)
+    :config
+    (defun bob/simple-minibuffer-parens ()
+      "Add basic paren handling in minibuffer without full paredit."
+      (local-set-key (kbd "(") (lambda () (interactive) (insert "()") (backward-char)))
+      (local-set-key (kbd "[") (lambda () (interactive) (insert "[]") (backward-char)))
+      (local-set-key (kbd "{") (lambda () (interactive) (insert "{}") (backward-char)))
+      (local-set-key (kbd "\"") (lambda () (interactive) (insert "\"\"") (backward-char)))
+      (local-set-key (kbd "RET") #'exit-minibuffer))
+
+    (add-hook 'eval-expression-minibuffer-setup-hook #'bob/simple-minibuffer-parens))
 #+end_src
 ** Smart arens
 #+begin_src elisp
