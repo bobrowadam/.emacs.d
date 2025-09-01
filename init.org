@@ -1306,7 +1306,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
       (interactive)
       (message "Running 'git rebase origin/main'")
       (magit-run-git "fetch" "origin" "main")
-      (magit-rebase-branch "origin/main" nil))
+      (magit-rebase-branch "origin/main" nil)
+      (let ((default-directory "~/source/grain/"))
+        (magit-run-git-async "pull" "origin" "main")
+        (message "Pulling worktree at ~/source/grain/ in background...")))
+
     (transient-append-suffix 'magit-rebase
       "f"
       '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
