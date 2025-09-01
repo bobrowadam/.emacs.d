@@ -2032,12 +2032,27 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 ** Theme
 #+begin_src elisp
   (use-package doom-themes
-    :demand t
     :custom
     (doom-monokai-classic-brighter-comments nil)
     (doom-monokai-classic-comment-bg t)
     :config
     (load-theme 'doom-monokai-classic))
+
+  (use-package doric-themes
+    :demand t
+    :config
+    (load-theme 'doric-fire))
+
+  (use-package modus-themes
+    :config
+    (setq modus-vivendi-deuteranopia-palette-overrides
+          '((bg-main "grey13")
+            (forge-topic-slug-open "blue4")))
+    (modus-themes-load-theme 'modus-vivendi-deuteranopia))
+
+  (use-package ef-themes
+    :config
+    (ef-themes-select 'ef-symbiosis))
 #+end_src
 ** Spacious padding
 #+begin_src elisp
@@ -2061,7 +2076,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
   (defun bob/monorepo-root ()
     "Finds the topmost root in a multi-project structure."
     (let ((current-root (-some-> (project-current) project-root)))
-      (when (and current-root 
+      (when (and current-root
                  (not (string= (expand-file-name current-root)
                                (expand-file-name "~/"))))
         (or (-some--> (project-current nil (file-name-parent-directory default-directory))
