@@ -1388,17 +1388,35 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package paredit
     :hook
-    (emacs-lisp-mode lisp-mode lisp-data-mode)
-    :config
-    (defun bob/simple-minibuffer-parens ()
-      "Add basic paren handling in minibuffer without full paredit."
-      (local-set-key (kbd "(") (lambda () (interactive) (insert "()") (backward-char)))
-      (local-set-key (kbd "[") (lambda () (interactive) (insert "[]") (backward-char)))
-      (local-set-key (kbd "{") (lambda () (interactive) (insert "{}") (backward-char)))
-      (local-set-key (kbd "\"") (lambda () (interactive) (insert "\"\"") (backward-char)))
-      (local-set-key (kbd "RET") #'exit-minibuffer))
+    (emacs-lisp-mode lisp-mode lisp-data-mode))
+    
+  (defun bob/simple-minibuffer-parens ()
+    "Add basic paren handling and paredit-style editing in minibuffer."
+    ;; Basic paren insertion
+    (local-set-key (kbd "(") (lambda () (interactive) (insert "()") (backward-char)))
+    (local-set-key (kbd "[") (lambda () (interactive) (insert "[]") (backward-char)))
+    (local-set-key (kbd "{") (lambda () (interactive) (insert "{}") (backward-char)))
+    (local-set-key (kbd "\"") (lambda () (interactive) (insert "\"\"") (backward-char)))
+    (local-set-key (kbd "RET") #'exit-minibuffer)
+    
+    ;; Paredit-style editing commands (using smartparens functions)
+    (local-set-key (kbd "M-(") #'sp-wrap-round)
+    (local-set-key (kbd "M-s") #'sp-unwrap-sexp)
+    (local-set-key (kbd "C-)") #'sp-forward-slurp-sexp)
+    (local-set-key (kbd "C-}") #'sp-forward-barf-sexp)
+    (local-set-key (kbd "C-{") #'sp-backward-barf-sexp)
+    (local-set-key (kbd "C-(") #'sp-backward-slurp-sexp)
+    (local-set-key (kbd "C-'") #'sp-rewrap-sexp)
+    (local-set-key (kbd "M-S") #'sp-split-sexp)
+    (local-set-key (kbd "M-J") #'sp-join-sexp)
+    (local-set-key (kbd "M-W") #'sp-copy-sexp)
+    
+    ;; Navigation commands
+    (local-set-key (kbd "C-M-f") #'sp-forward-sexp)
+    (local-set-key (kbd "C-M-b") #'sp-backward-sexp)
+    (local-set-key (kbd "C-M-SPC") #'sp-mark-sexp))
 
-    (add-hook 'eval-expression-minibuffer-setup-hook #'bob/simple-minibuffer-parens))
+  (add-hook 'eval-expression-minibuffer-setup-hook #'bob/simple-minibuffer-parens)
 #+end_src
 ** Smart arens
 #+begin_src elisp
