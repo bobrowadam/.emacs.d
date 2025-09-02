@@ -1441,14 +1441,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
           ("M-S" . sp-split-sexp)
           ("M-J" . sp-join-sexp)
           ("M-W" . sp-copy-sexp))
-    (:map typescript-ts-base-mode-map
-          ("C-M-f" . sp-forward-sexp)
-          ("C-M-b" . sp-backward-sexp)
-          ("C-M-SPC" . sp-mark-sexp))
-    (:map js-ts-mode-map
-          ("C-M-f" . sp-forward-sexp)
-          ("C-M-b" . sp-backward-sexp)
-          ("C-M-SPC" . sp-mark-sexp)))
+    )
 #+end_src
 
 * Auto Completion and Minibuffer actions
@@ -1829,6 +1822,14 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
     :bind
     ("C-c C-b" . npm-run-build)
+    (:map typescript-ts-base-mode-map
+          ("C-M-f" . sp-forward-sexp)
+          ("C-M-b" . sp-backward-sexp)
+          ("C-M-SPC" . sp-mark-sexp))
+    (:map js-ts-mode-map
+          ("C-M-f" . sp-forward-sexp)
+          ("C-M-b" . sp-backward-sexp)
+          ("C-M-SPC" . sp-mark-sexp))
     :config
     (fnm-use)
     (setq typescript-ts-mode-indent-offset 2))
