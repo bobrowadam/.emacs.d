@@ -715,7 +715,9 @@ For claude code protocol via web-sockets
     ;; This is just untill I open a PR. replace the repo path later back to "manzaltu/claude-code-ide.el"
     :ensure (:repo "bobrowadam/claude-code-ide.el" :fetcher github :files ("*.el") :branch "fix-eat-cursor-invisible")
     :bind ("C-c C-'" . claude-code-ide-menu)
-    :custom (claude-code-ide-terminal-backend 'eat)
+    :custom
+    (claude-code-ide-terminal-backend 'eat)
+    (claude-code-ide-window-width 60)
     :config
     (exec-path-from-shell-initialize)
     (claude-code-ide-emacs-tools-setup))
@@ -1389,7 +1391,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package paredit
     :hook
     (emacs-lisp-mode lisp-mode lisp-data-mode))
-    
+
   (defun bob/simple-minibuffer-parens ()
     "Add basic paren handling and paredit-style editing in minibuffer."
     ;; Basic paren insertion
@@ -1398,7 +1400,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (local-set-key (kbd "{") (lambda () (interactive) (insert "{}") (backward-char)))
     (local-set-key (kbd "\"") (lambda () (interactive) (insert "\"\"") (backward-char)))
     (local-set-key (kbd "RET") #'exit-minibuffer)
-    
+
     ;; Paredit-style editing commands (using smartparens functions)
     (local-set-key (kbd "M-(") #'sp-wrap-round)
     (local-set-key (kbd "M-s") #'sp-unwrap-sexp)
@@ -1410,7 +1412,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (local-set-key (kbd "M-S") #'sp-split-sexp)
     (local-set-key (kbd "M-J") #'sp-join-sexp)
     (local-set-key (kbd "M-W") #'sp-copy-sexp)
-    
+
     ;; Navigation commands
     (local-set-key (kbd "C-M-f") #'sp-forward-sexp)
     (local-set-key (kbd "C-M-b") #'sp-backward-sexp)
