@@ -673,9 +673,15 @@
     ("C-M-;" . claude-code-command-map)
     :bind (:map claude-code-command-map
                 ("F" . claude-code-send-file))
+    :custom
+    (claude-code-no-delete-other-windows t)
     :config
     (exec-path-from-shell-initialize)
-
+    (add-to-list 'display-buffer-alist
+                 '("^\\*claude"
+                   (display-buffer-in-side-window)
+                   (side . right)
+                   (window-width . 90)))
     (defun claude-code-get-flymake-diagnostics (buffer-or-file-name)
       "Get the content of the flymake diagnostics for a specific buffer."
       (if-let ((buff (or (get-buffer buffer-or-file-name)
@@ -735,7 +741,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
           ("C-c C-p" . eca-chat-go-to-prev-expandable-block)
           ("C-c C-n" . eca-chat-go-to-next-expandable-block)
           ("M-p" . eca-chat-go-to-prev-user-message)
-          ("M-n" . eca-chat-go-to-next-user-message))
+          ("M-n" . eca-chat-go-to-next-user-message)
+          ("C-m" . eca-chat--key-pressed-return))
     :config
     (transient-replace-suffix 'eca-transient-menu "o"
       '("." "Open/close chat window" eca-chat-toggle-window)))
@@ -1088,6 +1095,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (lisp . t)
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("ts" . typescript))
+    ;; Fix imenu to use org-mode's specialized function
+    (add-hook 'org-mode-hook 
+              (lambda () 
+                (setq imenu-create-index-function 'org-imenu-get-tree)))
     :hook
     (org-babel-after-execute . #'bob/babel-ansi)
     (org-mode . (lambda () (org-superstar-mode 1)))
@@ -2083,6 +2094,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 ** Theme
 #+begin_src elisp
   (use-package doom-themes
+    :demand t
     :custom
     (doom-monokai-classic-brighter-comments nil)
     (doom-monokai-classic-comment-bg t)
@@ -2090,11 +2102,12 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (load-theme 'doom-monokai-classic))
 
   (use-package doric-themes
-    :demand t
+    :demand nil
     :config
     (load-theme 'doric-fire))
 
   (use-package modus-themes
+    :demand nil
     :config
     (setq modus-vivendi-deuteranopia-palette-overrides
           '((bg-main "grey13")
