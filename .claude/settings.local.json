@@ -4,7 +4,8 @@
       "Bash(emacsclient:*)",
       "Bash(ls:*)",
       "WebFetch(domain:github.com)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "WebSearch"
     ],
     "deny": []
   }
