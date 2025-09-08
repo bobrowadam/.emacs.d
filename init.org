@@ -1407,7 +1407,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package paredit
     :hook
-    (emacs-lisp-mode lisp-mode lisp-data-mode))
+    (emacs-lisp-mode lisp-mode lisp-data-mode clojure-ts-mode cider-repl-mode))
 
   (defun bob/simple-minibuffer-parens ()
     "Add basic paren handling and paredit-style editing in minibuffer."
@@ -1792,7 +1792,8 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
     :hook
     (typescript-ts-base-mode . treesit-fold-mode)
-    (js-ts-mode . treesit-fold-mode))
+    (js-ts-mode . treesit-fold-mode)
+    (clojure-ts-mode . treesit-fold-mode))
 #+end_src
 *** Hide Show
 #+begin_src elisp
@@ -2004,11 +2005,19 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 *** Clojure
 **** Clojure TS mode
 #+begin_src elisp
-  (use-package clojure-ts-mode)
+  (use-package clojure-ts-mode
+    :mode ("\\.clj\\'" . clojure-ts-mode) ("\\.cljs\\'" . clojure-ts-mode)
+    )
 #+end_src
 **** Cider
 #+begin_src elisp
   (use-package cider)
+#+end_src
+**** Condo (linter)
+#+begin_src elisp
+  (use-package flymake-kondor
+    :hook
+    (clojure-ts-mode . flymake-kondor-setup))
 #+end_src
 ** Treesiter
 #+begin_src elisp
