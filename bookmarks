@@ -28,10 +28,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Add a grain ki")
- (rear-context-string . " worktree setup\n")
- (position . 178)
- (last-modified 26788 32028 511084 0))
+ (front-context-string . "* Fix https://gi")
+ (rear-context-string . "rical rates job\n")
+ (position . 391)
+ (last-modified 26813 47171 990920 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
