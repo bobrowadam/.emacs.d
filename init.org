@@ -280,6 +280,12 @@
            (splitted (string-split lowerCamelCased "_")))
       (s-capitalize (string-join splitted
                                  " "))))
+
+  (defmacro assoc-keys (keys item)
+    `(list ,@(mapcar
+              (lambda (key)
+                `(assoc ',key ,item))
+              keys)))
 #+end_src
 
 * GC improvements
