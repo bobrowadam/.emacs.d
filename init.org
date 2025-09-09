@@ -1269,7 +1269,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 
 ** Magit
 #+begin_src elisp
-  (use-package cond-let :ensure (:repo "tarsius/cond-let" :fetcher github :files ("*.el" "*.texi")))
   (use-package magit
     :custom
     (magit-process-apply-ansi-colors 'filter)
