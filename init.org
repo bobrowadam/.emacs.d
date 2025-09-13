@@ -751,8 +751,12 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
           ("M-n" . eca-chat-go-to-next-user-message)
           ("C-m" . eca-chat--key-pressed-return))
     :config
+    (eca-find-root-for-buffer)
     (transient-replace-suffix 'eca-transient-menu "o"
-      '("." "Open/close chat window" eca-chat-toggle-window)))
+      '("." "Open/close chat window" eca-chat-toggle-window))
+    (transient-remove-suffix 'eca-transient-menu "s")
+    (transient-append-suffix 'eca-transient-menu "t"
+      '("s" "Send prompt" eca-chat-send-prompt)))
 #+end_src
 * Ediff
 #+begin_src elisp
