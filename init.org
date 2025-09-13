@@ -2127,24 +2127,24 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 #+end_src
 *** Modus Themes
 #+begin_src elisp
-  (defvar bob/dark-bg-color "grey14"
-    "Background color for dark themes to avoid pure black.")
 
+  (defvar bob/dark-bg-color "grey12"
+    "Background color for dark themes to avoid pure black.")
   (use-package modus-themes
     :demand t
     :custom
     (modus-vivendi-palette-overrides
-     `((bg-main ,bob/dark-bg-color)
-       (forge-topic-slug-open "blue4")))
+     `((bg-main ,bob/dark-bg-color)))
+
     (modus-vivendi-tinted-palette-overrides
-     `((bg-main ,bob/dark-bg-color)
-       (forge-topic-slug-open "blue4")))
+     `((bg-main ,bob/dark-bg-color)))
+
     (modus-vivendi-tritanopia-palette-overrides
-     `((bg-main ,bob/dark-bg-color)
-       (forge-topic-slug-open "blue4")))
+     `((bg-main ,bob/dark-bg-color)))
+
     (modus-vivendi-deuteranopia-palette-overrides
-     `((bg-main ,bob/dark-bg-color)
-       (forge-topic-slug-open "blue4")))
+     `((bg-main ,bob/dark-bg-color)))
+
     (modus-themes-italic-constructs t)
     (modus-themes-bold-constructs t)
     :config
