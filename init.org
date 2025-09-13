@@ -17,6 +17,7 @@
     (setq elpaca-use-package-by-default t))
   (defun compile-init-file ()
     "Tangle init.org file and modules."
+    (interactive)
     (when (get-buffer "init.org")
       (kill-buffer "init.org"))
     ;; Tangle modules first
@@ -1458,8 +1459,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
           ("C-'" . sp-rewrap-sexp)
           ("M-S" . sp-split-sexp)
           ("M-J" . sp-join-sexp)
-          ("M-W" . sp-copy-sexp))
-    )
+          ("M-W" . sp-copy-sexp)))
 #+end_src
 
 * Auto Completion and Minibuffer actions
@@ -1843,7 +1843,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
     :bind
     ("C-c C-b" . npm-run-build)
-    (:map typescript-ts-base-mode-map
+    (:map typescript-ts-mode-map
           ("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-SPC" . sp-mark-sexp))
