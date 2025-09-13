@@ -2228,7 +2228,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 #+end_src
 * Grain utils
 #+begin_src elisp
-  (use-package grain-utils :demand t :ensure nil :after (:any (eglot dired magit)))
+  (use-package grain-utils :demand t :ensure nil :after (:any eglot magit dired))
 #+end_src
 * Multiple Cursors
 #+begin_src elisp
