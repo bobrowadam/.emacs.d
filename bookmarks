@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("init.org"
+(("eca-config"
+ (filename . "~/.config/eca/config.json")
+ (front-context-string . "{\n  \"index\": {\n ")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26821 52789 566146 0))
+("init.org"
  (filename . "~/.emacs.d/init.org")
  (front-context-string . ":PROPERTIES:\n:CR")
  (rear-context-string)
@@ -16,10 +22,10 @@
  (last-modified 26653 64343 171721 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Add a gra")
- (rear-context-string . "2025-08-26 Tue>\n")
- (position . 3483)
- (last-modified 26789 44354 389724 0))
+ (front-context-string . "* TODO [[https:/")
+ (rear-context-string . "2025-09-14 Sun>\n")
+ (position . 3744)
+ (last-modified 26817 22325 111325 0))
 ("linear.org"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/linear.org")
  (front-context-string . "* NEXT Add Tests")
@@ -28,10 +34,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Fix https://gi")
- (rear-context-string . "rical rates job\n")
- (position . 391)
- (last-modified 26813 47171 990920 0))
+ (front-context-string . "* check if we ca")
+ (rear-context-string . "issues/2 in FNM\n")
+ (position . 450)
+ (last-modified 26817 22213 985028 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
