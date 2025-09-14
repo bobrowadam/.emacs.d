@@ -1772,6 +1772,12 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 
     ;; Kill compile buffer on build success
     (add-hook 'dape-compile-compile-hooks 'kill-buffer)
+
+    ;; Fix breakpoint visibility with treesit-fold-indicators
+    (advice-add 'dape--breakpoint-make-overlay :after
+                (lambda (breakpoint)
+                  (when-let ((ov (dape--breakpoint-location breakpoint)))
+                    (overlay-put ov 'priority 50))))
     :hook (dape-active-mode . repeat-mode))
 #+end_src
 ** Code Comments
@@ -1798,7 +1804,8 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     :hook
     (typescript-ts-base-mode . treesit-fold-mode)
     (js-ts-mode . treesit-fold-mode)
-    (clojure-ts-mode . treesit-fold-mode))
+    (clojure-ts-mode . treesit-fold-mode)
+    (treesit-fold-mode . treesit-fold-indicators-mode))
 #+end_src
 *** Hide Show
 #+begin_src elisp
