@@ -1441,7 +1441,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 
   (add-hook 'eval-expression-minibuffer-setup-hook #'bob/simple-minibuffer-parens)
 #+end_src
-** Smart arens
+** Smart Parens
 #+begin_src elisp
   (use-package smartparens
     :config
@@ -1463,7 +1463,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
           ("C-'" . sp-rewrap-sexp)
           ("M-S" . sp-split-sexp)
           ("M-J" . sp-join-sexp)
-          ("M-W" . sp-copy-sexp)))
+          ("M-W" . sp-copy-sexp)
+          ("C-M-f" . sp-forward-sexp)
+          ("C-M-b" . sp-backward-sexp)
+          ("C-M-SPC" . sp-mark-sexp)))
 #+end_src
 
 * Auto Completion and Minibuffer actions
@@ -1846,7 +1849,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
     :bind
     ("C-c C-b" . npm-run-build)
-    (:map typescript-mode-map
+    (:map typescript-ts-mode-map
           ("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-SPC" . sp-mark-sexp))
