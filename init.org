@@ -1983,6 +1983,18 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     :ensure nil)
 #+end_src
 *** Elisp
+** Semel
+Mode for better syntax highlighting in `emacs-lisp-mode`
+#+begin_src elisp
+  (use-package semel
+    :ensure (:repo "eshelyaron/semel" :fetcher github :files ("*.el"))
+    :hook
+    (emacs-lisp-mode))
+  (use-package cursor-sensor-mode
+    :ensure nil
+    :hook (emacs-lisp-mod))
+#+end_src
+** Erefactor
 #+begin_src elisp
   (use-package erefactor
     :bind-keymap ("C-c C-v" . erefactor-map)
