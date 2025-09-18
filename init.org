@@ -1810,7 +1810,8 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (typescript-ts-base-mode . treesit-fold-mode)
     (js-ts-mode . treesit-fold-mode)
     (clojure-ts-mode . treesit-fold-mode)
-    (treesit-fold-mode . treesit-fold-indicators-mode))
+    :config
+    (global-treesit-fold-indicators-mode))
 #+end_src
 *** Hide Show
 #+begin_src elisp
