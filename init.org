@@ -2202,7 +2202,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :custom
     (wgrep-auto-save-buffer t)
     :bind
-    ("M-g d" . rg-dwim))
+    ("M-g d" . rg-menu))
 
   (use-package wgrep)
 
