@@ -34,10 +34,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* check if we ca")
- (rear-context-string . "issues/2 in FNM\n")
- (position . 450)
- (last-modified 26817 22213 985028 0))
+ (front-context-string . "* Get back to ro")
+ (rear-context-string . "or Emacs Lisp]]\n")
+ (position . 219)
+ (last-modified 26827 54072 605260 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
