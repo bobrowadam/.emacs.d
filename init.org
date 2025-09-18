@@ -1800,7 +1800,9 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
   (use-package treesit-fold
     :commands (global-treesit-fold-indicators-mode)
     :bind
-    (:map treesit-fold-mode-map ("C-=" . treesit-fold-toggle))
+    (:map treesit-fold-mode-map
+          ("C-=" . treesit-fold-toggle)
+          ("C-M-=" . treesit-fold-close-all))
     :hook
     (typescript-ts-base-mode . treesit-fold-mode)
     (js-ts-mode . treesit-fold-mode)
