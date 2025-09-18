@@ -2030,12 +2030,16 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 **** Clojure TS mode
 #+begin_src elisp
   (use-package clojure-ts-mode
-    :mode ("\\.clj\\'" . clojure-ts-mode) ("\\.cljs\\'" . clojure-ts-mode)
-    )
+    :mode ("\\.clj\\'" . clojure-ts-mode) ("\\.cljs\\'" . clojure-ts-mode))
 #+end_src
 **** Cider
 #+begin_src elisp
-  (use-package cider)
+  (use-package cider
+    :custom
+    ;; Use clojure-lsp eldoc instead of cider's
+    (cider-eldoc-display-for-symbol-at-point nil)
+    ;; Don't override eglot's xref commands
+    (cider-use-xref nil))
 #+end_src
 **** Condo (linter)
 #+begin_src elisp
