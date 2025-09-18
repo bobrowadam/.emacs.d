@@ -1455,6 +1455,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :hook
     (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode text-mode comint-mode)
     :bind
+    ("C-M-w" . sp-copy-sexp)
     (:map smartparens-mode-map
           ("M-(" . sp-wrap-round)
           ("M-s" . sp-unwrap-sexp)
