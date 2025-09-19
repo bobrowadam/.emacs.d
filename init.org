@@ -1302,11 +1302,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                              (format "refs/heads/%s:refs/heads/%s"
                                      current-branch
                                      current-branch))))
+
     (defun bob/remove-project-roots-advice (orig-fun worktree)
       "Remove project roots when deleting git worktrees."
       (project-forget-projects-under worktree t)
       (funcall orig-fun worktree))
-
 
     (advice-add 'magit-worktree-delete :around #'bob/remove-project-roots-advice)
 

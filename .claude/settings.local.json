@@ -6,7 +6,9 @@
       "WebFetch(domain:github.com)",
       "Bash(git add:*)",
       "WebSearch",
-      "WebFetch(domain:protesilaos.com)"
+      "WebFetch(domain:protesilaos.com)",
+      "Read(//Users/bob/source/grain_**/**)",
+      "Bash(find:*)"
     ],
     "deny": []
   }
