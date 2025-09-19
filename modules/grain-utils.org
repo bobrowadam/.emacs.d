@@ -3,17 +3,21 @@
 #+PROPERTY: header-args:elisp :tangle grain-utils.el :comments link
 
 This module contains utilities for working with the Grain financial services platform.
-
+* Dependencies
+#+begin_src elisp
+  (require 'ansi-color)
+#+end_src
 * Grain Project Detection and Setup
-
 #+begin_src elisp
   (defun bob/setup-grain-project-for-worktree (path)
     "Setup grain worktree in PATH."
     (message "Setup grain worktree in %s" path)
     (let ((default-directory path))
-      (async-shell-command "npx nx reset")
-      (async-shell-command "npm install")
-      (shell-command "cp .env.example .env"))
+      (fnm-use)
+      (message "Running npm install in %s" path)
+      (async-shell-command "npm i"
+                           (format "*npm install in %s" path)
+                           (format "*npm install errors in %s" path)))
     (make-symbolic-link (expand-file-name "~/dotfiles/.claude/")
                         (expand-file-name (format "%s/.claude/" path)))
     (make-symbolic-link (expand-file-name "~/dotfiles/CLAUDE.md")
@@ -56,18 +60,56 @@ This module contains utilities for working with the Grain financial services pla
 
 * Service Management
 ** Logic
+*** Globals
 #+begin_src elisp
   (defconst *grain-services-root* "apps/backend/")
+  (defvar *grain-active-processes* '()
+    "Registry of active Grain service processes.
+  Each entry is a plist with keys:
+    :process - the actual process object
+    :type - service type (:individual :all-services :dashboard :admin-console)
+    :name - service name or description
+    :buffer - associated buffer name")
+#+end_src
 
+*** Processes Management
+#+begin_src elisp
+  (defun grain/register-process (process type name buffer-name)
+    "Register PROCESS with TYPE, NAME and BUFFER-NAME in the active processes registry."
+    (push (list :process process :type type :name name :buffer buffer-name)
+          ,*grain-active-processes*))
+
+  (defun grain/unregister-process (process)
+    "Remove PROCESS from the active processes registry."
+    (setq *grain-active-processes*
+          (cl-remove-if (lambda (entry)
+                          (eq (plist-get entry :process) process))
+                        ,*grain-active-processes*)))
+
+  (defun grain/get-active-processes ()
+    "Get all active Grain processes."
+    (cl-remove-if-not (lambda (entry)
+                        (process-live-p (plist-get entry :process)))
+                      ,*grain-active-processes*))
+
+  (defun grain/cleanup-dead-processes ()
+    "Remove dead processes from the registry."
+    (setq *grain-active-processes* (grain/get-active-processes)))
+#+end_src
+
+*** Running services
+#+begin_src elisp
   (defun bob/generate--run-service-command (service-name env inspect-port)
     "Generate a shell command to run SERVICE-NAME.
-  optionally, accept ENV and INSPECT-PORT arguments."
-    (format "NODE_ENV=%s TS_NODE_PROJECT='./apps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/%s/src/**/*' --exec \"node --inspect%s -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
-            (or env "development")
-            service-name
-            service-name
-            (if inspect-port (format "=%s" inspect-port) "")
-            service-name))
+    optionally, accept ENV and INSPECT-PORT arguments."
+    (let ((project-root (expand-file-name (bob/monorepo-root))))
+      (format "NODE_ENV=%s TS_NODE_PROJECT='%sapps/backend/%s/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/%s/src/**/*' --exec \"node --inspect%s -r ts-node/register -r tsconfig-paths/register ./apps/backend/%s/src/index.ts\""
+              (or env "development")
+              project-root
+              service-name
+              service-name
+              (if inspect-port (format "=%s" inspect-port) "")
+              service-name)))
 
   (defun bob/generate--run-all-services-command (excluded-service-name)
     "Run all off grain services except EXCLUDED-SERVICE-NAME."
@@ -79,14 +121,82 @@ This module contains utilities for working with the Grain financial services pla
     (format "npm run start:services:test -- --exclude %s"
             excluded-service-name))
 
-  (defun grain/run--service (run-service-command service-output-buffer-name)
-    "Run RUN-SERVICE-COMMAND in SERVICE-OUTPUT-BUFFER-NAME buffer."
-    (let ((default-directory (bob/monorepo-root))
-          (process (get-buffer-process (get-buffer service-output-buffer-name))))
-      (when process
-        (interrupt-process process)
-        (kill-buffer (process-buffer process)))
-      (async-shell-command run-service-command service-output-buffer-name)))
+  (defun grain/run--service (run-service-command service-output-buffer-name service-type service-name)
+    "Run RUN-SERVICE-COMMAND in SERVICE-OUTPUT-BUFFER-NAME buffer.
+  SERVICE-TYPE and SERVICE-NAME are used for process registry tracking.
+  Assumes default-directory is already set to the repo root."
+    ;; Kill existing process if running
+    (when-let ((existing-buffer (get-buffer service-output-buffer-name))
+               (existing-process (get-buffer-process existing-buffer)))
+      (grain/unregister-process existing-process)
+      (interrupt-process existing-process)
+      (kill-buffer existing-buffer))
+
+    ;; Create buffer and start new process
+    (let* ((buffer (get-buffer-create service-output-buffer-name))
+           (process (start-process-shell-command
+                     (format "grain-%s" service-name)
+                     buffer
+                     run-service-command)))
+
+      ;; Enable font-lock-mode for color display and set up keybindings
+      (with-current-buffer buffer
+        (font-lock-mode 1)
+        (let ((map (make-sparse-keymap)))
+          (define-key map (kbd "C-c C-c")
+            (lambda ()
+              (interactive)
+              (when-let ((proc (get-buffer-process (current-buffer))))
+                (process-send-eof proc))))
+          (define-key map (kbd "C-c C-r")
+            (lambda ()
+              (interactive)
+              (when-let ((proc (get-buffer-process (current-buffer))))
+                (process-send-string proc "rs\n"))))
+          (define-key map (kbd "C-c C-k")
+            (lambda ()
+              (interactive)
+              (when-let ((proc (get-buffer-process (current-buffer))))
+                (interrupt-process proc))))
+          (define-key map (kbd "C-c C-q")
+            (lambda ()
+              (interactive)
+              (when-let ((proc (get-buffer-process (current-buffer))))
+                (quit-process proc))))
+          (define-key map (kbd "C-c C-s")
+            (lambda ()
+              (interactive)
+              (when-let ((proc (get-buffer-process (current-buffer))))
+                (stop-process proc))))
+          (define-key map (kbd "C-c C-o")
+            (lambda ()
+              (interactive)
+              (when-let ((proc (get-buffer-process (current-buffer))))
+                (continue-process proc))))
+          (use-local-map map)))
+
+      ;; Set up xterm color processing for the process
+      (set-process-filter process
+                          (lambda (proc string)
+                            (when (buffer-live-p (process-buffer proc))
+                              (with-current-buffer (process-buffer proc)
+                                (let ((moving (= (point) (process-mark proc))))
+                                  (save-excursion
+                                    (goto-char (process-mark proc))
+                                    (insert (xterm-color-filter string))
+                                    (set-marker (process-mark proc) (point)))
+                                  (if moving (goto-char (process-mark proc))))))))
+
+      ;; Register the process in our registry
+      (grain/register-process process service-type service-name service-output-buffer-name)
+
+      ;; Set up process sentinel to handle cleanup
+      (set-process-sentinel process
+                            (lambda (proc event)
+                              (when (memq (process-status proc) '(exit signal))
+                                (grain/unregister-process proc))))
+
+      process))
 
   (defun grain/get--service-name ()
     "Use completing read to get a name of a known grain service."
@@ -98,57 +208,153 @@ This module contains utilities for working with the Grain financial services pla
                                           "^[^.]"))
       (ignore (message "Not in a grain monorepo worktree"))))
 
-  ;;;###autoload
+    ;;;###autoload
   (defun grain/run-service (single-service-p)
     "Run a service in debug mode.
-  When SINGLE-SERVICE-P is nil, run all the other services as well."
+    When SINGLE-SERVICE-P is nil, run all the other services as well."
     (interactive "P")
     (when-let* ((service-name (grain/get--service-name))
                 (service-output-buffer (format "*SERVICE: %s*" service-name))
                 (all-services-output-buffer (format "*[ALL] except %s*" service-name)))
-      (save-excursion
-        (grain/run--service
-         (bob/generate--run-service-command service-name
-                                            "development"
-                                            (get-next-available-inspect-port))
-         service-output-buffer))
-      (unless single-service-p
-        (grain/run--service (bob/generate--run-all-services-command service-name)
-                            all-services-output-buffer))
-      (unless (get-buffer "*Dashboard*")
-        (grain/run--service "npm run dev -w @grain/dashboard"
-                            "*Dashboard*"))
-      (unless (get-buffer "*Admin Console*")
-        (grain/run--service "npm run dev -w @grain/admin-console"
-                            "*Admin Console*"))
-      (switch-to-buffer service-output-buffer)))
+      ;; Set up environment once for all services
+      (let ((default-directory (bob/monorepo-root)))
+        ;; Set Node.js environment according to .nvmrc
+        (fnm-use)
+        (save-excursion
+          (grain/run--service
+           (bob/generate--run-service-command service-name
+                                              "development"
+                                              (get-next-available-inspect-port))
+           service-output-buffer
+           :individual
+           service-name))
+        (unless single-service-p
+          (grain/run--service (bob/generate--run-all-services-command service-name)
+                              all-services-output-buffer
+                              :all-services
+                              (format "all-except-%s" service-name)))
+        (unless (get-buffer "*Dashboard*")
+          (grain/run--service "npm run dev -w @grain/dashboard"
+                              "*Dashboard*"
+                              :dashboard
+                              "dashboard"))
+        (unless (get-buffer "*Admin Console*")
+          (grain/run--service "npm run dev -w @grain/admin-console"
+                              "*Admin Console*"
+                              :admin-console
+                              "admin-console"))
+        (switch-to-buffer service-output-buffer))))
 
-  ;;;###autoload
+    ;;;###autoload
   (defun grain/run-e2e ()
     "Run a service in debug mode and all the other services as well."
     (interactive)
     (when-let ((service-name (grain/get--service-name)))
-      (progn
+      ;; Set up environment once for all services
+      (let ((default-directory (bob/monorepo-root)))
+        ;; Set Node.js environment according to .nvmrc
+        (fnm-use)
         (grain/run--service (bob/generate--run-service-command service-name
                                                                "test"
                                                                (get-next-available-inspect-port))
-                            (format "*SERVICE: %s*" service-name))
+                            (format "*SERVICE: %s*" service-name)
+                            :individual
+                            service-name)
         (grain/run--service (bob/generate--run-all-services-e2e-command service-name)
-                            (format "*[ALL] except %s*"
-                                    service-name)))))
+                            (format "*[ALL] except %s*" service-name)
+                            :all-services
+                            (format "all-e2e-except-%s" service-name)))))
+
+    ;;;###autoload
+  (defun grain/shutdown-services ()
+    "Shutdown all running Grain services using the process registry."
+    (interactive)
+    (let ((killed-processes '())
+          (killed-buffers '()))
+
+      ;; Clean up dead processes first
+      (grain/cleanup-dead-processes)
+
+      ;; Get all active processes
+      (let ((active-processes (grain/get-active-processes)))
+        (if (null active-processes)
+            (message "No running Grain services found.")
+
+          ;; Shutdown each active process
+          (dolist (entry active-processes)
+            (let* ((process (plist-get entry :process))
+                   (buffer-name (plist-get entry :buffer))
+                   (service-name (plist-get entry :name))
+                   (buffer (get-buffer buffer-name)))
+
+              ;; Interrupt and delete the process
+              (when (process-live-p process)
+                (interrupt-process process)
+                (delete-process process)
+                (push service-name killed-processes))
+
+              ;; Kill the buffer if it exists
+              (when buffer
+                (kill-buffer buffer)
+                (push buffer-name killed-buffers))
+
+              ;; Unregister the process
+              (grain/unregister-process process)))
+
+          ;; Report results
+          (message "Shutdown complete. Terminated %d service(s): %s. Killed %d buffer(s): %s"
+                   (length killed-processes)
+                   (mapconcat 'identity killed-processes ", ")
+                   (length killed-buffers)
+                   (mapconcat 'identity killed-buffers ", "))))))
 #+end_src
 
 ** Tests
 #+begin_src elisp
-  (ert-deftest generate-command ()
-    (should (equal (bob/generate--run-service-command "mail-service" "development" nil)
-                   "NODE_ENV=development TS_NODE_PROJECT='./apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/mail-service/src/**/*' --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))
+  (ert-deftest generate-command-basic ()
+    "Test basic command generation with development environment and no inspect port."
+    (let ((mock-root "/test/path/"))
+      (cl-letf (((symbol-function 'bob/monorepo-root) (lambda () mock-root)))
+        (should (equal (bob/generate--run-service-command "mail-service" "development" nil)
+                       "NODE_ENV=development TS_NODE_PROJECT='/test/path/apps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/mail-service/src/**/*' --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"")))))
+
+  (ert-deftest generate-command-test-environment ()
+    "Test command generation with test environment."
+    (let ((mock-root "/test/path/"))
+      (cl-letf (((symbol-function 'bob/monorepo-root) (lambda () mock-root)))
+        (should (equal (bob/generate--run-service-command "liquidity-service" "test" nil)
+                       "NODE_ENV=test TS_NODE_PROJECT='/test/path/apps/backend/liquidity-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/liquidity-service/src/**/*' --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/liquidity-service/src/index.ts\"")))))
+
+  (ert-deftest generate-command-with-inspect-port ()
+    "Test command generation with inspect port specified."
+    (let ((mock-root "/test/path/"))
+      (cl-letf (((symbol-function 'bob/monorepo-root) (lambda () mock-root)))
+        (should (equal (bob/generate--run-service-command "payments-service" "development" 9230)
+                       "NODE_ENV=development TS_NODE_PROJECT='/test/path/apps/backend/payments-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/payments-service/src/**/*' --exec \"node --inspect=9230 -r ts-node/register -r tsconfig-paths/register ./apps/backend/payments-service/src/index.ts\"")))))
+
+  (ert-deftest generate-command-nil-environment ()
+    "Test command generation with nil environment (should default to development)."
+    (let ((mock-root "/test/path/"))
+      (cl-letf (((symbol-function 'bob/monorepo-root) (lambda () mock-root)))
+        (should (equal (bob/generate--run-service-command "trading-service" nil nil)
+                       "NODE_ENV=development TS_NODE_PROJECT='/test/path/apps/backend/trading-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/trading-service/src/**/*' --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/trading-service/src/index.ts\"")))))
+
+  (ert-deftest generate-command-empty-root ()
+    "Test command generation when monorepo root is empty."
+    (let ((current-dir (expand-file-name default-directory)))
+      (cl-letf (((symbol-function 'bob/monorepo-root) (lambda () "")))
+        (should (equal (bob/generate--run-service-command "mail-service" "development" nil)
+                       (format "NODE_ENV=development TS_NODE_PROJECT='%sapps/backend/mail-service/tsconfig.app.json' TS_NODE_FILES=true nodemon --ext ts --watch './apps/backend/mail-service/src/**/*' --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register ./apps/backend/mail-service/src/index.ts\"" current-dir))))))
+
+  ;; Backward compatibility test - keep the old test name as an alias
+  (defalias 'generate-command 'generate-command-basic)
 #+end_src
 
 ** Key Bindings
 
 #+begin_src elisp
   (global-set-key (kbd "C-c b r") 'grain/run-service)
+  (global-set-key (kbd "C-c b s") 'grain/shutdown-services)
 #+end_src
 
 * Debug Port Management
