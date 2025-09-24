@@ -684,11 +684,6 @@
     (claude-code-no-delete-other-windows t)
     :config
     (exec-path-from-shell-initialize)
-    (add-to-list 'display-buffer-alist
-                 '("^\\*claude"
-                   (display-buffer-in-side-window)
-                   (side . right)
-                   (window-width . 90)))
     (defun claude-code-get-flymake-diagnostics (buffer-or-file-name)
       "Get the content of the flymake diagnostics for a specific buffer."
       (if-let ((buff (or (get-buffer buffer-or-file-name)
@@ -904,7 +899,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                    :predicate #'buffer-file-name))))
     "Project buffer source for `consult-buffer'.")
   (use-package consult
-    :ensure t
+    :demand t
     :init
     (setq consult--tofu-char #x100000
           consult--tofu-range #x00fffe)
@@ -1685,6 +1680,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
     (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
     (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
+
     (unless (executable-find "pyright-langserver")
       (progn
         (print "Installing pyright-langserver for python eglot support")
