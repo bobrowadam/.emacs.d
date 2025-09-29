@@ -117,6 +117,8 @@
   (defun bob/jump-to-shell ()
     "Jump to a shell buffer."
     (interactive)
+    (unless (featurep 'consult)
+      (require 'consult))
     (if-let* ((shell-buffers
                (bob/drop-buffer
                 (set-last-shell-buffer-as-first
@@ -899,7 +901,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                    :predicate #'buffer-file-name))))
     "Project buffer source for `consult-buffer'.")
   (use-package consult
-    :demand t
     :init
     (setq consult--tofu-char #x100000
           consult--tofu-range #x00fffe)
@@ -1614,6 +1615,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 *** Basic settings
 #+begin_src elisp
   (use-package flymake
+    :ensure t
     :custom
     (flymake-show-diagnostics-at-end-of-line nil)
     ;; (flymake-show-diagnostics-at-end-of-line 'fancy)
