@@ -22,10 +22,10 @@
  (last-modified 26653 64343 171721 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO [[https:/")
- (rear-context-string . "2025-09-14 Sun>\n")
- (position . 3744)
- (last-modified 26817 22325 111325 0))
+ (front-context-string . "* TODO Checkout ")
+ (rear-context-string . "2025-09-11 Thu>\n")
+ (position . 3912)
+ (last-modified 26837 2641 211303 0))
 ("linear.org"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/linear.org")
  (front-context-string . "* NEXT Add Tests")
@@ -34,10 +34,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Get back to ro")
- (rear-context-string . "or Emacs Lisp]]\n")
- (position . 219)
- (last-modified 26827 54072 605260 0))
+ (front-context-string . "* Fix treesit-fo")
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 26839 50158 879507 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
