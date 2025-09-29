@@ -1637,6 +1637,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 *** Flymake Posframe
 #+begin_src elisp
   (use-package flymake-posframe
+    :custom (flymake-posframe-max-height 200)
     :ensure (:repo "Ladicle/flymake-posframe" :fetcher github :files ("*.el"))
     :custom
     (flymake-posframe-error-prefix "⮾")
