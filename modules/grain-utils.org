@@ -588,6 +588,29 @@ This module contains utilities for working with the Grain financial services pla
                             (message "Historical exchange rates insertion completed")))))
 #+end_src
 
+* Grain's monorepo eslint --fix
+#+begin_src elisp
+  (defun bob/grain-lint-on-save ()
+    "Run npm run lint:modified -- --fix on the grain monorepo root after each save."
+    (when (and (buffer-file-name)
+               (project-current)
+               (bob/is-grain-project (bob/monorepo-root)))
+      (let ((default-directory (bob/monorepo-root)))
+        (start-process "grain-lint" "*grain-lint*" "npm" "run" "lint:modified" "--" "--fix"))))
+
+  (defun bob/enable-grain-lint-on-save ()
+    "Enable automatic linting on save for grain projects."
+    (add-hook 'after-save-hook #'bob/grain-lint-on-save nil t))
+
+  (defun bob/maybe-enable-grain-lint ()
+    "Enable grain lint on save if we're in a grain project
+   and editing relevant files."
+    (when (and (buffer-file-name)
+               (bob/is-grain-project (bob/monorepo-root))
+               (derived-mode-p '(typescript-mode typescript-ts-mode js-ts-mode tsx-ts-mode jtsx-jsx-mode)))
+      (bob/enable-grain-lint-on-save)))
+#+end_src
+
 * Provide Feature
 #+begin_src elisp
   (provide 'grain-utils)
