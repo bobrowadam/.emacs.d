@@ -41,7 +41,7 @@
 #+begin_src elisp
   (use-package server
     :ensure nil
-    :demand t
+    :defer 30
     :when window-system
     :config
     (unless (server-running-p)
