@@ -1397,7 +1397,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (vc-dir-mode . (lambda () (diff-hl-dir-mode 1)))
     (dired-mode . diff-hl-dired-mode)
     (magit-post-refresh . #'diff-hl-magit-post-refresh)
-    :bind (:map diff-hl-mode-map ("C-x v A" . diff-hl-set-reference-rev)))
+    :bind (:map diff-hl-mode-map ("C-x v A" . diff-hl-set-reference-rev))
+    :config
+    ;; Fix diff-hl visibility with treesit-fold-indicators
+    (advice-add 'diff-hl-add-highlighting :filter-return
+                (lambda (ovl)
+                  (when ovl (overlay-put ovl 'priority 50))
+                  ovl)))
 
   (use-package abridge-diff
     :demand t
