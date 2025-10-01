@@ -2193,7 +2193,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** Modus Themes
 #+begin_src elisp
-  (defvar bob/dark-bg-color "grey12"
+  (defvar bob/dark-bg-color "#273136"
     "Background color for dark themes to avoid pure black.")
   (use-package modus-themes
     :demand t
@@ -2208,7 +2208,11 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
      `((bg-main ,bob/dark-bg-color)))
 
     (modus-vivendi-deuteranopia-palette-overrides
-     `((bg-main ,bob/dark-bg-color)))
+     `((bg-main ,bob/dark-bg-color)
+       (bg-mode-line-active "#505050")
+       (fg-mode-line-active "#ffffff")
+       (bg-mode-line-inactive "#2d2d2d")
+       (fg-mode-line-inactive "#969696")))
 
     (modus-themes-italic-constructs t)
     (modus-themes-bold-constructs t)
