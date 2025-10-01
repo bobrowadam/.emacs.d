@@ -34,10 +34,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Fix treesit-fo")
- (rear-context-string . "20240104T120451\n")
- (position . 112)
- (last-modified 26839 50158 879507 0))
+ (front-context-string . "* Try emacs mcp-")
+ (rear-context-string . " diff hl fringe\n")
+ (position . 160)
+ (last-modified 26844 43500 834229 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
