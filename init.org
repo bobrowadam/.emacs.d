@@ -758,6 +758,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (transient-append-suffix 'eca-transient-menu "S"
       '("D" "NREPL connect" eca-debug-nrepl-connect)))
 #+end_src
+** Elisp Dev MCP
+#+begin_src elisp
+  (use-package elisp-dev-mcp)
+#+end_src
 * Ediff
 #+begin_src elisp
   (defvar ediff-buffer-A)

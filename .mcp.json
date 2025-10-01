@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "elisp-dev": {
+      "type": "stdio",
+      "command": "/Users/bob/.emacs.d/emacs-mcp-stdio.sh",
+      "args": [
+        "--init-function=elisp-dev-mcp-enable",
+        "--stop-function=elisp-dev-mcp-disable"
+      ],
+      "env": {}
+    }
+  }
+}
