@@ -12,5 +12,9 @@
       "Bash(sourcekit-lsp:*)"
     ],
     "deny": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "elisp-dev"
+  ],
+  "enableAllProjectMcpServers": true
 }

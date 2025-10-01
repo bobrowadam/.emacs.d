@@ -37,12 +37,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use of encrypted auth sources for sensitive credentials
 
 ## Testing and Debugging
-- Use `emacsclient --eval` to test Emacs Lisp functions and expressions
-- This uses the running Emacs instance with full configuration loaded
-- Examples:
-  - Test function exists: `emacsclient --eval "(fboundp 'function-name)"`
-  - Check syntax: `emacsclient --eval "(macroexpand 'expression)"`
-  - Test custom functions: `emacsclient --eval "(bob/function-name args)"`
-- To recompile and reload init.org after changes:
-  - `emacsclient --eval "(progn (compile-init-file) (load-file \"~/.emacs.d/init.el\"))"`
 
+### Inspecting Elisp Code (Preferred)
+Use elisp-dev MCP tools for inspecting code without side effects:
+- `elisp-describe-function` - Get function documentation, signature, and check if function exists
+- `elisp-get-function-definition` - Get function source code with file location
+- `elisp-describe-variable` - Get variable info (without exposing values) and check if variable exists
+- `elisp-info-lookup-symbol` - Look up symbols in Emacs documentation
+- `elisp-read-source-file` - Read Elisp source files from Emacs directories
+
+### Executing and Testing Code
+Use `emacsclient --eval` when you need to execute code or modify state:
+- Test functions: `emacsclient --eval "(bob/function-name args)"`
+- Check syntax: `emacsclient --eval "(macroexpand 'expression)"`
+- Reload config: `emacsclient --eval "(progn (compile-init-file) (load-file \"~/.emacs.d/init.el\"))"`
+- Use this for operations that elisp-dev MCP doesn't support or when side effects are needed
