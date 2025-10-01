@@ -1110,8 +1110,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("ts" . typescript))
     ;; Fix imenu to use org-mode's specialized function
-    (add-hook 'org-mode-hook 
-              (lambda () 
+    (add-hook 'org-mode-hook
+              (lambda ()
                 (setq imenu-create-index-function 'org-imenu-get-tree)))
     :hook
     (org-babel-after-execute . #'bob/babel-ansi)
@@ -2174,7 +2174,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** Modus Themes
 #+begin_src elisp
-
   (defvar bob/dark-bg-color "grey12"
     "Background color for dark themes to avoid pure black.")
   (use-package modus-themes
@@ -2203,7 +2202,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :config
     (ef-themes-select 'ef-symbiosis))
 #+end_src
-
+*** Catppuccin
+#+begin_src elisp
+  (use-package catppuccin-theme)
+#+end_src
 ** Spacious padding
 #+begin_src elisp
   (use-package spacious-padding
