@@ -9,12 +9,14 @@
       "WebFetch(domain:protesilaos.com)",
       "Read(//Users/bob/source/grain_**/**)",
       "Bash(find:*)",
-      "Bash(sourcekit-lsp:*)"
+      "Bash(sourcekit-lsp:*)",
+      "mcp__elisp-dev__elisp-info-lookup-symbol",
+      "mcp__elisp-dev__elisp-describe-variable"
     ],
     "deny": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "elisp-dev"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }
