@@ -40,8 +40,8 @@
 * Init Server
 #+begin_src elisp
   (use-package server
+    :demand t
     :ensure nil
-    :defer 30
     :when window-system
     :config
     (unless (server-running-p)
@@ -1438,15 +1438,15 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package paredit
     :hook
-    (emacs-lisp-mode lisp-mode lisp-data-mode clojure-ts-mode cider-repl-mode))
+    (emacs-lisp-mode lisp-mode lisp-data-mode clojure-ts-mode cider-repl-mode)
+    :bind (:map paredit-mode-map ("{" . paredit-open-curly)))
 
   (defun bob/simple-minibuffer-parens ()
     "Add basic paren handling and paredit-style editing in minibuffer."
     ;; Basic paren insertion
-    (local-set-key (kbd "(") (lambda () (interactive) (insert "()") (backward-char)))
-    (local-set-key (kbd "[") (lambda () (interactive) (insert "[]") (backward-char)))
-    (local-set-key (kbd "{") (lambda () (interactive) (insert "{}") (backward-char)))
-    (local-set-key (kbd "\"") (lambda () (interactive) (insert "\"\"") (backward-char)))
+    (local-set-key (kbd "(") 'paredit-open-round)
+    (local-set-key (kbd "[") 'paredit-open-square)
+    (local-set-key (kbd "{") 'paredit-open-curly)
     (local-set-key (kbd "RET") #'exit-minibuffer)
 
     ;; Paredit-style editing commands (using smartparens functions)
