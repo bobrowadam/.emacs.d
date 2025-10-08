@@ -1959,7 +1959,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
   (use-package flymake-jsts
     :ensure (:repo "orzechowskid/flymake-jsts"  :fetcher github :files ("*.el") :branch "main")
     :custom
-    (flymake-jsts-executable-name-alist '((eslint . "/Users/bob/source/grain/node_modules/.bin/eslint")
+    (flymake-jsts-executable-name-alist '((eslint . "eslint")
                                                   (oxlint . "oxlint")
                                                   (biome . "biome")))
     (flymake-jsts-project-markers-alist '((eslint . ("eslint.config.js" "eslint.config.mjs" "eslint.config.cjs" "package.json" ".eslintrc.js")))))
