@@ -1716,6 +1716,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
     (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
     (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
+    (add-to-list 'eglot-server-programs '(swift-ts-mode . ("sourcekit-lsp")))
 
     (unless (executable-find "pyright-langserver")
       (progn
@@ -1841,6 +1842,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (typescript-ts-base-mode . treesit-fold-mode)
     (js-ts-mode . treesit-fold-mode)
     (clojure-ts-mode . treesit-fold-mode)
+    (swift-ts-mode . treesit-fold-mode)
     :config
     (global-treesit-fold-indicators-mode))
 #+end_src
@@ -2025,6 +2027,12 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     :ensure nil)
 #+end_src
 *** Elisp
+*** Swift
+#+begin_src elisp
+  (use-package swift-ts-mode
+    :mode ("\\.swift\\'" "\\.swiftinterface\\'")
+    :hook 'eglot-ensure)
+#+end_src
 ** Semel
 Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
@@ -2129,7 +2137,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
             (vue . ("https://github.com/merico-dev/tree-sitter-vue"))
             (yaml . ("https://github.com/ikatyang/tree-sitter-yaml"))
             (toml . ("https://github.com/tree-sitter/tree-sitter-toml"))
-            (zig . ("https://github.com/maxxnino/tree-sitter-zig")))
+            (zig . ("https://github.com/maxxnino/tree-sitter-zig"))
+            (swift "/Users/bob/Downloads/node_modules/tree-sitter-swift/"))
 
           major-mode-remap-alist
           '((c-mode          . c-ts-mode)
