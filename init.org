@@ -760,7 +760,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
-  (use-package elisp-dev-mcp)
+  (use-package elisp-dev-mcp
+    :config
+    (defconst mcp-server-lib-protocol-version "2024-11-05"
+      "Patching the Current MCP protocol version supported by 'mcp-server-lib'.")
+    (mcp-server-lib-start))
 #+end_src
 * Ediff
 #+begin_src elisp
@@ -1738,7 +1742,6 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (eglot-managed-mode .  (lambda ()
                              (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
                                (flymake-jsts-eslint-enable)))))
-
 #+end_src
 ** Dape
 #+begin_src elisp
