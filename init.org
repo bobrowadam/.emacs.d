@@ -2200,6 +2200,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
   (use-package doric-themes
     :demand nil
+    :disabled t
     :config
     (load-theme 'doric-fire))
 #+end_src
