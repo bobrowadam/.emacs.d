@@ -761,10 +761,12 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** Elisp Dev MCP
 #+begin_src elisp
   (use-package elisp-dev-mcp
+    :init (setenv "EMACS_MCP_DEBUG_LOG" "/tmp/emacs-mcp-debug.log")
     :config
     (defconst mcp-server-lib-protocol-version "2024-11-05"
       "Patching the Current MCP protocol version supported by 'mcp-server-lib'.")
-    (mcp-server-lib-start))
+    (unless mcp-server-lib--running
+      (mcp-server-lib-start)))
 #+end_src
 * Ediff
 #+begin_src elisp
