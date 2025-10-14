@@ -2536,7 +2536,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
                                      font-lock-comment-face
                                      font-lock-doc-face
                                      font-lock-string-face
-                                     git-commit-summary)
+                                     git-commit-summary
+                                     clojure-ts-keyword-face)
                           (conf-mode font-lock-comment-face font-lock-string-face)
                           (yaml-mode . conf-mode)
                           (yaml-ts-mode . conf-mode)))
