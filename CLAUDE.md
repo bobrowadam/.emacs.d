@@ -36,6 +36,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Review any external package additions for security implications
 - Use of encrypted auth sources for sensitive credentials
 
+## Git Commit Messages
+Follow this format for all commit messages:
+- Start with an imperative verb (Add, Optimize, Fix, Update, Remove, etc.)
+- Be concise and descriptive
+- No periods at the end
+- Focus on what changed, not why
+
+Examples:
+- "Add clojure-ts-keyword-face to jinx-include-faces"
+- "Optimize spacious-padding initialization"
+- "Fix authentication bug in login flow"
+- "Update theme colors for better contrast"
+
 ## Testing and Debugging
 
 ### Inspecting Elisp Code (Preferred)

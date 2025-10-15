@@ -88,9 +88,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Check if changes exist in previous commits with `git log --all -- <file>`
 
 ### Commit Message Format
-- Use clear, descriptive commit messages
-- Focus on the "why" not just the "what"
-- Follow the existing style in `git log`
+Follow this format for all commit messages:
+- Start with an imperative verb (Add, Optimize, Fix, Update, Remove, etc.)
+- Be concise and descriptive
+- No periods at the end
+- Focus on what changed, not why
+
+Examples:
+- "Add clojure-ts-keyword-face to jinx-include-faces"
+- "Optimize spacious-padding initialization"
+- "Fix authentication bug in login flow"
+- "Update theme colors for better contrast"
 
 ## Testing and Debugging
 
