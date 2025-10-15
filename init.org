@@ -686,6 +686,9 @@
     (claude-code-no-delete-other-windows t)
     :config
     (exec-path-from-shell-initialize)
+    (setq claude-code-eat-read-only-mode-cursor-type '(bar nil nil))
+    (setq eat-term-scrollback-size 500000)
+
     (defun claude-code-get-flymake-diagnostics (buffer-or-file-name)
       "Get the content of the flymake diagnostics for a specific buffer."
       (if-let ((buff (or (get-buffer buffer-or-file-name)
