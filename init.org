@@ -306,6 +306,9 @@
         garbage-collection-messages nil
         undo-limit (* 30 1024 1000)
         scroll-preserve-screen-position t
+        scroll-margin 8                   ; Keep cursor 8 lines from top/bottom
+        scroll-conservatively 101         ; Scroll line-by-line (> 100 prevents recentering)
+        scroll-step 1                     ; Scroll 1 line at a time
         make-backup-files nil
         enable-recursive-minibuffers t
         inhibit-splash-screen t
