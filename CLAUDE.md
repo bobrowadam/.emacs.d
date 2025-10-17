@@ -63,5 +63,5 @@ Use elisp-dev MCP tools for inspecting code without side effects:
 Use `emacsclient --eval` when you need to execute code or modify state:
 - Test functions: `emacsclient --eval "(bob/function-name args)"`
 - Check syntax: `emacsclient --eval "(macroexpand 'expression)"`
-- Reload config: `emacsclient --eval "(progn (compile-init-file) (load-file \"~/.emacs.d/init.el\"))"`
 - Use this for operations that elisp-dev MCP doesn't support or when side effects are needed
+- Note: Config is automatically recompiled and reloaded via PostToolUse hook
