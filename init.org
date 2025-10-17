@@ -728,6 +728,7 @@ For claude code protocol via web-sockets
 *** claude-code-ide (another wrapper)
 #+begin_src elisp
   (use-package claude-code-ide
+    :disabled t
     ;; This is just untill I open a PR. replace the repo path later back to "manzaltu/claude-code-ide.el"
     :ensure (:repo "bobrowadam/claude-code-ide.el" :fetcher github :files ("*.el") :branch "fix-eat-cursor-invisible")
     :bind ("C-c C-'" . claude-code-ide-menu)
@@ -764,6 +765,20 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (transient-append-suffix 'eca-transient-menu "S"
       '("D" "NREPL connect" eca-debug-nrepl-connect)))
 #+end_src
+** ai-code-interface
+#+begin_src elisp
+  (use-package ai-code-interface
+    :ensure (:fetcher github :repo "tninja/ai-code-interface.el" :files ("*.el"))
+    :bind
+    ("C-c C-'" . ai-code-menu)
+    :config
+    (ai-code-set-backend  'codex) ;; use claude-code-ide as backend
+    ;; Enable global keybinding for the main menu
+
+    ;; Optional: Set up Magit integration for AI commands in Magit popups
+    (with-eval-after-load 'magit
+      (ai-code-magit-setup-transients)))
+#+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
   (use-package elisp-dev-mcp
@@ -773,6 +788,21 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
       "Patching the Current MCP protocol version supported by 'mcp-server-lib'.")
     (unless mcp-server-lib--running
       (mcp-server-lib-start)))
+#+end_src
+** Agent Shell
+*** ACP
+#+begin_src elisp
+  (use-package acp
+    :ensure (:repo "xenodium/acp.el" :fetcher github :files ("*.el")))
+#+end_src
+*** Shell maker (dependency)
+#+begin_src elisp
+  (use-package shell-maker)
+#+end_src
+*** Agent Shell
+#+begin_src elisp
+  (use-package agent-shell
+    :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el")))
 #+end_src
 * Ediff
 #+begin_src elisp
