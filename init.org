@@ -306,9 +306,10 @@
         garbage-collection-messages nil
         undo-limit (* 30 1024 1000)
         scroll-preserve-screen-position t
-        scroll-margin 8                   ; Keep cursor 8 lines from top/bottom
-        scroll-conservatively 101         ; Scroll line-by-line (> 100 prevents recentering)
-        scroll-step 1                     ; Scroll 1 line at a time
+        ;; scroll-margin 2                   ; Keep cursor 8 lines from top/bottom
+        ;; scroll-conservatively 101         ; Scroll line-by-line (> 100 prevents recentering)
+        ;; auto-window-vscroll nil           ; Fix mouse scrolling stutter
+        ;; fast-but-imprecise-scrolling t    ; Improve scrolling performance
         make-backup-files nil
         enable-recursive-minibuffers t
         inhibit-splash-screen t
@@ -530,6 +531,15 @@
     ("M-SPC" . cycle-spacing)
     ("<s-return>" . toggle-frame-fullscreen)
     ("M-o" . other-frame))
+
+  (use-package ultra-scroll
+    :demand t
+    :ensure (:repo  "jdtsmith/ultra-scroll" :fetcher github :files ("*.el"))
+    :init
+    (setq scroll-conservatively 3 ; or whatever value you prefer, since v0.4
+          scroll-margin 0)        ; important: scroll-margin>0 not yet supported
+    :config
+    (ultra-scroll-mode 1))
 #+end_src
 
 * Ibuffer
