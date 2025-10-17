@@ -83,3 +83,4 @@ transient/*
 /modules/grain-utils.el
 /eca/
 /emacs-mcp-stdio.sh
+/custom.el
