@@ -301,6 +301,7 @@
 #+begin_src elisp
   (setq read-process-output-max (* 3 1024 1024)) ;; 3mb
   (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+  (setq browse-url-chromium-program "/Applications/Comet.app/Contents/MacOS/Comet")
   (setq user-login-name "Adam Bobrow"
         user-full-name "Adam Bobrow"
         garbage-collection-messages nil
