@@ -2394,6 +2394,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :init (spacious-padding-mode 1))
 
   (use-package iedit
+    :ensure nil
     :bind ("C-;" . iedit-mode))
 #+end_src
 * Grep
