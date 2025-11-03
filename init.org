@@ -2161,6 +2161,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     ;; Don't override eglot's xref commands
     (cider-use-xref nil))
 #+end_src
+**** Babashka
+#+begin_src elisp
+  (use-package babashka)
+#+end_src
 **** Condo (linter)
 #+begin_src elisp
   (use-package flymake-kondor
