@@ -609,8 +609,8 @@
     :bind
     ("C-c g g" . gptel)
     ("C-c g r" . gptel-rewrite)
-    ("C-c g a d" . gptel-context-add)
-    ("C-c g a f" . gptel-context-add-file)
+    ("C-c g a d" . gptel-add)
+    ("C-c g a f" . gptel-add-file)
     ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
     (:map gptel-mode-map ("C-c g s" . gptel-menu))
     :hook
