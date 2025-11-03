@@ -742,8 +742,11 @@ For claude code protocol via web-sockets
 ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more.
 #+begin_src elisp
   (use-package eca
-    :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el"))
-    :custom (eca-custom-command '("~/source/eca/eca" "server" "--verbose"))
+    ;; :ensure (:repo "bobrowadam/eca-emacs" :fetcher github :files ("*.el") :ref "master")
+    :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el") :ref "master")
+    :custom
+    (eca-custom-command '("~/source/eca/eca" "server" "--verbose"))
+    (eca-find-root-for-buffer-function 'bob/monorepo-root)
     :bind
     ("C-c ." . eca-transient-menu)
     ;; Override arrow key bindings with Emacs-like alternatives
@@ -757,7 +760,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
                               :host "api.openai.com"
                               :user "grain@finanance.co"))
-    (eca-find-root-for-buffer)
     (transient-replace-suffix 'eca-transient-menu "o"
       '("." "Open/close chat window" eca-chat-toggle-window))
     (transient-remove-suffix 'eca-transient-menu "s")
