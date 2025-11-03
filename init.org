@@ -1443,6 +1443,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (transient-append-suffix 'magit-rebase
       "f"
       '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
+
 #+end_src
 ** Forge
 #+begin_src elisp
@@ -2284,10 +2285,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :custom
     (modus-themes-italic-constructs t)
     (modus-themes-bold-constructs t)
-    (modus-themes-mixed-fonts nil)
+    (modus-themes-mixed-fonts t)
     (modus-themes-prompts '(bold intense))
-    (modus-themes-common-palette-overrides
-     `((accent-0 "#89b4fa")
+    (modus-vivendi-palette-overrides
+     '((accent-0 "#89b4fa")
        (accent-1 "#89dceb")
        (bg-active bg-main)
        (bg-added "#364144")
@@ -2300,7 +2301,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
        (bg-completion-match-2 "#1e1e2e")
        (bg-completion-match-3 "#1e1e2e")
        (bg-hl-line "#2a2b3d")
-       (bg-hover-secondary "#585b70")       (bg-line-number-active unspecified)
+       (bg-hover-secondary "#585b70")
+       (bg-line-number-active unspecified)
        (bg-line-number-inactive "#1e1e2e")
        (bg-main "#1e1e2e")
        (bg-mark-delete "#443245")
@@ -2403,6 +2405,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 *** EF Themes
 #+begin_src elisp
   (use-package ef-themes
+    :disabled t
     :config
     ;; (ef-them 'ef-symbiosis)
     (ef-themes-take-over-modus-themes-mode))
