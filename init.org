@@ -674,7 +674,7 @@
                            :args ("--access-mode=unrestricted")
                            :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain"))))))
 ** Claude Code
-*** claude-code
+*** claude-code.el
 #+begin_src elisp
   (use-package claude-code
     :ensure (:type git :host github :repo "stevemolitor/claude-code.el" :branch "main"
@@ -684,7 +684,8 @@
     :bind (:map claude-code-command-map
                 ("F" . claude-code-send-file))
     :custom
-    (claude-code-no-delete-other-windows t)
+    (claude-code-no-delete-other-windows nil)
+    (claude-code-toggle-auto-select t)
     :config
     (exec-path-from-shell-initialize)
     (setq claude-code-eat-read-only-mode-cursor-type '(bar nil nil))
