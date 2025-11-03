@@ -673,19 +673,6 @@
                            :command  "postgres-mcp"
                            :args ("--access-mode=unrestricted")
                            :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain"))))))
-#+end_src
-** Greger
-#+begin_src elisp
-  (use-package greger
-    :ensure (:repo "andreasjansson/greger.el" :fetcher github :files ("*.el"))
-    :disabled t
-    :config
-    (setenv "ANTHROPIC_API_KEY"
-            (-some->
-                (plist-get (car (auth-source-search :host "claude.ai")) :secret)
-              funcall))
-    :bind ("C-M-;" . greger))
-#+end_src
 ** Claude Code
 *** claude-code
 #+begin_src elisp
