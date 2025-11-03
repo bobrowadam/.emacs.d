@@ -1166,7 +1166,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                 (setq imenu-create-index-function 'org-imenu-get-tree)))
     :hook
     (org-babel-after-execute . #'bob/babel-ansi)
-    (org-mode . (lambda () (org-superstar-mode 1)))
     (org-mode . (lambda () (visual-line-mode 1)))
     (org-archive . org-save-all-org-buffers)
     (org-after-refile-insert . org-save-all-org-buffers)
@@ -1253,6 +1252,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package org-superstar
     :after org
+    :disabled t
     :hook (org-mode . org-superstar-mode)
     :config
     (set-face-attribute 'org-superstar-header-bullet nil :inherit 'fixed-pitched :height 180)
@@ -1275,6 +1275,15 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (org-superstar-leading-bullet " ")
     (org-superstar-todo-bullet-face-alist tb/org-todo-bullet-faces)
     (org-hide-leading-stars nil))
+#+end_src
+
+** Org modern
+#+begin_src elisp
+  (use-package org-modern
+    :demand t
+    :after org
+    :config
+    (global-org-modern-mode))
 #+end_src
 
 * Denote
