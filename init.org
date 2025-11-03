@@ -724,12 +724,12 @@ For claude code protocol via web-sockets
     :custom
     (monet-diff-tool 'monet-simple-diff-tool))
 #+end_src
-*** claude-code-ide (another wrapper)
+*** claude-code-ide (another claude-code wrapper)
 #+begin_src elisp
   (use-package claude-code-ide
-    :disabled t
+    :ensure (:repo "manzaltu/claude-code-ide.el" :fetcher github :files ("*.el") :branch "main")
     ;; This is just untill I open a PR. replace the repo path later back to "manzaltu/claude-code-ide.el"
-    :ensure (:repo "bobrowadam/claude-code-ide.el" :fetcher github :files ("*.el") :branch "fix-eat-cursor-invisible")
+    ;; :ensure (:repo "bobrowadam/claude-code-ide.el" :fetcher github :files ("*.el") :branch "fix-eat-cursor-invisible")
     :bind ("C-c C-'" . claude-code-ide-menu)
     :custom
     (claude-code-ide-terminal-backend 'eat)
