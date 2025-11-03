@@ -1396,12 +1396,14 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (transient-append-suffix 'magit-file-dispatch
       "P"
       '("F" "Pull" magit-pull))
+
     (defun bob/magit-commit-message (message)
       (interactive "sCommit message: ")
       (magit-commit-create `("-am" ,message)))
     (transient-append-suffix 'magit-commit
       "c"
       '("m" "Quick commit using minibuffer for commit message." bob/magit-commit-message))
+
     (defun bob/magit-buffers ()
       "Jump to a magit buffer."
       (interactive)
@@ -1416,15 +1418,27 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
             (setq bob/last-magit-buffer magit-buffer)
             (switch-to-buffer magit-buffer))
         (message "No Magit buffers exists")))
+
+    (defun get-main-worktree (branch-name)
+      "Find the worktree path for BRANCH-NAME."
+      (car (-find (lambda (worktree)
+                    (member branch-name worktree))
+                  (magit-list-worktrees))))
+
     (defun bob/magit-fetch-and-rebase ()
-      "Fetch \"origin/main and\" rebase current branch onto \"main\"."
+      "Fetch and rebase current branch onto main/master."
       (interactive)
-      (message "Running 'git rebase origin/main'")
-      (magit-run-git "fetch" "origin" "main")
-      (magit-rebase-branch "origin/main" nil)
-      (let ((default-directory "~/source/grain/"))
-        (magit-run-git-async "pull" "origin" "main")
-        (message "Pulling worktree at ~/source/grain/ in background...")))
+      (let* ((main-branch (if (magit-rev-name "main") "main" "master"))
+             (remote-name (or (magit-get "branch" main-branch "remote")
+                              (car (magit-list-remotes))))
+             (remote-branch (format "%s/%s" remote-name main-branch)))
+        (message "Fetching and rebasing onto %s" remote-branch)
+        (magit-run-git "fetch" remote-name main-branch)
+        (magit-rebase-branch remote-branch nil)
+        (when-let ((worktree-dir (get-main-worktree main-branch)))
+          (let ((default-directory worktree-dir))
+            (magit-run-git-async "pull" remote-name main-branch)
+            (message "Pulling worktree at %s in background..." worktree-dir)))))
 
     (transient-append-suffix 'magit-rebase
       "f"
