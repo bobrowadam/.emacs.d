@@ -771,6 +771,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** ai-code-interface
 #+begin_src elisp
   (use-package ai-code-interface
+    :disabled t
     :ensure (:fetcher github :repo "tninja/ai-code-interface.el" :files ("*.el"))
     :bind
     ("C-c C-'" . ai-code-menu)
@@ -796,6 +797,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 *** ACP
 #+begin_src elisp
   (use-package acp
+    :disabled t
     :ensure (:repo "xenodium/acp.el" :fetcher github :files ("*.el")))
 #+end_src
 *** Shell maker (dependency)
@@ -805,7 +807,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 *** Agent Shell
 #+begin_src elisp
   (use-package agent-shell
-    :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el")))
+    :disabled t
+    :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el"))
+    :config
+    (setq agent-shell-anthropic-authentication
+      (agent-shell-anthropic-make-authentication :login t)))
 #+end_src
 * Ediff
 #+begin_src elisp
