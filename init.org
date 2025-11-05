@@ -747,6 +747,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :custom
     (eca-custom-command '("~/source/eca/eca" "server" "--verbose"))
     (eca-find-root-for-buffer-function 'bob/monorepo-root)
+    (eca-chat-window-width 0.6)
+    (eca-chat-window-height 0.6)
+    (eca-chat-use-side-window nil)
+    (eca-chat-diff-tool 'ediff)
     :bind
     ("C-c ." . eca-transient-menu)
     ;; Override arrow key bindings with Emacs-like alternatives
