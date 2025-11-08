@@ -98,6 +98,10 @@
         (kill-buffer)
       (kill-buffer-and-window)))
 
+  (defun bob/kill-all-buffers ()
+    (dolist (buf ( (buffer-list))
+                 (kill-buffer buf))))
+
   (defun bob/eat-top-project ()
     "Open an Eat shell on the highest project"
     (interactive)
@@ -677,8 +681,6 @@
 *** claude-code.el
 #+begin_src elisp
   (use-package claude-code
-    :ensure (:type git :host github :repo "stevemolitor/claude-code.el" :branch "main"
-                   :files ("*.el" (:exclude "images/*")))
     :bind-keymap
     ("C-M-;" . claude-code-command-map)
     :bind (:map claude-code-command-map
@@ -745,12 +747,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ;; :ensure (:repo "bobrowadam/eca-emacs" :fetcher github :files ("*.el") :ref "master")
     :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el") :ref "master")
     :custom
-    (eca-custom-command '("~/source/eca/eca" "server" "--verbose"))
+    (eca-custom-command '("~/source/eca/eca" "server" "--verbose" "--log-level" "debug"))
     (eca-find-root-for-buffer-function 'bob/monorepo-root)
     (eca-chat-window-width 0.6)
     (eca-chat-window-height 0.6)
     (eca-chat-use-side-window nil)
     (eca-chat-diff-tool 'ediff)
+    (eca-chat-window-side 'bottom)
     :bind
     ("C-c ." . eca-transient-menu)
     ;; Override arrow key bindings with Emacs-like alternatives
@@ -770,7 +773,9 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (transient-append-suffix 'eca-transient-menu "t"
       '("s" "Send prompt" eca-chat-send-prompt))
     (transient-append-suffix 'eca-transient-menu "S"
-      '("D" "NREPL connect" eca-debug-nrepl-connect)))
+      '("D" "NREPL connect" eca-debug-nrepl-connect))
+    (transient-append-suffix 'eca-transient-menu "S"
+      '("w" "ECA re-write" eca-rewrite)))
 #+end_src
 ** ai-code-interface
 #+begin_src elisp
@@ -2424,7 +2429,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :init (spacious-padding-mode 1))
 
   (use-package iedit
-    :ensure nil
     :bind ("C-;" . iedit-mode))
 #+end_src
 * Grep
@@ -2555,10 +2559,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 * Terminal emulation
 #+begin_src elisp
   (use-package eat
-    :ensure ( :package "eat"
-              :repo ("https://codeberg.org/akib/emacs-eat" . "eat")
-              :files ("*.el" "eat.texi")
-              :source "NonGNU ELPA")
     :commands (eat eat-project bob/eat-top-project)
     :custom
     (eat-term-scrollback-size nil)
