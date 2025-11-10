@@ -745,7 +745,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package eca
     ;; :ensure (:repo "bobrowadam/eca-emacs" :fetcher github :files ("*.el") :ref "master")
-    :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el") :ref "master")
+    :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el"))
     :custom
     (eca-custom-command '("~/source/eca/eca" "server" "--verbose" "--log-level" "debug"))
     (eca-find-root-for-buffer-function 'bob/monorepo-root)
