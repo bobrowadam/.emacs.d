@@ -1435,25 +1435,14 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (defun bob/remove-project-roots-advice (orig-fun worktree)
       "Remove project roots and associated branches when deleting git worktrees."
       ;; Get the branch name associated with this worktree before deletion
-      (let* ((default-directory worktree)
-             (branch-name (magit-get-current-branch)))
-
+      (when-let* ((default-directory worktree)
+                  (branch-name (magit-get-current-branch)))
         ;; Remove project roots
         (project-forget-projects-under worktree t)
-
         ;; Delete the worktree
         (funcall orig-fun worktree)
-
-        ;; Delete local and remote branches if we found a branch name
-        (when branch-name
-          ;; Delete the local branch (force delete with -D to handle unmerged branches)
-          (magit-run-git "branch" "-D" branch-name)
-
-          ;; Delete the remote branch (usually origin), handling case where it's already deleted
-          (condition-case err
-              (magit-run-git "push" "origin" "--delete" branch-name)
-            (error (message "Remote branch '%s' may already be deleted or doesn't exist: %s"
-                            branch-name (error-message-string err)))))))
+        ;; Delete local branches
+        (magit-run-git "branch" "-D" branch-name)))
 
     (advice-add 'magit-worktree-delete :around #'bob/remove-project-roots-advice)
 
