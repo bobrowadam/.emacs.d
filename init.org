@@ -677,12 +677,77 @@
                            :command  "postgres-mcp"
                            :args ("--access-mode=unrestricted")
                            :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain"))))))
+#+end_src
 ** Claude Code
-*** claude-code.el
+*** Monet
+For claude code protocol via web-sockets
+#+begin_src elisp
+  (use-package monet
+    :ensure (:repo "stevemolitor/monet" :fetcher github :files ("*.el") :branch "main")
+    :custom
+    (monet-diff-tool 'monet-simple-diff-tool))
+#+end_src
+*** ClaudEmacs
+#+begin_src elisp
+  (use-package claudemacs
+    :ensure (:fetcher github :repo "cpoile/claudemacs")
+    :bind ("C-c C-." . 'claudemacs-transient-menu)
+    :hook (claudemacs-startup . (lambda () (monet-start-server)))
+    :config
+    (monet-mode 1)
+    (setq eat-term-scrollback-size 500000))
+  ;;
+  ;; font insanity for Claudemacs
+  ;;
+  (defun my/setup-custom-font-fallbacks-mac ()
+    (interactive)
+    "Configure font fallbacks on mac for symbols and emojis.
+  This will need to be called every time you change your font size,
+  to load the new symbol and emoji fonts."
+    (setq use-default-font-for-symbols nil)
+
+    ;; --- Configure for 'symbol' script ---
+    ;; We add fonts one by one. Since we use 'prepend',
+    ;; the last one added here will be the first one Emacs tries.
+    ;; So, list them in reverse order of your preference.
+
+    ;; Least preferred among this list for symbols (will be at the end of our preferred list)
+    (set-fontset-font t 'symbol "Hiragino Sans" nil 'prepend)
+    (set-fontset-font t 'symbol "STIX Two Math" nil 'prepend)
+    (set-fontset-font t 'symbol "Zapf Dingbats" nil 'prepend)
+    (set-fontset-font t 'symbol "Monaco" nil 'prepend)
+    (set-fontset-font t 'symbol "Menlo" nil 'prepend)
+    ;; Most preferred for symbols -- use your main font here
+    (set-fontset-font t 'symbol "JetBrainsMono Nerd Font Mono" nil 'prepend)
+
+
+    ;; --- Configure for 'emoji' script ---
+    ;; Add fonts one by one, in reverse order of preference.
+
+    ;; Least preferred among this list for emojis
+    (set-fontset-font t 'emoji "Hiragino Sans" nil 'prepend)
+    (set-fontset-font t 'emoji "STIX Two Math" nil 'prepend)
+    (set-fontset-font t 'emoji "Zapf Dingbats" nil 'prepend)
+    (set-fontset-font t 'emoji "Monaco" nil 'prepend)
+    (set-fontset-font t 'emoji "Menlo" nil 'prepend)
+    ;; (set-fontset-font t 'emoji "Noto Emoji" nil 'prepend) ;; If you install Noto Emoji
+    ;; Most preferred for emojis -- use your main font here
+    (set-fontset-font t 'emoji "JetBrainsMono Nerd Font Mono" nil 'prepend))
+
+  ;; Then, add the fonts after your setup is complete:
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (progn
+                (when (string-equal system-type "darwin")
+                  (my/setup-custom-font-fallbacks-mac)))))
+#+end_src
+*** claude-code.el This is broken since claude-code-emacs is overriding it. maybe we can try it out
 #+begin_src elisp
   (use-package claude-code
+    :disabled t
+    :ensure (:name "claude-code" :repo "stevemolitor/claude-code.el" :fetcher github :files "*.el")
     :bind-keymap
-    ("C-M-;" . claude-code-command-map)
+    ("C-c C-." . claude-code-command-map)
     :bind (:map claude-code-command-map
                 ("F" . claude-code-send-file))
     :custom
@@ -718,17 +783,10 @@
     (monet-mode 1)
     (claude-code-mode))
 #+end_src
-**** Monet
-For claude code protocol via web-sockets
-#+begin_src elisp
-  (use-package monet
-    :ensure (:repo "stevemolitor/monet" :fetcher github :files ("*.el") :branch "main")
-    :custom
-    (monet-diff-tool 'monet-simple-diff-tool))
-#+end_src
-*** claude-code-ide (another claude-code wrapper)
+*** claude-code-ide
 #+begin_src elisp
   (use-package claude-code-ide
+    :disabled t
     :ensure (:repo "manzaltu/claude-code-ide.el" :fetcher github :files ("*.el") :branch "main")
     ;; This is just untill I open a PR. replace the repo path later back to "manzaltu/claude-code-ide.el"
     ;; :ensure (:repo "bobrowadam/claude-code-ide.el" :fetcher github :files ("*.el") :branch "fix-eat-cursor-invisible")
@@ -736,6 +794,7 @@ For claude code protocol via web-sockets
     :custom
     (claude-code-ide-terminal-backend 'eat)
     (claude-code-ide-window-width 60)
+    (claude-code-ide-window-side 'bottom)
     :config
     (exec-path-from-shell-initialize)
     (claude-code-ide-emacs-tools-setup))
