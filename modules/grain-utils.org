@@ -64,7 +64,9 @@ This module contains utilities for working with the Grain financial services pla
 ** Logic
 *** Globals
 #+begin_src elisp
+  (defconst *grain-main-worktree-directory* (expand-file-name "~/source/grain"))
   (defconst *grain-services-root* "apps/backend/")
+
   (defvar *grain-active-processes* '()
     "Registry of active Grain service processes.
   Each entry is a plist with keys:
@@ -589,6 +591,14 @@ This module contains utilities for working with the Grain financial services pla
                (bob/is-grain-project (bob/monorepo-root))
                (derived-mode-p '(typescript-mode typescript-ts-mode js-ts-mode tsx-ts-mode jtsx-jsx-mode)))
       (bob/enable-grain-lint-on-save)))
+#+end_src
+
+* Check staging state
+#+begin_src elisp
+  (defun grain/waiting-in-staging ()
+    "Check the commits that are currently waiting on staging"
+    (let ((default-directory *grain-main-worktree-directory*))
+      (shell-command "./scripts/waiting-in-staging.sh")))
 #+end_src
 
 * Provide Feature
