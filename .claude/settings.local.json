@@ -11,7 +11,11 @@
       "Bash(find:*)",
       "Bash(sourcekit-lsp:*)",
       "mcp__elisp-dev__elisp-info-lookup-symbol",
-      "mcp__elisp-dev__elisp-describe-variable"
+      "mcp__elisp-dev__elisp-describe-variable",
+      "Bash(emacs:*)",
+      "Read(///**)",
+      "Bash(awk:*)",
+      "mcp__elisp-dev__elisp-describe-function"
     ],
     "deny": []
   },
