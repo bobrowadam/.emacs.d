@@ -595,8 +595,10 @@ This module contains utilities for working with the Grain financial services pla
 
 * Check staging state
 #+begin_src elisp
-  (defun grain/waiting-in-staging ()
+  ;;;###autoload
+  (defun grain/check-waiting-in-staging ()
     "Check the commits that are currently waiting on staging"
+    (interactive)
     (let ((default-directory *grain-main-worktree-directory*))
       (shell-command "./scripts/waiting-in-staging.sh")))
 #+end_src
