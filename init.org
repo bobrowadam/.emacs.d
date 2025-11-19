@@ -2054,6 +2054,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (jtsx-enable-jsx-element-tags-auto-sync nil)
     (jtsx-enable-all-syntax-highlighting-features t)
     :config
+    (fnm-use)
     (defun jtsx-bind-keys-to-mode-map (mode-map)
       "Bind keys to MODE-MAP."
       (define-key mode-map (kbd "C-c C-j") 'jtsx-jump-jsx-element-tag-dwim)
