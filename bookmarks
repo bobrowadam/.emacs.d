@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("eca-config"
+(("gptel-sessions"
+ (filename . "~/gptel-sessions/")
+ (front-context-string . "setup-code-revie")
+ (rear-context-string . "9K Nov 21 17:08 ")
+ (position . 170)
+ (last-modified 26912 32921 206165 0))
+("eca-config"
  (filename . "~/.config/eca/config.json")
  (front-context-string . "{\n  \"index\": {\n ")
  (rear-context-string)
