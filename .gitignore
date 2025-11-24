@@ -84,3 +84,4 @@ transient/*
 /eca/
 /emacs-mcp-stdio.sh
 /custom.el
+/code-review-db-file.sqlite

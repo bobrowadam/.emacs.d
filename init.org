@@ -1530,9 +1530,14 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :init (setq forge-bug-reference-hooks nil))
 #+end_src
 ** Pr Reviews
+** PR Review
 #+begin_src elisp
   (use-package pr-review)
   (use-package github-review)
+  (use-package code-review
+    :ensure (:repo "ag91/code-review"  :fetcher github :files ("*.el" "./docs/*"))
+    :custom
+    (code-review-auth-login-marker 'forge))
 #+end_src
 ** Git Time Machinie
 #+begin_src elisp
