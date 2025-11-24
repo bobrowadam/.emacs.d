@@ -585,8 +585,13 @@
     :custom
     (gptel-default-mode 'org-mode)
     (gptel-max-tokens 800)
+    (gptel-expert-commands t)
+    (gptel-org-branching-context t)
+    (gptel-cache t)
     :config
     (exec-path-from-shell-initialize)
+    (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "~@user~\n")
+    (setf (alist-get 'org-mode gptel-response-prefix-alist) "~@assistant~\n")
     (defun bob/gptel-switch-to-gptel-buffer ()
       "Switch to a buffer with `gptel-mode' active."
       (interactive)
@@ -601,16 +606,15 @@
         (message "No GPTel buffers found.")))
     (when-let ((credentials
                 (setenv "ANTHROPIC_API_KEY"
-                        (-some->
-                            (plist-get (car (auth-source-search :host "claude.ai")) :secret)
-                          funcall))))
+                        (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))))
       (setq
-       gptel-model 'claude-sonnet-4-20250514
+       gptel-model 'claude-sonnet-4-5-20250929
        gptel-backend
        (gptel-make-anthropic
            "Claude"
          :stream t
          :key credentials)))
+
     :bind
     ("C-c g g" . gptel)
     ("C-c g r" . gptel-rewrite)
@@ -621,7 +625,17 @@
     :hook
     (org-mode . (lambda ()
                   (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
-                    (gptel-mode 1)))))
+                    (gptel-mode 1))))
+    (gptel-post-stream . gptel-auto-scroll)
+    (gptel-post-response . gptel-end-of-response))
+
+  (use-package llm-tool-collection
+    :after gptel
+    :demand t
+    :ensure (:repo "skissue/llm-tool-collection" :fetcher github :files ("*.el"))
+    :config
+    (mapcar (apply-partially #'apply #'gptel-make-tool)
+            (llm-tool-collection-get-all)))
 #+end_src
 ** Minuet - ai code completion
 #+begin_src elisp
