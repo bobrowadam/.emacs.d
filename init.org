@@ -2070,6 +2070,7 @@ LSP/DAP servers manager
           ("C-M-SPC" . sp-mark-sexp))
     :hook (typescript-ts-mode . (lambda () (bob/maybe-enable-grain-lint)))
     :config
+    (exec-path-from-shell-initialize)
     (fnm-use)
     (setq typescript-ts-mode-indent-offset 2))
 
