@@ -1516,6 +1516,14 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
       '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
 
 #+end_src
+
+** Magit Prime
+A Magit extension that primes the magit cache in parallel before refresh, reducing refresh times
+#+begin_src elisp
+(use-package magit-prime
+  :hook (magit-pre-refresh . magit-prime-refresh-cache))
+#+end_src
+
 ** Forge
 #+begin_src elisp
   (use-package forge
