@@ -1303,23 +1303,21 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 
   (use-package org-super-agenda
     :config
-    (defun bob/org-super-agenda-custom-header-format (header)
-      (progn (string-match ".+?:[[:space:]]\\(.+?$\\)"
-                           header)
-             (match-string 1 header)))
     (setq org-super-agenda-groups
           '((:name "Reminders"
                    :file-path "reminders"
-                   :order 4)
+                   :order 5)
+            (:name "Today Journal"
+                   :file-path "journal"
+                   :order 1
+                   :transformer (progn (string-match ".+?:[[:space:]]\\(.+?$\\)"
+                                                     it)
+                                       (match-string 1 it)))
             (:name "Calendar"
                    :discard (:file-path "reminders")
                    :discard (:tag "chennofar@gmailcom")
                    :time-grid t
                    :order 2)
-            (:name "Today Journal"
-                   :file-path "journal"
-                   :order 1.1
-                   :transformer bob/org-super-agenda-custom-header-format)
             (:name "Do Next"
                    :todo "NEXT"
                    :order 2)
