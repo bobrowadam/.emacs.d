@@ -15,7 +15,8 @@
       "Bash(emacs:*)",
       "Read(///**)",
       "Bash(awk:*)",
-      "mcp__elisp-dev__elisp-describe-function"
+      "mcp__elisp-dev__elisp-describe-function",
+      "Read(//Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/journal/**)"
     ],
     "deny": []
   },
