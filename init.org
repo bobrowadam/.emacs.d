@@ -1849,7 +1849,15 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     :after eglot
     :bind (:map eglot-mode-map ("C->" . eldoc-box-help-at-point)))
 #+end_src
-** Eglot
+** LSP
+*** Mason
+LSP/DAP servers manager
+#+begin_src elisp
+(use-package mason
+  :config
+  (mason-ensure))
+#+end_src
+*** Eglot
 #+begin_src elisp
   (use-package eglot
     ;; :ensure (:wait t)
@@ -1901,7 +1909,7 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
                              (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
                                (flymake-jsts-eslint-enable)))))
 #+end_src
-** Dape
+*** Dape
 #+begin_src elisp
   (use-package dape
     :bind

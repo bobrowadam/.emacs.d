@@ -85,3 +85,4 @@ transient/*
 /emacs-mcp-stdio.sh
 /custom.el
 /code-review-db-file.sqlite
+/mason/
