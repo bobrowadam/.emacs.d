@@ -1542,7 +1542,11 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
   (use-package pr-review)
   (use-package github-review)
   (use-package code-review
+    :demand t
+    :after magit
     :ensure (:repo "ag91/code-review"  :fetcher github :files ("*.el" "./docs/*"))
+    :bind (:map magit-status-mode-map
+                ("C-c C-p" . code-review-forge-pr-at-point))
     :custom
     (code-review-auth-login-marker 'forge))
 #+end_src
