@@ -1241,6 +1241,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (shell . t)
        (python . t)
        (lisp . t)
+       (sql . t)
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("ts" . typescript))
     ;; Fix imenu to use org-mode's specialized function
