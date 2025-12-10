@@ -691,7 +691,12 @@
             ("postgres" . (
                            :command  "postgres-mcp"
                            :args ("--access-mode=unrestricted")
-                           :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain"))))))
+                           :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain")))
+            ("elisp-dev" . (
+                            :command  "/Users/bob/.emacs.d/emacs-mcp-stdio.sh"
+                            :args ("--init-function=elisp-dev-mcp-enable","--stop-function=elisp-dev-mcp-disable","--server-id=elisp-dev-mcp")
+                            :env ())))))
+
 #+end_src
 ** Claude Code
 *** Monet
@@ -1853,9 +1858,11 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 *** Mason
 LSP/DAP servers manager
 #+begin_src elisp
-(use-package mason
-  :config
-  (mason-ensure))
+  (use-package mason
+    :demand t
+    :after eglot
+    :config
+    (mason-ensure))
 #+end_src
 *** Eglot
 #+begin_src elisp
@@ -1877,7 +1884,7 @@ LSP/DAP servers manager
                  `((json-mode)
                    . ("vscode-json-languageserver" "--stdio")))
     (add-to-list 'eglot-server-programs
-                 '(sql-mode . (eglot-sqls "sqls" "-config" ".sqls-config")))
+                 '(sql-mode . ("postgres-language-server" "lsp-proxy")))
     (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
     (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
     (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
@@ -2475,6 +2482,17 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     (setenv "POSTGRES_DATABASE" "grain")
     (setenv "POSTGRES_USER" "postgres")
     (setenv "POSTGRES_PASSWORD" "grain"))
+  (use-package ob-sql-mode)
+  (use-package sql-mode
+    :custom
+    (sql-user "postgres")
+    (sql-server "localhost")
+    (sql-database "grain")
+    (sql-password "grain")
+    :ensure nil
+    :hook (sql-interactive-mode . (lambda ()
+                                    (face-remap-add-relative 'default :family "Monospace")
+                                    (toggle-truncate-lines t))))
 #+end_src
 * Grain utils
 #+begin_src elisp
