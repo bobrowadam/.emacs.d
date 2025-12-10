@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("gptel-sessions"
+(("postgres-scripts"
+ (filename . "~/source/postgres-scripts/")
+ (front-context-string . "  /Users/bob/sou")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26937 55182 711825 0))
+("gptel-sessions"
  (filename . "~/gptel-sessions/")
  (front-context-string . "setup-code-revie")
  (rear-context-string . "9K Nov 21 17:08 ")
@@ -92,12 +98,6 @@
  (rear-context-string)
  (position . 1)
  (last-modified 26390 3218 735136 0))
-("sql-queries.sql"
- (filename . "~/source/grain/sql-queries.sql")
- (front-context-string)
- (rear-context-string . "* FROM forwards;")
- (position . 24)
- (last-modified 26254 50249 85304 0))
 ("org-dir"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/")
  (front-context-string . "20211126182152-t")
