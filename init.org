@@ -813,7 +813,35 @@ For claude code protocol via web-sockets
     (claude-code-ide-window-side 'bottom)
     :config
     (exec-path-from-shell-initialize)
-    (claude-code-ide-emacs-tools-setup))
+    (claude-code-ide-emacs-tools-setup)
+
+    ;; Fix cursor visibility in copy/navigation modes
+    ;; claude-code-ide sets cursor-type to nil for vterm to let it handle cursor,
+    ;; but when entering copy mode, we need a visible cursor for navigation.
+    ;; Eat has similar issues when switching between emacs-mode and semi-char-mode.
+
+    (defun bob/claude-code-vterm-copy-mode-cursor-fix ()
+      "Toggle cursor visibility based on vterm-copy-mode state."
+      (when (and (derived-mode-p 'vterm-mode)
+                 (string-prefix-p "*claude-code[" (buffer-name)))
+        (if vterm-copy-mode
+            (setq-local cursor-type t)      ; Show cursor in copy mode
+          (setq-local cursor-type nil))))   ; Hide cursor in normal mode
+
+    (defun bob/claude-code-eat-mode-cursor-advice (&rest _)
+      "Set cursor visibility based on buffer-read-only in eat buffers."
+      (when (and (derived-mode-p 'eat-mode)
+                 (string-prefix-p "*claude-code[" (buffer-name)))
+        (if buffer-read-only
+            (setq-local cursor-type t)    ; Show cursor in emacs/navigation mode
+          (setq-local cursor-type nil)))) ; Hide cursor in interactive mode
+
+    (add-hook 'vterm-copy-mode-hook #'bob/claude-code-vterm-copy-mode-cursor-fix)
+
+    ;; For eat, use advice on mode switching functions
+    (advice-add 'eat-emacs-mode :after #'bob/claude-code-eat-mode-cursor-advice)
+    (advice-add 'eat-semi-char-mode :after #'bob/claude-code-eat-mode-cursor-advice)
+    (advice-add 'eat-char-mode :after #'bob/claude-code-eat-mode-cursor-advice))
 #+end_src
 ** ECA
 ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more.
