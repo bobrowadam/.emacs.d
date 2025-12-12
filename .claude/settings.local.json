@@ -17,9 +17,13 @@
       "Bash(awk:*)",
       "mcp__elisp-dev__elisp-describe-function",
       "Read(//Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/journal/**)",
-      "mcp__elisp-dev__elisp-read-source-file"
+      "mcp__elisp-dev__elisp-read-source-file",
+      "mcp__elisp-dev__elisp-get-function-definition"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "/Users/bob/source/eca/"
+    ]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
