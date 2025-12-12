@@ -1429,6 +1429,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (magit-process-apply-ansi-colors 'filter)
     (magit-commit-show-diff nil)
     :config
+    (add-hook 'magit-status-sections-hook #'magit-insert-worktrees t)
     (defun bob/create-github-repo ()
       "Create a new Github repo using the Github API."
       (interactive)
