@@ -604,16 +604,12 @@
                (gptel-buffer (completing-read "GPT buffer: " (mapcar 'buffer-name gptel-buffers))))
           (switch-to-buffer gptel-buffer)
         (message "No GPTel buffers found.")))
-    (when-let ((credentials
-                (setenv "ANTHROPIC_API_KEY"
-                        (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))))
-      (setq
-       gptel-model 'claude-sonnet-4-5-20250929
-       gptel-backend
-       (gptel-make-anthropic
-           "Claude"
-         :stream t
-         :key credentials)))
+
+    (setq
+     gptel-model 'claude-sonnet-4-5-20250929
+     gptel-backend
+     (gptel-make-anthropic "Claude" :stream t))
+    (require 'gptel-anthropic-oauth)
 
     :bind
     ("C-c g g" . gptel)
