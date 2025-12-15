@@ -586,12 +586,12 @@
     (gptel-default-mode 'org-mode)
     (gptel-max-tokens 800)
     (gptel-expert-commands t)
-    (gptel-org-branching-context t)
+    ;; (gptel-org-branching-context t)
     (gptel-cache t)
     :config
     (exec-path-from-shell-initialize)
-    (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "~@user~\n")
-    (setf (alist-get 'org-mode gptel-response-prefix-alist) "~@assistant~\n")
+    ;; (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "~@user~\n")
+    ;; (setf (alist-get 'org-mode gptel-response-prefix-alist) "~@assistant~\n")
     (defun bob/gptel-switch-to-gptel-buffer ()
       "Switch to a buffer with `gptel-mode' active."
       (interactive)
