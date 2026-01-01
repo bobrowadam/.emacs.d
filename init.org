@@ -926,6 +926,17 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ;;   (agent-shell-anthropic-make-authentication :login t))
   )
 #+end_src
+** Mentat
+#+begin_src elisp
+  (use-package mentat
+    :ensure nil
+    :commands (mentat-menu)
+    :load-path "~/source/entat"
+    :bind (:map prog-mode-map
+           ("C-c M-c" . mentat-capture-code-to-cell))  ; or whatever key you prefer
+    :custom
+    (mentat-confirm-cell-delete nil))
+#+end_src
 * Ediff
 #+begin_src elisp
   (defvar ediff-buffer-A)
@@ -1161,8 +1172,15 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :config
     (add-to-list 'all-the-icons-extension-icon-alist
                  '("roc" all-the-icons-fileicon "elm" :face all-the-icons-blue))
+
     (add-to-list 'all-the-icons-mode-icon-alist
                  '(roc-mode all-the-icons-fileicon "elm" :face all-the-icons-blue))
+    ;; Mentat dialog files
+    (add-to-list 'all-the-icons-extension-icon-alist
+                 '("mnt" all-the-icons-fileicon "robot" :face all-the-icons-cyan))
+
+    (add-to-list 'all-the-icons-mode-icon-alist
+                 '(mentat-dialog-mode all-the-icons-fileicon "robot" :face all-the-icons-cyan))
     :hook (dired-mode . all-the-icons-dired-mode))
 
   (use-package diredfl
