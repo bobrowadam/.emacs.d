@@ -1239,7 +1239,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package edit-indirect)
 #+end_src
-
 ** Makrdown Xwidgets
 #+begin_src elisp
   (use-package markdown-xwidgetglot
@@ -2434,8 +2433,11 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :custom
     (doom-monokai-classic-brighter-comments nil)
     (doom-monokai-classic-comment-bg t)
+    (doom-ayu-dark-padded-modeline nil)
+    (doom-ayu-dark-brighter-modeline nil)
     :config
-    (load-theme 'doom-monokai-classic))
+    ;; (load-theme 'doom-monokai-classic)
+    (load-theme 'doom-ayu-dark))
 #+end_src
 *** Doric Themes
 #+begin_src elisp
@@ -2465,17 +2467,13 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     ;; (ef-them 'ef-symbiosis)
     (ef-themes-take-over-modus-themes-mode))
 #+end_src
-*** Catppuccin
-#+begin_src elisp
-  (use-package catppuccin-theme)
-#+end_src
 *** Modus Catppuccin
 #+begin_src elisp
   (use-package modus-catppuccin
     :ensure (:repo "magus/modus-catppuccin" :fetcher gitlab :files ("*.el"))
     :init
     (modus-catppuccin-take-over-modus-themes-mode)
-    (load-theme 'catppuccin-macchiato))
+    (load-theme 'catppuccin-mocha))
 #+end_src
 ** Spacious padding
 #+begin_src elisp
