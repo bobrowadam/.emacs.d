@@ -1230,10 +1230,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package ob-typescript)
 
   (use-package org
+    :init
+    (setq org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
     :commands (org-agenda)
     :custom
     (org-imenu-depth 5)
-    (org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
     (org-babel-python-command "python3")
     (org-hide-emphasis-markers t)
     (org-pretty-entities nil)
