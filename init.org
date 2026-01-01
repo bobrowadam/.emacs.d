@@ -2633,7 +2633,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     ("C-!" . eat)
     ("C-c s j" . bob/jump-to-shell)
     ("C-x p s" . eat-project)
-    ("C-x p S" . bob/eat-top-project))
+    ("C-x p S" . bob/eat-top-project)
+    (:map eat-semi-char-mode-map ("s-v" . eat-yank)))
 
   (use-package xterm-color
     ;; :demand t
