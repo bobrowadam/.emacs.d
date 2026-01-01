@@ -1891,6 +1891,7 @@ LSP/DAP servers manager
     (mason-ensure))
 #+end_src
 *** Eglot
+**** Basic Settings
 #+begin_src elisp
   (use-package eglot
     ;; :ensure (:wait t)
@@ -1941,6 +1942,13 @@ LSP/DAP servers manager
     (eglot-managed-mode .  (lambda ()
                              (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
                                (flymake-jsts-eslint-enable)))))
+#+end_src
+**** Eglot hover
+#+begin_src elisp
+  (use-package eglot-hover
+    :ensure nil
+    :after (eglot)
+    :demand t)
 #+end_src
 *** Dape
 #+begin_src elisp
