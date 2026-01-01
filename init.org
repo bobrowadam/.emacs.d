@@ -1240,6 +1240,15 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package edit-indirect)
 #+end_src
 
+** Makrdown Xwidgets
+#+begin_src elisp
+  (use-package markdown-xwidgetglot
+    :after markdown-mode
+    :ensure (markdown-xwidget
+             :fetcher github
+             :repo "cfclrk/markdown-xwidget"
+             :files (:defaults "resources")))
+#+end_src
 * Org Mode
 ** Org mode configuration
 #+begin_src elisp
