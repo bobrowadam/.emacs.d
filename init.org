@@ -931,7 +931,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package mentat
     :ensure nil
     :commands (mentat-menu)
-    :load-path "~/source/entat"
+    :load-path "~/source/mentat"
     :bind (:map prog-mode-map
            ("C-c M-c" . mentat-capture-code-to-cell))  ; or whatever key you prefer
     :custom
