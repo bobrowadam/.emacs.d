@@ -708,8 +708,8 @@ For claude code protocol via web-sockets
   (use-package claudemacs
     :ensure (:fetcher github :repo "cpoile/claudemacs")
     :bind ("C-c C-." . 'claudemacs-transient-menu)
-    :custom
-    (claudemacs-program-switches '("--chrome"))
+    ;; :custom
+    ;; (claudemacs-program-switches '("--chrome"))
     :hook (claudemacs-startup . (lambda () (monet-start-server)))
     :config
     (monet-mode 1)
