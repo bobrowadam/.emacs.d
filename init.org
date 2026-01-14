@@ -1274,7 +1274,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (org-enforce-todo-dependencies t)
     (org-use-fast-todo-selection 'expert)
     (org-todo-keywords
-     '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
+     '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "BACKLOG(b)" "|" "DONE(d)" "CANCELED(c)")))
     (org-stuck-projects
      '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER") ""))
     (org-tags-exclude-from-inheritance '("project"))
@@ -1368,9 +1368,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package org-super-agenda
     :config
     (setq org-super-agenda-groups
-          '((:name "Reminders"
-                   :file-path "reminders"
+          '((:discard (:todo "DONE"))
+            (:name "Backlog"
+                   :todo "BACKLOG"
                    :order 5)
+            (:name "Reminders"
+                   :file-path "reminders"
+                   :order 1)
             (:name "Today Journal"
                    :file-path "journal"
                    :order 1
@@ -1381,16 +1385,17 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                    :discard (:file-path "reminders")
                    :discard (:tag "chennofar@gmailcom")
                    :time-grid t
-                   :order 2)
-            (:name "Do Next"
-                   :todo "NEXT"
-                   :order 2)
-            (:name "Blocked/Waiting"
-                   :todo "WAITING"
-                   :order 3)
-            (:name "Do Later"
-                   :todo "TODO"
-                   :order 4)))
+                   :order 0)
+            ;; Group Linear items by state and project
+            (:auto-map
+             (lambda (item)
+               (when-let* ((marker (or (get-text-property 0 'org-marker item)
+                                       (get-text-property 0 'org-hd-marker item)))
+                           (todo (get-text-property 0 'todo-state item)))
+                 (let ((project (org-entry-get marker "PROJECT")))
+                   (if (and project (not (string-empty-p project)))
+                       (format "%s: %s" todo project)
+                     todo)))))))
     (org-super-agenda-mode 1))
 #+end_src
 
@@ -2794,14 +2799,13 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
                            :host "linear.app"
                            :user "linear_api_key"))
     (linear-emacs-issues-state-mapping '(("Todo" . "TODO")
-                                         ("Backlog" . "TODO")
                                          ("In Progress" . "NEXT")
                                          ("In Review" . "WAITING")
                                          ("Blocked" . "WAITING")
-                                         ("Done" . "DONE")))
+                                         ("Backlog" . "BACKLOG")
+                                         ("Working in production" . "DONE")))
     (linear-emacs-org-file-path (format "%s/%s" org-directory "linear-emacs.org"))
     :config
-    (linear-emacs-enable-org-sync)
     (advice-add 'org-agenda :before #'linear-emacs-list-issues)
     (advice-add 'linear-emacs-list-issues :after
                 (lambda (&rest _)
