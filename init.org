@@ -1272,6 +1272,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (calendar-longitude 32.085300)
     (calendar-latitude 34.781769)
     (org-enforce-todo-dependencies t)
+    (org-use-fast-todo-selection 'expert)
     (org-todo-keywords
      '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "|" "DONE(d)" "CANCELED(c)")))
     (org-stuck-projects
@@ -1343,13 +1344,18 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (org-agenda-span 1)
     (org-agenda-files `(,(format "%sjournal" org-directory)
                         "beorg.org"
-                        "linear.org"
+                        "linear-emacs.org"
                         "20240104T120451--inbox__project.org"
                         "20240103T130349--reminders__project.org"
                         "20240103T130420--tasks__project.org"))
     (org-agenda-custom-commands
      '(("b" tags "+OngoingBugs")
-       ("n" "Todo next" ((todo "NEXT")))))
+       ("n" "Todo next" ((todo "NEXT")))
+       ("d" "Daily view"
+        ((agenda "" ((org-agenda-span 'day)))
+         (alltodo "" ((org-agenda-overriding-header "")
+                      (org-agenda-skip-function
+                       '(org-agenda-skip-entry-if 'scheduled 'deadline))))))))
     :bind
     (:map org-agenda-mode-map
           ("M-F" . org-agenda-do-date-later)
@@ -1379,11 +1385,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
             (:name "Do Next"
                    :todo "NEXT"
                    :order 2)
+            (:name "Blocked/Waiting"
+                   :todo "WAITING"
+                   :order 3)
             (:name "Do Later"
                    :todo "TODO"
-                   :order 3)
-            (:name "Waiting"
-                   :todo "WAITING"
                    :order 4)))
     (org-super-agenda-mode 1))
 #+end_src
@@ -2777,11 +2783,32 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 
 #+end_src
-* linear
+* linear-emacs
 #+begin_src elisp
   (use-package linear-emacs
-    :custom (linear-api-key (getenv "LINEAR_API_KEY"))
-    :ensure (:repo "anegg0/linear-emacs" :fetcher github :files ("*.el")))
+    :ensure (:repo "bobrowadam/linear-emacs" :fetcher github :files ("*.el")
+             :remotes (("upstream" :repo "anegg0/linear-emacs")))
+    :demand t
+    :after (org)
+    :custom
+    (linear-emacs-api-key (auth-source-pick-first-password
+                           :host "linear.app"
+                           :user "linear_api_key"))
+    (linear-emacs-issues-state-mapping '(("Todo" . "TODO")
+                                         ("Backlog" . "TODO")
+                                         ("In Progress" . "NEXT")
+                                         ("In Review" . "WAITING")
+                                         ("Blocked" . "WAITING")
+                                         ("Done" . "DONE")))
+    (linear-emacs-org-file-path (format "%s/%s" org-directory "linear-emacs.org"))
+    :config
+    (linear-emacs-enable-org-sync)
+    (advice-add 'org-agenda :before #'linear-emacs-list-issues)
+    (advice-add 'linear-emacs-list-issues :after
+                (lambda (&rest _)
+                  (when-let ((win (get-buffer-window "*Org Agenda*" t)))
+                    (with-selected-window win
+                      (org-agenda-redo-all))))))
 #+end_src
 
 #+end_src
