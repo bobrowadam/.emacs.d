@@ -2,7 +2,13 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("postgres-scripts"
+(("linear-emacs.org"
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/linear-emacs.org")
+ (front-context-string . ":PROPERTIES:\n:ID")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 26967 23112 246881 0))
+("postgres-scripts"
  (filename . "~/source/postgres-scripts/")
  (front-context-string . "  /Users/bob/sou")
  (rear-context-string)
@@ -46,10 +52,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* fnm-use should")
- (rear-context-string . "ckage Manager]]\n")
- (position . 230)
- (last-modified 26928 8144 1955 0))
+ (front-context-string . "* Fix the claude")
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 26979 44368 452805 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
