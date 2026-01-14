@@ -1927,55 +1927,56 @@ LSP/DAP servers manager
 *** Eglot
 **** Basic Settings
 #+begin_src elisp
-  (use-package eglot
-    ;; :ensure (:wait t)
-    :after (fnm exec-path-from-shell)
-    :custom-face (eglot-highlight-symbol-face ((t (:inherit bold :underline t :slant italic))))
-    :commands (eglot eglot-ensure eglot-shutdown-all)
-    :custom
-    (eglot-events-buffer-config '(:size 0 :format full))
-    (eglot-sync-connect 0)
-    :config
-    (exec-path-from-shell-initialize)
-    ;; (eglot-booster-mode)
-    (add-to-list 'eglot-server-programs
-                 `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
-                   . ("typescript-language-server" "--stdio")))
-    (add-to-list 'eglot-server-programs
-                 `((json-mode)
-                   . ("vscode-json-languageserver" "--stdio")))
-    (add-to-list 'eglot-server-programs
-                 '(sql-mode . ("postgres-language-server" "lsp-proxy")))
-    (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-    (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
-    (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
-    (add-to-list 'eglot-server-programs '(swift-ts-mode . ("sourcekit-lsp")))
+    (use-package eglot
+      ;; :ensure (:wait t)
+      :after (fnm exec-path-from-shell)
+      :custom-face (eglot-highlight-symbol-face ((t (:inherit bold :underline t :slant italic))))
+      :commands (eglot eglot-ensure eglot-shutdown-all)
+      :custom
+      (eglot-events-buffer-config '(:size 0 :format full))
+      (eglot-sync-connect 0)
+      :config
+      (exec-path-from-shell-initialize)
+      ;; (eglot-booster-mode)
+      (add-to-list 'eglot-server-programs
+                   `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
+                     . ("rass" "ts")))
+      (add-to-list 'eglot-server-programs
+                   `((json-mode)
+                     . ("vscode-json-languageserver" "--stdio")))
+      (add-to-list 'eglot-server-programs
+                   '(sql-mode . ("postgres-language-server" "lsp-proxy")))
+      (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+      (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
+      (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
+      (add-to-list 'eglot-server-programs '(swift-ts-mode . ("sourcekit-lsp")))
 
-    (unless (executable-find "pyright-langserver")
-      (progn
-        (print "Installing pyright-langserver for python eglot support")
-        (async-shell-command "npm install -g pyright"
-                             "*pyright-installation-stdout*"
-                             "*pyright-installation-error*")))
-    (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
+      (unless (executable-find "pyright-langserver")
+        (progn
+          (print "Installing pyright-langserver for python eglot support")
+          (async-shell-command "npm install -g pyright"
+                               "*pyright-installation-stdout*"
+                               "*pyright-installation-error*")))
+      (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
-    (cl-defmethod project-root ((project (head eglot-project)))
-      (cdr project))
-    :bind
-    (:map eglot-mode-map
-          ("C-c C-f" . eglot-format)
-          ("C-c C-n" . eglot-rename)
-          ("M-n" . forward-paragraph)
-          ("M-p" . backward-paragraph)
-          ("M-." . xref-find-definitions)
-          ("M-?" . xref-find-references)
-          ("C-<" . eglot-find-typeDefinition)
-          ("C-c C-a" . eglot-code-actions))
-    :hook
-    ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode clojure-ts-mode) . eglot-ensure)
-    (eglot-managed-mode .  (lambda ()
-                             (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
-                               (flymake-jsts-eslint-enable)))))
+      (cl-defmethod project-root ((project (head eglot-project)))
+        (cdr project))
+      :bind
+      (:map eglot-mode-map
+            ("C-c C-f" . eglot-format)
+            ("C-c C-n" . eglot-rename)
+            ("M-n" . forward-paragraph)
+            ("M-p" . backward-paragraph)
+            ("M-." . xref-find-definitions)
+            ("M-?" . xref-find-references)
+            ("C-<" . eglot-find-typeDefinition)
+            ("C-c C-a" . eglot-code-actions))
+      :hook
+      ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode clojure-ts-mode) . eglot-ensure)
+      ;; (eglot-managed-mode .  (lambda ()
+      ;;                          (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
+      ;;                            (flymake-jsts-eslint-enable))))
+  )
 #+end_src
 **** Eglot hover
 #+begin_src elisp
@@ -2199,12 +2200,10 @@ LSP/DAP servers manager
 **** Eslint
 #+begin_src elisp
   (use-package flymake-jsts
-    :ensure (:repo "orzechowskid/flymake-jsts"  :fetcher github :files ("*.el") :branch "main")
-    :custom
-    (flymake-jsts-executable-name-alist '((eslint . "eslint")
-                                                  (oxlint . "oxlint")
-                                                  (biome . "biome")))
-    (flymake-jsts-project-markers-alist '((eslint . ("eslint.config.js" "eslint.config.mjs" "eslint.config.cjs" "package.json" ".eslintrc.js")))))
+    :ensure (:repo "orzechowskid/flymake-jsts"  :fetcher github :files ("*.el") :branch "mai;; n")
+    ;; :custom
+    ;; (flymake-jsts-project-markers-alist '((eslint . ("eslint.config.js" "eslint.config.mjs" "eslint.config.cjs" "package.json" ".eslintrc.js"))))
+    )
 #+end_src
 
 **** Typescript REPL
