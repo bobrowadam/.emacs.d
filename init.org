@@ -1233,7 +1233,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** markdown-mode
 #+begin_src elisp
   (use-package markdown-mode
-    :custom (markdown-fontify-code-blocks-natively t))
+    :custom (markdown-fontify-code-blocks-natively t)
+    :hook (markdown-mode . (lambda () (setq truncate-lines t))))
 #+end_src
 ** edit-indirect (a markdown mode dependency for editing code blocks)
 #+begin_src elisp
