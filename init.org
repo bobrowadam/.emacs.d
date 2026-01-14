@@ -1087,8 +1087,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :custom
     (consult-project-buffer-sources
      '(bob/consult--source-project-buffer
-       consult--source-project-recent-file
-       consult--source-project-root))
+       consult-source-recent-file
+       consult-source-project-root))
     :bind
     ("M-i" . consult-imenu)
     ("C-x b" . consult-buffer)
