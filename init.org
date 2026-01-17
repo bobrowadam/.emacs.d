@@ -1852,7 +1852,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 ** Project
 #+begin_src elisp
   (use-package project
-    :ensure nil
+    ;; :ensure nil
     :custom
     (project-list-file (format "%sprojects" user-emacs-directory))
     (project-vc-extra-root-markers '("package.json"))
