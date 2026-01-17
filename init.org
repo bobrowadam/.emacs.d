@@ -709,9 +709,11 @@ For claude code protocol via web-sockets
     :ensure (:fetcher github :repo "cpoile/claudemacs")
     :bind ("C-c C-." . 'claudemacs-transient-menu)
     ;; :custom
-    ;; (claudemacs-program-switches '("--chrome"))
+
     :hook (claudemacs-startup . (lambda () (monet-start-server)))
     :config
+    (let ((solveit-prompt (read-file  "./solveit-prompt.md")))
+      (setq claudemacs-program-switches (list "--append-system-prompt" solveit-prompt)))
     (monet-mode 1)
     (setq eat-term-scrollback-size 500000))
   ;;
@@ -936,6 +938,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
            ("C-c M-c" . mentat-capture-code-to-cell))  ; or whatever key you prefer
     :custom
     (mentat-confirm-cell-delete nil))
+#+end_src
+** OpenCode
+#+begin_src elisp
+  (use-package opencode
+    :ensure (:repo "sczi/opencode.el" :fetcher codeberg :files ("*.el")))
 #+end_src
 * Ediff
 #+begin_src elisp
