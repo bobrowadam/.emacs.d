@@ -712,7 +712,8 @@ For claude code protocol via web-sockets
 
     :hook (claudemacs-startup . (lambda () (monet-start-server)))
     :config
-    (let ((solveit-prompt (read-file  "./solveit-prompt.md")))
+    (let ((default-directory (expand-file-name user-emacs-directory))
+          (solveit-prompt (read-file  "./solveit-prompt.md")))
       (setq claudemacs-program-switches (list "--append-system-prompt" solveit-prompt)))
     (monet-mode 1)
     (setq eat-term-scrollback-size 500000))
@@ -931,11 +932,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** Mentat
 #+begin_src elisp
   (use-package mentat
+    :after (org)
     :ensure nil
-    :commands (mentat-menu)
+    :demand t
     :load-path "~/source/mentat"
-    :bind (:map prog-mode-map
-           ("C-c M-c" . mentat-capture-code-to-cell))  ; or whatever key you prefer
     :custom
     (mentat-confirm-cell-delete nil))
 #+end_src
@@ -1499,6 +1499,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :custom
     (magit-process-apply-ansi-colors 'filter)
     (magit-commit-show-diff nil)
+    (magit-diff-refine-hunk (quote all))
     :config
     (add-hook 'magit-status-sections-hook #'magit-insert-worktrees t)
     (defun bob/create-github-repo ()
@@ -2857,4 +2858,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (put 'upcase-region 'disabled nil)
   (put 'set-goal-column 'disabled nil)
   (put 'narrow-to-region 'disabled nil)
+#+end_src
+* Whats App
+#+begin_src elisp
+  (use-package wasabi
+    :ensure (:repo "xenodium/wasabi" :fetcher github :files ("*.el")))
+
 #+end_src
