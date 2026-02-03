@@ -552,6 +552,7 @@
 #+begin_src elisp
   (use-package ibuffer
     :ensure nil
+    :custom (ibuffer-expert t)
     :bind ("C-x C-b" . #'ibuffer)
     :hook (ibuffer-mode . ibuffer-auto-mode))
 
@@ -937,7 +938,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :demand t
     :load-path "~/source/mentat"
     :custom
-    (mentat-confirm-cell-delete nil))
+    (mentat-confirm-cell-delete nil)
+    (mentat-server-path "~/source/mentat/mentat-server/"))
 #+end_src
 ** OpenCode
 #+begin_src elisp
@@ -2864,4 +2866,17 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package wasabi
     :ensure (:repo "xenodium/wasabi" :fetcher github :files ("*.el")))
 
+#+end_src
+* Amp: AI coding agent
+#+begin_src elisp
+  (use-package websocket
+    :ensure t)
+
+  (use-package amp
+    :ensure nil
+    :load-path "~/.emacs.d/modules/amp.el"
+    :demand t
+    :after websocket
+    :config
+    (amp-mode 1))
 #+end_src
