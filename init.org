@@ -2880,3 +2880,12 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :config
     (amp-mode 1))
 #+end_src
+
+* elcity
+#+begin_src elisp
+  (use-package elcity
+      :ensure (:repo "vkazanov/elcity"
+               :fetcher github
+               :files ("*.el")
+               :pre-build (("make" "run"))))
+#+end_src
