@@ -2808,7 +2808,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :ensure (:repo "bobrowadam/linear-emacs" :fetcher github :files ("*.el")
              :remotes (("upstream" :repo "anegg0/linear-emacs")))
     :demand t
-    :after (org)
+    :after (org-agenda)
     :custom
     (linear-emacs-api-key (auth-source-pick-first-password
                            :host "linear.app"
