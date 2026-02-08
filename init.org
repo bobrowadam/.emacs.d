@@ -873,9 +873,9 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
           ("M-n" . eca-chat-go-to-next-user-message)
           ("C-m" . eca-chat--key-pressed-return))
     :config
-    (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
-                              :host "api.openai.com"
-                              :user "grain@finanance.co"))
+    ;; (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
+    ;;                           :host "api.openai.com"
+    ;;                           :user "grain@finanance.co"))
     (transient-replace-suffix 'eca-transient-menu "o"
       '("." "Open/close chat window" eca-chat-toggle-window))
     (transient-remove-suffix 'eca-transient-menu "s")
