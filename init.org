@@ -2496,6 +2496,11 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     (modus-catppuccin-take-over-modus-themes-mode)
     (load-theme 'catppuccin-mocha))
 #+end_src
+*** John Blow Old Theme
+#+begin_src elisp
+  (use-package jblow-nostalgia-theme
+    :ensure (:repo "Prikaz98/jblow-nostalgia" :fetcher github :files ("*.el")))
+#+end_src
 ** Spacious padding
 #+begin_src elisp
   (use-package spacious-padding
