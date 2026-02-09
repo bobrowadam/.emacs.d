@@ -1272,7 +1272,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :config
     (add-to-list 'org-babel-load-languages '(bun . t))
     (add-to-list 'org-babel-load-languages '(ts . t))
-    (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages))
+    (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+    
+    ;; Use TypeScript syntax highlighting for Bun source blocks
+    (add-to-list 'org-src-lang-modes '("bun" . typescript-ts)))
 
   (use-package org
     :init
