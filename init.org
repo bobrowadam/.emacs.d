@@ -713,9 +713,9 @@ For claude code protocol via web-sockets
 
     :hook (claudemacs-startup . (lambda () (monet-start-server)))
     :config
-    (let ((default-directory (expand-file-name user-emacs-directory))
-          (solveit-prompt (read-file  "./solveit-prompt.md")))
-      (setq claudemacs-program-switches (list "--append-system-prompt" solveit-prompt)))
+    ;; (let ((default-directory (expand-file-name user-emacs-directory))
+    ;;       (solveit-prompt (read-file  "./solveit-prompt.md")))
+    ;;   (setq claudemacs-program-switches (list "--append-system-prompt" solveit-prompt)))
     (monet-mode 1)
     (setq eat-term-scrollback-size 500000))
   ;;
@@ -939,7 +939,9 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :load-path "~/source/mentat"
     :custom
     (mentat-confirm-cell-delete nil)
-    (mentat-server-path "~/source/mentat/mentat-server/"))
+    (mentat-server-path "~/source/mentat/mentat-server/")
+    (mentat-default-behaviour 'mentor)
+    (mentat-debug t))
 #+end_src
 ** OpenCode
 #+begin_src elisp
@@ -1265,6 +1267,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :ensure nil
     :custom (org-babel-js-cmd "node"))
   (use-package ob-typescript)
+  (use-package ob-bun
+    :load-path "~/.emacs.d/"
+    :config
+    (add-to-list 'org-babel-load-languages '(bun . t))
+    (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages))
 
   (use-package org
     :init
