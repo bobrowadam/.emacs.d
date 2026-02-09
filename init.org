@@ -1271,6 +1271,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :load-path "~/.emacs.d/"
     :config
     (add-to-list 'org-babel-load-languages '(bun . t))
+    (add-to-list 'org-babel-load-languages '(ts . t))
     (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages))
 
   (use-package org

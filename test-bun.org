@@ -1,0 +1,22 @@
+#+TITLE: Bun and TypeScript Babel Test
+
+* Bun JavaScript Test
+#+begin_src bun
+const message = "Hello, Bun JavaScript!";
+console.log(message);
+#+end_src
+
+* Bun TypeScript Test
+#+begin_src ts
+interface Person {
+  name: string;
+  age: number;
+}
+
+const bob: Person = {
+  name: "Bob",
+  age: 42
+};
+
+console.log(`Name: ${bob.name}, Age: ${bob.age}`);
+#+end_src
