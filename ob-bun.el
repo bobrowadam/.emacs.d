@@ -21,16 +21,21 @@
 
 (defvar org-babel-default-header-args:ts
   '((:results . "output")
-    (:cmd . "bun"))
+    (:cmd . "bun run"))
   "Default header arguments for TypeScript code blocks.")
+
+(defun org-babel-expand-body:ts (body _params)
+  "Expand the body of a TypeScript source block.
+This is a simple pass-through, but allows for future expansion."
+  body)
 
 (defun org-babel-execute:bun (body params)
   "Execute a block of Bun (JavaScript) code with org-babel.
 This function is called by `org-babel-execute-src-block'."
-  (let* ((cmd (or (cdr (assq :cmd params)) "bun"))
+  (let* ((cmd (or (cdr (assq :cmd params)) "bun run"))
          (full-body (org-babel-expand-body:generic body params))
          (script-file (org-babel-temp-file "bun-" ".js"))
-         (cmd-line (format "%s run %s" cmd script-file)))
+         (cmd-line (format "%s %s" cmd script-file)))
     
     ;; Write the full body to a temporary script file
     (with-temp-file script-file
@@ -45,10 +50,10 @@ This function is called by `org-babel-execute-src-block'."
 (defun org-babel-execute:ts (body params)
   "Execute a block of TypeScript code with org-babel.
 This function is called by `org-babel-execute-src-block'."
-  (let* ((cmd (or (cdr (assq :cmd params)) "bun"))
-         (full-body (org-babel-expand-body:generic body params))
+  (let* ((cmd (or (cdr (assq :cmd params)) "bun run"))
+         (full-body (org-babel-expand-body:ts body params))
          (script-file (org-babel-temp-file "bun-ts-" ".ts"))
-         (cmd-line (format "%s run %s" cmd script-file)))
+         (cmd-line (format "%s %s" cmd script-file)))
     
     ;; Write the full body to a temporary script file
     (with-temp-file script-file
