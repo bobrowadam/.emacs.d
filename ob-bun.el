@@ -13,6 +13,7 @@
 ;;; Code:
 (require 'ob)
 (require 'ob-eval)
+(require 'ob-typescript)
 
 (defvar org-babel-default-header-args:bun
   '((:results . "output")
@@ -26,18 +27,13 @@
     (:flags . "run"))
   "Default header arguments for TypeScript code blocks.")
 
-(defun org-babel-expand-body:ts (body _params)
-  "Expand the body of a TypeScript source block.
-This is a simple pass-through, but allows for future expansion."
-  body)
-
-(defun org-babel-execute:bun (body params)
-  "Execute a block of Bun (JavaScript) code with org-babel.
+(defun org-babel-execute:ts (body params)
+  "Execute a block of TypeScript code with org-babel.
 This function is called by `org-babel-execute-src-block'."
   (let* ((cmd (or (cdr (assq :cmd params)) "bun"))
          (flags (or (cdr (assq :flags params)) "run"))
-         (full-body (org-babel-expand-body:generic body params))
-         (script-file (org-babel-temp-file "bun-" ".js"))
+         (full-body (org-babel-expand-body:typescript body params))
+         (script-file (org-babel-temp-file "bun-ts-" ".ts"))
          (cmd-line (format "%s %s %s" cmd flags script-file)))
     
     ;; Write the full body to a temporary script file
@@ -50,13 +46,13 @@ This function is called by `org-babel-execute-src-block'."
       (delete-file script-file)
       results)))
 
-(defun org-babel-execute:ts (body params)
-  "Execute a block of TypeScript code with org-babel.
+(defun org-babel-execute:bun (body params)
+  "Execute a block of Bun (JavaScript) code with org-babel.
 This function is called by `org-babel-execute-src-block'."
   (let* ((cmd (or (cdr (assq :cmd params)) "bun"))
          (flags (or (cdr (assq :flags params)) "run"))
-         (full-body (org-babel-expand-body:ts body params))
-         (script-file (org-babel-temp-file "bun-ts-" ".ts"))
+         (full-body (org-babel-expand-body:typescript body params))
+         (script-file (org-babel-temp-file "bun-js-" ".js"))
          (cmd-line (format "%s %s %s" cmd flags script-file)))
     
     ;; Write the full body to a temporary script file

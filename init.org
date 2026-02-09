@@ -1267,19 +1267,28 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :ensure nil
     :custom (org-babel-js-cmd "node"))
   (use-package ob-typescript)
+  ;; Explicit TypeScript and Bun Babel support
+  (use-package ob-typescript 
+    :ensure t
+    :config
+    (add-to-list 'org-babel-load-languages '(typescript . t)))
+
   (use-package ob-bun
     :load-path "~/.emacs.d/"
+    :after (org ob-typescript)
     :config
     (defun bob/register-bun-babel-languages ()
       "Register Bun and TypeScript for Org Babel."
       (add-to-list 'org-babel-load-languages '(bun . t))
       (add-to-list 'org-babel-load-languages '(ts . t))
+      (add-to-list 'org-babel-load-languages '(typescript . t))
       (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages))
     
     ;; Comprehensive syntax highlighting setup for Bun
     (with-eval-after-load 'org
       ;; Ensure Bun uses TypeScript mode for syntax highlighting
       (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
+      (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
       
       ;; Function to set up Bun code block highlighting
       (defun bob/setup-bun-syntax-highlight ()
@@ -1295,6 +1304,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
         (font-lock-add-keywords 
          nil 
          '(("^[ \t]*#\\+begin_src[ \t]+bun" 0 'org-block-begin-line prepend)
+           ("^[ \t]*#\\+begin_src[ \t]+ts" 0 'org-block-begin-line prepend)
            ("^[ \t]*#\\+end_src" 0 'org-block-end-line prepend)))
         
         ;; Fallback syntax highlighting
@@ -1311,9 +1321,12 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
             (cons '("bun" . typescript-ts) 
                   (assq-delete-all 'bun org-src-lang-modes)))
       
-      ;; Register languages
+      ;; Register languages immediately
       (bob/register-bun-babel-languages)
-      (add-hook 'org-mode-hook #'bob/register-bun-babel-languages)))
+      (add-hook 'org-mode-hook #'bob/register-bun-babel-languages)
+      (org-babel-do-load-languages 'org-babel-load-languages 
+        (append org-babel-load-languages 
+                '((bun . t) (ts . t) (typescript . t))))))
 
   (use-package org
     :init
