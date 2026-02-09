@@ -8,6 +8,7 @@ console.log(message);
 // Some additional TypeScript-like syntax to test highlighting
 const numbers: number[] = [1, 2, 3];
 const doubled = numbers.map((x: number) => x * 2);
+console.log(doubled);
 #+end_src
 
 * Bun TypeScript Test

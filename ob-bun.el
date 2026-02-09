@@ -16,12 +16,14 @@
 
 (defvar org-babel-default-header-args:bun
   '((:results . "output")
-    (:cmd . "bun"))
+    (:cmd . "bun")
+    (:flags . "run"))
   "Default header arguments for Bun code blocks.")
 
 (defvar org-babel-default-header-args:ts
   '((:results . "output")
-    (:cmd . "bun run"))
+    (:cmd . "bun")
+    (:flags . "run"))
   "Default header arguments for TypeScript code blocks.")
 
 (defun org-babel-expand-body:ts (body _params)
@@ -32,10 +34,11 @@ This is a simple pass-through, but allows for future expansion."
 (defun org-babel-execute:bun (body params)
   "Execute a block of Bun (JavaScript) code with org-babel.
 This function is called by `org-babel-execute-src-block'."
-  (let* ((cmd (or (cdr (assq :cmd params)) "bun run"))
+  (let* ((cmd (or (cdr (assq :cmd params)) "bun"))
+         (flags (or (cdr (assq :flags params)) "run"))
          (full-body (org-babel-expand-body:generic body params))
          (script-file (org-babel-temp-file "bun-" ".js"))
-         (cmd-line (format "%s %s" cmd script-file)))
+         (cmd-line (format "%s %s %s" cmd flags script-file)))
     
     ;; Write the full body to a temporary script file
     (with-temp-file script-file
@@ -50,10 +53,11 @@ This function is called by `org-babel-execute-src-block'."
 (defun org-babel-execute:ts (body params)
   "Execute a block of TypeScript code with org-babel.
 This function is called by `org-babel-execute-src-block'."
-  (let* ((cmd (or (cdr (assq :cmd params)) "bun run"))
+  (let* ((cmd (or (cdr (assq :cmd params)) "bun"))
+         (flags (or (cdr (assq :flags params)) "run"))
          (full-body (org-babel-expand-body:ts body params))
          (script-file (org-babel-temp-file "bun-ts-" ".ts"))
-         (cmd-line (format "%s %s" cmd script-file)))
+         (cmd-line (format "%s %s %s" cmd flags script-file)))
     
     ;; Write the full body to a temporary script file
     (with-temp-file script-file

@@ -1276,25 +1276,42 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
       (add-to-list 'org-babel-load-languages '(ts . t))
       (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages))
     
-    ;; Explicitly set Bun source blocks to use TypeScript syntax highlighting
+    ;; Comprehensive syntax highlighting setup for Bun
     (with-eval-after-load 'org
-      (add-to-list 'org-src-lang-modes '("bun" . typescript))
+      ;; Ensure Bun uses TypeScript mode for syntax highlighting
+      (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
       
+      ;; Function to set up Bun code block highlighting
       (defun bob/setup-bun-syntax-highlight ()
-        "Ensure Bun source blocks use TypeScript syntax highlighting."
+        "Advanced setup for Bun source block syntax highlighting."
+        ;; Direct mode mapping
+        (setq-local org-src-mode-hook 
+              (cons (lambda ()
+                      (when (and (boundp 'org-src-mode) org-src-mode)
+                        (typescript-ts-mode)))
+                    org-src-mode-hook))
+        
+        ;; Add font lock keywords
         (font-lock-add-keywords 
          nil 
-         '(("^[ \t]*#\\+begin_src[ \t]+bun" 0 'org-block-begin-line)
-           ("^[ \t]*#\\+end_src" 0 'org-block-end-line))))
+         '(("^[ \t]*#\\+begin_src[ \t]+bun" 0 'org-block-begin-line prepend)
+           ("^[ \t]*#\\+end_src" 0 'org-block-end-line prepend)))
+        
+        ;; Fallback syntax highlighting
+        (setq-local font-lock-defaults 
+              '((typescript-ts-mode-font-lock-keywords) 
+                t nil nil nil)))
       
+      ;; Apply the highlighting setup
       (add-hook 'org-mode-hook #'bob/setup-bun-syntax-highlight)
+      (add-hook 'org-src-mode-hook #'bob/setup-bun-syntax-highlight)
       
-      ;; Fallback syntax highlighting for Bun
+      ;; Ensure consistent language modes
       (setq org-src-lang-modes 
-            (cons '("bun" . typescript) 
+            (cons '("bun" . typescript-ts) 
                   (assq-delete-all 'bun org-src-lang-modes)))
       
-      ;; Ensure languages are registered on Org mode initialization
+      ;; Register languages
       (bob/register-bun-babel-languages)
       (add-hook 'org-mode-hook #'bob/register-bun-babel-languages)))
 
