@@ -1266,71 +1266,27 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package ob-js
     :ensure nil
     :custom (org-babel-js-cmd "node"))
-  (use-package ob-typescript)
-  ;; Explicit TypeScript and Bun Babel support
-  (use-package ob-typescript 
-    :ensure t
-    :config
-    (add-to-list 'org-babel-load-languages '(typescript . t)))
+  (use-package ob-typescript
+    :ensure t)
 
   (use-package ob-bun
-    :load-path "~/.emacs.d/"
+    :ensure nil
     :after (org ob-typescript)
     :config
-    (defun bob/register-bun-babel-languages ()
-      "Register Bun and TypeScript for Org Babel."
-      (add-to-list 'org-babel-load-languages '(bun . t))
-      (add-to-list 'org-babel-load-languages '(ts . t))
-      (add-to-list 'org-babel-load-languages '(typescript . t))
-      (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages))
-    
-    ;; Comprehensive syntax highlighting setup for Bun
-    (with-eval-after-load 'org
-      ;; Ensure Bun uses TypeScript mode for syntax highlighting
-      (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
-      (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
-      
-      ;; Function to set up Bun code block highlighting
-      (defun bob/setup-bun-syntax-highlight ()
-        "Advanced setup for Bun source block syntax highlighting."
-        ;; Direct mode mapping
-        (setq-local org-src-mode-hook 
-              (cons (lambda ()
-                      (when (and (boundp 'org-src-mode) org-src-mode)
-                        (typescript-ts-mode)))
-                    org-src-mode-hook))
-        
-        ;; Add font lock keywords
-        (font-lock-add-keywords 
-         nil 
-         '(("^[ \t]*#\\+begin_src[ \t]+bun" 0 'org-block-begin-line prepend)
-           ("^[ \t]*#\\+begin_src[ \t]+ts" 0 'org-block-begin-line prepend)
-           ("^[ \t]*#\\+end_src" 0 'org-block-end-line prepend)))
-        
-        ;; Fallback syntax highlighting
-        (setq-local font-lock-defaults 
-              '((typescript-ts-mode-font-lock-keywords) 
-                t nil nil nil)))
-      
-      ;; Apply the highlighting setup
-      (add-hook 'org-mode-hook #'bob/setup-bun-syntax-highlight)
-      (add-hook 'org-src-mode-hook #'bob/setup-bun-syntax-highlight)
-      
-      ;; Ensure consistent language modes
-      (setq org-src-lang-modes 
-            (cons '("bun" . typescript-ts) 
-                  (assq-delete-all 'bun org-src-lang-modes)))
-      
-      ;; Register languages immediately
-      (bob/register-bun-babel-languages)
-      (add-hook 'org-mode-hook #'bob/register-bun-babel-languages)
-      (org-babel-do-load-languages 'org-babel-load-languages 
-        (append org-babel-load-languages 
-                '((bun . t) (ts . t) (typescript . t))))))
+    ;; Syntax highlighting only; Babel language activation happens once in `use-package org`.
+    (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
+    (add-to-list 'org-src-lang-modes '("bun" . typescript))
+    (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
+    (add-to-list 'org-babel-tangle-lang-exts '("bun" . "ts")))
 
   (use-package org
     :init
     (setq org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
+    (defalias 'org-babel-execute:ts 'org-babel-execute:bun)
+    (defalias 'org-babel-execute:typescript 'org-babel-execute:bun)
+    (defalias 'org-babel-prep-session:ts 'org-babel-prep-session:bun)
+    (defalias 'org-babel-prep-session:typescript 'org-babel-prep-session:bun)
+
     :commands (org-agenda)
     :custom
     (org-imenu-depth 5)
@@ -1372,8 +1328,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (python . t)
        (lisp . t)
        (sql . t)
+       (bun . t)
+       (ts . t)
        (typescript . t)))
-    (add-to-list 'org-src-lang-modes '("ts" . typescript))
+    (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
+    (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
     ;; Fix imenu to use org-mode's specialized function
     (add-hook 'org-mode-hook
               (lambda ()
@@ -2562,6 +2521,12 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
   (use-package jblow-nostalgia-theme
     :ensure (:repo "Prikaz98/jblow-nostalgia" :fetcher github :files ("*.el")))
+#+end_src
+*** nibelung-theme
+#+begin_src elisp
+  (use-package nibelung-theme
+    :ensure (:repo "veschin/nibelung-theme" :fetcher github :files ("*.el")))
+
 #+end_src
 ** Spacious padding
 #+begin_src elisp
