@@ -39,11 +39,11 @@
  (position . 1)
  (last-modified 26653 64343 171721 0))
 ("org-refile-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/linear-emacs.org")
- (front-context-string . "* Fix the claude")
- (rear-context-string . "42278dc52\n:END:\n")
- (position . 43877)
- (last-modified 26984 59710 261195 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
+ (front-context-string . "* TODO Pay motor")
+ (rear-context-string . "affect the code\n")
+ (position . 5144)
+ (last-modified 27017 765 452140 0))
 ("linear.org"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/linear.org")
  (front-context-string . "* NEXT Add Tests")
@@ -52,10 +52,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Fix the claude")
+ (front-context-string . "* Pay motorcycle")
  (rear-context-string . "20240104T120451\n")
  (position . 112)
- (last-modified 26979 44368 452805 0))
+ (last-modified 27017 727 754435 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
