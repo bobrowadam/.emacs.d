@@ -585,7 +585,7 @@
   (use-package gptel
     :custom
     (gptel-default-mode 'org-mode)
-    (gptel-max-tokens 800)
+    ;; (gptel-max-tokens 800)
     (gptel-expert-commands t)
     ;; (gptel-org-branching-context t)
     (gptel-cache t)
@@ -947,6 +947,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package opencode
     :ensure (:repo "sczi/opencode.el" :fetcher codeberg :files ("*.el")))
+#+end_src
+** mevedel
+#+begin_src elisp
+  (use-package mevedel
+    :ensure (:repo "FrauH0lle/mevedel" :fetcher github :files ("*.el"))
+    :config
+    (mevedel-install))
 #+end_src
 * Ediff
 #+begin_src elisp
