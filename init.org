@@ -1278,21 +1278,24 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 
   (use-package ob-bun
     :ensure nil
-    :after (org ob-typescript)
+    :load-path "~/source/ob-bun/"
+    :after (org)
     :config
     ;; Syntax highlighting only; Babel language activation happens once in `use-package org`.
     (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
     (add-to-list 'org-src-lang-modes '("bun" . typescript))
     (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
-    (add-to-list 'org-babel-tangle-lang-exts '("bun" . "ts")))
+    (add-to-list 'org-babel-tangle-lang-exts '("bun" . "ts"))
+    ;; Keep TypeScript Babel execution routed through ob-bun regardless of load order.
+    (with-eval-after-load 'ob-typescript
+      (defalias 'org-babel-execute:ts 'org-babel-execute:bun)
+      (defalias 'org-babel-execute:typescript 'org-babel-execute:bun)
+      (defalias 'org-babel-prep-session:ts 'org-babel-prep-session:bun)
+      (defalias 'org-babel-prep-session:typescript 'org-babel-prep-session:bun)))
 
   (use-package org
     :init
     (setq org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
-    (defalias 'org-babel-execute:ts 'org-babel-execute:bun)
-    (defalias 'org-babel-execute:typescript 'org-babel-execute:bun)
-    (defalias 'org-babel-prep-session:ts 'org-babel-prep-session:bun)
-    (defalias 'org-babel-prep-session:typescript 'org-babel-prep-session:bun)
 
     :commands (org-agenda)
     :custom
@@ -1336,7 +1339,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (lisp . t)
        (sql . t)
        (bun . t)
-       (ts . t)
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
     (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
