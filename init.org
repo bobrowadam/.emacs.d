@@ -936,9 +936,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package mentat
     :after (org)
-    :ensure nil
+    :ensure (mentat
+             :repo "git@github.com:bobrowadam/mentat.git"
+             :fetcher git
+             :files ("*.el")
+             :build (:not elpaca--compile-info
+                     ("make" "compile")))
     :demand t
-    :load-path "~/source/mentat"
     :custom
     (mentat-confirm-cell-delete nil)
     (mentat-server-path "~/source/mentat/mentat-server/")
