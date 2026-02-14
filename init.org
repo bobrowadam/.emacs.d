@@ -65,6 +65,8 @@
   (use-package buff-menu :ensure nil)
   (use-package jsonrpc)
   (use-package posframe)
+  (use-package vui
+    :ensure (:repo "d12frosted/vui.el" :fetcher github :files ("*.el")))
 #+end_src
 
 * My elisp utils
