@@ -851,6 +851,12 @@ For claude code protocol via web-sockets
     (advice-add 'eat-semi-char-mode :after #'bob/claude-code-eat-mode-cursor-advice)
     (advice-add 'eat-char-mode :after #'bob/claude-code-eat-mode-cursor-advice))
 #+end_src
+*** project-claude
+#+begin_src elisp
+  (use-package project-claude
+    :demand t
+    :load-path "~/.emacs.d/elpaca/repos/project-claude")
+#+end_src
 ** ECA
 ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more.
 #+begin_src elisp
@@ -926,27 +932,25 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 *** Agent Shell
 #+begin_src elisp
   (use-package agent-shell
-    :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el"))
-    ;; :config
-    ;; (setq agent-shell-anthropic-authentication
-    ;;   (agent-shell-anthropic-make-authentication :login t))
-  )
+    :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el")))
 #+end_src
 ** Mentat
 #+begin_src elisp
   (use-package mentat
+    :load-path "~/source/mentat/.worktrees/use-vui-instead-of-org/"
     :after (org)
-    :ensure (mentat
-             :repo "git@github.com:bobrowadam/mentat.git"
-             :fetcher git
-             :files ("*.el")
-             :build (:not elpaca--compile-info
-                     ("make" "compile")))
+    ;; :ensure (mentat
+    ;;          :repo "git@github.com:bobrowadam/mentat.git"
+    ;;          :fetcher git
+    ;;          :files ("*.el")
+    ;;          :build (:not elpaca--compile-info
+    ;;                  ("make" "compile")))
     :demand t
     :custom
     (mentat-confirm-cell-delete nil)
-    (mentat-server-path "~/source/mentat/mentat-server/")
+    (mentat-server-path "~/source/mentat/.worktrees/use-vui-instead-of-org/mentat-server/")
     (mentat-default-behaviour 'mentor)
+    (mentat-use-vui t)
     (mentat-debug t))
 #+end_src
 ** OpenCode
@@ -958,6 +962,16 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package mevedel
     :ensure (:repo "FrauH0lle/mevedel" :fetcher github :files ("*.el"))
+    :custom
+    (mevedel-show-chat-buffer nil)
+    :bind (("C-c m r" . mevedel-create-reference)
+           ("C-c m d" . mevedel-create-directive)
+           ("C-c m i" . mevedel-implement-directive)
+           ("C-c m v" . mevedel-preview-directive-prompt)
+           ("C-c m n" . mevedel-next-instruction)
+           ("C-c m p" . mevedel-previous-instruction)
+           ("C-c m s" . mevedel-save-instructions)
+           ("C-c m l" . mevedel-load-instructions))
     :config
     (mevedel-install))
 #+end_src
