@@ -86,3 +86,4 @@ transient/*
 /custom.el
 /code-review-db-file.sqlite
 /mason/
+/recentf.eld

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (defun bob/active--projects-buffers ()
   "Get an alist of project-name -> list of file visiting buffers."
   (->> (-group-by

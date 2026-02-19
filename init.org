@@ -854,7 +854,7 @@ For claude code protocol via web-sockets
 *** project-claude
 #+begin_src elisp
   (use-package project-claude
-    :demand t
+
     :load-path "~/.emacs.d/elpaca/repos/project-claude")
 #+end_src
 ** ECA
@@ -923,7 +923,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 *** ACP
 #+begin_src elisp
   (use-package acp
-    :ensure (:repo "xenodium/acp.el" :fetcher github :files ("*.el") :ref "7b67fac"))
+    :ensure (:repo "xenodium/acp.el" :fetcher github :files ("*.el")))
 #+end_src
 *** Shell maker (dependency)
 #+begin_src elisp
@@ -939,13 +939,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package mentat
     :load-path "~/source/mentat/.worktrees/use-vui-instead-of-org/"
     :after (org)
+    :commands (mentat-menu)
     ;; :ensure (mentat
     ;;          :repo "git@github.com:bobrowadam/mentat.git"
     ;;          :fetcher git
     ;;          :files ("*.el")
     ;;          :build (:not elpaca--compile-info
     ;;                  ("make" "compile")))
-    :demand t
     :custom
     (mentat-confirm-cell-delete nil)
     (mentat-server-path "~/source/mentat/.worktrees/use-vui-instead-of-org/mentat-server/")
@@ -1296,23 +1296,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package ob-typescript
     :ensure t)
 
-  (use-package ob-bun
-    :ensure nil
-    :load-path "~/source/ob-bun/"
-    :after (org)
-    :config
-    ;; Syntax highlighting only; Babel language activation happens once in `use-package org`.
-    (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
-    (add-to-list 'org-src-lang-modes '("bun" . typescript))
-    (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
-    (add-to-list 'org-babel-tangle-lang-exts '("bun" . "ts"))
-    ;; Keep TypeScript Babel execution routed through ob-bun regardless of load order.
-    (with-eval-after-load 'ob-typescript
-      (defalias 'org-babel-execute:ts 'org-babel-execute:bun)
-      (defalias 'org-babel-execute:typescript 'org-babel-execute:bun)
-      (defalias 'org-babel-prep-session:ts 'org-babel-prep-session:bun)
-      (defalias 'org-babel-prep-session:typescript 'org-babel-prep-session:bun)))
-
   (use-package org
     :init
     (setq org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
@@ -1358,7 +1341,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (python . t)
        (lisp . t)
        (sql . t)
-       (bun . t)
+       ;; (bun . t)
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
     (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
@@ -1924,8 +1907,9 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
       (message "No project file found, indexing projects")
       (progn
         (project-remember-projects-under user-emacs-directory)
-        (project-remember-projects-under "~/source/grain/apps/backend/" t)
-        (project-remember-projects-under "~/source/grain/packages/" t)))
+        ;; (project-remember-projects-under (format "~/source/%s/packages/" current-workplace) t)
+        ))
+
     :bind
     ("C-x p C-m"  . project-dired)
     ("C-x p b" . consult-project-buffer)
@@ -2265,7 +2249,7 @@ LSP/DAP servers manager
 **** Eslint
 #+begin_src elisp
   (use-package flymake-jsts
-    :ensure (:repo "orzechowskid/flymake-jsts"  :fetcher github :files ("*.el") :branch "mai;; n")
+    :ensure (:repo "orzechowskid/flymake-jsts"  :fetcher github :files ("*.el") :branch "main")
     ;; :custom
     ;; (flymake-jsts-project-markers-alist '((eslint . ("eslint.config.js" "eslint.config.mjs" "eslint.config.cjs" "package.json" ".eslintrc.js"))))
     )
@@ -2638,7 +2622,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 * Grain utils
 #+begin_src elisp
-  (use-package grain-utils :demand t :ensure nil :after (:any eglot magit dired))
+  (use-package grain-utils :disabled t :demand t :ensure nil :after (:any eglot magit dired))
 #+end_src
 * Multiple Cursors
 #+begin_src elisp
@@ -2715,6 +2699,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     ("C-x p s" . eat-project)
     ("C-x p S" . bob/eat-top-project)
     (:map eat-semi-char-mode-map ("s-v" . eat-yank)))
+
+  (use-package vterm)
 
   (use-package xterm-color
     ;; :demand t
