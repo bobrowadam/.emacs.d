@@ -67,6 +67,9 @@
   (use-package posframe)
   (use-package vui
     :ensure (:repo "d12frosted/vui.el" :fetcher github :files ("*.el")))
+  (use-package websocket
+    :disabled t
+    :ensure t)
 #+end_src
 
 * My elisp utils
@@ -975,6 +978,19 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :config
     (mevedel-install))
 #+end_src
+** Amp: AI coding agent
+#+begin_src elisp
+  (use-package amp
+    :ensure nil
+    :disabled t
+    :load-path "~/.emacs.d/modules/amp.el"
+    :demand t
+    :after websocket
+    :config
+    (amp-mode 1))
+#+end_src
+
+
 * Ediff
 #+begin_src elisp
   (defvar ediff-buffer-A)
@@ -1989,7 +2005,13 @@ LSP/DAP servers manager
       ;; (eglot-booster-mode)
       (add-to-list 'eglot-server-programs
                    `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
-                     . ("rass" "ts")))
+                     . ,(lambda (&rest _)
+                          (if-let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
+                                    (biome  (expand-file-name "node_modules/.bin/biome" nm-dir))
+                                    ((file-executable-p biome)))
+                              (list "rass" "--" "typescript-language-server" "--stdio"
+                                    "--" biome "lsp-proxy")
+                            '("typescript-language-server" "--stdio")))))
       (add-to-list 'eglot-server-programs
                    `((json-mode)
                      . ("vscode-json-languageserver" "--stdio")))
@@ -2000,12 +2022,6 @@ LSP/DAP servers manager
       (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
       (add-to-list 'eglot-server-programs '(swift-ts-mode . ("sourcekit-lsp")))
 
-      (unless (executable-find "pyright-langserver")
-        (progn
-          (print "Installing pyright-langserver for python eglot support")
-          (async-shell-command "npm install -g pyright"
-                               "*pyright-installation-stdout*"
-                               "*pyright-installation-error*")))
       (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
       (cl-defmethod project-root ((project (head eglot-project)))
@@ -2914,20 +2930,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :ensure (:repo "xenodium/wasabi" :fetcher github :files ("*.el")))
 
 #+end_src
-* Amp: AI coding agent
-#+begin_src elisp
-  (use-package websocket
-    :ensure t)
-
-  (use-package amp
-    :ensure nil
-    :load-path "~/.emacs.d/modules/amp.el"
-    :demand t
-    :after websocket
-    :config
-    (amp-mode 1))
-#+end_src
-
 * elcity
 #+begin_src elisp
   (use-package elcity
