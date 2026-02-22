@@ -867,12 +867,12 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ;; :ensure (:repo "bobrowadam/eca-emacs" :fetcher github :files ("*.el") :ref "master")
     :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el"))
     :custom
-    (eca-custom-command '("~/source/eca/eca" "server" "--verbose" "--log-level" "debug"))
+    ;; (eca-custom-command '("~/source/eca/eca" "server" "--verbose" "--log-level" "debug"))
     (eca-find-root-for-buffer-function 'bob/monorepo-root)
     (eca-chat-window-width 0.6)
     (eca-chat-window-height 0.6)
     (eca-chat-use-side-window nil)
-    (eca-chat-diff-tool 'ediff)
+    ;; (eca-chat-diff-tool 'ediff)
     (eca-chat-window-side 'bottom)
     :bind
     ("C-c ." . eca-transient-menu)
@@ -919,6 +919,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :config
     (defconst mcp-server-lib-protocol-version "2024-11-05"
       "Patching the Current MCP protocol version supported by 'mcp-server-lib'.")
+    (unless (file-exists-p (mcp-server-lib--installed-script-path))
+      (mcp-server-lib-install))
     (unless mcp-server-lib--running
       (mcp-server-lib-start)))
 #+end_src
@@ -940,7 +942,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** Mentat
 #+begin_src elisp
   (use-package mentat
-    :load-path "~/source/mentat/.worktrees/use-vui-instead-of-org/"
+    :load-path "~/source/mentat"
     :after (org)
     :commands (mentat-menu)
     ;; :ensure (mentat
@@ -951,7 +953,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ;;                  ("make" "compile")))
     :custom
     (mentat-confirm-cell-delete nil)
-    (mentat-server-path "~/source/mentat/.worktrees/use-vui-instead-of-org/mentat-server/")
+    (mentat-server-path "~/source/mentat/mentat-server/")
     (mentat-default-behaviour 'mentor)
     (mentat-use-vui t)
     (mentat-debug t))
