@@ -919,10 +919,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :config
     (defconst mcp-server-lib-protocol-version "2024-11-05"
       "Patching the Current MCP protocol version supported by 'mcp-server-lib'.")
-    (unless (file-exists-p (mcp-server-lib--installed-script-path))
-      (mcp-server-lib-install))
     (unless mcp-server-lib--running
-      (mcp-server-lib-start)))
+      (mcp-server-lib-start))
+    (unless (file-exists-p (mcp-server-lib--installed-script-path))
+      (mcp-server-lib-install)))
 #+end_src
 ** Agent Shell
 *** ACP
@@ -1317,7 +1317,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package org
     :init
     (setq org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
-
     :commands (org-agenda)
     :custom
     (org-imenu-depth 5)
@@ -1423,7 +1422,18 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
           ("C-c C-g" . linear/update-linear-issues))
     :ensure nil
     :config
-    (org-super-agenda-mode 1))
+    (org-super-agenda-mode 1)
+    ;; iCloud files can intermittently fail with "Operation canceled/timed out"
+    ;; when they haven't been downloaded locally yet. Skip them gracefully.
+    (advice-add 'org-get-agenda-file-buffer :around
+                (lambda (orig file)
+                  (condition-case err
+                      (funcall orig file)
+                    (file-error
+                     (message "org-agenda: skipping unavailable file %s (%s)"
+                              (file-name-nondirectory file)
+                              (error-message-string err))
+                     nil)))))
 
   (use-package org-super-agenda
     :config
