@@ -298,6 +298,12 @@
               (lambda (key)
                 `(assoc ',key ,item))
               keys)))
+
+  (defmacro measure-time (&rest body)
+    "Evaluate BODY and message how long it took in milliseconds."
+    `(let ((start (current-time)))
+       (prog1 (progn ,@body)
+         (message "%.2f ms" (* 1000 (float-time (time-since start)))))))
 #+end_src
 
 * GC improvements
@@ -2013,8 +2019,6 @@ LSP/DAP servers manager
     (eglot-events-buffer-config '(:size 0 :format full))
     (eglot-sync-connect 0)
     :config
-    (fnm-use)
-    (exec-path-from-shell-initialize)
     ;; (eglot-booster-mode)
     (add-to-list 'eglot-server-programs
                  `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
@@ -2224,8 +2228,6 @@ LSP/DAP servers manager
           ("C-M-SPC" . sp-mark-sexp))
     :hook (typescript-ts-mode)
     :config
-    (exec-path-from-shell-initialize)
-    (fnm-use)
     (setq typescript-ts-mode-indent-offset 2))
 
   (use-package jtsx
@@ -2247,7 +2249,6 @@ LSP/DAP servers manager
     (jtsx-enable-jsx-element-tags-auto-sync nil)
     (jtsx-enable-all-syntax-highlighting-features t)
     :config
-    (fnm-use)
     (defun jtsx-bind-keys-to-mode-map (mode-map)
       "Bind keys to MODE-MAP."
       (define-key mode-map (kbd "C-c C-j") 'jtsx-jump-jsx-element-tag-dwim)
@@ -2348,7 +2349,9 @@ LSP/DAP servers manager
     (:fetcher github
               :repo "bobrowadam/fnm.el"
               :branch "main"
-              :files ("fnm.el")))
+              :files ("fnm.el"))
+    :config
+    (fnm-enable-auto-use))
 #+end_src
 
 *** Roc
