@@ -2013,6 +2013,7 @@ LSP/DAP servers manager
     (eglot-events-buffer-config '(:size 0 :format full))
     (eglot-sync-connect 0)
     :config
+    (fnm-use)
     (exec-path-from-shell-initialize)
     ;; (eglot-booster-mode)
     (add-to-list 'eglot-server-programs
@@ -2221,7 +2222,7 @@ LSP/DAP servers manager
           ("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-SPC" . sp-mark-sexp))
-    :hook (typescript-ts-mode . (lambda () (bob/maybe-enable-grain-lint)))
+    :hook (typescript-ts-mode)
     :config
     (exec-path-from-shell-initialize)
     (fnm-use)
@@ -2270,9 +2271,7 @@ LSP/DAP servers manager
     (add-hook 'jtsx-jsx-mode-hook 'jtsx-bind-keys-to-jtsx-jsx-mode-map)
     (add-hook 'jtsx-tsx-mode-hook 'jtsx-bind-keys-to-jtsx-tsx-mode-map)
 
-    ;; Enable grain lint on save for TypeScript and JavaScript files
-    (add-hook 'js-mode-hook #'bob/maybe-enable-grain-lint)
-    (add-hook 'js-jsx-mode-hook #'bob/maybe-enable-grain-lint))
+    )
 #+end_src
 **** Eslint
 #+begin_src elisp
