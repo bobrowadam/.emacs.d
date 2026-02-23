@@ -867,7 +867,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ;; :ensure (:repo "bobrowadam/eca-emacs" :fetcher github :files ("*.el") :ref "master")
     :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el"))
     :custom
-    ;; (eca-custom-command '("~/source/eca/eca" "server" "--verbose" "--log-level" "debug"))
+    (eca-custom-command '("~/source/eca/eca" "server" "--verbose" "--log-level" "debug"))
     (eca-find-root-for-buffer-function 'bob/monorepo-root)
     (eca-chat-window-width 0.6)
     (eca-chat-window-height 0.6)
@@ -2004,56 +2004,56 @@ LSP/DAP servers manager
 *** Eglot
 **** Basic Settings
 #+begin_src elisp
-    (use-package eglot
-      ;; :ensure (:wait t)
-      :after (fnm exec-path-from-shell)
-      :custom-face (eglot-highlight-symbol-face ((t (:inherit bold :underline t :slant italic))))
-      :commands (eglot eglot-ensure eglot-shutdown-all)
-      :custom
-      (eglot-events-buffer-config '(:size 0 :format full))
-      (eglot-sync-connect 0)
-      :config
-      (exec-path-from-shell-initialize)
-      ;; (eglot-booster-mode)
-      (add-to-list 'eglot-server-programs
-                   `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
-                     . ,(lambda (&rest _)
-                          (if-let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
-                                    (biome  (expand-file-name "node_modules/.bin/biome" nm-dir))
-                                    ((file-executable-p biome)))
-                              (list "rass" "--" "typescript-language-server" "--stdio"
-                                    "--" biome "lsp-proxy")
-                            '("typescript-language-server" "--stdio")))))
-      (add-to-list 'eglot-server-programs
-                   `((json-mode)
-                     . ("vscode-json-languageserver" "--stdio")))
-      (add-to-list 'eglot-server-programs
-                   '(sql-mode . ("postgres-language-server" "lsp-proxy")))
-      (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
-      (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
-      (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
-      (add-to-list 'eglot-server-programs '(swift-ts-mode . ("sourcekit-lsp")))
+  (use-package eglot
+    ;; :ensure (:wait t)
+    :after (fnm exec-path-from-shell)
+    :custom-face (eglot-highlight-symbol-face ((t (:inherit bold :underline t :slant italic))))
+    :commands (eglot eglot-ensure eglot-shutdown-all)
+    :custom
+    (eglot-events-buffer-config '(:size 0 :format full))
+    (eglot-sync-connect 0)
+    :config
+    (exec-path-from-shell-initialize)
+    ;; (eglot-booster-mode)
+    (add-to-list 'eglot-server-programs
+                 `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
+                   . ,(lambda (&rest _)
+                        (if-let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
+                                  (biome  (expand-file-name "node_modules/.bin/biome" nm-dir))
+                                  ((file-executable-p biome)))
+                            (list "rass" "--" "typescript-language-server" "--stdio"
+                                  "--" biome "lsp-proxy")
+                          '("typescript-language-server" "--stdio")))))
+    (add-to-list 'eglot-server-programs
+                 `((json-mode)
+                   . ("vscode-json-languageserver" "--stdio")))
+    (add-to-list 'eglot-server-programs
+                 '(sql-mode . ("postgres-language-server" "lsp-proxy")))
+    (add-to-list 'eglot-server-programs '((c++-mode c-mode) "clangd"))
+    (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
+    (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
+    (add-to-list 'eglot-server-programs '(swift-ts-mode . ("sourcekit-lsp")))
 
-      (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
+    (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
-      (cl-defmethod project-root ((project (head eglot-project)))
-        (cdr project))
-      :bind
-      (:map eglot-mode-map
-            ("C-c C-f" . eglot-format)
-            ("C-c C-n" . eglot-rename)
-            ("M-n" . forward-paragraph)
-            ("M-p" . backward-paragraph)
-            ("M-." . xref-find-definitions)
-            ("M-?" . xref-find-references)
-            ("C-<" . eglot-find-typeDefinition)
-            ("C-c C-a" . eglot-code-actions))
-      :hook
-      ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode clojure-ts-mode) . eglot-ensure)
-      ;; (eglot-managed-mode .  (lambda ()
-      ;;                          (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
-      ;;                            (flymake-jsts-eslint-enable))))
-  )
+    (cl-defmethod project-root ((project (head eglot-project)))
+      (cdr project))
+    :bind
+    (:map eglot-mode-map
+          ("C-c C-f" . eglot-format)
+          ("C-c C-n" . eglot-rename)
+          ("M-n" . forward-paragraph)
+          ("M-p" . backward-paragraph)
+          ("M-." . xref-find-definitions)
+          ("M-?" . xref-find-references)
+          ("C-<" . eglot-find-typeDefinition)
+          ("C-c C-a" . eglot-code-actions))
+    :hook
+    ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode clojure-ts-mode) . eglot-ensure)
+    ;; (eglot-managed-mode .  (lambda ()
+    ;;                          (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
+    ;;                            (flymake-jsts-eslint-enable))))
+    )
 #+end_src
 **** Eglot hover
 #+begin_src elisp
@@ -2309,7 +2309,29 @@ LSP/DAP servers manager
 **** Prettier
 #+begin_src elisp
   (use-package prettier
-    :hook (typescript-ts-mode tsx-ts-mode js2-mode js-ts-mode))
+    :disabled t)
+
+  (defun bob/biome-format-on-save ()
+    "Run biome check --fix on the current file after saving."
+    (when-let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
+                (biome  (expand-file-name "node_modules/.bin/biome" nm-dir))
+                ((file-executable-p biome))
+                (file (buffer-file-name)))
+      (let ((default-directory nm-dir)
+            (pt (point)))
+        (call-process biome nil nil nil "check" "--fix" (expand-file-name file))
+        (revert-buffer t t t)
+        (goto-char pt))))
+
+  (defun bob/setup-ts-formatter ()
+    "Use biome for formatting if available in the project, otherwise fall back to prettier."
+    (if-let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
+               (biome  (expand-file-name "node_modules/.bin/biome" nm-dir))
+               ((file-executable-p biome)))
+        (add-hook 'after-save-hook #'bob/biome-format-on-save nil t)))
+
+  (dolist (hook '(typescript-ts-mode-hook tsx-ts-mode-hook js2-mode-hook js-ts-mode-hook))
+    (add-hook hook #'bob/setup-ts-formatter))
 
   (use-package eglot-booster
     :disabled t
