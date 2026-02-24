@@ -948,8 +948,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** Mentat
 #+begin_src elisp
   (use-package mentat
+    :demand t
     :load-path "~/source/mentat"
-    :after (org)
     :commands (mentat-menu)
     ;; :ensure (mentat
     ;;          :repo "git@github.com:bobrowadam/mentat.git"
@@ -1611,7 +1611,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (defun bob/magit-read-worktree-directory (prompt branch)
       "Read worktree directory defaulting to .worktree/<branch> inside repo root."
       (read-directory-name prompt nil nil nil
-                           (concat ".worktree/"
+                           (concat ".worktrees/"
                                    (and branch (string-replace "/" "-" branch)))))
 
     (magit-wip-mode 1)
