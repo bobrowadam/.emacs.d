@@ -1569,6 +1569,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (magit-process-apply-ansi-colors 'filter)
     (magit-commit-show-diff nil)
     (magit-diff-refine-hunk (quote all))
+    (magit-read-worktree-directory-function #'bob/magit-read-worktree-directory)
     :config
     (add-hook 'magit-status-sections-hook #'magit-insert-worktrees t)
     (defun bob/create-github-repo ()
@@ -1606,6 +1607,12 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
         (magit-run-git "branch" "-D" branch-name)))
 
     (advice-add 'magit-worktree-delete :around #'bob/remove-project-roots-advice)
+
+    (defun bob/magit-read-worktree-directory (prompt branch)
+      "Read worktree directory defaulting to .worktree/<branch> inside repo root."
+      (read-directory-name prompt nil nil nil
+                           (concat ".worktree/"
+                                   (and branch (string-replace "/" "-" branch)))))
 
     (magit-wip-mode 1)
     (transient-append-suffix 'magit-file-dispatch
