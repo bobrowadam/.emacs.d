@@ -304,6 +304,14 @@
     `(let ((start (current-time)))
        (prog1 (progn ,@body)
          (message "%.2f ms" (* 1000 (float-time (time-since start)))))))
+
+  (defun bob/show-enabled-themes ()
+    "Display currently enabled themes."
+    (interactive)
+    (if custom-enabled-themes
+        (message "Current enabled themes: %s"
+                 (string-join (mapcar #'symbol-name custom-enabled-themes) ", "))
+      (message "No themes currently enabled")))
 #+end_src
 
 * GC improvements
@@ -2525,6 +2533,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     (bob/install--grammer-if-missing 'zig)
     (bob/install--grammer-if-missing 'bash))
 #+end_src
+** terraform-mode
+#+begin_src elisp
+  (use-package terraform-mode)
+#+end_src
 * Appearance
 ** Mode line
 #+begin_src elisp
@@ -2972,12 +2984,4 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package wasabi
     :ensure (:repo "xenodium/wasabi" :fetcher github :files ("*.el")))
 
-#+end_src
-* elcity
-#+begin_src elisp
-  (use-package elcity
-      :ensure (:repo "vkazanov/elcity"
-               :fetcher github
-               :files ("*.el")
-               :pre-build (("make" "run"))))
 #+end_src
