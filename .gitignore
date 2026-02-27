@@ -87,3 +87,4 @@ transient/*
 /code-review-db-file.sqlite
 /mason/
 /recentf.eld
+/triples.db

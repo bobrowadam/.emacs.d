@@ -1325,8 +1325,14 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package ob-js
     :ensure nil
     :custom (org-babel-js-cmd "node"))
+
   (use-package ob-typescript
     :ensure t)
+
+  (use-package ob-bun
+    :ensure (:repo "git@github.com:bobrowadam/ob-bun.git"
+                   :files ("*.el")
+                   :branch "main"))
 
   (use-package org
     :init
@@ -1372,7 +1378,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (python . t)
        (lisp . t)
        (sql . t)
-       ;; (bun . t)
+       (bun . t)
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
     (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
@@ -1540,6 +1546,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :bind ("C-c d t" . denote-journal-new-or-existing-entry))
 #+end_src
 
+* EKG
+#+begin_src elisp
+  (use-package ekg
+    :bind (([f11] . ekg-capture)))
+#+end_src
 * Verb: Rest api interface
 #+begin_src elisp
   (use-package verb
@@ -1767,6 +1778,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     :bind (:map paredit-mode-map ("{" . paredit-open-curly)))
 
   (defun bob/simple-minibuffer-parens ()
+    (require 'paredit)
     "Add basic paren handling and paredit-style editing in minibuffer."
     ;; Basic paren insertion
     (local-set-key (kbd "(") 'paredit-open-round)
