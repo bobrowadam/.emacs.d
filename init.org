@@ -726,6 +726,7 @@ For claude code protocol via web-sockets
 *** ClaudEmacs
 #+begin_src elisp
   (use-package claudemacs
+    :disabled t
     :ensure (:fetcher github :repo "cpoile/claudemacs")
     :bind ("C-c C-." . 'claudemacs-transient-menu)
     ;; :custom
@@ -2253,7 +2254,6 @@ LSP/DAP servers manager
           ("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-SPC" . sp-mark-sexp))
-    :hook (typescript-ts-mode)
     :config
     (setq typescript-ts-mode-indent-offset 2))
 
