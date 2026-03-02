@@ -1691,7 +1691,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (defun bob/magit-fetch-and-rebase ()
       "Fetch and rebase current branch onto main/master."
       (interactive)
-      (let* ((main-branch (if (magit-rev-name "main") "main" "master"))
+      (let* ((main-branch (cond 
+                           ((magit-rev-name "develop") "develop")
+                           ((magit-rev-name "main") "main")
+                           (t "master")))
              (remote-name (or (magit-get "branch" main-branch "remote")
                               (car (magit-list-remotes))))
              (remote-branch (format "%s/%s" remote-name main-branch)))
