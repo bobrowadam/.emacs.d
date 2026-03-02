@@ -958,7 +958,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package mentat
     :load-path "~/source/mentat"
-    :bind ("C-c C-m" . mentat-menu)
     :commands (mentat-menu)
     ;; :ensure (mentat
     ;;          :repo "git@github.com:bobrowadam/mentat.git"
@@ -1305,7 +1304,26 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package markdown-mode
     :custom (markdown-fontify-code-blocks-natively t)
-    :hook (markdown-mode . (lambda () (setq truncate-lines t))))
+    :hook (markdown-mode . (lambda () (setq truncate-lines t)))
+    :config
+    (defun bob/markdown-update-list-bullets ()
+      "Set markdown list bullets with per-level nerd-icons and theme colors."
+      (setq markdown-list-item-bullets
+            (list
+             (propertize (substring-no-properties (nerd-icons-codicon "nf-cod-circle_filled"))
+                         'face `(:family "Symbols Nerd Font Mono" :height 0.45
+                                 :foreground ,(face-foreground 'font-lock-keyword-face)))
+             (propertize (substring-no-properties (nerd-icons-mdicon "nf-md-diamond"))
+                         'face `(:family "Symbols Nerd Font Mono" :height 0.40
+                                 :foreground ,(face-foreground 'font-lock-builtin-face)))
+             (propertize (substring-no-properties (nerd-icons-codicon "nf-cod-triangle_right"))
+                         'face `(:family "Symbols Nerd Font Mono" :height 0.45
+                                 :foreground ,(face-foreground 'font-lock-string-face)))
+             (propertize (substring-no-properties (nerd-icons-mdicon "nf-md-square"))
+                         'face `(:family "Symbols Nerd Font Mono" :height 0.35
+                                 :foreground ,(face-foreground 'error))))))
+    (bob/markdown-update-list-bullets)
+    (add-hook 'enable-theme-functions #'bob/markdown-update-list-bullets))
 #+end_src
 ** edit-indirect (a markdown mode dependency for editing code blocks)
 #+begin_src elisp
