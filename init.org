@@ -954,6 +954,14 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package agent-shell
     :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el")))
 #+end_src
+** visual-fill-column
+#+begin_src elisp
+  (use-package visual-fill-column :ensure t)
+#+end_src
+** adaptive-wrap
+#+begin_src elisp
+  (use-package adaptive-wrap :ensure t)
+#+end_src
 ** Mentat
 #+begin_src elisp
   (use-package mentat
@@ -2629,7 +2637,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :ensure (:repo "magus/modus-catppuccin" :fetcher gitlab :files ("*.el"))
     :init
     (modus-catppuccin-take-over-modus-themes-mode)
-    (load-theme 'catppuccin-mocha))
+    ;; (load-theme 'catppuccin-mocha)
+    )
 #+end_src
 *** John Blow Old Theme
 #+begin_src elisp
