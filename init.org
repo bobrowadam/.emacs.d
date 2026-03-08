@@ -2014,6 +2014,11 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     :custom
     (flymake-show-diagnostics-at-end-of-line nil)
     ;; (flymake-show-diagnostics-at-end-of-line 'fancy)
+    :init
+    (if (fboundp 'member-if)
+        (display-warning 'init "member-if is now built-in — remove the compatibility shim from the flymake use-package block in init.org")
+      (require 'cl-seq)
+      (defalias 'member-if #'cl-member-if))
     :config
     (setq elisp-flymake-byte-compile-load-path load-path)
     :bind
