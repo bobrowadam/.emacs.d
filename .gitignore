@@ -79,7 +79,7 @@ transient/*
 /elpaca/
 *.elc
 /modules/modules-autoloads.el
-/init.el
+/init-generated.el
 /modules/grain-utils.el
 /eca/
 /emacs-mcp-stdio.sh

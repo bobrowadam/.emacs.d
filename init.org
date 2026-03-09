@@ -12,12 +12,22 @@
   (setq use-package-always-ensure t)
   (setq use-package-always-defer t)
   (setq use-package-compute-statistics t)
-  (elpaca elpaca-use-package
-    (elpaca-use-package-mode)
-    (setq elpaca-use-package-by-default t))
+  (defun bob/elpaca-package-dir (package)
+    "Return PACKAGE dir from current or legacy Elpaca locations."
+    (catch 'found
+      (dolist (base (delq nil
+                          (list (and (boundp 'elpaca-builds-directory) elpaca-builds-directory)
+                                (and (boundp 'elpaca-sources-directory) elpaca-sources-directory)
+                                (and (boundp 'elpaca-directory)
+                                     (expand-file-name "repos/" elpaca-directory)))))
+        (let ((dir (expand-file-name package base)))
+          (when (file-directory-p dir)
+            (throw 'found dir))))))
   (defun compile-init-file ()
     "Tangle init.org file and modules."
     (interactive)
+    (require 'org)
+    (require 'ob-tangle)
     (when (get-buffer "init.org")
       (kill-buffer "init.org"))
     ;; Tangle modules first
@@ -27,9 +37,9 @@
           (kill-buffer module-buffer)))
       (org-babel-tangle-file module-file))
     ;; Then tangle the main init file
-    (org-babel-load-file (expand-file-name "init.org" user-emacs-directory)))
+    (org-babel-tangle-file (expand-file-name "init.org" user-emacs-directory)
+                           (expand-file-name "init-generated.el" user-emacs-directory)))
   (add-hook 'kill-emacs-hook 'compile-init-file)
-  (elpaca-wait)
   (setq custom-file (concat user-emacs-directory "./custom.el"))
 #+end_src
 * Which key
@@ -156,14 +166,14 @@
     (cl-remove-if-not 'identity
                       (mapcar
                        (lambda (process)
-                         (if-let ((match (s-match "inspect=\\([0-9]+\\)" (nth 2 (process-command process)))))
+                         (if-let* ((match (s-match "inspect=\\([0-9]+\\)" (nth 2 (process-command process)))))
                              (string-to-number (cadr match))))
                        (cl-remove-if-not
                         (lambda (p) (s-contains? "comint" (process-name p)))
                         (process-list)))))
 
   (defun get--available-inspect-port ()
-    (if-let (inspect-processes (get--inspect-processes-port))
+    (if-let* ((inspect-processes (get--inspect-processes-port)))
         (1+ (car (-sort '> inspect-processes)))
       9229))
 
@@ -177,7 +187,7 @@
 
   (defun bob/npm--project-name ()
     "Get the current project name from the package json file."
-    (when-let ((project (project-current))
+    (when-let* ((project (project-current))
                (project-root-path (project-root project))
                (package-json-file-path (format "%s/package.json" project-root-path))
                (package-json (and
@@ -188,40 +198,9 @@
       (assocdr 'name package-json)))
 
   (defun bob/compilation-buffer-name ()
-    (if-let ((projcet-path (nth 2 (project-current))))
+    (if-let* ((projcet-path (nth 2 (project-current))))
         (format "TS-COMPILE -- %s"
                 (get-dir-name projcet-path))))
-
-  (defun npm-run (&optional normal-mode)
-    "Debug typescript project on watch mode.
-  NORMAL-MODE is for not running with debugger"
-    (interactive "P")
-    (when (check-types-command)
-      (let ((default-directory (project-root (project-current t)))
-            (comint-scroll-to-bottom-on-input t)
-            (comint-scroll-to-bottom-on-output t)
-            (comint-process-echoes t)
-            (compilation-buffer-name (bob/compilation-buffer-name))
-            (project-main-file (bob/npm--project-name)))
-        (cond ((and (not (eq major-mode 'comint-mode))
-                    (car (memq (get-buffer compilation-buffer-name)
-                               (buffer-list))))
-               (switch-to-buffer (get-buffer compilation-buffer-name)))
-              ((and (eq major-mode 'comint-mode)
-                    (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
-               (switch-to-prev-buffer))
-              (t
-               (let ((compilation-command (if normal-mode
-                                              (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 -w ./dist -r source-map-support/register ./dist/%s.js"
-                                                      project-main-file)
-                                            (format "./node_modules/typescript/bin/tsc -w& nodemon -d 2 --inspect=%s -w ./dist -r source-map-support/register ./dist/%s.js"
-                                                    (get--available-inspect-port)
-                                                    project-main-file))))
-                 (with-temporary-node-version
-                     (fnm-current-node-version)
-                   (compilation-start compilation-command
-                                      t (lambda (mode)
-                                          compilation-buffer-name)))))))))
 
   (defun npm-run-build ()
     "Build typescript project on watch mode"
@@ -242,6 +221,10 @@
                (switch-to-prev-buffer))
               ((s-starts-with-p "nx" local-check-types-command)
                (compilation-start "npm run check-types"
+                                  t (lambda (_)
+                                      compilation-buffer-name)))
+              ((s-starts-with-p "bun" local-check-types-command)
+               (compilation-start "bun run check-types"
                                   t (lambda (_)
                                       compilation-buffer-name)))
               (t
@@ -615,7 +598,7 @@
     (defun bob/gptel-switch-to-gptel-buffer ()
       "Switch to a buffer with `gptel-mode' active."
       (interactive)
-      (if-let ((gptel-buffers
+      (if-let* ((gptel-buffers
                 (seq-filter
                  (lambda (buff)
                    (with-current-buffer buff
@@ -802,7 +785,7 @@ For claude code protocol via web-sockets
 
     (defun claude-code-get-flymake-diagnostics (buffer-or-file-name)
       "Get the content of the flymake diagnostics for a specific buffer."
-      (if-let ((buff (or (get-buffer buffer-or-file-name)
+      (if-let* ((buff (or (get-buffer buffer-or-file-name)
                          (get-file-buffer buffer-or-file-name))))
           (with-current-buffer buff
             (mapconcat (lambda (diag)
@@ -871,9 +854,10 @@ For claude code protocol via web-sockets
 #+end_src
 *** project-claude
 #+begin_src elisp
-  (use-package project-claude
-
-    :load-path "~/.emacs.d/elpaca/repos/project-claude")
+  (when-let* ((project-claude-dir (bob/elpaca-package-dir "project-claude")))
+    (add-to-list 'load-path project-claude-dir)
+    (use-package project-claude
+      :defer t))
 #+end_src
 ** ECA
 ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more.
@@ -974,11 +958,16 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ;;          :build (:not elpaca--compile-info
     ;;                  ("make" "compile")))
     :custom
+    (mentat-enable-code-cell-sessions t)
     (mentat-confirm-cell-delete nil)
     (mentat-server-path "~/source/mentat/mentat-server/")
     (mentat-default-behaviour 'mentor)
     (mentat-use-vui t)
-    (mentat-debug t))
+    (mentat-debug t)
+    :config
+    (setenv "MENTAT_OPENAI_API_KEY" (auth-source-pick-first-password
+                                     :host "platform.openai.com"
+                                     :user "bobrowadam")))
 #+end_src
 ** OpenCode
 #+begin_src elisp
@@ -1152,7 +1141,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        :enabled  ,(lambda () consult-project-function)
        :items
        ,(lambda ()
-          (when-let (root (consult--project-root))
+          (when-let* ((root (consult--project-root)))
             (consult--buffer-query :sort 'visibility
                                    :directory root
                                    :as #'consult--buffer-pair
@@ -1389,7 +1378,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (org-deadline-warning-days 1)
     :config
     (defun bob/babel-ansi ()
-      (when-let ((beg (org-babel-where-is-src-block-result nil nil)))
+      (when-let* ((beg (org-babel-where-is-src-block-result nil nil)))
         (save-excursion
           (goto-char beg)
           (when (looking-at org-babel-result-regexp)
@@ -1409,6 +1398,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
     (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
+    (add-to-list 'org-src-lang-modes '("rust" . rust-ts))
     ;; Fix imenu to use org-mode's specialized function
     (add-hook 'org-mode-hook
               (lambda ()
@@ -1709,7 +1699,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
         (message "Fetching and rebasing onto %s" remote-branch)
         (magit-run-git "fetch" remote-name main-branch)
         (magit-rebase-branch remote-branch nil)
-        (when-let ((worktree-dir (get-main-worktree main-branch)))
+        (when-let* ((worktree-dir (get-main-worktree main-branch)))
           (let ((default-directory worktree-dir))
             (magit-run-git-async "pull" remote-name main-branch)
             (message "Pulling worktree at %s in background..." worktree-dir)))))
@@ -2139,7 +2129,7 @@ LSP/DAP servers manager
     (dape-info-buffer-window-groups '((dape-info-scope-mode dape-info-watch-mode)))
     :config
     (defun dape-set-available-port (config)
-      (when-let ((available-port (pick-port-for-inspected-service)))
+      (when-let* ((available-port (pick-port-for-inspected-service)))
         (plist-put config :port (string-to-number available-port)))
       config)
     (add-to-list 'dape-default-config-functions 'dape-set-available-port)
@@ -2196,7 +2186,7 @@ LSP/DAP servers manager
     ;; Fix breakpoint visibility with treesit-fold-indicators
     (advice-add 'dape--breakpoint-make-overlay :after
                 (lambda (breakpoint)
-                  (when-let ((ov (dape--breakpoint-location breakpoint)))
+                  (when-let* ((ov (dape--breakpoint-location breakpoint)))
                     (overlay-put ov 'priority 50))))
     :hook (dape-active-mode . repeat-mode))
 #+end_src
@@ -2288,6 +2278,10 @@ LSP/DAP servers manager
           ("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-SPC" . sp-mark-sexp))
+    :hook
+    (typescript-ts-mode . (lambda ()
+                            (setq tab-width 2)
+                            (setq indent-tabs-mode nil)))
     :config
     (setq typescript-ts-mode-indent-offset 2))
 
@@ -2583,6 +2577,12 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
   (use-package terraform-mode)
 #+end_src
+** Elisp Formatter
+#+begin_src elisp
+  (use-package elisp-autofmt
+    :commands (elisp-autofmt-mode elisp-autofmt-buffer)
+    :hook (emacs-lisp-mode . elisp-autofmt-mode))
+#+end_src
 * Appearance
 ** Mode line
 #+begin_src elisp
@@ -2604,7 +2604,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package doom-themes
     :custom
     (doom-rouge-brighter-comments t)
-    :config
+    :init
     ;; (load-theme 'doom-ayu-dark)
     (load-theme 'doom-rouge))
 #+end_src
@@ -2981,7 +2981,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     (advice-add 'org-agenda :before #'linear-emacs-list-issues)
     (advice-add 'linear-emacs-list-issues :after
                 (lambda (&rest _)
-                  (when-let ((win (get-buffer-window "*Org Agenda*" t)))
+                  (when-let* ((win (get-buffer-window "*Org Agenda*" t)))
                     (with-selected-window win
                       (org-agenda-redo-all))))))
 #+end_src

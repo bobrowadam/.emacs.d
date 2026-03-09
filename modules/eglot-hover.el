@@ -7,7 +7,7 @@
 
 
 (defun eglot-hover-eldoc-function (cb &rest _ignored)
-  (when-let ((eglot-server-capable :hoverProvider)
+  (when-let* ((eglot-server-capable :hoverProvider)
              (buf (current-buffer)))
     (eglot--async-request
      (eglot--current-server-or-lose)

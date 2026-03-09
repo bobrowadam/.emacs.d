@@ -40,7 +40,7 @@
                                              (group alnum))
                                         )
                                     nil t)
-            (if-let ((string-for-replacement (match-string-no-properties 2)))
+            (if-let* ((string-for-replacement (match-string-no-properties 2)))
                 (cond
                  ((string= string-for-replacement "|")
                   (replace-match "\\1\\\\vert{}\\3" t))
