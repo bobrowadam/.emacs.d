@@ -552,6 +552,8 @@
 
 * Ibuffer
 #+begin_src elisp
+  (use-package nerd-icons)
+
   (use-package ibuffer
     :ensure nil
     :custom (ibuffer-expert t)
@@ -1300,6 +1302,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** markdown-mode
 #+begin_src elisp
   (use-package markdown-mode
+    :after nerd-icons
     :custom (markdown-fontify-code-blocks-natively t)
     :hook (markdown-mode . (lambda () (setq truncate-lines t)))
     :config
