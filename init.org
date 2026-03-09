@@ -35,7 +35,8 @@
       (let ((module-buffer (get-file-buffer module-file)))
         (when module-buffer
           (kill-buffer module-buffer)))
-      (org-babel-tangle-file module-file))
+      (unless (string= (file-name-nondirectory module-file) "grain-utils.org")
+        (org-babel-tangle-file module-file)))
     ;; Then tangle the main init file
     (org-babel-tangle-file (expand-file-name "init.org" user-emacs-directory)
                            (expand-file-name "init-generated.el" user-emacs-directory)))
@@ -1312,16 +1313,20 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
             (list
              (propertize (substring-no-properties (nerd-icons-codicon "nf-cod-circle_filled"))
                          'face `(:family "Symbols Nerd Font Mono" :height 0.45
-                                 :foreground ,(face-foreground 'font-lock-keyword-face)))
+                                 :foreground ,(or (face-foreground 'font-lock-keyword-face nil t)
+                                                  "gold")))
              (propertize (substring-no-properties (nerd-icons-mdicon "nf-md-diamond"))
                          'face `(:family "Symbols Nerd Font Mono" :height 0.40
-                                 :foreground ,(face-foreground 'font-lock-builtin-face)))
+                                 :foreground ,(or (face-foreground 'font-lock-builtin-face nil t)
+                                                  "cyan")))
              (propertize (substring-no-properties (nerd-icons-codicon "nf-cod-triangle_right"))
                          'face `(:family "Symbols Nerd Font Mono" :height 0.45
-                                 :foreground ,(face-foreground 'font-lock-string-face)))
+                                 :foreground ,(or (face-foreground 'font-lock-string-face nil t)
+                                                  "green")))
              (propertize (substring-no-properties (nerd-icons-mdicon "nf-md-square"))
                          'face `(:family "Symbols Nerd Font Mono" :height 0.35
-                                 :foreground ,(face-foreground 'error))))))
+                                 :foreground ,(or (face-foreground 'error nil t)
+                                                  "red"))))))
     (bob/markdown-update-list-bullets)
     (add-hook 'enable-theme-functions #'bob/markdown-update-list-bullets))
 #+end_src
@@ -2737,10 +2742,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :hook (sql-interactive-mode . (lambda ()
                                     (face-remap-add-relative 'default :family "Monospace")
                                     (toggle-truncate-lines t))))
-#+end_src
-* Grain utils
-#+begin_src elisp
-  (use-package grain-utils :disabled t :demand t :ensure nil :after (:any eglot magit dired))
 #+end_src
 * Multiple Cursors
 #+begin_src elisp
