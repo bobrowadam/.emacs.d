@@ -46,6 +46,7 @@
 (defvar bob/generated-init-file
   (expand-file-name "init-generated.el" user-emacs-directory)
   "Path to the tangled init file.")
+(add-to-list 'load-path (expand-file-name "modules" user-emacs-directory))
 
 (unless (file-exists-p bob/generated-init-file)
   (require 'org)
