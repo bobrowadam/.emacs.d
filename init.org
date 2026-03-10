@@ -1307,27 +1307,36 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :custom (markdown-fontify-code-blocks-natively t)
     :hook (markdown-mode . (lambda () (setq truncate-lines t)))
     :config
+    (defun bob/markdown-view-mode-setup ()
+      "Adjust markdown view buffers for LLM-oriented rendering."
+      (setq-local markdown-list-indent-width 2))
+    (defun bob/markdown-face-color (face &optional fallback-face)
+      "Return FACE foreground, or FALLBACK-FACE foreground if unset."
+      (or (face-foreground face nil t)
+          (when fallback-face
+            (face-foreground fallback-face nil t))))
+    (defun bob/markdown-update-header-faces ()
+      "Make markdown heading levels visually distinct."
+      (set-face-attribute 'markdown-header-face nil :weight 'bold)
+      (set-face-attribute 'markdown-header-face-1 nil :height 1.55 :weight 'bold)
+      (set-face-attribute 'markdown-header-face-2 nil :height 1.32 :weight 'bold)
+      (set-face-attribute 'markdown-header-face-3 nil :height 1.18 :weight 'semibold)
+      (set-face-attribute 'markdown-header-face-4 nil :height 1.08 :weight 'semibold)
+      (set-face-attribute 'markdown-header-face-5 nil :height 1.0 :weight 'normal)
+      (set-face-attribute 'markdown-header-face-6 nil :height 0.94 :weight 'normal))
     (defun bob/markdown-update-list-bullets ()
-      "Set markdown list bullets with per-level nerd-icons and theme colors."
+      "Set markdown list bullets with a subtle unicode hierarchy."
       (setq markdown-list-item-bullets
             (list
-             (propertize (substring-no-properties (nerd-icons-codicon "nf-cod-circle_filled"))
-                         'face `(:family "Symbols Nerd Font Mono" :height 0.45
-                                 :foreground ,(or (face-foreground 'font-lock-keyword-face nil t)
-                                                  "gold")))
-             (propertize (substring-no-properties (nerd-icons-mdicon "nf-md-diamond"))
-                         'face `(:family "Symbols Nerd Font Mono" :height 0.40
-                                 :foreground ,(or (face-foreground 'font-lock-builtin-face nil t)
-                                                  "cyan")))
-             (propertize (substring-no-properties (nerd-icons-codicon "nf-cod-triangle_right"))
-                         'face `(:family "Symbols Nerd Font Mono" :height 0.45
-                                 :foreground ,(or (face-foreground 'font-lock-string-face nil t)
-                                                  "green")))
-             (propertize (substring-no-properties (nerd-icons-mdicon "nf-md-square"))
-                         'face `(:family "Symbols Nerd Font Mono" :height 0.35
-                                 :foreground ,(or (face-foreground 'error nil t)
-                                                  "red"))))))
+             (propertize "•" 'face 'markdown-list-face)
+             (propertize "–" 'face 'markdown-list-face)
+             (propertize "◆" 'face 'markdown-list-face)
+             (propertize "·" 'face 'markdown-list-face))))
+    (bob/markdown-update-header-faces)
     (bob/markdown-update-list-bullets)
+    (add-hook 'markdown-view-mode-hook #'bob/markdown-view-mode-setup)
+    (add-hook 'gfm-view-mode-hook #'bob/markdown-view-mode-setup)
+    (add-hook 'enable-theme-functions #'bob/markdown-update-header-faces)
     (add-hook 'enable-theme-functions #'bob/markdown-update-list-bullets))
 #+end_src
 ** edit-indirect (a markdown mode dependency for editing code blocks)
