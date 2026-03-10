@@ -1384,8 +1384,9 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                    :branch "main"))
 
   (use-package org
-    :init
-    (setq org-directory (expand-file-name "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
+    :init (setq org-directory
+                (expand-file-name
+                 "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
     :commands (org-agenda)
     :custom
     (org-imenu-depth 5)
@@ -1405,7 +1406,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
      '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER") ""))
     (org-tags-exclude-from-inheritance '("project"))
     (org-capture-templates
-     `(("t" "entry" entry (file ,(concat org-directory "20240104T120451--inbox__project.org")) "* %?\n  %i")))
+     `(("t" "entry" entry
+        (file
+         ,(concat org-directory "20240104T120451--inbox__project.org"))
+        "* %?\n  %i")))
     (org-refile-targets '((org-agenda-files :maxlevel . 3)))
     (org-refile-use-outline-path 'file)
     (org-deadline-warning-days 1)
@@ -1437,14 +1441,17 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
        (bun . t)
        (typescript . t)))
     (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
+    (add-to-list 'org-src-lang-modes '("mermaid" . mermaid-mode))
     (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
     (add-to-list 'org-src-lang-modes '("rust" . rust-ts))
     ;; Fix imenu to use org-mode's specialized function
-    (add-hook 'org-mode-hook
-              (lambda ()
-                (setq imenu-create-index-function 'org-imenu-get-tree)))
+    (add-hook
+     'org-mode-hook
+     (lambda () (setq imenu-create-index-function 'org-imenu-get-tree)))
     :hook
     (org-babel-after-execute . #'bob/babel-ansi)
+    (org-babel-after-execute
+     . #'bob/org-refresh-inline-images-after-babel)
     (org-mode . (lambda () (visual-line-mode 1)))
     (org-archive . org-save-all-org-buffers)
     (org-after-refile-insert . org-save-all-org-buffers)
@@ -1452,23 +1459,31 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ("C-c a" . org-agenda)
     ("C-c l" . org-store-link)
     ("C-c c" . org-capture)
-    (:map org-mode-map
-          ("M-p" . org-metaup)
-          ("M-n" . org-metadown)
-          ("C-c S" . org-save-all-org-buffers)
-          ("M-," . org-mark-ring-goto)
-          ("M-F" . org-shiftright)
-          ("M-B" . org-shiftleft)
-          ("C-c n R" . org-refile))
-    (:map org-read-date-minibuffer-local-map
-          ("M-f" . (lambda ()
-                     (interactive (org-eval-in-calendar '(calendar-forward-day 1)))))
-          ("M-b" . (lambda ()
-                     (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
-          ("M-p" . (lambda ()
-                     (interactive (org-eval-in-calendar '(calendar-backward-week 1)))))
-          ("M-n" . (lambda ()
-                     (interactive (org-eval-in-calendar '(calendar-forward-week 1)))))))
+    (:map
+     org-mode-map
+     ("M-p" . org-metaup)
+     ("M-n" . org-metadown)
+     ("C-c S" . org-save-all-org-buffers)
+     ("M-," . org-mark-ring-goto)
+     ("M-F" . org-shiftright)
+     ("M-B" . org-shiftleft)
+     ("C-c n R" . org-refile))
+    (:map
+     org-read-date-minibuffer-local-map
+     ("M-f" .
+      (lambda ()
+        (interactive (org-eval-in-calendar '(calendar-forward-day 1)))))
+     ("M-b" .
+      (lambda ()
+        (interactive (org-eval-in-calendar '(calendar-backward-day 1)))))
+     ("M-p" .
+      (lambda ()
+        (interactive (org-eval-in-calendar
+                      '(calendar-backward-week 1)))))
+     ("M-n" .
+      (lambda ()
+        (interactive (org-eval-in-calendar
+                      '(calendar-forward-week 1)))))))
 #+end_src
 
 ** Agenda
