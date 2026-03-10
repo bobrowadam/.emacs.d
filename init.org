@@ -1355,12 +1355,28 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 * Org Mode
 ** Org mode configuration
 #+begin_src elisp
+  (use-package mermaid-mode
+    :mode ("\\.mmd\\'" "\\.mermaid\\'")
+    :custom (mermaid-mmdc-location (bob/find-mmdc)))
+
+  (use-package ob-mermaid
+    :after org
+    :config 
+    (fnm-use)
+    (setq ob-mermaid-cli-path
+          (or (executable-find "mmdc")
+              (let ((local-mmdc
+                     (expand-file-name "node_modules/.bin/mmdc"
+                                       user-emacs-directory)))
+                (when (file-executable-p local-mmdc)
+                  local-mmdc))
+              "mmdc")))
+
   (use-package ob-js
     :ensure nil
     :custom (org-babel-js-cmd "node"))
 
-  (use-package ob-typescript
-    :ensure t)
+  (use-package ob-typescript)
 
   (use-package ob-bun
     :ensure (:repo "git@github.com:bobrowadam/ob-bun.git"
@@ -1402,11 +1418,18 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
             (let ((end (org-babel-result-end))
                   (ansi-color-context-region nil))
               (ansi-color-apply-on-region beg end))))))
+    (defun bob/org-refresh-inline-images-after-babel ()
+      "Refresh inline images after Mermaid blocks generate image files."
+      (when-let* ((info (org-babel-get-src-block-info 'light))
+                  (lang (car info)))
+        (when (string= lang "mermaid")
+          (org-redisplay-inline-images))))
     (setq org-babel-lisp-eval-fn 'sly-eval)
     (org-babel-do-load-languages
      'org-babel-load-languages
      '((emacs-lisp . t)
        (js . t)
+       (mermaid . t)
        (shell . t)
        (python . t)
        (lisp . t)
