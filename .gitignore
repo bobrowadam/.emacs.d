@@ -88,3 +88,5 @@ transient/*
 /mason/
 /recentf.eld
 /triples.db
+elisp-autofmt-cache/
+agent/
