@@ -1359,6 +1359,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package mermaid-mode
     :mode ("\\.mmd\\'" "\\.mermaid\\'")
+    :custom
+    (mermaid-output-format ".svg")
     :config
     (fnm-use))
 
