@@ -380,6 +380,7 @@
   (delete-selection-mode 1)
   (global-auto-revert-mode 1)
   (auto-compression-mode t)
+  (auto-image-file-mode 1)
   (global-word-wrap-whitespace-mode t)
 
   ;; delete char and delte word with "C-h" "C-M-h"
@@ -394,7 +395,8 @@
   (defun disable-modes-for-large-files ()
     "Disable minor modes for large files."
     (when (and buffer-file-name
-               (> (buffer-size) (* 1024 1024)))
+               (> (buffer-size) (* 1024 1024))
+               (not (image-type-from-file-header)))
       (fundamental-mode)))
   (add-hook 'find-file-hook 'disable-modes-for-large-files)
 
@@ -1357,20 +1359,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package mermaid-mode
     :mode ("\\.mmd\\'" "\\.mermaid\\'")
-    :custom (mermaid-mmdc-location (bob/find-mmdc)))
+    :config
+    (fnm-use))
 
   (use-package ob-mermaid
     :after org
     :config 
-    (fnm-use)
-    (setq ob-mermaid-cli-path
-          (or (executable-find "mmdc")
-              (let ((local-mmdc
-                     (expand-file-name "node_modules/.bin/mmdc"
-                                       user-emacs-directory)))
-                (when (file-executable-p local-mmdc)
-                  local-mmdc))
-              "mmdc")))
+    (fnm-use))
 
   (use-package ob-js
     :ensure nil
