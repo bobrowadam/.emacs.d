@@ -1362,12 +1362,30 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :custom
     (mermaid-output-format ".svg")
     :config
-    (fnm-use))
+    (fnm-use)
+    (defun bob/mermaid-compile-file-open-browser (file-name)
+      "Compile FILE-NAME with mmdc and open the result in Emacs WebKit."
+      (interactive "fFilename: ")
+      (let* ((input file-name)
+             (output (concat (file-name-sans-extension input) mermaid-output-format))
+             (exit-code
+              (apply #'call-process
+                     mermaid-mmdc-location nil "*mmdc*" nil
+                     (append (split-string mermaid-flags " " t)
+                             (list "-i" input "-o" output)))))
+        (if (zerop exit-code)
+            (if (fboundp 'xwidget-webkit-browse-url)
+                (xwidget-webkit-browse-url (concat "file://" output))
+              (browse-url-of-file output))
+          (pop-to-buffer "*mmdc*"))))
+    (advice-add 'mermaid-compile-file :override #'bob/mermaid-compile-file-open-browser))
 
   (use-package ob-mermaid
     :after org
     :config 
-    (fnm-use))
+    (fnm-use)
+    (setq ob-mermaid-default-config-file
+          (expand-file-name "mermaid-config-emacs.json" user-emacs-directory)))
 
   (use-package ob-js
     :ensure nil
@@ -1419,12 +1437,16 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
             (let ((end (org-babel-result-end))
                   (ansi-color-context-region nil))
               (ansi-color-apply-on-region beg end))))))
+
     (defun bob/org-refresh-inline-images-after-babel ()
       "Refresh inline images after Mermaid blocks generate image files."
       (when-let* ((info (org-babel-get-src-block-info 'light))
                   (lang (car info)))
         (when (string= lang "mermaid")
           (org-redisplay-inline-images))))
+    (add-hook 'org-babel-after-execute-hook
+              #'bob/org-refresh-inline-images-after-babel)
+
     (setq org-babel-lisp-eval-fn 'sly-eval)
     (org-babel-do-load-languages
      'org-babel-load-languages
