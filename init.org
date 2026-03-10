@@ -40,6 +40,11 @@
     ;; Then tangle the main init file
     (org-babel-tangle-file (expand-file-name "init.org" user-emacs-directory)
                            (expand-file-name "init-generated.el" user-emacs-directory)))
+  (defun bob/compile-and-load-init-file ()
+    "Tangle init.org and load the generated init file."
+    (interactive)
+    (compile-init-file)
+    (load-file (expand-file-name "init-generated.el" user-emacs-directory)))
   (add-hook 'kill-emacs-hook 'compile-init-file)
   (setq custom-file (concat user-emacs-directory "./custom.el"))
 #+end_src
@@ -1317,7 +1322,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
       (or (face-foreground face nil t)
           (when fallback-face
             (face-foreground fallback-face nil t))))
-    (defun bob/markdown-update-header-faces ()
+    (defun bob/markdown-update-header-faces (&rest _)
       "Make markdown heading levels visually distinct."
       (set-face-attribute 'markdown-header-face nil :weight 'bold)
       (set-face-attribute 'markdown-header-face-1 nil :height 1.55 :weight 'bold)
@@ -1326,7 +1331,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
       (set-face-attribute 'markdown-header-face-4 nil :height 1.08 :weight 'semibold)
       (set-face-attribute 'markdown-header-face-5 nil :height 1.0 :weight 'normal)
       (set-face-attribute 'markdown-header-face-6 nil :height 0.94 :weight 'normal))
-    (defun bob/markdown-update-list-bullets ()
+    (defun bob/markdown-update-list-bullets (&rest _)
       "Set markdown list bullets with a subtle unicode hierarchy."
       (setq markdown-list-item-bullets
             (list
