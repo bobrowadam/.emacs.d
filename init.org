@@ -2760,9 +2760,9 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :ensure (:repo "emarsden/pgmacs" :fetcher github :files ("*.el"))
     :custom (pgmacs-row-limit 600)
     :config
-    (setenv "POSTGRES_DATABASE" "grain")
+    (setenv "POSTGRES_DATABASE" "bradwell")
     (setenv "POSTGRES_USER" "postgres")
-    (setenv "POSTGRES_PASSWORD" "grain"))
+    (setenv "POSTGRES_PASSWORD" "postgress"))
   (use-package ob-sql-mode)
   (use-package sql-mode
     :custom
