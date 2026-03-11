@@ -2767,6 +2767,62 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     (deadgrep--skip-if-hidden t)
     :bind ("M-g D" . deadgrep))
 #+end_src
+* Logs
+#+begin_src elisp
+  (defun bob/logview-update-faces (&rest _)
+    "Make Logview use restrained colors that fit the current theme."
+    (with-eval-after-load 'logview
+      (set-face-attribute 'logview-timestamp nil
+                          :inherit '(shadow))
+      (set-face-attribute 'logview-level-information nil
+                          :inherit '(success bold))
+      (set-face-attribute 'logview-level-warning nil
+                          :inherit '(warning bold))
+      (set-face-attribute 'logview-level-error nil
+                          :inherit '(error bold))
+      (set-face-attribute 'logview-level-debug nil
+                          :inherit '(font-lock-comment-face bold))
+      (set-face-attribute 'logview-level-trace nil
+                          :inherit '(shadow))
+      ;; Logview defaults to strong whole-line backgrounds for some levels.
+      ;; Keep entry text on the theme background and emphasize only the level.
+      (dolist (face '(logview-error-entry
+                      logview-warning-entry
+                      logview-information-entry
+                      logview-debug-entry
+                      logview-trace-entry))
+        (set-face-attribute face nil
+                            :inherit 'default
+                            :background 'unspecified
+                            :foreground 'unspecified))))
+
+  (defun bob/logview-font-lock-keys ()
+    "Highlight key names in key=value fields within log messages."
+    (font-lock-add-keywords
+     nil
+     '(("\\_<\\([[:lower:]][[:alnum:]_-]*\\)=" 1 'font-lock-keyword-face prepend))
+     'append))
+
+  (use-package logview
+    :mode ("\\.log\\(?:\\.[0-9]+\\)?\\'" . logview-mode)
+    :custom
+    (logview-additional-timestamp-formats
+     '(("Mentat time"
+        (regexp . "\\<[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\\.[0-9][0-9][0-9]\\>")
+        (aliases . ("mentat-time")))))
+    (logview-additional-submodes
+     '(("Mentat"
+        (format . "TIMESTAMP LEVEL ")
+        (levels . "SLF4J")
+        (timestamp . ("Mentat time"))
+        (aliases . ("mentat")))))
+    :hook
+    ((logview-mode . read-only-mode)
+     (logview-mode . bob/logview-font-lock-keys))
+    :config
+    (bob/logview-update-faces)
+    (add-hook 'enable-theme-functions #'bob/logview-update-faces))
+#+end_src
 * CSV
 #+begin_src elisp
   (use-package csv-mode)
