@@ -35,8 +35,7 @@
       (let ((module-buffer (get-file-buffer module-file)))
         (when module-buffer
           (kill-buffer module-buffer)))
-      (unless (string= (file-name-nondirectory module-file) "grain-utils.org")
-        (org-babel-tangle-file module-file)))
+      (org-babel-tangle-file module-file))
     ;; Then tangle the main init file
     (org-babel-tangle-file (expand-file-name "init.org" user-emacs-directory)
                            (expand-file-name "init-generated.el" user-emacs-directory)))
