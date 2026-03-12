@@ -721,7 +721,6 @@ For claude code protocol via web-sockets
   (use-package claudemacs
     :disabled t
     :ensure (:fetcher github :repo "cpoile/claudemacs")
-    :bind ("C-c C-." . 'claudemacs-transient-menu)
     ;; :custom
 
     :hook (claudemacs-startup . (lambda () (monet-start-server)))
@@ -781,8 +780,6 @@ For claude code protocol via web-sockets
   (use-package claude-code
     :disabled t
     :ensure (:name "claude-code" :repo "stevemolitor/claude-code.el" :fetcher github :files "*.el")
-    :bind-keymap
-    ("C-c C-." . claude-code-command-map)
     :bind (:map claude-code-command-map
                 ("F" . claude-code-send-file))
     :custom
@@ -961,6 +958,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package mentat
     :load-path "~/source/mentat"
     :commands (mentat-menu)
+    :bind ("C-c C-." . mentat-menu)
     ;; :ensure (mentat
     ;;          :repo "git@github.com:bobrowadam/mentat.git"
     ;;          :fetcher git
