@@ -1729,6 +1729,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                            (concat ".worktrees/"
                                    (and branch (string-replace "/" "-" branch)))))
 
+    (require 'bradwell-utils)
+
     (magit-wip-mode 1)
     (transient-append-suffix 'magit-file-dispatch
       "p"
