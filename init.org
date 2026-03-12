@@ -3078,7 +3078,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
   (use-package linear-emacs
     :ensure (:repo "bobrowadam/linear-emacs" :fetcher github :files ("*.el")
-             :remotes (("upstream" :repo "anegg0/linear-emacs")))
+                   :remotes (("upstream" :repo "anegg0/linear-emacs")))
     :demand t
     :after (org-agenda)
     :custom
@@ -3093,6 +3093,9 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
                                          ("Working in production" . "DONE")))
     (linear-emacs-org-file-path (format "%s/%s" org-directory "linear-emacs.org"))
     :config
+    (setenv "LINEAR_API_KEY" (auth-source-pick-first-password
+                              :host "linear.app"
+                              :user "linear_api_key"))
     (advice-add 'org-agenda :before #'linear-emacs-list-issues)
     (advice-add 'linear-emacs-list-issues :after
                 (lambda (&rest _)
