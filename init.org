@@ -2857,6 +2857,12 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
                                     (face-remap-add-relative 'default :family "Monospace")
                                     (toggle-truncate-lines t))))
 #+end_src
+* SQLite
+#+begin_src elisp
+  (use-package elsqlite
+    :config
+    (elsqlite-enable-auto-open))
+#+end_src
 * Multiple Cursors
 #+begin_src elisp
   (use-package multiple-cursors
