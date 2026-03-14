@@ -971,6 +971,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (mentat-default-behaviour 'mentor)
     (mentat-use-vui t)
     (mentat-debug t)
+    (mentat-rewrite-model "gpt-5.3-codex")
     :config
     (setenv "MENTAT_OPENAI_API_KEY" (auth-source-pick-first-password
                                      :host "platform.openai.com"
