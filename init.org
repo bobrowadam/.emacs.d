@@ -1009,8 +1009,19 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :config
     (amp-mode 1))
 #+end_src
-
-
+** Copilot
+#+begin_src elisp
+  (use-package copilot
+    :ensure t
+    :hook (prog-mode . copilot-mode)
+    :bind (:map copilot-completion-map
+                ("<tab>" . copilot-accept-completion)
+                ("TAB" . copilot-accept-completion)
+                ("C-<tab>" . copilot-accept-completion-by-word)
+                ("C-TAB" . copilot-accept-completion-by-word)
+                ("C-n" . copilot-next-completion)
+                ("C-p" . copilot-previous-completion)))
+#+end_src
 * Ediff
 #+begin_src elisp
   (defvar ediff-buffer-A)
