@@ -1013,8 +1013,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** Copilot
 #+begin_src elisp
   (use-package copilot
-    :ensure t
-    :hook (prog-mode . copilot-mode)
+    ;; :hook (prog-mode . copilot-mode)
+    :custom (copilot-indent-offset-warning-disable t)
     :bind (:map copilot-completion-map
                 ("<tab>" . copilot-accept-completion)
                 ("TAB" . copilot-accept-completion)
