@@ -3,8 +3,18 @@
 * Startup
 ** Set lexical binding
 #+begin_src emacs-lisp
-  ;;; -*- lexical-binding: t -*-
+    ;;; -*- lexical-binding: t -*-
+  (defun bob/suppress-dep-file-warnings (orig-fun type message &rest args)
+    "Suppress file warnings from dependency/cache paths."
+    (unless (and (eq type 'files)
+                 (string-match-p (rx (or ".claude/plugins/cache"
+                                         ".emacs.d/elpaca"))
+                                 message))
+      (apply orig-fun type message args)))
+
+  (advice-add 'display-warning :around #'bob/suppress-dep-file-warnings)
 #+end_src
+
 ** Elpaca and Use package config
 #+begin_src emacs-lisp
   (setq use-package-verbose t)
