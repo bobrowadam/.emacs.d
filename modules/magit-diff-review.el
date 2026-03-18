@@ -106,10 +106,11 @@ Walks up from hunk to parent file section if needed."
             (remhash filepath reviewed)
           (puthash filepath t reviewed))
         (bob/magit-review--apply-overlays)
-        ;; Advance to next file section
+        ;; Collapse the current file diff and advance to next file section
         (when (gethash filepath reviewed)
           (when-let* ((section (bob/magit-review--file-section filepath)))
-            (goto-char (oref section end))
+            (magit-section-hide section)
+            ;; (goto-char (oref section end))
             (when-let* ((next (magit-current-section)))
               (when (or (magit-file-section-p next)
                         (magit-hunk-section-p next))
