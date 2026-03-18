@@ -489,11 +489,11 @@ Returns nil if no Anthropic backend or no tokens available."
              restored))))
 
 (defun gptel-anthropic-oauth--using-oauth-p ()
-  "Return non-nil if current request uses bearer OAuth authentication.
+  "Return non-nil if current request uses OAuth-sourced authentication.
 Used to determine whether to prepend the Claude Code system prefix.
+All OAuth login modes (claude-code, console, max) require the prefix.
 Also restores tokens from disk if not already loaded."
-  (when-let* ((tokens (gptel-anthropic-oauth--load-tokens)))
-    (eq (plist-get tokens :type) 'auth/oauth)))
+  (gptel-anthropic-oauth--load-tokens))
 
 (defun gptel-anthropic-oauth--request-data-advice (orig-fn backend prompts)
   "Advice to prepend Claude Code system message for OAuth requests.
