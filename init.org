@@ -2055,7 +2055,20 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     (corfu-scroll-margin 8)        ;; Use scroll margin
     (corfu-auto-prefix 1)
     :init
-    (global-corfu-mode))
+    (global-corfu-mode)
+    :config
+    ;; WORKAROUND: Emacs 31 bug - C face-spec-recalc creates a spurious
+    ;; inheritance cycle between gnus-group-news-low and its -empty variant
+    ;; when creating child frames. Break the cycle by removing the inheritance
+    ;; relationship: inline the attributes instead.
+    (when (>= emacs-major-version 31)
+      (face-spec-set 'gnus-group-news-low
+                     '((((class color) (background dark))
+                        (:foreground "DarkTurquoise" :weight bold))
+                       (((class color) (background light))
+                        (:foreground "DarkGreen" :weight bold))
+                       (t (:weight bold)))
+                     'face-defface-spec)))
 
   (use-package cape
     :init
