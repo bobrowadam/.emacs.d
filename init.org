@@ -15,6 +15,17 @@
   (advice-add 'display-warning :around #'bob/suppress-dep-file-warnings)
 #+end_src
 
+** Fix NS color list (Emacs 31 regression)
+#+begin_src emacs-lisp
+  ;; Emacs 31 NS port doesn't populate x-colors from ns-list-colors,
+  ;; leaving only 62 macOS system colors. This causes "Unable to load
+  ;; color" warnings for standard X11 names like grey20, lightblue, etc.
+  (when (and (eq window-system 'ns)
+             (fboundp 'ns-list-colors)
+             (>= emacs-major-version 31))
+    (setq x-colors (ns-list-colors)))
+#+end_src
+
 ** Elpaca and Use package config
 #+begin_src emacs-lisp
   (setq use-package-verbose t)
