@@ -913,14 +913,14 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ;; (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
     ;;                           :host "api.openai.com"
     ;;                           :user "grain@finanance.co"))
-    (transient-replace-suffix 'eca-transient-menu "o"
+    (transient-replace-suffix 'eca--transient-menu-prefix "o"
       '("." "Open/close chat window" eca-chat-toggle-window))
-    (transient-remove-suffix 'eca-transient-menu "s")
-    (transient-append-suffix 'eca-transient-menu "t"
+    (transient-remove-suffix 'eca--transient-menu-prefix "s")
+    (transient-append-suffix 'eca--transient-menu-prefix "t"
       '("s" "Send prompt" eca-chat-send-prompt))
-    (transient-append-suffix 'eca-transient-menu "S"
+    (transient-append-suffix 'eca--transient-menu-prefix "S"
       '("D" "NREPL connect" eca-debug-nrepl-connect))
-    (transient-append-suffix 'eca-transient-menu "S"
+    (transient-append-suffix 'eca--transient-menu-prefix "S"
       '("w" "ECA re-write" eca-rewrite)))
 #+end_src
 ** ai-code-interface
@@ -1008,7 +1008,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package mevedel
     :ensure (:repo "FrauH0lle/mevedel" :fetcher github :files ("*.el"))
     :custom
-    (mevedel-show-chat-buffer nil)
+    (mevedel-show-chat-buffer t)
     :bind (("C-c m r" . mevedel-create-reference)
            ("C-c m d" . mevedel-create-directive)
            ("C-c m i" . mevedel-implement-directive)
