@@ -1018,7 +1018,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
            ("C-c m s" . mevedel-save-instructions)
            ("C-c m l" . mevedel-load-instructions))
     :config
-    (mevedel-install))
+    (mevedel-install)
+    ;; Remove gptel-agent tools since mevedel supersedes them
+    (setf (alist-get "gptel-agent" gptel--known-tools nil 'remove #'equal) nil)
+    ;; Make mevedel tools always available in gptel
+    (setq gptel-tools
+          (cl-loop for (_ . tools) in gptel--known-tools
+                   append (mapcar #'cdr tools))))
 #+end_src
 ** Amp: AI coding agent
 #+begin_src elisp
