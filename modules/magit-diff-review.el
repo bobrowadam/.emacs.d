@@ -4,7 +4,8 @@
 
 (defface bob/magit-review-heading
   '((t :inherit magit-diff-file-heading :foreground "gray50" :weight normal))
-  "Face for reviewed file headings in Magit diff.")
+  "Face for reviewed file headings in Magit diff."
+  :group 'magit-diff)
 
 (defvar bob/magit-review--state (make-hash-table :test 'equal)
   "Hash-table of review-key -> hash-table of filepath -> t.")
@@ -124,9 +125,7 @@ Walks up from hunk to parent file section if needed."
   (let ((key (bob/magit-review--key)))
     (remhash key bob/magit-review--state))
   (bob/magit-review--remove-overlays)
-  (bob/magit-review--update-header-line)
-  (setq header-line-format (magit-set-header-line-format
-                            (magit-buffer-diff-range)))
+  (magit-refresh)
   (message "Review marks cleared"))
 
 (keymap-set magit-file-section-map "v" #'bob/magit-review-toggle)
