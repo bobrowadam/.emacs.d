@@ -2499,11 +2499,11 @@ LSP/DAP servers manager
 
   (defun bob/biome-format-on-save ()
     "Run biome check --fix on the current file after saving."
-    (when-let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
-                (biome  (expand-file-name "node_modules/.bin/biome" nm-dir))
+    (when-let* ((root  (bob/monorepo-root))
+                (biome (expand-file-name "node_modules/.bin/biome" root))
                 ((file-executable-p biome))
                 (file (buffer-file-name)))
-      (let ((default-directory nm-dir)
+      (let ((default-directory root)
             (pt (point)))
         (call-process biome nil nil nil "check" "--fix" (expand-file-name file))
         (revert-buffer t t t)
@@ -2511,9 +2511,9 @@ LSP/DAP servers manager
 
   (defun bob/setup-ts-formatter ()
     "Use biome for formatting if available in the project, otherwise fall back to prettier."
-    (if-let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
-               (biome  (expand-file-name "node_modules/.bin/biome" nm-dir))
-               ((file-executable-p biome)))
+    (if-let* ((root  (bob/monorepo-root))
+              (biome (expand-file-name "node_modules/.bin/biome" root))
+              ((file-executable-p biome)))
         (add-hook 'after-save-hook #'bob/biome-format-on-save nil t)))
 
   (dolist (hook '(typescript-ts-mode-hook tsx-ts-mode-hook js2-mode-hook js-ts-mode-hook))
