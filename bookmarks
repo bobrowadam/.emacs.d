@@ -2,12 +2,18 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("claude settings.json"
-  (filename . "~/dotfiles/.claude/settings.json")
-  (front-context-string . "\n      \"Bash(git")
-  (rear-context-string . "   \"Bash(rg *)\",")
-  (position . 200)
-  (last-modified 27041 16678 993191 0))
+(("ghosty config"
+  (filename . "~/dotfiles/ghostty/config")
+  (front-context-string . "# Font settings ")
+  (rear-context-string)
+  (position . 1)
+  (last-modified 27064 22711 888014 0))
+("claude settings.json"
+ (filename . "~/dotfiles/.claude/settings.json")
+ (front-context-string . "\n      \"Bash(git")
+ (rear-context-string . "   \"Bash(rg *)\",")
+ (position . 200)
+ (last-modified 27041 16678 993191 0))
 ("linear-emacs.org"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/documents/linear-emacs.org")
  (front-context-string . ":PROPERTIES:\n:ID")
@@ -46,10 +52,10 @@
  (last-modified 26653 64343 171721 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO Pay motor")
- (rear-context-string . "affect the code\n")
- (position . 5144)
- (last-modified 27017 765 452140 0))
+ (front-context-string . "* TODO [[https:/")
+ (rear-context-string . "2026-04-18 Sat>\n")
+ (position . 5939)
+ (last-modified 27065 21881 385719 0))
 ("linear.org"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/linear.org")
  (front-context-string . "* NEXT Add Tests")
@@ -58,10 +64,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Checkout https")
- (rear-context-string . "ext size limits\n")
- (position . 325)
- (last-modified 27061 44290 261055 0))
+ (front-context-string . "* Stripe DR Need")
+ (rear-context-string . "l for postgress\n")
+ (position . 386)
+ (last-modified 27065 21703 605871 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
