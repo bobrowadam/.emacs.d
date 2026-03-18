@@ -2319,6 +2319,7 @@ LSP/DAP servers manager
   (use-package comment-tags
     :custom
     (comment-tags-keywords '("TODO"
+                             "REVIEW"
                              "FIXME"
                              "BUG"
                              "HACK"
