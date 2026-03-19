@@ -2102,6 +2102,11 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 * Programming
 ** General Settings
 #+begin_src elisp
+  (use-package repeat
+    :ensure nil
+    :config
+    (repeat-mode 1))
+
   (use-package prog-mode
     :ensure nil
     :hook
