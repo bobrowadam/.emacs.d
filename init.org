@@ -1899,6 +1899,18 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     (magit-post-refresh . #'diff-hl-magit-post-refresh)
     :bind (:map diff-hl-mode-map ("C-x v A" . diff-hl-set-reference-rev))
     :config
+    ;; Automatically set reference revision to develop, main, or master if they exist
+    (defun bob/diff-hl-set-default-reference-revision ()
+      "Set `diff-hl-reference-revision' to develop, main, or master if available, else nil."
+      (when (and (buffer-file-name) (vc-backend (buffer-file-name)))
+        (setq-local diff-hl-reference-revision
+                    (let ((branches (magit-list-local-branch-names)))
+                      (cond
+                       ((member "develop" branches) "develop")
+                       ((member "main" branches) "main")
+                       ((member "master" branches) "master")
+                       (t nil))))))
+    (add-hook 'find-file-hook #'bob/diff-hl-set-default-reference-revision)
     ;; Fix diff-hl visibility with treesit-fold-indicators
     (advice-add 'diff-hl-add-highlighting :filter-return
                 (lambda (ovl)
