@@ -1892,6 +1892,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
             (bob/diff-kill-other-hunks))))))
 
   (use-package diff-hl
+    :after magit
     :hook
     (prog-mode . #'turn-on-diff-hl-mode)
     (vc-dir-mode . (lambda () (diff-hl-dir-mode 1)))
@@ -1904,7 +1905,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
       "Set `diff-hl-reference-revision' to develop, main, or master if available, else nil."
       (when (and (buffer-file-name) (vc-backend (buffer-file-name)))
         (setq-local diff-hl-reference-revision
-                    (let ((branches (magit-list-local-branch-names)))
+                    (let ((branches (vc-git-branches)))
                       (cond
                        ((member "develop" branches) "develop")
                        ((member "main" branches) "main")
