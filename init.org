@@ -900,6 +900,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (eca-chat-use-side-window nil)
     ;; (eca-chat-diff-tool 'ediff)
     (eca-chat-window-side 'bottom)
+    (eca-chat-custom-model "anthropic/claude-opus-4-6")
     :bind
     ("C-c ." . eca-transient-menu)
     ;; Override arrow key bindings with Emacs-like alternatives
