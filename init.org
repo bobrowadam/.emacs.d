@@ -2426,6 +2426,9 @@ LSP/DAP servers manager
     (typescript-ts-mode . (lambda ()
                             (setq tab-width 2)
                             (setq indent-tabs-mode nil)))
+    (jtsx-tsx-mode . (lambda ()
+                            (setq tab-width 2)
+                            (setq indent-tabs-mode nil)))
     :config
     (setq typescript-ts-mode-indent-offset 2))
 
