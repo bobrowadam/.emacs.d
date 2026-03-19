@@ -2806,8 +2806,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package wgrep)
 
   (defun bob/monorepo-root ()
-    "Find the current Git checkout root via the nearest `.git' marker."
-    (locate-dominating-file default-directory ".git"))
+    "Find the nearest `.git' ancestor directory.
+Falls back to `default-directory' when not in a git repo."
+    (or (locate-dominating-file default-directory ".git")
+        default-directory))
 
   (defun bob/deadgrep-project ()
     "Open an Eat shell on the highest project"
