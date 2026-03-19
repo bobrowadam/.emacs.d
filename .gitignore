@@ -90,3 +90,4 @@ transient/*
 /triples.db
 elisp-autofmt-cache/
 agent/
+/magit-diff-review.sqlite
