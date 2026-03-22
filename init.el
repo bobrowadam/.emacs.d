@@ -55,3 +55,4 @@
                          bob/generated-init-file))
 
 (load bob/generated-init-file nil 'nomessage)
+(put 'list-timers 'disabled nil)
