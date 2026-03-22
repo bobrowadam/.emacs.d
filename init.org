@@ -2105,6 +2105,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 #+begin_src elisp
   (use-package repeat
     :ensure nil
+    :demand t
     :config
     (repeat-mode 1))
 
