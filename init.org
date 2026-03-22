@@ -2594,6 +2594,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :ensure (:repo "eshelyaron/semel" :fetcher github :files ("*.el"))
     :hook
     (emacs-lisp-mode))
+
   (use-package cursor-sensor-mode
     :ensure nil
     :hook (emacs-lisp-mod))
@@ -2601,8 +2602,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 ** Erefactor
 #+begin_src elisp
   (use-package erefactor
+    :ensure (:repo "bobrowadam/Emacs-erefactor" :fetcher github :files ("*.el"))
     :bind-keymap ("C-c C-v" . erefactor-map)
     :hook (emacs-lisp-mode . erefactor-lazy-highlight-turn-on))
+
 #+end_src
 *** Yaml
 #+begin_src elisp
