@@ -28,7 +28,8 @@
 
 ** Elpaca and Use package config
 #+begin_src emacs-lisp
-  (setq use-package-verbose t)
+  
+  (setq load-prefer-newer t)
   (setq use-package-enable-imenu-support t)
   (setq use-package-always-ensure t)
   (setq use-package-always-defer t)
