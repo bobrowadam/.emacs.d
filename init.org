@@ -2743,6 +2743,11 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :hook (emacs-lisp-mode . elisp-autofmt-mode))
 #+end_src
 * Appearance
+** Prettify symbols
+#+begin_src elisp
+  (global-prettify-symbols-mode 1)
+#+end_src
+
 ** Mode line
 #+begin_src elisp
   (use-package doom-modeline
