@@ -107,6 +107,8 @@
   (use-package websocket
     :disabled t
     :ensure t)
+
+  (use-package aio)
 #+end_src
 
 * My elisp utils
@@ -1868,10 +1870,16 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     :custom
     (code-review-auth-login-marker 'forge))
 #+end_src
-** Git Time Machinie
+** Git Time Machine
 #+begin_src elisp
   (use-package git-timemachine
     :ensure t)
+#+end_src
+** Difftastic
+#+begin_src elisp
+  (use-package difftastic-bindings
+    :ensure difftastic
+    :config (difftastic-bindings-mode))
 #+end_src
 * Diff
 #+begin_src elisp
@@ -1895,7 +1903,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
             (bob/diff-kill-other-hunks))))))
 
   (use-package diff-hl
-    :after magit
+    ;; :after magit
     :hook
     (prog-mode . #'turn-on-diff-hl-mode)
     (vc-dir-mode . (lambda () (diff-hl-dir-mode 1)))
