@@ -227,8 +227,25 @@ Walks up from hunk to parent file section if needed."
   (magit-refresh)
   (message "Review marks cleared"))
 
+(defun bob/magit-review-difftastic-at-point ()
+  "Show difftastic structural diff for the file at point."
+  (interactive)
+  (if-let* ((filepath (bob/magit-review--file-at-point)))
+      (let* ((range (cond
+                     (magit-buffer-diff-range-oids
+                      (mapconcat #'identity magit-buffer-diff-range-oids ".."))
+                     (magit-buffer-diff-range
+                      magit-buffer-diff-range)
+                     (t nil)))
+             (args (when (equal magit-buffer-diff-typearg "--cached")
+                     (list "--cached"))))
+        (difftastic-git-diff-range range args (list filepath)))
+    (user-error "No file at point")))
+
 (keymap-set magit-file-section-map "v" #'bob/magit-review-toggle)
 (keymap-set magit-hunk-section-map "v" #'bob/magit-review-toggle)
+(keymap-set magit-file-section-map "M-d" #'bob/magit-review-difftastic-at-point)
+(keymap-set magit-hunk-section-map "M-d" #'bob/magit-review-difftastic-at-point)
 (keymap-set magit-diff-mode-map "C-c C-v" #'bob/magit-review-clear)
 
 (add-hook 'magit-post-refresh-hook #'bob/magit-review--apply-overlays)

@@ -734,10 +734,36 @@
 *** Monet
 For claude code protocol via web-sockets
 #+begin_src elisp
+  (defun bob/cleanup-stale-monet-lockfiles ()
+    "Remove monet lock files that have no corresponding live monet session."
+    (let ((dir (expand-file-name "~/.claude/ide/"))
+          live-ports)
+      (maphash (lambda (_k v) (push (monet--session-port v) live-ports))
+               monet--sessions)
+      (when (file-directory-p dir)
+        (dolist (file (directory-files dir t "\\.lock$"))
+          (let ((port (string-to-number (file-name-base file))))
+            (unless (member port live-ports)
+              (delete-file file)))))))
+
+  (defun bob/ensure-monet-server ()
+    "Start a monet server for the monorepo root if one isn't running yet.
+    Only starts a server when inside an actual git repo. No-ops if a server is
+    already running for that root."
+    (when-let ((root (locate-dominating-file default-directory ".git")))
+      (let ((root (expand-file-name root)))
+        (unless (monet--get-session root)
+          (monet-start-server-in-directory root root)))))
+
   (use-package monet
     :ensure (:repo "stevemolitor/monet" :fetcher github :files ("*.el") :branch "main")
+    :demand t
     :custom
-    (monet-diff-tool 'monet-simple-diff-tool))
+    (monet-diff-tool 'monet-simple-diff-tool)
+    :config
+    (add-hook 'after-init-hook #'bob/cleanup-stale-monet-lockfiles)
+    :hook
+    (prog-mode . bob/ensure-monet-server))
 #+end_src
 *** ClaudEmacs
 #+begin_src elisp
@@ -881,6 +907,64 @@ For claude code protocol via web-sockets
     (advice-add 'eat-emacs-mode :after #'bob/claude-code-eat-mode-cursor-advice)
     (advice-add 'eat-semi-char-mode :after #'bob/claude-code-eat-mode-cursor-advice)
     (advice-add 'eat-char-mode :after #'bob/claude-code-eat-mode-cursor-advice))
+#+end_src
+*** Open Claude in Kitty
+#+begin_src elisp
+  (global-set-key (kbd "C-c m g") #'bob/open-claude-in-kitty)
+
+  (defvar bob/kitty-claude-tabs (make-hash-table :test 'equal)
+    "Maps monorepo root dirs to Kitty tab IDs for claude sessions.")
+
+  (defun bob/kitty-socket ()
+    "Find the Kitty remote control socket."
+    (car (file-expand-wildcards "/tmp/kitty-emacs*")))
+
+  (defun bob/kitten (&rest args)
+    "Run kitten with --to socket and ARGS. Return trimmed stdout."
+    (if-let ((sock (bob/kitty-socket)))
+        (string-trim
+         (with-output-to-string
+           (apply #'call-process "kitten" nil standard-output nil
+                  "@" "--to" (concat "unix:" sock) args)))
+      (error "No Kitty socket found — is Kitty running?")))
+
+  (defun bob/kitty-tab-exists-p (tab-id)
+    "Return non-nil if Kitty tab with TAB-ID still exists."
+    (condition-case nil
+        (let ((out (bob/kitten "ls")))
+          (and (not (string-empty-p out))
+               (string-match-p (regexp-quote (format "\"id\": %s" tab-id)) out)))
+      (error nil)))
+
+  (defun bob/kitty-focus-tab (tab-id)
+    "Focus the Kitty tab with TAB-ID."
+    (bob/kitten "focus-tab" "--match" (format "id:%s" tab-id))
+    (call-process "open" nil nil nil "-a" "kitty"))
+
+  (defun bob/open-claude-in-kitty ()
+    "Open or focus Claude Code in Kitty for the current monorepo root."
+    (interactive)
+    (let* ((dir (expand-file-name (bob/monorepo-root)))
+           (title (file-name-nondirectory (directory-file-name dir)))
+           (tab-id (gethash dir bob/kitty-claude-tabs)))
+      (if (and tab-id (bob/kitty-tab-exists-p tab-id))
+          (bob/kitty-focus-tab tab-id)
+        (let* ((session (monet--get-session dir))
+               (env-args (if session
+                             (list "--env" "ENABLE_IDE_INTEGRATION=t"
+                                   "--env" (format "CLAUDE_CODE_SSE_PORT=%d" (monet--session-port session)))
+                           (let ((s (monet-start-server-in-directory dir dir)))
+                             (list "--env" "ENABLE_IDE_INTEGRATION=t"
+                                   "--env" (format "CLAUDE_CODE_SSE_PORT=%d" (monet--session-port s))))))
+               (args (append (list "launch" "--type=tab"
+                                   "--tab-title" title
+                                   "--cwd" dir)
+                             env-args
+                             (list "claude")))
+               (out (apply #'bob/kitten args)))
+          (when (string-match "\\([0-9]+\\)" out)
+            (puthash dir (match-string 1 out) bob/kitty-claude-tabs))
+          (call-process "open" nil nil nil "-a" "kitty")))))
 #+end_src
 *** project-claude
 #+begin_src elisp
