@@ -960,7 +960,7 @@ For claude code protocol via web-sockets
                                    "--tab-title" title
                                    "--cwd" dir)
                              env-args
-                             (list "claude")))
+                             (list "--hold" "claude")))
                (out (apply #'bob/kitten args)))
           (when (string-match "\\([0-9]+\\)" out)
             (puthash dir (match-string 1 out) bob/kitty-claude-tabs))
