@@ -928,18 +928,33 @@ For claude code protocol via web-sockets
                   "@" "--to" (concat "unix:" sock) args)))
       (error "No Kitty socket found — is Kitty running?")))
 
-  (defun bob/kitty-tab-exists-p (tab-id)
-    "Return non-nil if Kitty tab with TAB-ID still exists."
+  (defun bob/kitty-tab-exists-p (window-id)
+    "Return non-nil if a Kitty tab containing WINDOW-ID still exists.
+WINDOW-ID may be a string or integer; this is the value returned by
+`kitten @ launch'."
     (condition-case nil
-        (let ((out (bob/kitten "ls")))
-          (and (not (string-empty-p out))
-               (string-match-p (regexp-quote (format "\"id\": %s" tab-id)) out)))
+        (let* ((numeric-id (if (stringp window-id) (string-to-number window-id) window-id))
+               (os-windows (json-parse-string (bob/kitten "ls") :array-type 'list)))
+          (cl-some (lambda (os-win)
+                     (cl-some (lambda (tab)
+                                (cl-some (lambda (win)
+                                           (= (gethash "id" win) numeric-id))
+                                         (gethash "windows" tab)))
+                              (gethash "tabs" os-win)))
+                   os-windows))
       (error nil)))
 
   (defun bob/kitty-focus-tab (tab-id)
     "Focus the Kitty tab with TAB-ID."
     (bob/kitten "focus-tab" "--match" (format "id:%s" tab-id))
     (call-process "open" nil nil nil "-a" "kitty"))
+
+  (defun bob/kitty-prune-claude-tabs ()
+    "Remove all stale entries from `bob/kitty-claude-tabs'."
+    (maphash (lambda (dir tab-id)
+               (unless (bob/kitty-tab-exists-p tab-id)
+                 (remhash dir bob/kitty-claude-tabs)))
+             bob/kitty-claude-tabs))
 
   (defun bob/open-claude-in-kitty ()
     "Open or focus Claude Code in Kitty for the current monorepo root."
@@ -949,6 +964,7 @@ For claude code protocol via web-sockets
            (tab-id (gethash dir bob/kitty-claude-tabs)))
       (if (and tab-id (bob/kitty-tab-exists-p tab-id))
           (bob/kitty-focus-tab tab-id)
+        (remhash dir bob/kitty-claude-tabs)
         (let* ((session (monet--get-session dir))
                (env-args (if session
                              (list "--env" "ENABLE_IDE_INTEGRATION=t"
@@ -960,7 +976,7 @@ For claude code protocol via web-sockets
                                    "--tab-title" title
                                    "--cwd" dir)
                              env-args
-                             (list "--hold" "claude")))
+                             (list "--hold" "/bin/zsh" "-li" "-c" "claude")))
                (out (apply #'bob/kitten args)))
           (when (string-match "\\([0-9]+\\)" out)
             (puthash dir (match-string 1 out) bob/kitty-claude-tabs))
@@ -1080,7 +1096,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (mentat-default-behaviour 'mentor)
     (mentat-use-vui t)
     (mentat-debug t)
-    (mentat-rewrite-model "gpt-5.3-codex")
+    (mentat-rewrite-model "sonnet")
     :config
     (setenv "MENTAT_OPENAI_API_KEY" (auth-source-pick-first-password
                                      :host "platform.openai.com"
@@ -1454,20 +1470,20 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (defun bob/markdown-update-header-faces (&rest _)
       "Make markdown heading levels visually distinct."
       (set-face-attribute 'markdown-header-face nil :weight 'bold)
-      (set-face-attribute 'markdown-header-face-1 nil :height 1.55 :weight 'bold)
-      (set-face-attribute 'markdown-header-face-2 nil :height 1.32 :weight 'bold)
-      (set-face-attribute 'markdown-header-face-3 nil :height 1.18 :weight 'semibold)
-      (set-face-attribute 'markdown-header-face-4 nil :height 1.08 :weight 'semibold)
-      (set-face-attribute 'markdown-header-face-5 nil :height 1.0 :weight 'normal)
-      (set-face-attribute 'markdown-header-face-6 nil :height 0.94 :weight 'normal))
+      (set-face-attribute 'markdown-header-face-1 nil :height 1.2 :weight 'bold)
+      (set-face-attribute 'markdown-header-face-2 nil :height 1.1 :weight 'bold)
+      (set-face-attribute 'markdown-header-face-3 nil :height 0.9 :weight 'semibold)
+      (set-face-attribute 'markdown-header-face-4 nil :height 0.75 :weight 'semibold)
+      (set-face-attribute 'markdown-header-face-5 nil :height 0.75 :weight 'normal)
+      (set-face-attribute 'markdown-header-face-6 nil :height 0.75 :weight 'normal))
     (defun bob/markdown-update-list-bullets (&rest _)
       "Set markdown list bullets with a subtle unicode hierarchy."
       (setq markdown-list-item-bullets
             (list
-             (propertize "•" 'face 'org-level-1)
-             (propertize "–" 'face 'org-level-2)
-             (propertize "◆" 'face 'org-level-3)
-             (propertize "·" 'face 'org-level-4))))
+             (propertize "·" 'face 'org-level-1)
+             (propertize "⁃" 'face 'org-level-2)
+             (propertize "·" 'face 'org-level-3)
+             (propertize "⁃" 'face 'org-level-4))))
     (bob/markdown-update-header-faces)
     (bob/markdown-update-list-bullets)
     (add-hook 'markdown-view-mode-hook #'bob/markdown-view-mode-setup)
@@ -2911,6 +2927,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package nibelung-theme
     :ensure (:repo "veschin/nibelung-theme" :fetcher github :files ("*.el")))
 
+#+end_src
+*** kanagawa-themes
+#+begin_src elisp
+  (use-package kanagawa-themes)
 #+end_src
 ** Spacious padding
 #+begin_src elisp
