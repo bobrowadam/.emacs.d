@@ -976,7 +976,7 @@ WINDOW-ID may be a string or integer; this is the value returned by
                                    "--tab-title" title
                                    "--cwd" dir)
                              env-args
-                             (list "--hold" "/bin/zsh" "-li" "-c" "claude")))
+                             (list "/bin/zsh" "-li" "-c" "claude; exec /bin/zsh -li")))
                (out (apply #'bob/kitten args)))
           (when (string-match "\\([0-9]+\\)" out)
             (puthash dir (match-string 1 out) bob/kitty-claude-tabs))
