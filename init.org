@@ -977,9 +977,19 @@ WINDOW-ID may be a string or integer; this is the value returned by
                                    "--cwd" dir)
                              env-args
                              (list "/bin/zsh" "-li" "-c" "claude; exec /bin/zsh -li")))
-               (out (apply #'bob/kitten args)))
-          (when (string-match "\\([0-9]+\\)" out)
-            (puthash dir (match-string 1 out) bob/kitty-claude-tabs))
+               (out (apply #'bob/kitten args))
+               (win-id (when (string-match "\\([0-9]+\\)" out)
+                          (match-string 1 out)))
+               (dark-p (string= "Dark"
+                                (string-trim
+                                 (shell-command-to-string
+                                  "defaults read -g AppleInterfaceStyle 2>/dev/null || echo Light"))))
+               (theme-file (expand-file-name
+                            (if dark-p "kanagawa.conf" "kanagawa-light.conf")
+                            "~/.config/kitty")))
+          (when win-id
+            (puthash dir win-id bob/kitty-claude-tabs)
+            (bob/kitten "set-colors" "--match" (format "id:%s" win-id) theme-file))
           (call-process "open" nil nil nil "-a" "kitty")))))
 #+end_src
 *** project-claude
