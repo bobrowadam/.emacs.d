@@ -52,10 +52,10 @@
  (last-modified 26653 64343 171721 0))
 ("org-refile-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240103T130420--tasks__project.org")
- (front-context-string . "* TODO [[https:/")
- (rear-context-string . "2026-04-18 Sat>\n")
- (position . 5939)
- (last-modified 27065 21881 385719 0))
+ (front-context-string . "* TODO Read ai-d")
+ (rear-context-string . "utput handling.\n")
+ (position . 8011)
+ (last-modified 27081 35552 563455 0))
 ("linear.org"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/linear.org")
  (front-context-string . "* NEXT Add Tests")
@@ -64,10 +64,10 @@
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Stripe DR Need")
- (rear-context-string . "l for postgress\n")
- (position . 386)
- (last-modified 27065 21703 605871 0))
+ (front-context-string . "* Read ai-didnt-")
+ (rear-context-string . "20240104T120451\n")
+ (position . 112)
+ (last-modified 27074 37214 744411 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
