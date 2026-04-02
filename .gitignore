@@ -78,6 +78,7 @@ transient/*
 /pomm
 /elpaca/
 *.elc
+/modules/__pycache__/
 /modules/modules-autoloads.el
 /init-generated.el
 /modules/grain-utils.el
@@ -91,3 +92,4 @@ transient/*
 elisp-autofmt-cache/
 agent/
 /magit-diff-review.sqlite
+.claude/settings.local.json
