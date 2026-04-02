@@ -109,6 +109,9 @@
     :ensure t)
 
   (use-package aio)
+
+  (require 'solveit)
+  (require 'pr-review)
 #+end_src
 
 * My elisp utils
