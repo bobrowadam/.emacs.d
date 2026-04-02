@@ -157,6 +157,17 @@
                solveit-review--current-chunk)))
     (nth idx solveit-review--chunk-ovs)))
 
+(defun solveit-review--display-file (file)
+  "Return a readable display path for FILE.
+Prefer a path relative to the nearest git root, falling back to an abbreviated
+absolute path."
+  (when file
+    (let* ((expanded (expand-file-name file))
+           (root (locate-dominating-file expanded ".git")))
+      (if root
+          (file-relative-name expanded root)
+        (abbreviate-file-name expanded)))))
+
 (defun solveit-review--chunk-context ()
   "Return a formatted context block for the active chunk."
   (let* ((chunk-idx (if solveit-review--global-mode
@@ -202,8 +213,9 @@
              (string-trim (buffer-substring-no-properties
                            (overlay-start ov)
                            (overlay-end ov)))))))
-         (file (or (and op (file-name-nondirectory (plist-get op :file)))
-                   (when buffer-file-name (file-name-nondirectory buffer-file-name)))))
+         (file (or (and op (solveit-review--display-file (plist-get op :file)))
+                   (when buffer-file-name
+                     (solveit-review--display-file buffer-file-name)))))
     (mapconcat
      #'identity
      (delq nil

@@ -109,9 +109,6 @@
     :ensure t)
 
   (use-package aio)
-
-  (require 'solveit)
-  (require 'pr-review)
 #+end_src
 
 * My elisp utils
@@ -1972,7 +1969,29 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 ** Pr Reviews
 ** PR Review
 #+begin_src elisp
-  (use-package pr-review)
+  (use-package solveit
+    :ensure nil
+    :commands (solveit-show-plan
+               solveit-open-location
+               solveit-open-location-for-kitty
+               solveit-load-review
+               solveit-load-review-for-kitty
+               solveit-send-feedback
+               solveit-show-diff
+               solveit-commit))
+  (use-package bob-pr-review
+    :ensure nil
+    :preface
+    (autoload 'pr-review-focus-region "bob-pr-review" nil t)
+    (autoload 'pr-review-show-hunk "bob-pr-review" nil t)
+    (autoload 'pr-review-show-file-diff "bob-pr-review" nil t)
+    (autoload 'pr-review-set-base-branch "bob-pr-review" nil t)
+    (autoload 'pr-review-clear "bob-pr-review" nil t)
+    :commands (pr-review-focus-region
+               pr-review-show-hunk
+               pr-review-show-file-diff
+               pr-review-set-base-branch
+               pr-review-clear))
   (use-package github-review)
   (use-package code-review
     :demand t

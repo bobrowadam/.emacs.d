@@ -1,4 +1,4 @@
-;;; pr-review.el --- Emacs helpers for incremental PR review -*- lexical-binding: t; -*-
+;;; bob-pr-review.el --- Emacs helpers for incremental PR review -*- lexical-binding: t; -*-
 ;; Loaded from the Emacs init so agent skills can call pr-review functions
 ;; directly. Complex narrated reviews use the solveit runtime loaded from the
 ;; Emacs config as well.
@@ -60,4 +60,4 @@
       (delete-overlay ov)))
   (setq pr-review--overlays nil))
 
-(provide 'pr-review)
+(provide 'bob-pr-review)
