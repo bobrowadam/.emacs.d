@@ -992,40 +992,10 @@ WINDOW-ID may be a string or integer; this is the value returned by
             (bob/kitten "set-colors" "--match" (format "id:%s" win-id) theme-file))
           (call-process "open" nil nil nil "-a" "kitty")))))
 #+end_src
-*** Open Pi in Kitty
+*** Pi
 #+begin_src elisp
-  (global-set-key (kbd "C-c m P") #'bob/open-pi-in-kitty)
-
-  (defvar bob/kitty-pi-tabs (make-hash-table :test 'equal)
-    "Maps monorepo root dirs to Kitty tab IDs for pi sessions.")
-
-  (defun bob/open-pi-in-kitty ()
-    "Open or focus Pi coding agent in Kitty for the current monorepo root."
-    (interactive)
-    (let* ((dir (expand-file-name (bob/monorepo-root)))
-           (title (concat "pi:" (file-name-nondirectory (directory-file-name dir))))
-           (tab-id (gethash dir bob/kitty-pi-tabs)))
-      (if (and tab-id (bob/kitty-tab-exists-p tab-id))
-          (bob/kitty-focus-tab tab-id)
-        (remhash dir bob/kitty-pi-tabs)
-        (let* ((args (list "launch" "--type=tab"
-                           "--tab-title" title
-                           "--cwd" dir
-                           "/bin/zsh" "-li" "-c" "pi; exec /bin/zsh -li"))
-               (out (apply #'bob/kitten args))
-               (win-id (when (string-match "\\([0-9]+\\)" out)
-                          (match-string 1 out)))
-               (dark-p (string= "Dark"
-                                (string-trim
-                                 (shell-command-to-string
-                                  "defaults read -g AppleInterfaceStyle 2>/dev/null || echo Light"))))
-               (theme-file (expand-file-name
-                            (if dark-p "kanagawa.conf" "kanagawa-light.conf")
-                            "~/.config/kitty")))
-          (when win-id
-            (puthash dir win-id bob/kitty-pi-tabs)
-            (bob/kitten "set-colors" "--match" (format "id:%s" win-id) theme-file))
-          (call-process "open" nil nil nil "-a" "kitty")))))
+  (add-to-list 'load-path (expand-file-name "modules" user-emacs-directory))
+  (require 'pi)
 #+end_src
 *** project-claude
 #+begin_src elisp
