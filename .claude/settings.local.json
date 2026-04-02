@@ -18,7 +18,18 @@
       "mcp__elisp-dev__elisp-describe-function",
       "Read(//Users/bob/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/journal/**)",
       "mcp__elisp-dev__elisp-read-source-file",
-      "mcp__elisp-dev__elisp-get-function-definition"
+      "mcp__elisp-dev__elisp-get-function-definition",
+      "Read(//Users/bob/.claude/ide/**)",
+      "Read(//Users/bob/Library/**)",
+      "Read(//Users/bob/dotfiles/ghostty/**)",
+      "Bash(osascript:*)",
+      "Bash(emacsclient --eval '\\(bob/open-claude-in-ghostty\\)')",
+      "Read(//private/tmp/**)",
+      "Bash(ghostty +list-keybinds)",
+      "Bash(bash /Users/bob/.claude/hooks/check-elisp.sh)",
+      "Bash(ghostty --help)",
+      "Bash(kitten:*)",
+      "Bash(pkill -x kitty)"
     ],
     "deny": [],
     "additionalDirectories": [
