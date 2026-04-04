@@ -52,7 +52,8 @@
 (defun bob/pi--send-raw (win-id text)
   "Send TEXT to the pi window WIN-ID using bracketed paste, then submit."
   (bob/kitten "send-text" "--match" (format "id:%s" win-id)
-              (concat "\x1b[200~" text "\x1b[201~\n")))
+              (concat "\x1b[200~" text "\x1b[201~"))
+  (bob/kitten "send-key" "--match" (format "id:%s" win-id) "Enter"))
 
 (defun bob/pi--current-win-id ()
   "Return the Kitty window ID for the pi session in the current project.
@@ -90,17 +91,22 @@ Opens a new tab if one doesn't exist yet."
 (defun bob/pi-send-dwim ()
   "Prompt for instruction, send region (or current defun) to pi. Stay in Emacs."
   (interactive)
-  (let* ((beg (if (use-region-p) (region-beginning)
-               (save-excursion (mark-defun) (region-beginning))))
-         (end (if (use-region-p) (region-end)
-               (save-excursion (mark-defun) (region-end))))
-         (instruction (read-string "Pi: "))
+  (let* ((bounds (if (use-region-p)
+                     (cons (region-beginning) (region-end))
+                   (save-excursion
+                     (mark-defun)
+                     (prog1 (cons (region-beginning) (region-end))
+                       (deactivate-mark)))))
+         (beg (car bounds))
+         (end (cdr bounds))
          (text (buffer-substring-no-properties beg end))
+         (instruction (read-string "Pi: "))
          (payload (concat instruction "\n\n" (bob/pi--format-region text)))
          (win-id (bob/pi--current-win-id)))
     (bob/pi--send-raw win-id payload)
     (deactivate-mark)
     (message "Sent to pi.")))
+
 
 ;;;###autoload
 (defun bob/pi-send-buffer ()
