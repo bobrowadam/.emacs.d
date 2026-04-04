@@ -77,17 +77,6 @@ Opens a new tab if one doesn't exist yet."
             rel-file line text)))
 
 ;;;###autoload
-(defun bob/pi-send-region (beg end)
-  "Send the active region to pi with file/line context. Stay in Emacs."
-  (interactive "r")
-  (let* ((text (buffer-substring-no-properties beg end))
-         (payload (bob/pi--format-region text))
-         (win-id (bob/pi--current-win-id)))
-    (bob/pi--send-raw win-id payload)
-    (deactivate-mark)
-    (message "Sent to pi.")))
-
-;;;###autoload
 (defun bob/pi-show-message (text)
   "Show TEXT from pi. Short messages go to minibuffer, longer ones to a buffer."
   (if (< (length text) 120)
@@ -99,27 +88,13 @@ Opens a new tab if one doesn't exist yet."
 
 ;;;###autoload
 (defun bob/pi-send-dwim ()
-  "Send region if active, otherwise the current defun, to pi."
+  "Prompt for instruction, send region (or current defun) to pi. Stay in Emacs."
   (interactive)
-  (if (use-region-p)
-      (bob/pi-send-region (region-beginning) (region-end))
-    (save-excursion
-      (mark-defun)
-      (bob/pi-send-region (region-beginning) (region-end))
-      (deactivate-mark))))
-
-;;;###autoload
-(defun bob/pi-send-buffer ()
-  "Send the entire buffer to pi with filename context."
-  (interactive)
-  (bob/pi-send-region (point-min) (point-max)))
-
-;;;###autoload
-(defun bob/pi-ask-region (beg end)
-  "Prompt for an instruction, then send the region + instruction to pi.
-Stays in Emacs after sending — does not switch focus to Kitty."
-  (interactive "r")
-  (let* ((instruction (read-string "Pi: "))
+  (let* ((beg (if (use-region-p) (region-beginning)
+               (save-excursion (mark-defun) (region-beginning))))
+         (end (if (use-region-p) (region-end)
+               (save-excursion (mark-defun) (region-end))))
+         (instruction (read-string "Pi: "))
          (text (buffer-substring-no-properties beg end))
          (payload (concat instruction "\n\n" (bob/pi--format-region text)))
          (win-id (bob/pi--current-win-id)))
@@ -128,15 +103,15 @@ Stays in Emacs after sending — does not switch focus to Kitty."
     (message "Sent to pi.")))
 
 ;;;###autoload
-(defun bob/pi-ask-dwim ()
-  "Prompt for instruction and send region if active, otherwise current defun."
+(defun bob/pi-send-buffer ()
+  "Send the entire buffer to pi with filename context."
   (interactive)
-  (if (use-region-p)
-      (bob/pi-ask-region (region-beginning) (region-end))
-    (save-excursion
-      (mark-defun)
-      (bob/pi-ask-region (region-beginning) (region-end))
-      (deactivate-mark))))
+  (let* ((instruction (read-string "Pi: "))
+         (text (buffer-substring-no-properties (point-min) (point-max)))
+         (payload (concat instruction "\n\n" (bob/pi--format-region text)))
+         (win-id (bob/pi--current-win-id)))
+    (bob/pi--send-raw win-id payload)
+    (message "Sent to pi.")))
 
 ;;;###autoload
 (defun bob/pi-pulse-region (file start-line end-line)
@@ -163,6 +138,5 @@ Called by pi after it edits a region, to give visual feedback."
 (global-set-key (kbd "C-c p p") #'bob/open-pi-in-kitty)
 (global-set-key (kbd "C-c p s") #'bob/pi-send-dwim)
 (global-set-key (kbd "C-c p S") #'bob/pi-send-buffer)
-(global-set-key (kbd "C-c p a") #'bob/pi-ask-dwim)
 
 (provide 'pi)
