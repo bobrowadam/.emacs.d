@@ -103,10 +103,55 @@ Opens a new tab if one doesn't exist yet."
   (interactive)
   (bob/pi-send-region (point-min) (point-max)))
 
+;;;###autoload
+(defun bob/pi-ask-region (beg end)
+  "Prompt for an instruction, then send the region + instruction to pi.
+Stays in Emacs after sending — does not switch focus to Kitty."
+  (interactive "r")
+  (let* ((instruction (read-string "Pi: "))
+         (text (buffer-substring-no-properties beg end))
+         (payload (concat instruction "\n\n" (bob/pi--format-region text)))
+         (win-id (bob/pi--current-win-id)))
+    (bob/pi--send-raw win-id payload)
+    (deactivate-mark)
+    (message "Sent to pi.")))
+
+;;;###autoload
+(defun bob/pi-ask-dwim ()
+  "Prompt for instruction and send region if active, otherwise current defun."
+  (interactive)
+  (if (use-region-p)
+      (bob/pi-ask-region (region-beginning) (region-end))
+    (save-excursion
+      (mark-defun)
+      (bob/pi-ask-region (region-beginning) (region-end))
+      (deactivate-mark))))
+
+;;;###autoload
+(defun bob/pi-pulse-region (file start-line end-line)
+  "Pulse-highlight lines START-LINE to END-LINE in FILE.
+Called by pi after it edits a region, to give visual feedback."
+  (require 'pulse)
+  (let ((buf (find-buffer-visiting file)))
+    (unless buf
+      (setq buf (find-file-noselect file)))
+    (with-current-buffer buf
+      (let ((beg (save-excursion
+                   (goto-char (point-min))
+                   (forward-line (1- start-line))
+                   (point)))
+            (end (save-excursion
+                   (goto-char (point-min))
+                   (forward-line (1- end-line))
+                   (end-of-line)
+                   (point))))
+        (pulse-momentary-highlight-region beg end)))))
+
 ;;; Keybindings
 
 (global-set-key (kbd "C-c p p") #'bob/open-pi-in-kitty)
 (global-set-key (kbd "C-c p s") #'bob/pi-send-dwim)
 (global-set-key (kbd "C-c p S") #'bob/pi-send-buffer)
+(global-set-key (kbd "C-c p a") #'bob/pi-ask-dwim)
 
 (provide 'pi)
