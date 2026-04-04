@@ -78,13 +78,24 @@ Opens a new tab if one doesn't exist yet."
 
 ;;;###autoload
 (defun bob/pi-send-region (beg end)
-  "Send the active region to pi with file/line context, then focus Kitty."
+  "Send the active region to pi with file/line context. Stay in Emacs."
   (interactive "r")
   (let* ((text (buffer-substring-no-properties beg end))
          (payload (bob/pi--format-region text))
          (win-id (bob/pi--current-win-id)))
     (bob/pi--send-raw win-id payload)
-    (call-process "open" nil nil nil "-a" "kitty")))
+    (deactivate-mark)
+    (message "Sent to pi.")))
+
+;;;###autoload
+(defun bob/pi-show-message (text)
+  "Show TEXT from pi. Short messages go to minibuffer, longer ones to a buffer."
+  (if (< (length text) 120)
+      (message "%s" text)
+    (with-current-buffer (get-buffer-create "*pi-response*")
+      (erase-buffer)
+      (insert text)
+      (display-buffer (current-buffer)))))
 
 ;;;###autoload
 (defun bob/pi-send-dwim ()
