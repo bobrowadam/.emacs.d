@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Update Settings
+# key: settings
+# --
+Update $1 settings
