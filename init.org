@@ -995,7 +995,7 @@ WINDOW-ID may be a string or integer; this is the value returned by
 *** Pi
 #+begin_src elisp
   (use-package pi
-    :load-path "~/.emacs.d/modules"
+    :ensure nil
     :demand t)
 #+end_src
 *** project-claude

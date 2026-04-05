@@ -120,13 +120,6 @@
     (when sockets
       (concat "unix:" (car sockets)))))
 
-(defun bob/kitten (&rest args)
-  "Send ARGS to kitty using the current remote-control socket."
-  (let ((kitty-socket (kitty-get-socket)))
-    (if kitty-socket
-        (apply #'call-process "kitty" nil 0 nil
-               "@" "--to" kitty-socket args)
-      (error "Could not find kitty socket"))))
 
 (defun solveit-review--play-audio (path)
   "Play audio file at PATH via afplay, killing any current playback."
@@ -547,7 +540,11 @@ overlay so feedback can include the original chunk context."
 (defun solveit-open-location (file line &optional chunks feedback-target-id)
   "Open FILE at LINE with optional single-file review mode.
 CHUNKS: list of (NAME START-LINE END-LINE DESCRIPTION SYMBOLS NARRATION).
-FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback."
+FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
+If nil, auto-discovers the Kitty window ID for the current project."
+  (setq feedback-target-id (or feedback-target-id
+                               (and (fboundp 'bob/kitty-pi-window-id)
+                                    (bob/kitty-pi-window-id))))
   (when (and solveit-review--active-buffer
              (buffer-live-p solveit-review--active-buffer))
     (with-current-buffer solveit-review--active-buffer
@@ -568,7 +565,8 @@ FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback."
     (setq solveit-review--audio-tmpdir nil)
     (setq solveit-review--tts-output-buffer "")
     (setq solveit-review--feedback-target-id feedback-target-id)
-    (setq solveit-review--session-feedback-target-id feedback-target-id)
+    (setq solveit-review--session-feedback-target-id (or feedback-target-id
+                                                        solveit-review--session-feedback-target-id))
     (solveit-review--apply-highlights chunks)
     (setq solveit-review--chunk-ovs
           (sort (mapcar #'car solveit-review--descriptions)
@@ -592,7 +590,11 @@ FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback."
 Each object must have keys: file, line, name, start_line, end_line,
 description, symbols (array), narration.
 Deletes OPS-FILE after reading.
-FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback."
+FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
+If nil, auto-discovers the Kitty window ID for the current project."
+  (setq feedback-target-id (or feedback-target-id
+                               (and (fboundp 'bob/kitty-pi-window-id)
+                                    (bob/kitty-pi-window-id))))
   (let* ((raw (json-read-file ops-file))
          (_ (delete-file ops-file))
          (ops (mapcar (lambda (obj)
@@ -643,13 +645,10 @@ FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback."
         (set-process-filter proc #'solveit-review--tts-filter)
         (setq solveit-review--tts-process proc)))))
 
-(defun solveit-open-location-for-kitty (file line &optional chunks kitty-window-id)
-  "Open FILE at LINE with CHUNKS and an explicit Kitty window id."
-  (solveit-open-location file line chunks kitty-window-id))
-
-(defun solveit-load-review-for-kitty (ops-file &optional kitty-window-id)
-  "Open OPS-FILE as a review session with an explicit Kitty window id."
-  (solveit-load-review ops-file kitty-window-id))
+;; Deprecated: feedback target is now auto-discovered.  Kept as aliases
+;; for backward compatibility with older skill invocations.
+(defalias 'solveit-open-location-for-kitty #'solveit-open-location)
+(defalias 'solveit-load-review-for-kitty #'solveit-load-review)
 
 (defun solveit-show-plan (project-root plan-text)
   "Display PLAN-TEXT in a dedicated org-mode buffer."

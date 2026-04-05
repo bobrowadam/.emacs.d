@@ -17,19 +17,58 @@
 (defvar bob/kitty-pi-tabs (make-hash-table :test 'equal)
   "Maps monorepo root dirs to Kitty window IDs for pi sessions.")
 
+;;; Kitty window ID lookup
+
+(defun bob/kitty-pi-window-id (&optional dir)
+  "Return the Kitty window ID for the pi session in DIR (or current project).
+Searches the hash table first, then queries Kitty.  Returns a string or nil."
+  (let* ((dir (expand-file-name (or dir (bob/monorepo-root))))
+         (cached (gethash dir bob/kitty-pi-tabs)))
+    (if (and cached (bob/kitty-tab-exists-p cached))
+        cached
+      (when-let* ((found (bob/kitty-find-pi-tab dir)))
+        (puthash dir found bob/kitty-pi-tabs)
+        found))))
+
 ;;; Open / focus
+
+(defun bob/kitty-find-pi-tab (dir)
+  "Find a Kitty tab running pi in DIR, return its active window ID
+as string, or nil."
+  (condition-case nil
+      (let ((os-windows (json-parse-string (bob/kitten "ls") :array-type 'list)))
+        (cl-some
+         (lambda (os-win)
+           (cl-some
+            (lambda (tab)
+              (cl-some
+               (lambda (win)
+                 (when (and (string= (gethash "cwd" win) (directory-file-name dir))
+                            (cl-some (lambda (proc)
+                                       (member "pi" (append (gethash "cmdline" proc) nil)))
+                                     (append (gethash "foreground_processes" win) nil)))
+                   (number-to-string (gethash "id" win))))
+               (gethash "windows" tab)))
+            (gethash "tabs" os-win)))
+         os-windows))
+    (error nil)))
 
 (defun bob/open-pi-in-kitty ()
   "Open or focus Pi coding agent in Kitty for the current project root."
   (interactive)
   (let* ((dir (expand-file-name (bob/monorepo-root)))
-         (title (concat "pi:" (file-name-nondirectory (directory-file-name dir))))
          (tab-id (gethash dir bob/kitty-pi-tabs)))
-    (if (and tab-id (bob/kitty-tab-exists-p tab-id))
-        (bob/kitty-focus-tab tab-id)
+    ;; Try hash first, then discover existing tab by cwd+process, then launch new.
+    (cond
+     ((and tab-id (bob/kitty-tab-exists-p tab-id))
+      (bob/kitty-focus-tab tab-id))
+     ((when-let* ((found-id (bob/kitty-find-pi-tab dir)))
+        (puthash dir found-id bob/kitty-pi-tabs)
+        (bob/kitty-focus-tab found-id)
+        t))
+     (t
       (remhash dir bob/kitty-pi-tabs)
       (let* ((args (list "launch" "--type=tab"
-                         "--tab-title" title
                          "--cwd" dir
                          "/bin/zsh" "-li" "-c" "pi; exec /bin/zsh -li"))
              (out (apply #'bob/kitten args))
@@ -45,7 +84,7 @@
         (when win-id
           (puthash dir win-id bob/kitty-pi-tabs)
           (bob/kitten "set-colors" "--match" (format "id:%s" win-id) theme-file))
-        (call-process "open" nil nil nil "-a" "kitty")))))
+        (call-process "open" nil nil nil "-a" "kitty"))))))
 
 ;;; Sending text
 
