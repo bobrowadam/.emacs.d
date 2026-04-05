@@ -34,23 +34,23 @@ Searches the hash table first, then queries Kitty.  Returns a string or nil."
 
 (defun bob/kitty-find-pi-tab (dir)
   "Find a Kitty tab running pi in DIR, return its active window ID
-as string, or nil."
+as string, or nil.  Prefers the focused window when multiple match."
   (condition-case nil
-      (let ((os-windows (json-parse-string (bob/kitten "ls") :array-type 'list)))
-        (cl-some
-         (lambda (os-win)
-           (cl-some
-            (lambda (tab)
-              (cl-some
-               (lambda (win)
-                 (when (and (string= (gethash "cwd" win) (directory-file-name dir))
-                            (cl-some (lambda (proc)
-                                       (member "pi" (append (gethash "cmdline" proc) nil)))
-                                     (append (gethash "foreground_processes" win) nil)))
-                   (number-to-string (gethash "id" win))))
-               (gethash "windows" tab)))
-            (gethash "tabs" os-win)))
-         os-windows))
+      (let ((os-windows (json-parse-string (bob/kitten "ls") :array-type 'list))
+            (focused nil)
+            (first-match nil))
+        (dolist (os-win os-windows)
+          (dolist (tab (gethash "tabs" os-win))
+            (dolist (win (gethash "windows" tab))
+              (when (cl-some (lambda (proc)
+                               (and (string= (gethash "cwd" proc) (directory-file-name dir))
+                                    (member "pi" (append (gethash "cmdline" proc) nil))))
+                             (append (gethash "foreground_processes" win) nil))
+                (let ((id (number-to-string (gethash "id" win))))
+                  (unless first-match (setq first-match id))
+                  (when (eq (gethash "is_focused" win) t)
+                    (setq focused id)))))))
+        (or focused first-match))
     (error nil)))
 
 (defun bob/open-pi-in-kitty ()
