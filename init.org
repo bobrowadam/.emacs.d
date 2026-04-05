@@ -3198,6 +3198,12 @@ Falls back to `default-directory' when not in a git repo."
     ;; (compilation-filter . #'xterm-color-filter)
     :custom
     (compilation-environment '("TERM=xterm-256color")))
+
+  (use-package ghostel
+    :ensure (:repo "https://github.com/dakra/ghostel" 
+                   :fetcher github :files ("*.el"))
+    :custom
+    (ghostel-module-auto-install 'download))
 #+end_src
 * RSS feed
 #+begin_src elisp
