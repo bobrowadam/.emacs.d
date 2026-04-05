@@ -1520,6 +1520,16 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
              :repo "cfclrk/markdown-xwidget"
              :files (:defaults "resources")))
 #+end_src
+** Valign
+Align tables in markdown and org-mode
+#+begin_src elisp
+  (use-package valign
+    :after (:any markdown-mode org-mode)
+    :demand t
+    :hook
+    (markdown-mode . (lambda () (valign-mode 1)))
+    (org-mode . (lambda () (valign-mode 1))))
+#+end_src
 * Org Mode
 ** Org mode configuration
 #+begin_src elisp
