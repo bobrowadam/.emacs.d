@@ -581,6 +581,11 @@
     (ultra-scroll-mode 1))
 #+end_src
 
+* Iedit
+#+begin_src elisp
+  (use-package iedit
+    :bind ("C-;" . iedit-mode))
+#+end_src
 * Ibuffer
 #+begin_src elisp
   (use-package nerd-icons)
@@ -2985,8 +2990,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package spacious-padding
     :init (spacious-padding-mode 1))
 
-  (use-package iedit
-    :bind ("C-;" . iedit-mode))
 #+end_src
 * Grep
 #+begin_src elisp
