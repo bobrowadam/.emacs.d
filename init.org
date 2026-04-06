@@ -629,6 +629,8 @@
     (gptel-expert-commands t)
     ;; (gptel-org-branching-context t)
     (gptel-cache t)
+    (gptel-use-tools t)
+    (gptel-confirm-tool-calls nil)
     :config
     (exec-path-from-shell-initialize)
     ;; (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "~@user~\n")
