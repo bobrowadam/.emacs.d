@@ -2927,19 +2927,11 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 *** Doom Themes
 #+begin_src elisp
   (use-package doom-themes
-    :custom
-    (doom-rouge-brighter-comments t)
-    :init
+    ;; :custom
+    ;; (doom-ayu t)
     ;; (load-theme 'doom-ayu-dark)
-    (load-theme 'doom-rouge))
-#+end_src
-*** Doric Themes
-#+begin_src elisp
-  (use-package doric-themes
-    :demand nil
-    :disabled t
-    :config
-    (load-theme 'doric-fire))
+    ;; (load-theme 'doom-rouge)
+                )
 #+end_src
 *** Modus Themes
 #+begin_src elisp
@@ -2988,7 +2980,15 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 ** Spacious padding
 #+begin_src elisp
   (use-package spacious-padding
-    :init (spacious-padding-mode 1))
+    :init
+    (defun bob/fix-mode-line-active-bg (&rest _)
+      "Set mode-line-active background to mode-line background if not explicitly set."
+      (when-let* ((mode-line-bg (face-background 'mode-line nil 'default))
+                  (mode-line-active-bg (face-attribute 'mode-line-active :background nil t))
+                  ((eq mode-line-active-bg 'unspecified)))
+        (set-face-attribute 'mode-line-active nil :background mode-line-bg)))
+    (advice-add 'spacious-padding-set-faces :after #'bob/fix-mode-line-active-bg)
+    (spacious-padding-mode 1))
 
 #+end_src
 * Grep
