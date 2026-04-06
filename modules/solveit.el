@@ -91,6 +91,9 @@
 (defvar solveit-review--audio-tmpdir nil
   "Tmpdir created by the TTS generator; deleted on cleanup.")
 
+(defvar solveit-review--tts-stderr ""
+  "Accumulated unrecognized output from TTS process (likely stderr/tracebacks).")
+
 
 ;;; Global multi-file session state (solveit-load-review)
 
@@ -232,6 +235,17 @@ absolute path."
                       (solveit-review--indent-text excerpt "    ")))))
      "\n")))
 
+(defun solveit-review--tts-sentinel (proc event)
+  "Log TTS process failures so errors don't vanish silently."
+  (when (and (memq (process-status proc) '(exit signal))
+             (/= (process-exit-status proc) 0))
+    (let ((stderr (string-trim solveit-review--tts-stderr)))
+      (message "Solveit TTS process %s (exit %d)%s"
+               (string-trim event)
+               (process-exit-status proc)
+               (if (string-empty-p stderr) ""
+                 (format ":\n%s" stderr))))))
+
 (defun solveit-review--tts-filter (_proc output)
   "Receive lines from the TTS generator process.
 TMPDIR: prefix -> store tmpdir for later cleanup.
@@ -270,7 +284,10 @@ file path      -> store and play if it matches the current position."
                       (append solveit-review--audio-files (list trimmed)))
                 (let ((idx (1- (length solveit-review--audio-files))))
                   (when (= idx solveit-review--current-chunk)
-                    (solveit-review--play-audio trimmed))))))))))))
+                    (solveit-review--play-audio trimmed)))))))
+         ((> (length trimmed) 0)
+          (setq solveit-review--tts-stderr
+                (concat solveit-review--tts-stderr trimmed "\n"))))))))
 
 ;;; Tooltip
 
@@ -583,6 +600,7 @@ If nil, auto-discovers the Kitty window ID for the current project."
              (_ (with-temp-file input-file (insert (json-encode narrations))))
              (proc (start-process "solveit-tts" "*solveit-tts*" "python" script-path input-file)))
         (set-process-filter proc #'solveit-review--tts-filter)
+        (set-process-sentinel proc #'solveit-review--tts-sentinel)
         (setq solveit-review--tts-process proc)))))
 
 (defun solveit-load-review (ops-file &optional feedback-target-id)
@@ -643,6 +661,7 @@ If nil, auto-discovers the Kitty window ID for the current project."
              (_ (with-temp-file input-file (insert (json-encode narrations))))
              (proc (start-process "solveit-tts" "*solveit-tts*" "python" script-path input-file)))
         (set-process-filter proc #'solveit-review--tts-filter)
+        (set-process-sentinel proc #'solveit-review--tts-sentinel)
         (setq solveit-review--tts-process proc)))))
 
 ;; Deprecated: feedback target is now auto-discovered.  Kept as aliases
