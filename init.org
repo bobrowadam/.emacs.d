@@ -1181,7 +1181,37 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** PI
 #+begin_src elisp
   (use-package pi-coding-agent
-    :init (load-theme 'kanagawa-wave))
+    :init (defalias 'pi 'pi-coding-agent)
+    :custom
+    (pi-coding-agent-input-window-height 10)
+    (pi-coding-agent-tool-preview-lines 10)
+    (pi-coding-agent-bash-preview-lines 5)
+    (pi-coding-agent-context-warning-threshold 70)
+    (pi-coding-agent-context-error-threshold 90)
+    (pi-coding-agent-visit-file-other-window t)
+    (pi-coding-agent-hot-tail-turn-count 3)
+    (pi-coding-agent-copy-raw-markdown t)
+    (pi-coding-agent-input-markdown-highlighting t)
+    :config
+    ;; Workaround: Emacs 31 `bash-ts-mode' has :around advice that
+    ;; redirects to `sh-mode' in buffers without a filename.  This
+    ;; breaks `md-ts-mode' grammar harvesting for bash code blocks.
+    ;; Binding `delay-mode-hooks' bypasses the advice.
+    (with-eval-after-load 'md-ts-mode
+      (defun md-ts--harvest-treesit-configs (mode)
+        "Harvest tree-sitter configs from MODE.
+Return a plist with :font-lock, :simple-indent, and :range keys,
+or nil if MODE fails to activate (e.g. missing grammar dependencies)."
+        (condition-case err
+            (with-temp-buffer
+              (delay-mode-hooks (funcall mode))
+              (list :font-lock treesit-font-lock-settings
+                    :simple-indent treesit-simple-indent-rules
+                    :range treesit-range-settings))
+          (error
+           (message "md-ts-mode: failed to harvest configs from %s: %s"
+                    mode (error-message-string err))
+           nil)))))
 #+end_src
 * Ediff
 #+begin_src elisp
