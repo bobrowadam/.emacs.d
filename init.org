@@ -2978,7 +2978,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** kanagawa-themes
 #+begin_src elisp
-  (use-package kanagawa-themes)
+  (use-package kanagawa-themes
+    :init (load-theme 'kanagawa-wave))
 #+end_src
 ** Spacious padding
 #+begin_src elisp
