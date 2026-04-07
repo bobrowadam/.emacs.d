@@ -163,20 +163,26 @@ Opens a new tab if one doesn't exist yet."
   "Pulse-highlight lines START-LINE to END-LINE in FILE.
 Called by pi after it edits a region, to give visual feedback."
   (require 'pulse)
-  (let ((buf (find-buffer-visiting file)))
-    (unless buf
-      (setq buf (find-file-noselect file)))
-    (with-current-buffer buf
-      (let ((beg (save-excursion
-                   (goto-char (point-min))
-                   (forward-line (1- start-line))
-                   (point)))
-            (end (save-excursion
-                   (goto-char (point-min))
-                   (forward-line (1- end-line))
-                   (end-of-line)
-                   (point))))
-        (pulse-momentary-highlight-region beg end)))))
+  (let* ((buf (or (find-buffer-visiting file)
+                  (find-file-noselect file)))
+         (win (or (get-buffer-window buf t)
+                  (display-buffer buf))))
+    (when (window-live-p win)
+      (let ((frame (window-frame win)))
+        (select-frame-set-input-focus frame)
+        (raise-frame frame))
+      (with-selected-window win
+        (let ((pulse-delay 2.0)
+              (beg (save-excursion
+                     (goto-char (point-min))
+                     (forward-line (1- start-line))
+                     (point)))
+              (end (save-excursion
+                     (goto-char (point-min))
+                     (forward-line (1- end-line))
+                     (end-of-line)
+                     (point))))
+          (pulse-momentary-highlight-region beg end))))))
 
 ;;; Keybindings
 
