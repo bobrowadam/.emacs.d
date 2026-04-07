@@ -97,7 +97,7 @@
    `(font-lock-builtin-face ((,class (:foreground ,steel-light))))
    `(font-lock-comment-face ((,class (:foreground "#7D8793" :slant italic))))
    `(font-lock-comment-delimiter-face ((,class (:foreground "#67707C" :slant italic))))
-   `(font-lock-constant-face ((,class (:foreground ,tan))))
+   `(font-lock-constant-face ((,class (:foreground ,gold-bright :weight semi-bold))))
    `(font-lock-doc-face ((,class (:foreground "#8A939D" :slant italic))))
    `(font-lock-function-name-face ((,class (:foreground "#CEC470" :weight bold))))
    `(font-lock-keyword-face ((,class (:foreground "#9BB4CC" :weight bold))))
@@ -105,8 +105,10 @@
    `(font-lock-preprocessor-face ((,class (:foreground ,clay))))
    `(font-lock-regexp-grouping-backslash ((,class (:foreground ,clay :weight bold))))
    `(font-lock-regexp-grouping-construct ((,class (:foreground ,plum :weight bold))))
-   `(font-lock-string-face ((,class (:foreground "#A8C98F"))))
-   `(font-lock-type-face ((,class (:foreground ,tan-light :weight semi-bold))))
+   `(font-lock-string-face ((,class (:foreground ,tan))))
+   `(font-lock-type-face ((,class (:foreground ,foam-bright :weight semi-bold))))
+   `(eglot-semantic-declaration ((,class (:foreground ,foam-bright :weight bold))))
+   `(eglot-semantic-type ((,class (:foreground ,foam-bright :weight semi-bold))))
    `(font-lock-variable-name-face ((,class (:foreground ,foam))))
    `(font-lock-warning-face ((,class (:foreground ,rust-light :weight bold))))
 
@@ -118,7 +120,7 @@
 
    ;; Line numbers
    `(line-number ((,class (:background ,bg :foreground ,fg-dim))))
-   `(line-number-current-line ((,class (:background ,bg :foreground ,tan :weight semi-bold))))
+   `(line-number-current-line ((,class (:background ,bg :foreground ,gold :weight semi-bold))))
 
    ;; Search / isearch
    `(isearch ((,class (:background ,gold :foreground ,bg :weight bold))))
@@ -155,14 +157,14 @@
    `(org-level-2 ((,class (:foreground ,steel-light :weight semi-bold :height 1.1))))
    `(org-level-3 ((,class (:foreground ,gold-bright :weight semi-bold))))
    `(org-level-4 ((,class (:foreground ,plum-light))))
-   `(org-code ((,class (:foreground ,tan :background ,bg-alt))))
+   `(org-code ((,class (:foreground ,tan-light :background ,bg-alt))))
    `(org-block ((,class (:background ,bg-alt :foreground ,fg))))
    `(org-block-begin-line ((,class (:background ,bg-active :foreground ,fg-muted))))
    `(org-block-end-line ((,class (:background ,bg-active :foreground ,fg-muted))))
    `(org-quote ((,class (:background ,bg-alt :slant italic))))
    `(org-verbatim ((,class (:foreground ,steel-light))))
    `(org-link ((,class (:foreground ,steel-light :underline t))))
-   `(org-date ((,class (:foreground ,tan :underline t))))
+   `(org-date ((,class (:foreground ,gold-bright :underline t))))
    `(org-warning ((,class (:foreground ,rust-light :weight bold))))
    `(org-todo ((,class (:foreground ,rust-light :weight bold))))
    `(org-done ((,class (:foreground ,sage :weight bold))))
@@ -225,7 +227,7 @@
    `(rainbow-delimiters-depth-2-face ((,class (:foreground ,gold-bright))))
    `(rainbow-delimiters-depth-3-face ((,class (:foreground ,plum-light))))
    `(rainbow-delimiters-depth-4-face ((,class (:foreground ,sage-light))))
-   `(rainbow-delimiters-depth-5-face ((,class (:foreground ,tan))))
+   `(rainbow-delimiters-depth-5-face ((,class (:foreground ,tan-light))))
    `(rainbow-delimiters-depth-6-face ((,class (:foreground ,rust-light))))
    `(rainbow-delimiters-depth-7-face ((,class (:foreground ,clay))))
    `(rainbow-delimiters-unmatched-face ((,class (:foreground ,rust-light :weight bold))))
@@ -239,7 +241,7 @@
 
    ;; Vertico
    `(vertico-current ((,class (:background ,bg-dim))))
-   `(vertico-group-title ((,class (:foreground ,tan :weight semi-bold :slant italic))))
+   `(vertico-group-title ((,class (:foreground ,tan-light :weight semi-bold :slant italic))))
    `(vertico-group-separator ((,class (:foreground ,border :strike-through t))))
    `(vertico-multiline ((,class (:foreground ,fg-muted))))
 

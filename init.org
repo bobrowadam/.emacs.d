@@ -2934,6 +2934,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     ;; (doom-ayu t)
     ;; (load-theme 'doom-ayu-dark)
     ;; (load-theme 'doom-rouge)
+    :init (load-theme 'bob-kanagawa-wave)
                 )
 #+end_src
 *** Modus Themes
@@ -2979,7 +2980,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 *** kanagawa-themes
 #+begin_src elisp
   (use-package kanagawa-themes
-    :init (load-theme 'kanagawa-wave))
+    ;; :init (load-theme 'kanagawa-wave)
+  )
 #+end_src
 ** Spacious padding
 #+begin_src elisp
