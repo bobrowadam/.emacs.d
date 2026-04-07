@@ -17,6 +17,9 @@
 (defvar bob/kitty-pi-tabs (make-hash-table :test 'equal)
   "Maps monorepo root dirs to Kitty window IDs for pi sessions.")
 
+(defvar pulse-delay)
+(defvar pulse-iterations)
+
 ;;; Kitty window ID lookup
 
 (defun bob/kitty-pi-window-id (&optional dir)
@@ -162,6 +165,7 @@ Opens a new tab if one doesn't exist yet."
 (defun bob/pi-pulse-region (file start-line end-line)
   "Pulse-highlight lines START-LINE to END-LINE in FILE.
 Called by pi after it edits a region, to give visual feedback."
+  (require 'json)
   (require 'pulse)
   (let* ((buf (or (find-buffer-visiting file)
                   (find-file-noselect file)))
@@ -172,7 +176,8 @@ Called by pi after it edits a region, to give visual feedback."
         (select-frame-set-input-focus frame)
         (raise-frame frame))
       (with-selected-window win
-        (let ((pulse-delay 2.0)
+        (let ((pulse-delay 0.02)
+              (pulse-iterations 60)
               (beg (save-excursion
                      (goto-char (point-min))
                      (forward-line (1- start-line))
@@ -182,7 +187,9 @@ Called by pi after it edits a region, to give visual feedback."
                      (forward-line (1- end-line))
                      (end-of-line)
                      (point))))
-          (pulse-momentary-highlight-region beg end))))))
+          (let ((text (buffer-substring-no-properties beg end)))
+            (pulse-momentary-highlight-region beg end)
+            (json-encode `(("pulsed text" . ,text)))))))))
 
 ;;; Keybindings
 
