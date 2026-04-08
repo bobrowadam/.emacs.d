@@ -28,7 +28,11 @@
 (defun bob/setup-bradwell-project-for-worktree (path)
   "Setup Bradwell worktree in PATH."
   (bob/bradwell--ensure-shared-worktree-file path ".venv")
-  (bob/bradwell--ensure-shared-worktree-file path "pyrightconfig.json"))
+  (bob/bradwell--ensure-shared-worktree-file path "pyrightconfig.json")
+  (let ((default-directory (file-name-as-directory path)))
+    (async-shell-command
+     "npm install && npm run build:services-common"
+     (format "*bradwell-worktree-setup<%s>*" (file-name-nondirectory (directory-file-name path))))))
 
 (defun bob/setup-bradwell-worktree-checkout (orig-fun path worktree)
   "Setup Bradwell worktree after checking out WORKTREE to PATH."
