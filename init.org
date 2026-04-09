@@ -2027,16 +2027,16 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 ** Pr Reviews
 ** PR Review
 #+begin_src elisp
-  (use-package solveit
+  (use-package code-review
     :ensure nil
-    :commands (solveit-show-plan
-               solveit-open-location
-               solveit-open-location-for-kitty
-               solveit-load-review
-               solveit-load-review-for-kitty
-               solveit-send-feedback
-               solveit-show-diff
-               solveit-commit))
+    :commands (code-review-show-plan
+               code-review-open-location
+               code-review-open-location-for-kitty
+               code-review-load-review
+               code-review-load-review-for-kitty
+               code-review-send-feedback
+               code-review-show-diff
+               code-review-commit))
   (use-package bob-pr-review
     :ensure nil
     :preface

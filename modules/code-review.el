@@ -1,6 +1,6 @@
-;;; solveit.el --- Solveit editor integration -*- lexical-binding: t; -*-
-;; Loaded from the Emacs init so agent skills can call solveit functions directly.
-;; Provides solveit-open-location (single file) and solveit-load-review
+;;; code-review.el --- Solveit editor integration -*- lexical-binding: t; -*-
+;; Loaded from the Emacs init so agent skills can call code-review functions directly.
+;; Provides code-review-open-location (single file) and code-review-load-review
 ;; (multi-file) with per-chunk TTS narration, highlighted regions,
 ;; symbol highlighting, and posframe tooltips.
 
@@ -8,11 +8,11 @@
 (require 'cl-lib)
 (require 'seq)
 
-(defgroup solveit nil
+(defgroup code-review nil
   "Editor integration for Solveit-style agent workflows."
   :group 'tools)
 
-(defcustom solveit-tts-disabled-flag
+(defcustom code-review-tts-disabled-flag
   (seq-find (lambda (path)
               (file-directory-p (file-name-directory path)))
             (list (expand-file-name "shared/tts-disabled" "~/.claude")
@@ -20,99 +20,99 @@
                   (expand-file-name ".shared-skills/shared/tts-disabled" "~/dotfiles")))
   "Flag file that disables Solveit narration when it exists."
   :type '(choice (const :tag "No flag file" nil) file)
-  :group 'solveit)
+  :group 'code-review)
 
-(defcustom solveit-tts-script
+(defcustom code-review-tts-script
   (expand-file-name "modules/text-to-speech.py" user-emacs-directory)
   "Path to the Solveit text-to-speech helper script."
   :type '(choice (const :tag "No TTS script" nil) file)
-  :group 'solveit)
+  :group 'code-review)
 
-(defun solveit-review--tts-script ()
+(defun code-review--tts-script ()
   "Return the configured Solveit TTS helper script."
-  (or solveit-tts-script
+  (or code-review-tts-script
       (user-error "Solveit TTS script is not configured")))
 
 ;;; Faces
 
-(defface solveit-highlight-face
+(defface code-review-highlight-face
   '((t :extend t))
   "Face for highlighted regions in review mode."
   :group 'faces)
 
-(set-face-attribute 'solveit-highlight-face nil
+(set-face-attribute 'code-review-highlight-face nil
                     :background (color-lighten-name
                                  (face-attribute 'default :background) 20)
                     :extend t)
 
-(defface solveit-symbol-face
+(defface code-review-symbol-face
   '((t :inherit highlight))
   "Face for specific symbols within highlighted regions."
   :group 'faces)
-(set-face-attribute 'solveit-symbol-face nil :inherit 'highlight)
+(set-face-attribute 'code-review-symbol-face nil :inherit 'highlight)
 
 ;;; Buffer-local state
 
-(defvar-local solveit-review--overlays nil
-  "List of overlays created by solveit-review-mode.")
+(defvar-local code-review--overlays nil
+  "List of overlays created by code-review-mode.")
 
-(defvar-local solveit-review--descriptions nil
+(defvar-local code-review--descriptions nil
   "Alist mapping region overlay to description string for posframe tooltips.")
 
-(defvar-local solveit-review--prev-read-only nil
+(defvar-local code-review--prev-read-only nil
   "Previous read-only state before review mode was activated.")
 
-(defvar-local solveit-review--audio-files nil
+(defvar-local code-review--audio-files nil
   "List of MP3 file paths received from the TTS generator, in chunk order.")
 
-(defvar-local solveit-review--current-chunk 0
+(defvar-local code-review--current-chunk 0
   "Index of the currently active chunk (single-file mode only).")
 
-(defvar-local solveit-review--chunk-ovs nil
+(defvar-local code-review--chunk-ovs nil
   "Region overlays in document order, one per chunk.")
 
-(defvar-local solveit-review--feedback-target-id nil
+(defvar-local code-review--feedback-target-id nil
   "Explicit feedback target id for the active review session.")
 
 ;;; Global state
 
-(defvar solveit-review--active-buffer nil
-  "Buffer that currently has solveit-review-mode active.")
+(defvar code-review--active-buffer nil
+  "Buffer that currently has code-review-mode active.")
 
-(defvar solveit-review--tts-process nil
+(defvar code-review--tts-process nil
   "The running TTS generator process.")
 
-(defvar solveit-review--afplay-process nil
+(defvar code-review--afplay-process nil
   "The running afplay process for current chunk audio.")
 
-(defvar solveit-review--tts-output-buffer ""
+(defvar code-review--tts-output-buffer ""
   "Accumulated stdout from TTS generator, buffered until newline.")
 
-(defvar solveit-review--audio-tmpdir nil
+(defvar code-review--audio-tmpdir nil
   "Tmpdir created by the TTS generator; deleted on cleanup.")
 
-(defvar solveit-review--tts-stderr ""
+(defvar code-review--tts-stderr ""
   "Accumulated unrecognized output from TTS process (likely stderr/tracebacks).")
 
 
-;;; Global multi-file session state (solveit-load-review)
+;;; Global multi-file session state (code-review-load-review)
 
-(defvar solveit-review--operations nil
-  "Flat ordered list of operation plists for solveit-load-review sessions.")
+(defvar code-review--operations nil
+  "Flat ordered list of operation plists for code-review-load-review sessions.")
 
-(defvar solveit-review--global-index 0
-  "Current operation index in a solveit-load-review session.")
+(defvar code-review--global-index 0
+  "Current operation index in a code-review-load-review session.")
 
-(defvar solveit-review--global-mode nil
-  "Non-nil when a solveit-load-review session is active.")
+(defvar code-review--global-mode nil
+  "Non-nil when a code-review-load-review session is active.")
 
-(defvar solveit-review--global-audio-list nil
+(defvar code-review--global-audio-list nil
   "Audio paths indexed by global operation index.  nil slots = not yet generated.")
 
-(defvar solveit-review--tts-received-count 0
+(defvar code-review--tts-received-count 0
   "Number of audio paths received from the TTS process so far (global mode).")
 
-(defvar solveit-review--session-feedback-target-id nil
+(defvar code-review--session-feedback-target-id nil
   "Feedback target id for the current review session.")
 
 ;;; Audio
@@ -124,36 +124,36 @@
       (concat "unix:" (car sockets)))))
 
 
-(defun solveit-review--play-audio (path)
+(defun code-review--play-audio (path)
   "Play audio file at PATH via afplay, killing any current playback."
-  (when (and solveit-review--afplay-process
-             (process-live-p solveit-review--afplay-process))
-    (kill-process solveit-review--afplay-process))
-  (setq solveit-review--afplay-process
-        (start-process "solveit-afplay" nil "afplay" path)))
+  (when (and code-review--afplay-process
+             (process-live-p code-review--afplay-process))
+    (kill-process code-review--afplay-process))
+  (setq code-review--afplay-process
+        (start-process "code-review-afplay" nil "afplay" path)))
 
-(defun solveit-review--truncate-text (text &optional limit)
+(defun code-review--truncate-text (text &optional limit)
   "Return TEXT trimmed to LIMIT chars, preserving the start of the string."
   (let ((limit (or limit 1200)))
     (if (and text (> (length text) limit))
         (concat (substring text 0 limit) "\n[truncated]")
       text)))
 
-(defun solveit-review--indent-text (text &optional prefix)
+(defun code-review--indent-text (text &optional prefix)
   "Indent each line in TEXT with PREFIX."
   (let ((prefix (or prefix "    ")))
     (mapconcat (lambda (line) (concat prefix line))
                (split-string text "\n")
                "\n")))
 
-(defun solveit-review--chunk-overlay ()
+(defun code-review--chunk-overlay ()
   "Return the overlay for the currently active chunk, if any."
-  (let ((idx (if solveit-review--global-mode
-                 solveit-review--global-index
-               solveit-review--current-chunk)))
-    (nth idx solveit-review--chunk-ovs)))
+  (let ((idx (if code-review--global-mode
+                 code-review--global-index
+               code-review--current-chunk)))
+    (nth idx code-review--chunk-ovs)))
 
-(defun solveit-review--display-file (file)
+(defun code-review--display-file (file)
   "Return a readable display path for FILE.
 Prefer a path relative to the nearest git root, falling back to an abbreviated
 absolute path."
@@ -164,23 +164,23 @@ absolute path."
           (file-relative-name expanded root)
         (abbreviate-file-name expanded)))))
 
-(defun solveit-review--chunk-context ()
+(defun code-review--chunk-context ()
   "Return a formatted context block for the active chunk."
-  (let* ((chunk-idx (if solveit-review--global-mode
-                        solveit-review--global-index
-                      solveit-review--current-chunk))
-         (op (and solveit-review--global-mode
-                  (nth chunk-idx solveit-review--operations)))
-         (ov (and (not solveit-review--global-mode)
-                  (solveit-review--chunk-overlay)))
+  (let* ((chunk-idx (if code-review--global-mode
+                        code-review--global-index
+                      code-review--current-chunk))
+         (op (and code-review--global-mode
+                  (nth chunk-idx code-review--operations)))
+         (ov (and (not code-review--global-mode)
+                  (code-review--chunk-overlay)))
          (name (or (and op (plist-get op :name))
-                   (and ov (overlay-get ov 'solveit-name))))
+                   (and ov (overlay-get ov 'code-review-name))))
          (desc (or (and op (plist-get op :description))
-                   (and ov (overlay-get ov 'solveit-description))))
+                   (and ov (overlay-get ov 'code-review-description))))
          (narration (or (and op (plist-get op :narration))
-                        (and ov (overlay-get ov 'solveit-narration))))
+                        (and ov (overlay-get ov 'code-review-narration))))
          (symbols (or (and op (plist-get op :symbols))
-                      (and ov (overlay-get ov 'solveit-symbols))))
+                      (and ov (overlay-get ov 'code-review-symbols))))
          (start-line (or (and op (plist-get op :start_line))
                          (and ov (overlay-start ov)
                               (line-number-at-pos (overlay-start ov)))))
@@ -191,7 +191,7 @@ absolute path."
           (cond
            ((and op start-line end-line)
             (let ((buf (or (find-buffer-visiting (plist-get op :file))
-                           solveit-review--active-buffer
+                           code-review--active-buffer
                            (current-buffer))))
               (when (buffer-live-p buf)
                 (with-current-buffer buf
@@ -202,16 +202,16 @@ absolute path."
                       (goto-char (point-min))
                       (forward-line (1- end-line))
                       (end-of-line)
-                      (solveit-review--truncate-text
+                      (code-review--truncate-text
                        (string-trim (buffer-substring-no-properties start (point))))))))))
            ((and ov (overlay-start ov) (overlay-end ov))
-            (solveit-review--truncate-text
+            (code-review--truncate-text
              (string-trim (buffer-substring-no-properties
                            (overlay-start ov)
                            (overlay-end ov)))))))
-         (file (or (and op (solveit-review--display-file (plist-get op :file)))
+         (file (or (and op (code-review--display-file (plist-get op :file)))
                    (when buffer-file-name
-                     (solveit-review--display-file buffer-file-name)))))
+                     (code-review--display-file buffer-file-name)))))
     (mapconcat
      #'identity
      (delq nil
@@ -227,75 +227,75 @@ absolute path."
             (when desc (format "  description: %s" desc))
             (when narration
               (format "  narration:\n%s"
-                      (solveit-review--indent-text narration "    ")))
+                      (code-review--indent-text narration "    ")))
             (when symbols
               (format "  symbols: %s" (mapconcat #'identity symbols ", ")))
             (when excerpt
               (format "  excerpt:\n%s"
-                      (solveit-review--indent-text excerpt "    ")))))
+                      (code-review--indent-text excerpt "    ")))))
      "\n")))
 
-(defun solveit-review--tts-sentinel (proc event)
+(defun code-review--tts-sentinel (proc event)
   "Log TTS process failures so errors don't vanish silently."
   (when (and (memq (process-status proc) '(exit signal))
              (/= (process-exit-status proc) 0))
-    (let ((stderr (string-trim solveit-review--tts-stderr)))
+    (let ((stderr (string-trim code-review--tts-stderr)))
       (message "Solveit TTS process %s (exit %d)%s"
                (string-trim event)
                (process-exit-status proc)
                (if (string-empty-p stderr) ""
                  (format ":\n%s" stderr))))))
 
-(defun solveit-review--tts-filter (_proc output)
+(defun code-review--tts-filter (_proc output)
   "Receive lines from the TTS generator process.
 TMPDIR: prefix -> store tmpdir for later cleanup.
 ERROR: prefix  -> write tts-disabled flag and notify.
 file path      -> store and play if it matches the current position."
-  (setq solveit-review--tts-output-buffer
-        (concat solveit-review--tts-output-buffer output))
-  (let ((lines (split-string solveit-review--tts-output-buffer "\n")))
-    (setq solveit-review--tts-output-buffer (car (last lines)))
+  (setq code-review--tts-output-buffer
+        (concat code-review--tts-output-buffer output))
+  (let ((lines (split-string code-review--tts-output-buffer "\n")))
+    (setq code-review--tts-output-buffer (car (last lines)))
     (dolist (line (butlast lines))
       (let ((trimmed (string-trim line)))
         (cond
          ((string-prefix-p "TMPDIR:" trimmed)
-          (setq solveit-review--audio-tmpdir (substring trimmed 7)))
+          (setq code-review--audio-tmpdir (substring trimmed 7)))
          ((string-prefix-p "ERROR:" trimmed)
           (let ((reason (substring trimmed 6)))
-            (when solveit-tts-disabled-flag
-              (make-directory (file-name-directory solveit-tts-disabled-flag) t)
-              (write-region (format "%s\n" reason) nil solveit-tts-disabled-flag))
+            (when code-review-tts-disabled-flag
+              (make-directory (file-name-directory code-review-tts-disabled-flag) t)
+              (write-region (format "%s\n" reason) nil code-review-tts-disabled-flag))
             (message "Solveit TTS error: %s%s"
                      reason
-                     (if solveit-tts-disabled-flag
+                     (if code-review-tts-disabled-flag
                          (format " -- narration disabled. Fix the issue and delete %s to re-enable."
-                                 solveit-tts-disabled-flag)
+                                 code-review-tts-disabled-flag)
                        " -- narration disabled."))))
          ((and (> (length trimmed) 0) (file-exists-p trimmed))
-          (if solveit-review--global-mode
-              (let ((idx solveit-review--tts-received-count))
-                (setf (nth idx solveit-review--global-audio-list) trimmed)
-                (cl-incf solveit-review--tts-received-count)
-                (when (= idx solveit-review--global-index)
-                  (solveit-review--play-audio trimmed)))
-            (when (buffer-live-p solveit-review--active-buffer)
-              (with-current-buffer solveit-review--active-buffer
-                (setq solveit-review--audio-files
-                      (append solveit-review--audio-files (list trimmed)))
-                (let ((idx (1- (length solveit-review--audio-files))))
-                  (when (= idx solveit-review--current-chunk)
-                    (solveit-review--play-audio trimmed)))))))
+          (if code-review--global-mode
+              (let ((idx code-review--tts-received-count))
+                (setf (nth idx code-review--global-audio-list) trimmed)
+                (cl-incf code-review--tts-received-count)
+                (when (= idx code-review--global-index)
+                  (code-review--play-audio trimmed)))
+            (when (buffer-live-p code-review--active-buffer)
+              (with-current-buffer code-review--active-buffer
+                (setq code-review--audio-files
+                      (append code-review--audio-files (list trimmed)))
+                (let ((idx (1- (length code-review--audio-files))))
+                  (when (= idx code-review--current-chunk)
+                    (code-review--play-audio trimmed)))))))
          ((> (length trimmed) 0)
-          (setq solveit-review--tts-stderr
-                (concat solveit-review--tts-stderr trimmed "\n"))))))))
+          (setq code-review--tts-stderr
+                (concat code-review--tts-stderr trimmed "\n"))))))))
 
 ;;; Tooltip
 
-(defun solveit-review--show-tooltip ()
+(defun code-review--show-tooltip ()
   "Show posframe tooltip at right edge of window, vertically at the highlighted region start."
   (let ((desc nil)
         (anchor nil))
-    (dolist (entry solveit-review--descriptions)
+    (dolist (entry code-review--descriptions)
       (let ((ov (car entry))
             (text (cdr entry)))
         (when (and (overlay-buffer ov)
@@ -308,7 +308,7 @@ file path      -> store and play if it matches the current position."
                (anchor-y (when pos-info
                            (+ (window-pixel-top (selected-window))
                               (cdr (posn-x-y pos-info))))))
-          (posframe-show "*solveit-tooltip*"
+          (posframe-show "*code-review-tooltip*"
                          :string desc
                          :poshandler (lambda (info)
                                        (let* ((wl (plist-get info :parent-window-left))
@@ -318,104 +318,104 @@ file path      -> store and play if it matches the current position."
                                          (cons x (or anchor-y 0))))
                          :internal-border-width 12
                          :face 'tooltip))
-      (posframe-delete "*solveit-tooltip*"))))
+      (posframe-delete "*code-review-tooltip*"))))
 
 ;;; Feedback
 
-(defun solveit-send-feedback (feedback)
+(defun code-review-send-feedback (feedback)
   "Append FEEDBACK with chunk context to the configured feedback target (no submit)."
   (interactive "sFeedback: ")
-  (let* ((chunk-context (solveit-review--chunk-context))
+  (let* ((chunk-context (code-review--chunk-context))
          (context (concat chunk-context "\nfeedback: " feedback "\n"))
-         (tab-id (or solveit-review--feedback-target-id
-                    solveit-review--session-feedback-target-id)))
+         (tab-id (or code-review--feedback-target-id
+                    code-review--session-feedback-target-id)))
     (unless tab-id
       (error "No feedback target tab id set for this review buffer"))
     (bob/kitten "send-text" "--match" (format "id:%s" tab-id) context)
     (message "Feedback sent to configured tab")))
 
-(defun solveit-set-feedback-target (tab-id)
+(defun code-review-set-feedback-target (tab-id)
   "Set TAB-ID as the explicit feedback target for the active review buffer."
   (interactive "sFeedback target id: ")
-  (setq-local solveit-review--feedback-target-id tab-id)
-  (setq solveit-review--session-feedback-target-id tab-id)
+  (setq-local code-review--feedback-target-id tab-id)
+  (setq code-review--session-feedback-target-id tab-id)
   (message "Solveit feedback target set to %s" tab-id))
 
 ;;; Navigation
 
-(defun solveit-review--next-highlight ()
+(defun code-review--next-highlight ()
   "Move to the next chunk and play its narration."
   (interactive)
-  (if solveit-review--global-mode
-      (solveit-review--global-step 1)
-    (let ((next-idx (1+ solveit-review--current-chunk)))
-      (when (< next-idx (length solveit-review--chunk-ovs))
-        (setq solveit-review--current-chunk next-idx)
-        (goto-char (overlay-start (nth next-idx solveit-review--chunk-ovs)))
+  (if code-review--global-mode
+      (code-review--global-step 1)
+    (let ((next-idx (1+ code-review--current-chunk)))
+      (when (< next-idx (length code-review--chunk-ovs))
+        (setq code-review--current-chunk next-idx)
+        (goto-char (overlay-start (nth next-idx code-review--chunk-ovs)))
         (recenter 5)
-        (let ((path (nth next-idx solveit-review--audio-files)))
-          (when path (solveit-review--play-audio path)))))))
+        (let ((path (nth next-idx code-review--audio-files)))
+          (when path (code-review--play-audio path)))))))
 
-(defun solveit-review--prev-highlight ()
+(defun code-review--prev-highlight ()
   "Move to the previous chunk and play its narration."
   (interactive)
-  (if solveit-review--global-mode
-      (solveit-review--global-step -1)
-    (let ((prev-idx (1- solveit-review--current-chunk)))
+  (if code-review--global-mode
+      (code-review--global-step -1)
+    (let ((prev-idx (1- code-review--current-chunk)))
       (when (>= prev-idx 0)
-        (setq solveit-review--current-chunk prev-idx)
-        (goto-char (overlay-start (nth prev-idx solveit-review--chunk-ovs)))
+        (setq code-review--current-chunk prev-idx)
+        (goto-char (overlay-start (nth prev-idx code-review--chunk-ovs)))
         (recenter 5)
-        (let ((path (nth prev-idx solveit-review--audio-files)))
-          (when path (solveit-review--play-audio path)))))))
+        (let ((path (nth prev-idx code-review--audio-files)))
+          (when path (code-review--play-audio path)))))))
 
-(defun solveit-review--global-step (delta)
+(defun code-review--global-step (delta)
   "Move DELTA steps through the global operations list, switching files as needed."
-  (let* ((next-idx (+ solveit-review--global-index delta))
+  (let* ((next-idx (+ code-review--global-index delta))
          (next-op (and (>= next-idx 0)
-                       (< next-idx (length solveit-review--operations))
-                       (nth next-idx solveit-review--operations))))
+                       (< next-idx (length code-review--operations))
+                       (nth next-idx code-review--operations))))
     (when next-op
-      (setq solveit-review--global-index next-idx)
+      (setq code-review--global-index next-idx)
       (let ((file (plist-get next-op :file)))
-        (unless (and solveit-review--active-buffer
-                     (buffer-live-p solveit-review--active-buffer)
-                     (with-current-buffer solveit-review--active-buffer
+        (unless (and code-review--active-buffer
+                     (buffer-live-p code-review--active-buffer)
+                     (with-current-buffer code-review--active-buffer
                        (and (buffer-file-name)
                             (file-equal-p file (buffer-file-name)))))
-          (solveit-review--switch-to-file file)))
-      (when (and solveit-review--active-buffer
-                 (buffer-live-p solveit-review--active-buffer))
-        (with-current-buffer solveit-review--active-buffer
-          (let ((ov (cl-find (plist-get next-op :name) solveit-review--chunk-ovs
-                             :key (lambda (o) (overlay-get o 'solveit-name))
+          (code-review--switch-to-file file)))
+      (when (and code-review--active-buffer
+                 (buffer-live-p code-review--active-buffer))
+        (with-current-buffer code-review--active-buffer
+          (let ((ov (cl-find (plist-get next-op :name) code-review--chunk-ovs
+                             :key (lambda (o) (overlay-get o 'code-review-name))
                              :test #'equal)))
             (when ov
               (goto-char (overlay-start ov))
               (recenter 5)))))
-      (let ((path (nth next-idx solveit-review--global-audio-list)))
-        (when path (solveit-review--play-audio path))))))
+      (let ((path (nth next-idx code-review--global-audio-list)))
+        (when path (code-review--play-audio path))))))
 
-(defun solveit-review--switch-to-file (file &optional feedback-target-id)
+(defun code-review--switch-to-file (file &optional feedback-target-id)
   "Within a global session, switch to FILE and apply its highlights.
 FEEDBACK-TARGET-ID, when non-nil, becomes the active feedback target in the buffer."
-  (when solveit-review-mode
-    (solveit-review-mode -1))
+  (when code-review-mode
+    (code-review-mode -1))
   (find-file file)
   ;; Also disable review mode if it was left active in this buffer from a prior session
-  (when solveit-review-mode
-    (solveit-review-mode -1))
+  (when code-review-mode
+    (code-review-mode -1))
   (dolist (ov (overlays-in (point-min) (point-max)))
-    (when (memq (overlay-get ov 'face) '(solveit-highlight-face solveit-symbol-face))
+    (when (memq (overlay-get ov 'face) '(code-review-highlight-face code-review-symbol-face))
       (delete-overlay ov)))
-  (setq solveit-review--overlays nil)
-  (setq solveit-review--descriptions nil)
-  (setq solveit-review--chunk-ovs nil)
-  (setq solveit-review--feedback-target-id
-        (or feedback-target-id solveit-review--session-feedback-target-id))
+  (setq code-review--overlays nil)
+  (setq code-review--descriptions nil)
+  (setq code-review--chunk-ovs nil)
+  (setq code-review--feedback-target-id
+        (or feedback-target-id code-review--session-feedback-target-id))
   (let ((file-ops (seq-filter (lambda (op) (equal (plist-get op :file) file))
-                              solveit-review--operations)))
-    (solveit-review--apply-highlights
+                              code-review--operations)))
+    (code-review--apply-highlights
      (mapcar (lambda (op)
                (list (plist-get op :name)
                      (plist-get op :start_line)
@@ -424,86 +424,86 @@ FEEDBACK-TARGET-ID, when non-nil, becomes the active feedback target in the buff
                      (plist-get op :symbols)
                      (plist-get op :narration)))
              file-ops)))
-  (setq solveit-review--chunk-ovs
-        (sort (mapcar #'car solveit-review--descriptions)
+  (setq code-review--chunk-ovs
+        (sort (mapcar #'car code-review--descriptions)
               (lambda (a b) (< (overlay-start a) (overlay-start b)))))
-  (setq solveit-review--active-buffer (current-buffer))
-  (solveit-review-mode 1))
+  (setq code-review--active-buffer (current-buffer))
+  (code-review-mode 1))
 
 ;;; Minor mode
 
-(define-minor-mode solveit-review-mode
+(define-minor-mode code-review-mode
   "Minor mode for guided code review with highlights and narration."
-  :lighter " SolveReview"
+  :lighter " CodeReview"
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "q") #'solveit-review-mode-disable)
-            (define-key map (kbd "C-c C-n") #'solveit-review--next-highlight)
-            (define-key map (kbd "C-c C-p") #'solveit-review--prev-highlight)
-            (define-key map (kbd "C-c F") #'solveit-send-feedback)
+            (define-key map (kbd "q") #'code-review-mode-disable)
+            (define-key map (kbd "C-c C-n") #'code-review--next-highlight)
+            (define-key map (kbd "C-c C-p") #'code-review--prev-highlight)
+            (define-key map (kbd "C-c F") #'code-review-send-feedback)
             map)
-  (if solveit-review-mode
+  (if code-review-mode
       (progn
-        (setq solveit-review--prev-read-only buffer-read-only)
+        (setq code-review--prev-read-only buffer-read-only)
         (setq buffer-read-only t)
         (setq-local minor-mode-overriding-map-alist
-                    (cons (cons 'solveit-review-mode solveit-review-mode-map)
-                          (assq-delete-all 'solveit-review-mode minor-mode-overriding-map-alist)))
-        (add-hook 'post-command-hook #'solveit-review--show-tooltip nil t)
-        (add-hook 'kill-buffer-hook #'solveit-review--cleanup nil t))
-    (solveit-review--cleanup)))
+                    (cons (cons 'code-review-mode code-review-mode-map)
+                          (assq-delete-all 'code-review-mode minor-mode-overriding-map-alist)))
+        (add-hook 'post-command-hook #'code-review--show-tooltip nil t)
+        (add-hook 'kill-buffer-hook #'code-review--cleanup nil t))
+    (code-review--cleanup)))
 
 ;; Re-apply keybindings on every load so reload takes effect
-(define-key solveit-review-mode-map (kbd "q")       #'solveit-review-mode-disable)
-(define-key solveit-review-mode-map (kbd "C-c C-n") #'solveit-review--next-highlight)
-(define-key solveit-review-mode-map (kbd "C-c C-p") #'solveit-review--prev-highlight)
-(define-key solveit-review-mode-map (kbd "C-c F")   #'solveit-send-feedback)
+(define-key code-review-mode-map (kbd "q")       #'code-review-mode-disable)
+(define-key code-review-mode-map (kbd "C-c C-n") #'code-review--next-highlight)
+(define-key code-review-mode-map (kbd "C-c C-p") #'code-review--prev-highlight)
+(define-key code-review-mode-map (kbd "C-c F")   #'code-review-send-feedback)
 
-(defun solveit-review-mode-disable ()
-  "Disable solveit-review-mode and end any active global session."
+(defun code-review-mode-disable ()
+  "Disable code-review-mode and end any active global session."
   (interactive)
-  (solveit-review-mode -1)
-  (solveit-review--cleanup-session))
+  (code-review-mode -1)
+  (code-review--cleanup-session))
 
-(defun solveit-review--cleanup-session ()
+(defun code-review--cleanup-session ()
   "Release session-wide review state and narration resources."
-  (setq solveit-review--operations nil)
-  (setq solveit-review--global-index 0)
-  (setq solveit-review--global-mode nil)
-  (setq solveit-review--global-audio-list nil)
-  (setq solveit-review--tts-received-count 0)
-  (setq solveit-review--session-feedback-target-id nil)
-  (when (and solveit-review--tts-process
-             (process-live-p solveit-review--tts-process))
-    (kill-process solveit-review--tts-process))
-  (setq solveit-review--tts-process nil)
-  (setq solveit-review--tts-output-buffer "")
-  (when (and solveit-review--audio-tmpdir
-             (file-directory-p solveit-review--audio-tmpdir))
-    (delete-directory solveit-review--audio-tmpdir t))
-  (setq solveit-review--audio-tmpdir nil))
+  (setq code-review--operations nil)
+  (setq code-review--global-index 0)
+  (setq code-review--global-mode nil)
+  (setq code-review--global-audio-list nil)
+  (setq code-review--tts-received-count 0)
+  (setq code-review--session-feedback-target-id nil)
+  (when (and code-review--tts-process
+             (process-live-p code-review--tts-process))
+    (kill-process code-review--tts-process))
+  (setq code-review--tts-process nil)
+  (setq code-review--tts-output-buffer "")
+  (when (and code-review--audio-tmpdir
+             (file-directory-p code-review--audio-tmpdir))
+    (delete-directory code-review--audio-tmpdir t))
+  (setq code-review--audio-tmpdir nil))
 
-(defun solveit-review--cleanup ()
+(defun code-review--cleanup ()
   "Remove overlays, restore state, kill processes, delete audio files."
-  (dolist (ov solveit-review--overlays)
+  (dolist (ov code-review--overlays)
     (delete-overlay ov))
-  (setq solveit-review--overlays nil)
-  (setq solveit-review--descriptions nil)
-  (setq solveit-review--chunk-ovs nil)
-  (setq buffer-read-only solveit-review--prev-read-only)
-  (posframe-delete "*solveit-tooltip*")
-  (remove-hook 'post-command-hook #'solveit-review--show-tooltip t)
-  (when (and solveit-review--afplay-process
-             (process-live-p solveit-review--afplay-process))
-    (kill-process solveit-review--afplay-process))
-  (setq solveit-review--afplay-process nil)
-  (setq solveit-review--audio-files nil)
-  (setq solveit-review--current-chunk 0)
-  (when (eq solveit-review--active-buffer (current-buffer))
-    (setq solveit-review--active-buffer nil)))
+  (setq code-review--overlays nil)
+  (setq code-review--descriptions nil)
+  (setq code-review--chunk-ovs nil)
+  (setq buffer-read-only code-review--prev-read-only)
+  (posframe-delete "*code-review-tooltip*")
+  (remove-hook 'post-command-hook #'code-review--show-tooltip t)
+  (when (and code-review--afplay-process
+             (process-live-p code-review--afplay-process))
+    (kill-process code-review--afplay-process))
+  (setq code-review--afplay-process nil)
+  (setq code-review--audio-files nil)
+  (setq code-review--current-chunk 0)
+  (when (eq code-review--active-buffer (current-buffer))
+    (setq code-review--active-buffer nil)))
 
 ;;; Highlights
 
-(defun solveit-review--apply-highlights (chunks)
+(defun code-review--apply-highlights (chunks)
   "Apply highlight overlays from CHUNKS.
 Each entry is (NAME START-LINE END-LINE DESCRIPTION &optional SYMBOLS NARRATION).
 NARRATION is still handled by the caller for TTS, but is also stored on the
@@ -536,25 +536,25 @@ overlay so feedback can include the original chunk context."
                   (end-of-line)
                   (point)))
            (ov (make-overlay start end)))
-      (overlay-put ov 'face 'solveit-highlight-face)
-      (overlay-put ov 'solveit-name name)
-      (overlay-put ov 'solveit-description description)
-      (overlay-put ov 'solveit-symbols symbols)
-      (overlay-put ov 'solveit-narration narration)
-      (push ov solveit-review--overlays)
-      (push (cons ov description) solveit-review--descriptions)
+      (overlay-put ov 'face 'code-review-highlight-face)
+      (overlay-put ov 'code-review-name name)
+      (overlay-put ov 'code-review-description description)
+      (overlay-put ov 'code-review-symbols symbols)
+      (overlay-put ov 'code-review-narration narration)
+      (push ov code-review--overlays)
+      (push (cons ov description) code-review--descriptions)
       (when symbols
         (save-excursion
           (dolist (sym symbols)
             (goto-char start)
             (while (search-forward sym end t)
               (let ((sym-ov (make-overlay (match-beginning 0) (match-end 0))))
-                (overlay-put sym-ov 'face 'solveit-symbol-face)
-                (push sym-ov solveit-review--overlays)))))))))
+                (overlay-put sym-ov 'face 'code-review-symbol-face)
+                (push sym-ov code-review--overlays)))))))))
 
 ;;; Entry points
 
-(defun solveit-open-location (file line &optional chunks feedback-target-id)
+(defun code-review-open-location (file line &optional chunks feedback-target-id)
   "Open FILE at LINE with optional single-file review mode.
 CHUNKS: list of (NAME START-LINE END-LINE DESCRIPTION SYMBOLS NARRATION).
 FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
@@ -562,48 +562,48 @@ If nil, auto-discovers the Kitty window ID for the current project."
   (setq feedback-target-id (or feedback-target-id
                                (and (fboundp 'bob/kitty-pi-window-id)
                                     (bob/kitty-pi-window-id))))
-  (when (and solveit-review--active-buffer
-             (buffer-live-p solveit-review--active-buffer))
-    (with-current-buffer solveit-review--active-buffer
-      (when solveit-review-mode
-        (solveit-review-mode -1))))
+  (when (and code-review--active-buffer
+             (buffer-live-p code-review--active-buffer))
+    (with-current-buffer code-review--active-buffer
+      (when code-review-mode
+        (code-review-mode -1))))
   (find-file file)
   (goto-char (point-min))
   (forward-line (1- line))
   (recenter 3)
   (select-frame-set-input-focus (selected-frame))
   (dolist (ov (overlays-in (point-min) (point-max)))
-    (when (memq (overlay-get ov 'face) '(solveit-highlight-face solveit-symbol-face))
+    (when (memq (overlay-get ov 'face) '(code-review-highlight-face code-review-symbol-face))
       (delete-overlay ov)))
   (when chunks
-    (setq solveit-review--active-buffer (current-buffer))
-    (setq solveit-review--current-chunk 0)
-    (setq solveit-review--audio-files nil)
-    (setq solveit-review--audio-tmpdir nil)
-    (setq solveit-review--tts-output-buffer "")
-    (setq solveit-review--feedback-target-id feedback-target-id)
-    (setq solveit-review--session-feedback-target-id (or feedback-target-id
-                                                        solveit-review--session-feedback-target-id))
-    (solveit-review--apply-highlights chunks)
-    (setq solveit-review--chunk-ovs
-          (sort (mapcar #'car solveit-review--descriptions)
+    (setq code-review--active-buffer (current-buffer))
+    (setq code-review--current-chunk 0)
+    (setq code-review--audio-files nil)
+    (setq code-review--audio-tmpdir nil)
+    (setq code-review--tts-output-buffer "")
+    (setq code-review--feedback-target-id feedback-target-id)
+    (setq code-review--session-feedback-target-id (or feedback-target-id
+                                                        code-review--session-feedback-target-id))
+    (code-review--apply-highlights chunks)
+    (setq code-review--chunk-ovs
+          (sort (mapcar #'car code-review--descriptions)
                 (lambda (a b) (< (overlay-start a) (overlay-start b)))))
-    (when solveit-review--chunk-ovs
-      (goto-char (overlay-start (car solveit-review--chunk-ovs)))
+    (when code-review--chunk-ovs
+      (goto-char (overlay-start (car code-review--chunk-ovs)))
       (recenter 5))
-    (solveit-review-mode 1)
-    (if (and solveit-tts-disabled-flag (file-exists-p solveit-tts-disabled-flag))
-        (message "Solveit TTS disabled (see %s). Narration skipped." solveit-tts-disabled-flag)
+    (code-review-mode 1)
+    (if (and code-review-tts-disabled-flag (file-exists-p code-review-tts-disabled-flag))
+        (message "Solveit TTS disabled (see %s). Narration skipped." code-review-tts-disabled-flag)
       (let* ((narrations (mapcar (lambda (c) (or (nth 5 c) "")) chunks))
-             (input-file (make-temp-file "solveit-tts-input-" nil ".json"))
-             (script-path (solveit-review--tts-script))
+             (input-file (make-temp-file "code-review-tts-input-" nil ".json"))
+             (script-path (code-review--tts-script))
              (_ (with-temp-file input-file (insert (json-encode narrations))))
-             (proc (start-process "solveit-tts" "*solveit-tts*" "python" script-path input-file)))
-        (set-process-filter proc #'solveit-review--tts-filter)
-        (set-process-sentinel proc #'solveit-review--tts-sentinel)
-        (setq solveit-review--tts-process proc)))))
+             (proc (start-process "code-review-tts" "*code-review-tts*" "python" script-path input-file)))
+        (set-process-filter proc #'code-review--tts-filter)
+        (set-process-sentinel proc #'code-review--tts-sentinel)
+        (setq code-review--tts-process proc)))))
 
-(defun solveit-load-review (ops-file &optional feedback-target-id)
+(defun code-review-load-review (ops-file &optional feedback-target-id)
   "Load a multi-file review session from OPS-FILE (JSON array of operation objects).
 Each object must have keys: file, line, name, start_line, end_line,
 description, symbols (array), narration.
@@ -626,52 +626,52 @@ If nil, auto-discovers the Kitty window ID for the current project."
                               :narration   (alist-get 'narration obj)))
                       (append raw nil))))
     ;; Tear down any previous session
-    (when solveit-review--global-mode
-      (when (and solveit-review--active-buffer
-                 (buffer-live-p solveit-review--active-buffer))
-        (with-current-buffer solveit-review--active-buffer
-          (when solveit-review-mode
-            (solveit-review-mode -1)))))
+    (when code-review--global-mode
+      (when (and code-review--active-buffer
+                 (buffer-live-p code-review--active-buffer))
+        (with-current-buffer code-review--active-buffer
+          (when code-review-mode
+            (code-review-mode -1)))))
     ;; Set up global state
-    (setq solveit-review--operations ops)
-    (setq solveit-review--global-index 0)
-    (setq solveit-review--global-mode t)
-    (setq solveit-review--global-audio-list (make-list (length ops) nil))
-    (setq solveit-review--tts-received-count 0)
-    (setq solveit-review--tts-output-buffer "")
-    (setq solveit-review--audio-tmpdir nil)
-    (setq solveit-review--session-feedback-target-id feedback-target-id)
+    (setq code-review--operations ops)
+    (setq code-review--global-index 0)
+    (setq code-review--global-mode t)
+    (setq code-review--global-audio-list (make-list (length ops) nil))
+    (setq code-review--tts-received-count 0)
+    (setq code-review--tts-output-buffer "")
+    (setq code-review--audio-tmpdir nil)
+    (setq code-review--session-feedback-target-id feedback-target-id)
     ;; Open first file and apply its highlights
     (let* ((first-op (car ops))
            (file (plist-get first-op :file)))
-      (solveit-review--switch-to-file file feedback-target-id)
+      (code-review--switch-to-file file feedback-target-id)
       (select-frame-set-input-focus (selected-frame))
-      (let ((ov (cl-find (plist-get first-op :name) solveit-review--chunk-ovs
-                         :key (lambda (o) (overlay-get o 'solveit-name))
+      (let ((ov (cl-find (plist-get first-op :name) code-review--chunk-ovs
+                         :key (lambda (o) (overlay-get o 'code-review-name))
                          :test #'equal)))
         (when ov
           (goto-char (overlay-start ov))
           (recenter 5))))
     ;; Spawn one TTS process for all narrations
-    (if (and solveit-tts-disabled-flag (file-exists-p solveit-tts-disabled-flag))
+    (if (and code-review-tts-disabled-flag (file-exists-p code-review-tts-disabled-flag))
         (message "Solveit TTS disabled. Narration skipped.")
       (let* ((narrations (mapcar (lambda (op) (or (plist-get op :narration) "")) ops))
-             (input-file (make-temp-file "solveit-tts-input-" nil ".json"))
-             (script-path (solveit-review--tts-script))
+             (input-file (make-temp-file "code-review-tts-input-" nil ".json"))
+             (script-path (code-review--tts-script))
              (_ (with-temp-file input-file (insert (json-encode narrations))))
-             (proc (start-process "solveit-tts" "*solveit-tts*" "python" script-path input-file)))
-        (set-process-filter proc #'solveit-review--tts-filter)
-        (set-process-sentinel proc #'solveit-review--tts-sentinel)
-        (setq solveit-review--tts-process proc)))))
+             (proc (start-process "code-review-tts" "*code-review-tts*" "python" script-path input-file)))
+        (set-process-filter proc #'code-review--tts-filter)
+        (set-process-sentinel proc #'code-review--tts-sentinel)
+        (setq code-review--tts-process proc)))))
 
 ;; Deprecated: feedback target is now auto-discovered.  Kept as aliases
 ;; for backward compatibility with older skill invocations.
-(defalias 'solveit-open-location-for-kitty #'solveit-open-location)
-(defalias 'solveit-load-review-for-kitty #'solveit-load-review)
+(defalias 'code-review-open-location-for-kitty #'code-review-open-location)
+(defalias 'code-review-load-review-for-kitty #'code-review-load-review)
 
-(defun solveit-show-plan (project-root plan-text)
+(defun code-review-show-plan (project-root plan-text)
   "Display PLAN-TEXT in a dedicated org-mode buffer."
-  (let ((buf (get-buffer-create "*solveit-plan*"))
+  (let ((buf (get-buffer-create "*code-review-plan*"))
         (default-directory (file-name-as-directory project-root)))
     (with-current-buffer buf
       (erase-buffer)
@@ -680,18 +680,18 @@ If nil, auto-discovers the Kitty window ID for the current project."
       (goto-char (point-min)))
     (switch-to-buffer-other-window buf)))
 
-(defun solveit-show-diff (file)
+(defun code-review-show-diff (file)
   "Show the diff for FILE against the working tree."
   (let ((buf (find-file-noselect file)))
     (switch-to-buffer buf)
     (select-frame-set-input-focus (selected-frame))
     (vc-diff)))
 
-(defun solveit-commit (message)
+(defun code-review-commit (message)
   "Open a Magit commit buffer with MESSAGE prepopulated."
   (require 'magit)
   (magit-commit-create (list "--edit" (concat "--message=" message))))
 
 (provide 'review-mode)
 
-(provide 'solveit)
+(provide 'code-review)
