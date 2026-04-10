@@ -2130,8 +2130,19 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 #+begin_src elisp
   (use-package paredit
     :hook
-    (emacs-lisp-mode lisp-mode lisp-data-mode clojure-ts-mode cider-repl-mode)
-    :bind (:map paredit-mode-map ("{" . paredit-open-curly)))
+    ((emacs-lisp-mode lisp-mode lisp-data-mode clojure-ts-mode cider-repl-mode)
+     . bob/paredit-mode-maybe)
+    :bind (:map paredit-mode-map ("{" . paredit-open-curly))
+    :init
+    (defun bob/paredit-mode-maybe ()
+      "Enable paredit only in buffers visiting actual Lisp files.
+Guards against `lm-package-version' which temporarily enables
+`emacs-lisp-mode' on arbitrary files, firing mode hooks and
+making paredit's `check-parens' blow up on non-Lisp syntax."
+      (when (and buffer-file-name
+               (string-match-p "\\.\\(el\\|clj[sc]?\\|lisp\\|scm\\|rkt\\)\\(?:\\.gz\\)?\\'"
+                               buffer-file-name))
+        (paredit-mode 1))))
 
   (defun bob/simple-minibuffer-parens ()
     (require 'paredit)
@@ -2570,6 +2581,13 @@ LSP/DAP servers manager
     (clojure-ts-mode . treesit-fold-mode)
     (swift-ts-mode . treesit-fold-mode)
     :config
+    (defun bob/treesit-fold-indicators-safe-render-window (orig-fn window)
+      (with-current-buffer (window-buffer window)
+        (unless (or (minibufferp)
+                    (null (ignore-errors (treesit-parser-list))))
+          (funcall orig-fn window))))
+    (advice-add 'treesit-fold-indicators--render-window
+                :around #'bob/treesit-fold-indicators-safe-render-window)
     (global-treesit-fold-indicators-mode))
 #+end_src
 *** Hide Show
