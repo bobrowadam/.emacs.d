@@ -2413,6 +2413,8 @@ LSP/DAP servers manager
     (eglot-sync-connect 0)
     :config
     ;; (eglot-booster-mode)
+    (setq-default eglot-workspace-configuration
+                   '(:biome (:enabled t)))
     (add-to-list 'eglot-server-programs
                  `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
                    . ,(lambda (&rest _)
