@@ -194,10 +194,33 @@ Called by pi after it edits a region, to give visual feedback."
             (pulse-momentary-highlight-region beg end)
             (json-encode `(("pulsed text" . ,text)))))))))
 
+;;; Clipboard image paste
+
+(defvar pi-coding-agent--image-counter 0
+  "Counter for unique temp image filenames.")
+
+(defun pi-coding-agent-paste-image ()
+  "Paste image from macOS clipboard into the input buffer as a file reference.
+Saves clipboard image to a temp file via pngpaste and inserts @path at point."
+  (interactive)
+  (unless (executable-find "pngpaste")
+    (user-error "pngpaste not found — install with: brew install pngpaste"))
+  (let* ((dir (temporary-file-directory))
+         (name (format "pi-image-%s-%d.png"
+                       (format-time-string "%Y%m%d-%H%M%S")
+                       (cl-incf pi-coding-agent--image-counter)))
+         (path (expand-file-name name dir)))
+    (unless (zerop (call-process "pngpaste" nil nil nil path))
+      (user-error "No image on clipboard"))
+    (insert "@" path " ")))
+
+(with-eval-after-load 'pi-coding-agent-input
+  (define-key pi-coding-agent-input-mode-map (kbd "C-c i") #'pi-coding-agent-paste-image))
+
 ;;; Keybindings
 
 (global-set-key (kbd "C-c p p") #'bob/open-pi-in-kitty)
-(global-set-key (kbd "C-c p s") #'bob/pi-send-dwim)
-(global-set-key (kbd "C-c p S") #'bob/pi-send-buffer)
+(global-set-key (kbd "C-c p s") #'pi/send-buffer-context)
+(global-set-key (kbd "C-c p a") #'pi/ask)
 
 (provide 'pi-helpers)
