@@ -1,6 +1,10 @@
 ;; -*- lexical-binding: t; -*-
 ;;
-;; pi.el — Emacs integration for the Pi coding agent running in Kitty.
+;; kitty-pi.el — launch/focus the Kitty tab that hosts pi for the current
+;; monorepo, plus the three global keybindings that drive pi from Emacs.
+;; Everything pi-generic (sending regions, pulse-on-edit, image paste,
+;; responses, diagnostics) lives in the pi extension itself:
+;;   ~/.pi/agent/extensions/emacs/elisp/pi-emacs.el
 ;;
 ;; Assumes the following helpers are defined in init.org:
 ;;   bob/monorepo-root, bob/kitten, bob/kitty-socket,
@@ -97,4 +101,4 @@ as string, or nil.  Prefers the focused window when multiple match."
 (global-set-key (kbd "C-c p s") #'pi/send-buffer-context)
 (global-set-key (kbd "C-c p a") #'pi/ask)
 
-(provide 'pi-helpers)
+(provide 'kitty-pi)

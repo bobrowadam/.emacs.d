@@ -1199,9 +1199,9 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
            nil)))))
 #+end_src
 
-*** Pi Helpers module
+*** Kitty + pi launcher
 #+begin_src elisp
-  (use-package pi-helpers
+  (use-package kitty-pi
     :ensure nil
     :demand t)
 #+end_src
