@@ -520,7 +520,7 @@ FSM is the state machine driving this request."
       ;; Replace the header function temporarily with OAuth headers
       (let ((orig-header-fn (gptel-backend-header gptel-backend)))
         (setf (gptel-backend-header gptel-backend)
-              (lambda () (gptel-anthropic-oauth--get-oauth-headers)))
+              (lambda (_backend) (gptel-anthropic-oauth--get-oauth-headers)))
         (unwind-protect
             (funcall orig-fn fsm)
           (setf (gptel-backend-header gptel-backend) orig-header-fn)))
