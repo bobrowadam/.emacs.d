@@ -698,6 +698,7 @@
      ("C-c g r" . gptel-rewrite)
      ("C-c g i" . bob/gptel-insert)
      ("C-c g k" . bob/gptel-abort)
+     ("C-c g l" . bob/gptel-activity-show)
      ("C-c g a d" . gptel-add)
      ("C-c g a f" . gptel-add-file)
      ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
@@ -729,6 +730,17 @@
     :commands (bob/gptel-insert)
     :config
     (bob/gptel-rewrite-install))
+
+  ;; Activity indicator: modeline spinner + `*gptel-activity*' log,
+  ;; one line per request / tool call / response.  Hooks into gptel's
+  ;; public abnormal hooks; no advice.
+  (use-package bob-gptel-activity
+    :ensure nil
+    :after gptel
+    :demand t
+    :commands (bob/gptel-activity-show bob/gptel-activity-clear)
+    :config
+    (bob/gptel-activity-mode 1))
 
   (use-package bob-gptel-tools
     :ensure nil
