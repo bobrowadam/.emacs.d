@@ -56,11 +56,14 @@
 (defvar bob/gptel-rewrite-backend
   (let ((b (gptel-make-anthropic "Claude rewrite"
              :stream t
-             ;; No adaptive thinking (rewrites are bounded,
-             ;; latency-sensitive) and no server-side web/code tools
-             ;; (out of scope for inline edits; the preset attaches
-             ;; local read-only tools instead).
-             :request-params '(:max_tokens 8192))))
+             ;; No adaptive thinking at the backend level -- Haiku
+             ;; rewrites/inserts should stay fast.  16384 accommodates
+             ;; the `C-u' path that enables thinking (see
+             ;; `bob/gptel-insert'); Haiku won't emit anywhere near
+             ;; this much on its own.  No server-side web/code tools
+             ;; -- inline edits use the local read-only tool list
+             ;; attached by the preset.
+             :request-params '(:max_tokens 16384))))
     ;; The `gptel-anthropic-oauth' module injects OAuth headers via
     ;; :around advice on `gptel-curl-get-response'.  That advice
     ;; swaps the header function on the dynamic `gptel-backend'
@@ -571,12 +574,21 @@ files."
   ;;   <POINT/>...</POINT/>, so context-discovery tools are noise
   ;;   that Haiku invariably abuses (reads random paths, greps the
   ;;   home directory, ends up asking "where is <POINT/>?").
-  ;; - With C-u: upgrade to Sonnet AND keep the rewrite preset's
-  ;;   tool list, for cross-file inserts that genuinely need to
-  ;;   look around.
+  ;; - With C-u: upgrade to Sonnet 4.6 with adaptive thinking AND
+  ;;   keep the rewrite preset's tool list, for cross-file inserts
+  ;;   that genuinely need to look around.  `:request-params' here
+  ;;   overrides the "Claude rewrite" backend's non-thinking
+  ;;   defaults (see `bob/gptel-rewrite-backend').
   (gptel-with-preset
       (if strong
-          '(:model claude-sonnet-4-6 :parents (rewrite))
+          ;; Sonnet 4.6 + adaptive thinking for hard inserts.  Tools
+          ;; inherit from the parent `rewrite' preset (read/ls/find/grep).
+          ;; `:max_tokens' comes from the "Claude rewrite" backend
+          ;; (16384), which is plenty for insert output plus thinking.
+          '(:model claude-sonnet-4-6
+            :parents (rewrite)
+            :request-params (:thinking (:type "adaptive"
+                                        :display "summarized")))
         '(:parents (rewrite) :use-tools nil :tools nil))
     ;; The preset attaches the current buffer to `gptel-context'; we
     ;; inline the buffer with a <POINT/> marker into the user prompt
