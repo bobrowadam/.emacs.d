@@ -100,6 +100,16 @@ request is tracked.  Handles cases where `on-post-response' is
 never invoked (FSM error paths, etc.) so the spinner can't get
 stuck.")
 
+(defvar bob/gptel-activity--pending-overlays nil
+  "List of overlays currently receiving the in-place spinner.
+
+Each element is an overlay (typically the 1-char insert
+placeholder created by `bob/gptel-insert').  While an overlay is
+on this list, the activity module refreshes its `before-string'
+on every spinner tick with the current frame and phase label.
+The overlay is removed automatically when its buffer dies, the
+overlay itself is deleted, or the related request finishes.")
+
 (defvar bob/gptel-activity--requests nil
   "Alist of in-flight requests: (FSM . PLIST).
 
@@ -190,13 +200,15 @@ it fires in is the process buffer, not the user's buffer."
   "Force-reset all activity state.
 
 Stops the spinner, cancels the watchdog, clears tracked requests
-and blanks the modeline phase.  Does NOT abort any in-flight
-gptel requests (use `bob/gptel-abort' for that), does NOT clear
-the activity log.  This is the safe \"unstick the UI\" escape
-hatch for when spinner state drifts out of sync with reality."
+and in-place overlay spinners, and blanks the modeline phase.
+Does NOT abort any in-flight gptel requests (use `bob/gptel-abort'
+for that), does NOT clear the activity log.  This is the safe
+\"unstick the UI\" escape hatch for when spinner state drifts
+out of sync with reality."
   (interactive)
   (bob/gptel-activity--spinner-stop)
   (bob/gptel-activity--watchdog-stop)
+  (bob/gptel-activity--clear-all-overlays)
   (setq bob/gptel-activity--phase nil
         bob/gptel-activity--detail nil
         bob/gptel-activity--requests nil
@@ -215,9 +227,81 @@ hatch for when spinner state drifts out of sync with reality."
               'face 'bob/gptel-activity-spinner-face))
 
 (defun bob/gptel-activity--spinner-advance ()
-  "Advance the spinner index and refresh the modeline."
+  "Advance the spinner index, refresh the modeline and in-place overlays."
   (cl-incf bob/gptel-activity--spinner-idx)
+  (bob/gptel-activity--refresh-overlays)
   (force-mode-line-update t))
+
+;;; In-place overlay spinner ------------------------------------------
+
+(defun bob/gptel-activity--overlay-string ()
+  "Return the propertized spinner+label string for in-place overlays.
+
+Matches the shape of `bob/gptel-activity--modeline-segment' but
+framed with a leading space and trailing space so the overlay
+doesn't crash into surrounding code visually."
+  (let* ((label (or (alist-get bob/gptel-activity--phase
+                               bob/gptel-activity--phase-labels)
+                    "Waiting"))
+         (detail bob/gptel-activity--detail)
+         (tool-bit (when (and (eq bob/gptel-activity--phase 'tool) detail)
+                     (concat ":"
+                             (propertize detail 'face
+                                         'bob/gptel-activity-tool-face)))))
+    (concat (bob/gptel-activity--spinner-frame)
+            " "
+            (propertize label 'face 'bob/gptel-activity-phase-face)
+            (or tool-bit "")
+            " ")))
+
+(defun bob/gptel-activity--refresh-overlays ()
+  "Update `before-string' of every tracked pending overlay.
+
+Removes overlays whose buffer has died or which have been
+deleted (start == end == nil)."
+  (let (live)
+    (dolist (ov bob/gptel-activity--pending-overlays)
+      (cond
+       ((or (null (overlay-buffer ov))
+            (not (buffer-live-p (overlay-buffer ov))))
+        ;; Overlay died with its buffer; drop it silently.
+        nil)
+       (t
+        (overlay-put ov 'before-string
+                     (bob/gptel-activity--overlay-string))
+        (push ov live))))
+    (setq bob/gptel-activity--pending-overlays (nreverse live))))
+
+(defun bob/gptel-activity--clear-overlay (ov)
+  "Untrack OV and wipe its `before-string'."
+  (when (overlayp ov)
+    (when (overlay-buffer ov)
+      (overlay-put ov 'before-string nil))
+    (setq bob/gptel-activity--pending-overlays
+          (delq ov bob/gptel-activity--pending-overlays))))
+
+(defun bob/gptel-activity--clear-all-overlays ()
+  "Wipe `before-string' on every tracked overlay and drop them."
+  (dolist (ov bob/gptel-activity--pending-overlays)
+    (when (and (overlayp ov) (overlay-buffer ov))
+      (overlay-put ov 'before-string nil)))
+  (setq bob/gptel-activity--pending-overlays nil))
+
+;;;###autoload
+(defun bob/gptel-activity-track-overlay (ov)
+  "Register OV to receive the in-place spinner.
+
+Called by `bob/gptel-insert' right after creating its 1-char
+placeholder overlay.  While tracked, OV's `before-string' is
+updated on every spinner tick with the current frame and phase
+label.  Tracking is released automatically when the related
+request finishes (via `gptel-post-response-functions') or the
+overlay/buffer goes away."
+  (when (overlayp ov)
+    (cl-pushnew ov bob/gptel-activity--pending-overlays :test #'eq)
+    ;; Paint an initial frame immediately so there's no blink.
+    (overlay-put ov 'before-string
+                 (bob/gptel-activity--overlay-string))))
 
 (defun bob/gptel-activity--spinner-start ()
   "Start the spinner timer if not already running."
@@ -296,16 +380,20 @@ there is nothing left to track."
 (defun bob/gptel-activity--set-phase (phase &optional detail)
   "Set the current activity PHASE and optional DETAIL string.
 
-Starts/stops the spinner AND the watchdog timer in lockstep."
+Starts/stops the spinner AND the watchdog timer in lockstep.
+Refreshes any in-place overlays so the label updates instantly
+rather than on the next spinner tick."
   (setq bob/gptel-activity--phase phase
         bob/gptel-activity--detail detail)
   (cond
    (phase
     (bob/gptel-activity--spinner-start)
-    (bob/gptel-activity--watchdog-start))
+    (bob/gptel-activity--watchdog-start)
+    (bob/gptel-activity--refresh-overlays))
    (t
     (bob/gptel-activity--spinner-stop)
-    (bob/gptel-activity--watchdog-stop)))
+    (bob/gptel-activity--watchdog-stop)
+    (bob/gptel-activity--clear-all-overlays)))
   (force-mode-line-update t))
 
 (defun bob/gptel-activity--modeline-segment ()
@@ -520,6 +608,7 @@ to the `*gptel-activity*' buffer.  Use
     (remove-hook 'gptel-post-response-functions #'bob/gptel-activity--on-post-response)
     (bob/gptel-activity--spinner-stop)
     (bob/gptel-activity--watchdog-stop)
+    (bob/gptel-activity--clear-all-overlays)
     (bob/gptel-activity--set-phase nil)
     (setq bob/gptel-activity--requests nil
           bob/gptel-activity--current-request nil))))

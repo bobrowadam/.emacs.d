@@ -663,6 +663,12 @@ response)."
       (overlay-put ov 'bob/gptel-insert-end placeholder-end)
       (overlay-put ov 'bob/gptel-insert-instruction instruction)
       (overlay-put ov 'bob/gptel-insert-strong strong)
+      ;; Register the overlay with the activity module so it gets
+      ;; the in-place spinner next to the insertion point.  Cleared
+      ;; automatically when the response arrives (pre-response hook
+      ;; wipes it via `bob/gptel-activity--clear-all-overlays').
+      (when (fboundp 'bob/gptel-activity-track-overlay)
+        (bob/gptel-activity-track-overlay ov))
       ;; Leave point at the placeholder start so the dispatch
       ;; transient finds the overlay on response.
       (goto-char placeholder-beg)
