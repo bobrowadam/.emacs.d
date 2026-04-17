@@ -67,6 +67,157 @@ Mirrors pi's truncation cap."
   "Expand PATH, respecting ~ and relative paths from `default-directory'."
   (expand-file-name (substitute-in-file-name path)))
 
+;;; Async process registry ---------------------------------------------
+;;
+;; Subprocess-based tools (`bash', `find', `grep', `jina_reader') run
+;; asynchronously so the main Emacs thread stays responsive while the
+;; LLM is waiting on a tool result.  Every in-flight process is tracked
+;; in `bob/gptel-tools--active-processes' so the user can list or kill
+;; them interactively via `bob/gptel-abort'.
+
+(defvar bob/gptel-tools--active-processes nil
+  "Alist of (PROCESS . PLIST) for in-flight async tool calls.
+
+PLIST contains `:tool', `:label' (short description), `:started'
+(float-time) and `:timer' (the timeout timer, if any).")
+
+(defun bob/gptel-tools--register-process (proc plist)
+  "Remember PROC with metadata PLIST until it exits."
+  (push (cons proc plist) bob/gptel-tools--active-processes))
+
+(defun bob/gptel-tools--unregister-process (proc)
+  "Forget PROC and cancel its timeout timer, if any."
+  (when-let* ((entry (assq proc bob/gptel-tools--active-processes))
+              (timer (plist-get (cdr entry) :timer)))
+    (when (timerp timer) (cancel-timer timer)))
+  (setq bob/gptel-tools--active-processes
+        (assq-delete-all proc bob/gptel-tools--active-processes)))
+
+(cl-defun bob/gptel-tools--run-async-process
+    (callback &key tool label program args timeout input)
+  "Run PROGRAM with ARGS asynchronously and call CALLBACK with the result.
+
+CALLBACK is invoked with a single string argument -- the combined
+stdout+stderr of the process, truncated per
+`bob/gptel-tools-output-max-bytes', followed by a short status
+suffix.  If the process is killed (by timeout or by the user via
+`bob/gptel-abort'), the callback receives an explanatory error
+string instead.
+
+TOOL and LABEL are used by `bob/gptel-abort' when listing
+running processes.  TIMEOUT, when non-nil, specifies a hard wall
+clock in seconds; the process is killed with SIGTERM (then
+SIGKILL) when it elapses.  INPUT, when non-nil, is sent to the
+process's stdin.
+
+Returns the `process' object."
+  (let* ((buf (generate-new-buffer
+               (format " *gptel-tool:%s*" (or tool "proc"))))
+         (killed-by (list nil))      ;boxed symbol: 'timeout or 'user
+         proc timer)
+    (setq proc
+          (make-process
+           :name (format "gptel-tool-%s" (or tool "proc"))
+           :buffer buf
+           :command (cons program args)
+           :connection-type 'pipe
+           :noquery t
+           :sentinel
+           (lambda (p _event)
+             (when (memq (process-status p) '(exit signal))
+               (bob/gptel-tools--unregister-process p)
+               (let* ((status (process-exit-status p))
+                      (raw (with-current-buffer (process-buffer p)
+                             (buffer-string)))
+                      (why (car killed-by))
+                      (body
+                       (pcase why
+                         ('timeout
+                          (format "[%s killed after %ds timeout]\n%s"
+                                  (or tool "tool") timeout
+                                  (string-trim-right raw)))
+                         ('user
+                          (format "[%s aborted by user]\n%s"
+                                  (or tool "tool")
+                                  (string-trim-right raw)))
+                         (_
+                          (format "%s\n[exit: %s]"
+                                  (string-trim-right raw) status)))))
+                 (kill-buffer (process-buffer p))
+                 (funcall callback (bob/gptel-tools--truncate body)))))))
+    (when input
+      (process-send-string proc input)
+      (process-send-eof proc))
+    (when (and timeout (> timeout 0))
+      (setq timer
+            (run-at-time
+             timeout nil
+             (lambda ()
+               (when (process-live-p proc)
+                 (setcar killed-by 'timeout)
+                 (delete-process proc))))))
+    (bob/gptel-tools--register-process
+     proc (list :tool tool :label label :timeout timeout
+                :started (float-time) :timer timer
+                :killed-by killed-by))
+    proc))
+
+(defun bob/gptel-tools--proc-entry-label (entry)
+  "Return a human-readable label for tool-process ENTRY."
+  (let* ((proc (car entry))
+         (pl (cdr entry))
+         (tool (plist-get pl :tool))
+         (label (plist-get pl :label))
+         (started (plist-get pl :started))
+         (age (truncate (- (float-time) (or started (float-time))))))
+    (format "[%s] %s  (pid %s, %ds)"
+            (or tool "tool") (or label "")
+            (or (process-id proc) "?") age)))
+
+(defun bob/gptel-tools-kill-process (proc &optional reason)
+  "Kill tool subprocess PROC.  REASON defaults to 'user."
+  (interactive
+   (list (let* ((entries bob/gptel-tools--active-processes)
+                (_ (unless entries (user-error "No tool processes running")))
+                (choices (mapcar
+                          (lambda (e)
+                            (cons (bob/gptel-tools--proc-entry-label e)
+                                  (car e)))
+                          entries))
+                (pick (completing-read "Kill tool process: " choices nil t)))
+           (cdr (assoc pick choices)))))
+  (when (and proc (process-live-p proc))
+    (when-let* ((entry (assq proc bob/gptel-tools--active-processes))
+                (kb (plist-get (cdr entry) :killed-by)))
+      (setcar kb (or reason 'user)))
+    (delete-process proc)))
+
+(defun bob/gptel-tools-kill-all-processes (&optional reason)
+  "Kill every live tool subprocess.  REASON defaults to 'user."
+  (interactive)
+  (dolist (entry (copy-sequence bob/gptel-tools--active-processes))
+    (bob/gptel-tools-kill-process (car entry) reason))
+  (when (called-interactively-p 'interactive)
+    (message "Killed all tool subprocesses")))
+
+;;;###autoload
+(defun bob/gptel-abort (&optional buffer)
+  "Cancel an in-flight gptel request and kill any running tool subprocesses.
+
+With BUFFER, operate on that buffer; otherwise use the current
+buffer.  If tool subprocesses are alive (e.g. a `grep' scanning a
+giant tree), this kills them first so `gptel-abort' returns
+immediately instead of blocking.
+
+Bound to `C-c g k' in the user's config."
+  (interactive)
+  (let ((n (length bob/gptel-tools--active-processes)))
+    (when (> n 0)
+      (bob/gptel-tools-kill-all-processes 'user)
+      (message "Killed %d tool subprocess%s" n (if (= n 1) "" "es"))))
+  (when (fboundp 'gptel-abort)
+    (ignore-errors (gptel-abort (or buffer (current-buffer))))))
+
 (defun bob/gptel-tools--format-diff (old-content new-content)
   "Return a pi-style diff string between OLD-CONTENT and NEW-CONTENT.
 
@@ -425,43 +576,56 @@ trailing slash.  Defaults to the current working directory."
 
 ;;; find -----------------------------------------------------------------
 
-(defun bob/gptel-tools--find (pattern &optional path limit)
+(defcustom bob/gptel-tools-find-timeout 30
+  "Timeout (seconds) for a single `find' tool call."
+  :type 'integer
+  :group 'bob-gptel-tools)
+
+(defun bob/gptel-tools--find (callback pattern &optional path limit)
   "Find files matching glob PATTERN under PATH.
 Uses `fd' if available, falling back to POSIX `find'.  LIMIT caps the
-number of results."
+number of results.
+
+Async: CALLBACK is called with the formatted result string."
   (let* ((dir (bob/gptel-tools--expand (or path default-directory)))
          (limit (or limit bob/gptel-tools-find-default-limit))
          (fd (or (executable-find "fd") (executable-find "fdfind")))
-         (cmd (if fd
-                  ;; `fd' respects .gitignore by default; mirrors pi's
-                  ;; behaviour.  `--hidden' still includes dotfiles that
-                  ;; are not ignored.  `fd PATTERN PATH' -- a single
-                  ;; positional path, not two.
-                  (format "%s --glob --hidden %s %s | head -n %d"
-                          fd
-                          (shell-quote-argument pattern)
-                          (shell-quote-argument dir)
-                          limit)
-                ;; POSIX find fallback.  `-iname' would differ from pi's
-                ;; case-sensitive glob, so we use `-name'.
-                (format "find %s -name %s 2>/dev/null | head -n %d"
-                        (shell-quote-argument dir)
-                        (shell-quote-argument pattern)
-                        limit))))
-    (with-temp-buffer
-      (call-process-shell-command cmd nil t)
-      (let* ((out (string-trim-right (buffer-string)))
-             (count (if (string-empty-p out) 0
-                      (length (split-string out "\n")))))
-        (bob/gptel-tools--truncate
-         (if (zerop count)
-             (format "No matches for %s under %s" pattern dir)
-           (format "%s\n[%d result%s]"
-                   out count (if (= 1 count) "" "s"))))))))
+         (program (or fd "find"))
+         (args (if fd
+                   (list "--glob" "--hidden" "--max-results"
+                         (number-to-string limit)
+                         pattern dir)
+                 ;; POSIX `find': no built-in result cap; emulate by
+                 ;; letting the caller truncate output.  `-name' keeps
+                 ;; case sensitivity consistent with fd's glob.
+                 (list dir "-name" pattern)))
+         (wrapped
+          (lambda (raw)
+            (let* ((body (if (string-prefix-p "[" raw)
+                             ;; Killed or timed out -- keep helper's marker.
+                             raw
+                           (let* ((out (car (split-string raw "\n\\[exit: " t)))
+                                  (trimmed (string-trim-right (or out "")))
+                                  (count (if (string-empty-p trimmed) 0
+                                           (length (split-string trimmed "\n")))))
+                             (if (zerop count)
+                                 (format "No matches for %s under %s" pattern dir)
+                               (format "%s\n[%d result%s]"
+                                       trimmed count
+                                       (if (= 1 count) "" "s")))))))
+              (funcall callback body)))))
+    (bob/gptel-tools--run-async-process
+     wrapped
+     :tool "find"
+     :label (format "%S in %s" pattern dir)
+     :program program
+     :args args
+     :timeout bob/gptel-tools-find-timeout)))
 
 (gptel-make-tool
  :name "find"
  :function #'bob/gptel-tools--find
+ :async t
  :description "Find files by name using a glob pattern.
 Uses `fd' if available, otherwise POSIX `find'.  The pattern uses
 shell-style wildcards (e.g. \"*.el\", \"**/test_*.py\")."
@@ -480,13 +644,21 @@ shell-style wildcards (e.g. \"*.el\", \"**/test_*.py\")."
 
 ;;; grep -----------------------------------------------------------------
 
-(defun bob/gptel-tools--grep (pattern &optional path glob ignore-case literal
-                                      context limit)
+(defcustom bob/gptel-tools-grep-timeout 30
+  "Timeout (seconds) for a single `grep' tool call."
+  :type 'integer
+  :group 'bob-gptel-tools)
+
+(cl-defun bob/gptel-tools--grep (callback pattern &optional path glob
+                                          ignore-case literal context limit)
   "Search for PATTERN in files under PATH using ripgrep.
 GLOB restricts to matching filenames.  IGNORE-CASE, LITERAL, CONTEXT,
-and LIMIT map onto `rg' flags."
+and LIMIT map onto `rg' flags.
+
+Async: CALLBACK is called with the formatted result string."
   (unless (executable-find "rg")
-    (error "grep tool requires ripgrep (rg) on PATH"))
+    (funcall callback "grep tool requires ripgrep (rg) on PATH")
+    (cl-return-from bob/gptel-tools--grep nil))
   (let* ((dir (bob/gptel-tools--expand (or path default-directory)))
          (limit (or limit bob/gptel-tools-grep-default-limit))
          (args (delq nil
@@ -502,19 +674,36 @@ and LIMIT map onto `rg' flags."
                            "--"
                            pattern
                            dir)))
-         (cmd (mapconcat #'shell-quote-argument (cons "rg" args) " ")))
-    (with-temp-buffer
-      (let ((status (call-process-shell-command cmd nil t)))
-        (bob/gptel-tools--truncate
-         (cond
-          ((= status 0) (string-trim-right (buffer-string)))
-          ((= status 1) (format "No matches for %S under %s" pattern dir))
-          (t (format "rg exited %d\n%s" status
-                     (string-trim-right (buffer-string))))))))))
+         (wrapped
+          (lambda (raw)
+            (let ((body
+                   (if (string-prefix-p "[" raw)
+                       raw
+                     ;; Split off our "[exit: N]" suffix to recover
+                     ;; rg's real exit status.
+                     (let* ((parts (split-string raw "\n\\[exit: " t))
+                            (out (string-trim-right (or (car parts) "")))
+                            (status-str (cadr parts))
+                            (status (and status-str
+                                         (string-to-number status-str))))
+                       (cond
+                        ((eql status 0) out)
+                        ((eql status 1)
+                         (format "No matches for %S under %s" pattern dir))
+                        (t (format "rg exited %s\n%s" status out)))))))
+              (funcall callback body)))))
+    (bob/gptel-tools--run-async-process
+     wrapped
+     :tool "grep"
+     :label (format "%S in %s" pattern dir)
+     :program "rg"
+     :args args
+     :timeout bob/gptel-tools-grep-timeout)))
 
 (gptel-make-tool
  :name "grep"
  :function #'bob/gptel-tools--grep
+ :async t
  :description "Search file contents for a regex PATTERN using ripgrep.
 Returns matching lines with filenames and line numbers."
  :args (list '(:name "pattern"
@@ -548,30 +737,32 @@ Returns matching lines with filenames and line numbers."
 
 ;;; bash -----------------------------------------------------------------
 
-(defun bob/gptel-tools--bash (command &optional timeout)
+(defun bob/gptel-tools--bash (callback command &optional timeout)
   "Run shell COMMAND via bash -lc.
 TIMEOUT defaults to `bob/gptel-tools-bash-timeout' seconds.  Working
 directory is the current `default-directory' (which is typically the
-cwd of the buffer from which gptel was invoked)."
+cwd of the buffer from which gptel was invoked).
+
+Async: CALLBACK is called with the formatted result string."
   (let* ((timeout (or timeout bob/gptel-tools-bash-timeout))
-         (timeout-bin (or (executable-find "timeout")
-                          (executable-find "gtimeout")))
-         (full-cmd (if timeout-bin
-                       (format "%s %d bash -lc %s"
-                               timeout-bin timeout
-                               (shell-quote-argument command))
-                     (format "bash -lc %s" (shell-quote-argument command)))))
-    (with-temp-buffer
-      (let ((status (call-process-shell-command full-cmd nil t)))
-        (bob/gptel-tools--truncate
-         (format "$ %s\n[cwd: %s]\n%s\n[exit: %s]"
-                 command default-directory
-                 (string-trim-right (buffer-string))
-                 status))))))
+         (cwd default-directory)
+         (wrapped
+          (lambda (raw)
+            (funcall callback
+                     (format "$ %s\n[cwd: %s]\n%s"
+                             command cwd raw)))))
+    (bob/gptel-tools--run-async-process
+     wrapped
+     :tool "bash"
+     :label command
+     :program "bash"
+     :args (list "-lc" command)
+     :timeout timeout)))
 
 (gptel-make-tool
  :name "bash"
  :function #'bob/gptel-tools--bash
+ :async t
  :description "Run a shell command via `bash -lc' and return combined output.
 Output is captured, truncated at ~50KB, and suffixed with the exit
 status.  The command runs in the current working directory."
@@ -611,11 +802,17 @@ Can be a string or a function returning a string (e.g. looked up from
           ((stringp v) v)
           (t nil))))
 
-(defun bob/gptel-tools--jina-reader (url)
-  "Fetch URL via https://r.jina.ai and return the response body.
-Signals an error on HTTP >= 400 or network failure."
+(cl-defun bob/gptel-tools--jina-reader (callback url)
+  "Fetch URL via https://r.jina.ai and call CALLBACK with the response body.
+
+Calls CALLBACK with an error string on HTTP >= 400, network
+failure, or timeout (`bob/gptel-tools-jina-timeout').
+
+Async: uses `url-retrieve', not `url-retrieve-synchronously'."
   (unless (and (stringp url) (string-match-p "\\`https?://" url))
-    (error "jina_reader: URL must start with http:// or https://, got %S" url))
+    (funcall callback
+             (format "jina_reader: URL must start with http:// or https://, got %S" url))
+    (cl-return-from bob/gptel-tools--jina-reader nil))
   (let* ((jina-url (concat "https://r.jina.ai/" url))
          (url-request-method "GET")
          (key (bob/gptel-tools--jina-api-key))
@@ -623,36 +820,64 @@ Signals an error on HTTP >= 400 or network failure."
           (append
            '(("Accept" . "text/plain"))
            (when key `(("Authorization" . ,(concat "Bearer " key))))))
-         ;; `url-retrieve-synchronously' respects its own timeout arg.
-         (buf (url-retrieve-synchronously
-               jina-url t t bob/gptel-tools-jina-timeout)))
-    (unless buf
-      (error "jina_reader: request to %s timed out or failed" jina-url))
-    (unwind-protect
-        (with-current-buffer buf
-          (goto-char (point-min))
-          ;; Parse status line.
-          (let ((status (if (re-search-forward "^HTTP/[0-9.]+ \\([0-9]+\\)"
-                                               (line-end-position) t)
-                            (string-to-number (match-string 1))
-                          0)))
-            ;; Skip past headers.
-            (goto-char (point-min))
-            (unless (re-search-forward "^\r?\n" nil t)
-              (error "jina_reader: no headers terminator in response"))
-            (let ((body (buffer-substring-no-properties (point) (point-max))))
-              (cond
-               ((>= status 400)
-                (error "jina_reader: HTTP %d: %s"
-                       status (substring body 0 (min 500 (length body)))))
-               ((zerop status)
-                (error "jina_reader: malformed response from %s" jina-url))
-               (t (bob/gptel-tools--truncate body))))))
-      (kill-buffer buf))))
+         (done (list nil))               ;boxed flag: response arrived
+         (timer nil)
+         (fetch-buffer nil))
+    (cl-labels
+        ((finish (msg)
+           (unless (car done)
+             (setcar done t)
+             (when timer (cancel-timer timer))
+             (when (buffer-live-p fetch-buffer) (kill-buffer fetch-buffer))
+             (funcall callback (bob/gptel-tools--truncate msg))))
+         (on-response (status)
+           (let ((err (plist-get status :error)))
+             (cond
+              (err (finish (format "jina_reader: network error: %S" err)))
+              (t
+               (condition-case e
+                   (progn
+                     (goto-char (point-min))
+                     (let ((http-status
+                            (if (re-search-forward
+                                 "^HTTP/[0-9.]+ \\([0-9]+\\)"
+                                 (line-end-position) t)
+                                (string-to-number (match-string 1))
+                              0)))
+                       (goto-char (point-min))
+                       (unless (re-search-forward "^\r?\n" nil t)
+                         (error "no headers terminator"))
+                       (let ((body (buffer-substring-no-properties
+                                    (point) (point-max))))
+                         (cond
+                          ((>= http-status 400)
+                           (finish (format "jina_reader: HTTP %d: %s"
+                                           http-status
+                                           (substring body 0
+                                                      (min 500
+                                                           (length body))))))
+                          ((zerop http-status)
+                           (finish (format "jina_reader: malformed response from %s"
+                                           jina-url)))
+                          (t (finish body)))))
+                     (setq fetch-buffer (current-buffer)))
+                 (error (finish (format "jina_reader: %S" e)))))))))
+      (setq fetch-buffer (url-retrieve jina-url #'on-response nil t t))
+      (when (and bob/gptel-tools-jina-timeout
+                 (> bob/gptel-tools-jina-timeout 0))
+        (setq timer
+              (run-at-time
+               bob/gptel-tools-jina-timeout nil
+               (lambda ()
+                 (finish (format "jina_reader: request to %s timed out after %ds"
+                                 jina-url
+                                 bob/gptel-tools-jina-timeout))))))
+      fetch-buffer)))
 
 (gptel-make-tool
  :name "jina_reader"
  :function #'bob/gptel-tools--jina-reader
+ :async t
  :description "Fetch a web page and return its content as clean markdown using Jina Reader.
 Useful for reading API documentation, blog posts, or any web page."
  :args (list '(:name "url"
