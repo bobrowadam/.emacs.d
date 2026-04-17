@@ -650,30 +650,62 @@
           (switch-to-buffer gptel-buffer)
         (message "No GPTel buffers found.")))
 
-    (setq
-     gptel-model 'claude-sonnet-4-5-20250929
-     gptel-backend
-     (gptel-make-anthropic "Claude" :stream t))
+    ;; gptel's `gptel--merge-plists' overwrites `:tools' when the backend
+    ;; `:request-params' sets it, dropping all locally-registered tools.
+    ;; This advice concatenates backend/server-side tools onto the local
+    ;; tools array so both coexist in the final payload.
+    (defun bob/gptel-anthropic-preserve-local-tools (orig-fun backend prompts)
+      "Merge backend `:request-params' `:tools' with local `gptel-tools'."
+      (let ((result (funcall orig-fun backend prompts))
+            (backend-tools (plist-get (gptel-backend-request-params backend)
+                                      :tools)))
+        (when (and (cl-typep backend 'gptel-anthropic)
+                   backend-tools
+                   gptel-use-tools
+                   gptel-tools)
+          (let ((local-tools (gptel--parse-tools backend gptel-tools)))
+            (plist-put result :tools (vconcat local-tools backend-tools))))
+        result))
+    (advice-add 'gptel--request-data :around
+                #'bob/gptel-anthropic-preserve-local-tools)
 
-    ;; Add claude-opus-4-7 if not already known
+    (setq gptel-model 'claude-opus-4-7
+          gptel-backend
+          (gptel-make-anthropic "Claude thinking"
+            :stream t
+            :request-params
+            ;; Claude Opus 4.7 requires adaptive thinking (manual
+            ;; `:type "enabled"' returns 400). `:display "summarized"'
+            ;; makes the thinking text visible; the default on 4.7 is
+            ;; "omitted" (empty thinking blocks, signature only).
+            ;; code_execution is required for web_search dynamic
+            ;; filtering and is free when paired with web_search.
+            '(:thinking (:type "adaptive" :display "summarized")
+              :max_tokens 16384
+              :tools [(:type "code_execution_20260120"
+                       :name "code_execution")
+                      (:type "web_search_20260209"
+                       :name "web_search")])))
+
+    ;; Opus 4.7 was released 2026-04-16; remove this once gptel ships it.
     (if (memq 'claude-opus-4-7 (gptel-backend-models gptel-backend))
         (display-warning 'gptel "claude-opus-4-7 already in gptel models, remove manual addition from init.org")
       (push 'claude-opus-4-7 (gptel-backend-models gptel-backend)))
     (require 'gptel-anthropic-oauth)
 
     :bind
-    ("C-c g g" . gptel)
-    ("C-c g r" . gptel-rewrite)
-    ("C-c g a d" . gptel-add)
-    ("C-c g a f" . gptel-add-file)
-    ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
-    (:map gptel-mode-map ("C-c g s" . gptel-menu))
-    :hook
-    (org-mode . (lambda ()
-                  (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
-                    (gptel-mode 1))))
-    (gptel-post-stream . gptel-auto-scroll)
-    (gptel-post-response . gptel-end-of-response))
+     ("C-c g g" . gptel)
+     ("C-c g r" . gptel-rewrite)
+     ("C-c g a d" . gptel-add)
+     ("C-c g a f" . gptel-add-file)
+     ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
+     (:map gptel-mode-map ("C-c g s" . gptel-menu))
+     :hook
+     (org-mode . (lambda ()
+                   (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
+                     (gptel-mode 1))))
+     (gptel-post-stream . gptel-auto-scroll)
+     (gptel-post-response . gptel-end-of-response))
 
   (use-package llm-tool-collection
     :after gptel
