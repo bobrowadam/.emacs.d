@@ -158,10 +158,13 @@
 Prefer a path relative to the nearest git root, falling back to an abbreviated
 absolute path."
   (when file
-    (let* ((expanded (expand-file-name file))
-           (root (locate-dominating-file expanded ".git")))
-      (if root
-          (file-relative-name expanded root)
+    (let* ((root (or (locate-dominating-file default-directory ".git")
+                     default-directory))
+           (expanded (if (file-name-absolute-p file) file
+                       (expand-file-name file root)))
+           (git-root (locate-dominating-file expanded ".git")))
+      (if git-root
+          (file-relative-name expanded git-root)
         (abbreviate-file-name expanded)))))
 
 (defun code-review--chunk-context ()
@@ -401,7 +404,11 @@ file path      -> store and play if it matches the current position."
 FEEDBACK-TARGET-ID, when non-nil, becomes the active feedback target in the buffer."
   (when code-review-mode
     (code-review-mode -1))
-  (find-file file)
+  (let* ((root (or (locate-dominating-file default-directory ".git")
+                   default-directory))
+         (abs-file (if (file-name-absolute-p file) file
+                     (expand-file-name file root))))
+    (find-file abs-file))
   ;; Also disable review mode if it was left active in this buffer from a prior session
   (when code-review-mode
     (code-review-mode -1))
