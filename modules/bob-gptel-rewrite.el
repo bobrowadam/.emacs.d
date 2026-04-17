@@ -340,9 +340,12 @@ a shorter prose-focused variant."
         (format (concat
                  "You are %s %s programmer.  Your ONLY job is to output text that will be inserted verbatim into a file at a specific location.\n"
                  "\n"
-                 "INPUT FORMAT: You receive the full current file contents with the insertion point marked as the literal token <POINT/>, followed by an instruction describing what to insert there.\n"
+                 "INPUT FORMAT: You receive the full current file contents with the insertion point marked as the literal token <POINT/>, followed by an instruction describing what to insert there.  The buffer content is provided IN THIS MESSAGE.  You do NOT need to read any file from disk or search for anything -- everything you need is already in the user prompt.  If tools are available, use them ONLY when the instruction explicitly requires information from OTHER files; never call a tool just to find the buffer you've already been shown.\n"
                  "\n"
                  "OUTPUT CONTRACT (strict):\n"
+                 "- The <POINT/> marker IS in the user prompt.  If you think you can't find it, re-read the user message carefully; do not search the filesystem.\n"
+                 "- Never ask for clarification.  Never ask where <POINT/> is.  Never say \"I cannot find the file\".  Make an assumption and emit the insertion.\n"
+                 "- Never refuse to produce an insertion.  There is always a sensible insertion for the given instruction.\n"
                  "- Output ONLY the %s text that should replace the <POINT/> marker.  Nothing else.\n"
                  "- Do NOT repeat, quote, or echo any surrounding code from the file.\n"
                  "- Do NOT wrap the output in markdown fences (no ```).\n"
@@ -542,27 +545,39 @@ already been committed."
   "Insert LLM-generated text at point, driven by INSTRUCTION.
 
 Shows the same accept/reject/diff/iterate overlay UX as
-`gptel-rewrite', using the `rewrite' preset (Haiku + read-only
-tools).  The full buffer is sent with a <POINT/> marker so the
-model knows exactly where the insertion goes.
+`gptel-rewrite'.  The full buffer is sent with a <POINT/> marker
+so the model knows exactly where the insertion goes.
 
-With a prefix argument STRONG, use Claude Sonnet 4.6 instead of
-Haiku 4.5 -- useful for non-trivial inserts where Haiku stumbles."
+By default uses Haiku 4.5 with NO tools: the buffer is already
+in the prompt, so context-discovery tools (read/grep/find/ls)
+tend to confuse small models into reading random paths and
+asking \"where is <POINT/>?\".
+
+With a prefix argument STRONG, upgrade to Claude Sonnet 4.6 and
+re-enable the rewrite preset's read-only tool list -- useful
+for non-trivial inserts that genuinely need to look at sibling
+files."
   (interactive (list (read-string (if current-prefix-arg
-                                      "Insert (Sonnet): "
+                                      "Insert (Sonnet + tools): "
                                     "Insert: "))
                      current-prefix-arg))
   (when (string-empty-p (string-trim instruction))
     (user-error "Empty instruction"))
   ;; We reuse the rewrite FSM handlers and callback.
   (require 'gptel-rewrite)
-  ;; Outer preset provides backend/tools/use-tools; the inline spec
-  ;; with `:parents' composes on top and lets us optionally upgrade
-  ;; the model to Sonnet for this one request.
+  ;; Presets:
+  ;; - Default: parent is `rewrite', but override :tools/:use-tools
+  ;;   to turn tools OFF.  The full buffer is in the prompt as
+  ;;   <POINT/>...</POINT/>, so context-discovery tools are noise
+  ;;   that Haiku invariably abuses (reads random paths, greps the
+  ;;   home directory, ends up asking "where is <POINT/>?").
+  ;; - With C-u: upgrade to Sonnet AND keep the rewrite preset's
+  ;;   tool list, for cross-file inserts that genuinely need to
+  ;;   look around.
   (gptel-with-preset
       (if strong
           '(:model claude-sonnet-4-6 :parents (rewrite))
-        'rewrite)
+        '(:parents (rewrite) :use-tools nil :tools nil))
     ;; The preset attaches the current buffer to `gptel-context'; we
     ;; inline the buffer with a <POINT/> marker into the user prompt
     ;; instead, so suppress the duplicate context.
