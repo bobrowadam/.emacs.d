@@ -187,14 +187,23 @@ directly with OV, mirroring upstream's own non-interactive path."
                            (apply #'concat orig-status))))
            (action (cadr choice)))
       (cond
-       ;; Iterate on an insert overlay: fresh insert at same point.
+       ;; Iterate on an insert overlay: fire a fresh insert at the
+       ;; same point, threading the previous instruction + response
+       ;; through so the model can refine rather than start over
+       ;; against a buffer that no longer contains its prior output.
        ((and (string= action "iterate")
              (overlay-get ov 'bob/gptel-insert-placeholder))
-        (let ((beg (overlay-get ov 'bob/gptel-insert-beg))
-              (instruction (read-string "Iterate insert: ")))
+        (let* ((beg (overlay-get ov 'bob/gptel-insert-beg))
+               (prior-instruction
+                (overlay-get ov 'bob/gptel-insert-instruction))
+               (prior-response (overlay-get ov 'gptel-rewrite))
+               (prior-strong (overlay-get ov 'bob/gptel-insert-strong))
+               (instruction (read-string "Iterate insert: ")))
           (goto-char beg)
           (gptel--rewrite-reject ov)
-          (bob/gptel-insert instruction)))
+          (bob/gptel-insert instruction prior-strong
+                            (list :instruction prior-instruction
+                                  :response prior-response))))
        ;; Iterate on a regular rewrite overlay: open the transient.
        ((string= action "iterate")
         (goto-char (overlay-start ov))
@@ -544,7 +553,7 @@ already been committed."
                  #'gptel--rewrite-key-help 'local)))
 
 ;;;###autoload
-(defun bob/gptel-insert (instruction &optional strong)
+(defun bob/gptel-insert (instruction &optional strong prior)
   "Insert LLM-generated text at point, driven by INSTRUCTION.
 
 Shows the same accept/reject/diff/iterate overlay UX as
@@ -559,7 +568,17 @@ asking \"where is <POINT/>?\".
 With a prefix argument STRONG, upgrade to Claude Sonnet 4.6 and
 re-enable the rewrite preset's read-only tool list -- useful
 for non-trivial inserts that genuinely need to look at sibling
-files."
+files.
+
+PRIOR, when non-nil, is a plist of iterate context from a
+previous `bob/gptel-insert' whose response the user wants to
+refine.  Keys:
+  :instruction  -- the earlier instruction.
+  :response     -- the text the LLM produced last time.
+It is appended to the user prompt so the model can refine the
+previous answer instead of starting from scratch (which would
+be confused by a buffer that no longer contains the prior
+response)."
   (interactive (list (read-string (if current-prefix-arg
                                       "Insert (Sonnet + tools): "
                                     "Insert: "))
@@ -612,12 +631,21 @@ files."
             (concat (buffer-substring-no-properties (point-min) (point))
                     "<POINT/>"
                     (buffer-substring-no-properties (point) (point-max))))
+           (prior-section
+            (when prior
+              (format (concat "\n\nPREVIOUS ITERATION\n"
+                              "Earlier instruction: %s\n"
+                              "You previously produced this text (not in the buffer any more):\n"
+                              "<PREVIOUS-OUTPUT>\n%s\n</PREVIOUS-OUTPUT>\n\n"
+                              "The user has now refined the instruction.  Treat the new instruction below as a modification of the previous one, with the previous output as a starting point.  Produce the NEW final text to insert at <POINT/>.")
+                      (or (plist-get prior :instruction) "(unknown)")
+                      (or (plist-get prior :response) "(unknown)"))))
            (user-prompt
             (format (concat "%s\n\n"
-                            "Instruction: %s\n\n"
+                            "Instruction: %s%s\n\n"
                             "The line containing <POINT/> starts with %d character(s) of indentation (%S) and <POINT/> itself is at column %d.  If the insertion spans multiple lines, indent subsequent lines to match.\n\n"
                             "Remember: output only the text to insert at <POINT/>.")
-                    buf-with-marker instruction
+                    buf-with-marker instruction (or prior-section "")
                     (length line-indent) line-indent point-col))
            (prompt (list user-prompt))
            ;; Insert a single-char placeholder at point so the
@@ -628,10 +656,13 @@ files."
            (_ (insert bob/gptel-insert-placeholder))
            (placeholder-end (point))
            (ov (make-overlay placeholder-beg placeholder-end nil nil t)))
-      ;; Tag the overlay so reject knows to delete the placeholder too.
+      ;; Tag the overlay so reject knows to delete the placeholder too
+      ;; and so iterate can recover the instruction for refinement.
       (overlay-put ov 'bob/gptel-insert-placeholder t)
       (overlay-put ov 'bob/gptel-insert-beg placeholder-beg)
       (overlay-put ov 'bob/gptel-insert-end placeholder-end)
+      (overlay-put ov 'bob/gptel-insert-instruction instruction)
+      (overlay-put ov 'bob/gptel-insert-strong strong)
       ;; Leave point at the placeholder start so the dispatch
       ;; transient finds the overlay on response.
       (goto-char placeholder-beg)
