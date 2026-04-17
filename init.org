@@ -3,7 +3,10 @@
 * Startup
 ** Set lexical binding
 #+begin_src emacs-lisp
-    ;;; -*- lexical-binding: t -*-
+  ;;; -*- lexical-binding: t -*-
+#+end_src
+
+#+begin_src elisp
   (defun bob/suppress-dep-file-warnings (orig-fun type message &rest args)
     "Suppress file warnings from dependency/cache paths."
     (unless (and (eq type 'files)
@@ -14,7 +17,6 @@
 
   (advice-add 'display-warning :around #'bob/suppress-dep-file-warnings)
 #+end_src
-
 ** Fix NS color list (Emacs 31 regression)
 #+begin_src emacs-lisp
   ;; Emacs 31 NS port doesn't populate x-colors from ns-list-colors,
@@ -652,6 +654,11 @@
      gptel-model 'claude-sonnet-4-5-20250929
      gptel-backend
      (gptel-make-anthropic "Claude" :stream t))
+
+    ;; Add claude-opus-4-7 if not already known
+    (if (memq 'claude-opus-4-7 (gptel-backend-models gptel-backend))
+        (display-warning 'gptel "claude-opus-4-7 already in gptel models, remove manual addition from init.org")
+      (push 'claude-opus-4-7 (gptel-backend-models gptel-backend)))
     (require 'gptel-anthropic-oauth)
 
     :bind
@@ -679,6 +686,7 @@
 ** Minuet - ai code completion
 #+begin_src elisp
   (use-package minuet
+    :disabled t
     :custom
     (minuet-provider 'claude)
     :bind
@@ -979,12 +987,6 @@ WINDOW-ID may be a string or integer; this is the value returned by
             (bob/kitten "set-colors" "--match" (format "id:%s" win-id) theme-file))
           (call-process "open" nil nil nil "-a" "kitty")))))
 #+end_src
-*** Pi
-#+begin_src elisp
-  (use-package pi
-    :ensure nil
-    :demand t)
-#+end_src
 *** project-claude
 #+begin_src elisp
   (when-let* ((project-claude-dir (bob/elpaca-package-dir "project-claude")))
@@ -1083,6 +1085,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** Mentat
 #+begin_src elisp
   (use-package mentat
+    :disabled t
     :load-path "~/source/mentat"
     :commands (mentat-menu)
     :bind ("C-c C-." . mentat-menu)
@@ -1159,9 +1162,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                 ("C-p" . copilot-previous-completion)))
 #+end_src
 ** PI
+*** pi-coding-agent
 #+begin_src elisp
   (use-package pi-coding-agent
     :init (defalias 'pi 'pi-coding-agent)
+    :bind ("C-c C-." . pi-coding-agent-toggle)
     :custom
     (pi-coding-agent-input-window-height 10)
     (pi-coding-agent-tool-preview-lines 10)
@@ -1180,8 +1185,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (with-eval-after-load 'md-ts-mode
       (defun md-ts--harvest-treesit-configs (mode)
         "Harvest tree-sitter configs from MODE.
-Return a plist with :font-lock, :simple-indent, and :range keys,
-or nil if MODE fails to activate (e.g. missing grammar dependencies)."
+  Return a plist with :font-lock, :simple-indent, and :range keys,
+  or nil if MODE fails to activate (e.g. missing grammar dependencies)."
         (condition-case err
             (with-temp-buffer
               (delay-mode-hooks (funcall mode))
@@ -1193,6 +1198,14 @@ or nil if MODE fails to activate (e.g. missing grammar dependencies)."
                     mode (error-message-string err))
            nil)))))
 #+end_src
+
+*** Pi Helpers module
+#+begin_src elisp
+  (use-package pi-helpers
+    :ensure nil
+    :demand t)
+#+end_src
+
 * Ediff
 #+begin_src elisp
   (defvar ediff-buffer-A)
@@ -2159,7 +2172,6 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
     (setq sp-ignore-modes-list
           '(minibuffer-inactive-mode emacs-lisp-mode eval-expression-minibuffer-setup common-lisp-mode lisp-mode sly-mode))
     (require 'smartparens-config)
-    (sp-local-pair 'typescript-mode "<" ">" :trigger-wrap "<")
     (sp-local-pair 'typescript-ts-mode "<" ">" :trigger-wrap "<")
     :hook
     (typescript-ts-mode tsx-ts-mode c-ts-mode js-ts-mode text-mode comint-mode)
@@ -2416,7 +2428,7 @@ LSP/DAP servers manager
     (setq-default eglot-workspace-configuration
                    '(:biome (:enabled t)))
     (add-to-list 'eglot-server-programs
-                 `((js2-mode js-mode js-ts-mode typescript-ts-mode typescript-mode tsx-ts-mode)
+                 `((js2-mode js-mode js-ts-mode typescript-ts-mode tsx-ts-mode)
                    . ,(lambda (&rest _)
                         (if-let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
                                   (biome  (expand-file-name "node_modules/.bin/biome" nm-dir))
@@ -2617,8 +2629,9 @@ LSP/DAP servers manager
 *** Typescript
 **** General Settings
 #+begin_src elisp
-  (use-package typescript-mode
-    :mode (("\\.ts\\'" . typescript-ts-mode) ("\\.tsx\\'" . tsx-ts-mode))
+  (use-package typescript-ts-mode
+    :ensure nil
+    :mode ("\\.ts\\'")
     :bind
     ("C-c C-b" . npm-run-build)
     (:map typescript-ts-mode-map
@@ -2629,13 +2642,13 @@ LSP/DAP servers manager
           ("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-SPC" . sp-mark-sexp))
-    :hook
-    (typescript-ts-mode . (lambda ()
-                            (setq tab-width 2)
-                            (setq indent-tabs-mode nil)))
-    (jtsx-tsx-mode . (lambda ()
-                            (setq tab-width 2)
-                            (setq indent-tabs-mode nil)))
+    ;; :hook
+    ;; (typescript-ts-mode . (lambda ()
+    ;;                         (setq tab-width 2)
+    ;;                         (setq indent-tabs-mode nil)))
+    ;; (jtsx-tsx-mode . (lambda ()
+    ;;                         (setq tab-width 2)
+    ;;                         (setq indent-tabs-mode nil)))
     :config
     (setq typescript-ts-mode-indent-offset 2))
 
@@ -2887,7 +2900,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
             (js-json-mode    . json-ts-mode)
             (python-mode     . python-ts-mode)
             ;; (sh-mode         . bash-ts-mode)
-            (typescript-mode . typescript-ts-mode)
             (rust-mode       . rust-mode)))
 
     (add-to-list 'auto-mode-alist '("CMakeLists\\'" . cmake-ts-mode))
@@ -2930,13 +2942,19 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 *** Doom Themes
 #+begin_src elisp
   (use-package doom-themes
-    ;; :custom
-    ;; (doom-ayu t)
-    ;; (load-theme 'doom-ayu-dark)
-    ;; (load-theme 'doom-rouge)
-    :init (load-theme 'bob-kanagawa-wave)
-                )
+    :custom
+    (doom-ayu t)
+    :init
+    (load-theme 'doom-ayu-dark))
 #+end_src
+*** bob-kanagawa-wave
+#+begin_src elisp
+  (use-package bob-kanagawa-wave-theme
+    :disabled t
+    :ensure nil
+    :init (load-theme 'bob-kanagawa-wave))
+#+end_src
+
 *** Modus Themes
 #+begin_src elisp
     (use-package modus-themes
