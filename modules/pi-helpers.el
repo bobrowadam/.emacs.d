@@ -164,35 +164,41 @@ Opens a new tab if one doesn't exist yet."
 ;;;###autoload
 (defun bob/pi-pulse-region (file start-line end-line)
   "Pulse-highlight lines START-LINE to END-LINE in FILE.
-Called by pi after it edits a region, to give visual feedback."
+Called by pi after it edits a region, to give visual feedback.
+
+Non-invasive by design: only pulses if FILE is already visible in
+some window on some frame.  Does NOT visit the file, steal focus,
+raise frames, rearrange windows, or move point.  If the buffer is
+not currently displayed, this silently does nothing and returns
+a JSON note explaining why."
   (require 'json)
   (require 'pulse)
-  (let* ((buf (or (find-buffer-visiting file)
-                  (find-file-noselect file)))
-         (win (or (get-buffer-window buf t)
-                  (display-buffer buf))))
-    (when (window-live-p win)
-      (let ((frame (window-frame win)))
-        (select-frame-set-input-focus frame)
-        (raise-frame frame))
-      (delete-other-windows win)
-      (with-selected-window win
-        (let ((pulse-delay 0.02)
-              (pulse-iterations 60)
-              (beg (save-excursion
-                     (goto-char (point-min))
-                     (forward-line (1- start-line))
-                     (point)))
-              (end (save-excursion
-                     (goto-char (point-min))
-                     (forward-line (1- end-line))
-                     (end-of-line)
-                     (point))))
-          (goto-char beg)
-          (recenter)
-          (let ((text (buffer-substring-no-properties beg end)))
-            (pulse-momentary-highlight-region beg end)
-            (json-encode `(("pulsed text" . ,text)))))))))
+  (let* ((buf (find-buffer-visiting file))
+         (win (and buf (get-buffer-window buf t))))
+    (cond
+     ((not buf)
+      (json-encode '(("pulsed" . :false) ("reason" . "file not visited"))))
+     ((not (window-live-p win))
+      (json-encode '(("pulsed" . :false) ("reason" . "buffer not visible"))))
+     (t
+      ;; Use save-selected-window + with-current-buffer instead of
+      ;; with-selected-window so we never touch focus, and save-excursion
+      ;; so point is not disturbed even in the target buffer.
+      (save-selected-window
+        (with-current-buffer buf
+          (save-excursion
+            (let* ((pulse-delay 0.02)
+                   (pulse-iterations 60)
+                   (beg (progn (goto-char (point-min))
+                               (forward-line (1- start-line))
+                               (point)))
+                   (end (progn (goto-char (point-min))
+                               (forward-line (1- end-line))
+                               (end-of-line)
+                               (point)))
+                   (text (buffer-substring-no-properties beg end)))
+              (pulse-momentary-highlight-region beg end)
+              (json-encode `(("pulsed" . t) ("pulsed text" . ,text)))))))))))
 
 ;;; Clipboard image paste
 
