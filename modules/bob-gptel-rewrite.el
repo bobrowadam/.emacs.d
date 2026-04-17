@@ -104,6 +104,70 @@ instruction."
           (bob/gptel-insert instruction))
       (gptel-with-preset 'rewrite (apply orig args)))))
 
+(defun bob/gptel-rewrite-dispatch-fix-iterate (orig &optional ov ci)
+  "Intercept the 'iterate' branch of `gptel--rewrite-dispatch'.
+
+Upstream has a latent bug: when `gptel-rewrite-default-action' is
+`dispatch', the response handler calls
+`(gptel--rewrite-dispatch ov)' with CI nil.  If the user then
+picks `iterate', dispatch calls `(gptel--rewrite-iterate ov)',
+which is an alias for the `gptel-rewrite' transient prefix -- a
+zero-argument command.  That raises
+  (wrong-number-of-arguments #<subr gptel-rewrite> 1).
+
+We fix this by reading the user's action ourselves; if they pick
+`iterate', we handle it:
+
+- For a `bob/gptel-insert' overlay, reject it and fire a fresh
+  `bob/gptel-insert' with a newly-prompted instruction (preserves
+  insert semantics instead of feeding the response back).
+
+- For a regular rewrite overlay, invoke the `gptel-rewrite'
+  transient interactively -- the only way a transient prefix can
+  be launched.
+
+Any other choice (accept / reject / diff / ediff / merge) is
+dispatched by calling the corresponding `gptel--rewrite-*' helper
+directly with OV, mirroring upstream's own non-interactive path."
+  (if (or ci (null ov))
+      ;; Interactive path or no overlay -- upstream's own handling is
+      ;; fine; `iterate' goes through `call-interactively'.
+      (funcall orig ov ci)
+    ;; Non-interactive path: read the choice ourselves.
+    (let* ((orig-status (copy-sequence (overlay-get ov 'status)))
+           (choices '((?a "accept") (?k "reject") (?r "iterate")
+                      (?m "merge") (?d "diff") (?e "ediff")))
+           (choice
+            (unwind-protect
+                (progn
+                  (gptel--rewrite-update-status
+                   ov (when (fboundp 'rmc--add-key-description)
+                        (concat " "
+                                (mapconcat
+                                 #'cdr
+                                 (mapcar #'rmc--add-key-description choices)
+                                 ", "))))
+                  (read-multiple-choice "Action: " choices))
+              (overlay-put ov 'status orig-status)
+              (overlay-put ov 'before-string
+                           (apply #'concat orig-status))))
+           (action (cadr choice)))
+      (cond
+       ;; Iterate on an insert overlay: fresh insert at same point.
+       ((and (string= action "iterate")
+             (overlay-get ov 'bob/gptel-insert-placeholder))
+        (let ((beg (overlay-get ov 'bob/gptel-insert-beg))
+              (instruction (read-string "Iterate insert: ")))
+          (goto-char beg)
+          (gptel--rewrite-reject ov)
+          (bob/gptel-insert instruction)))
+       ;; Iterate on a regular rewrite overlay: open the transient.
+       ((string= action "iterate")
+        (goto-char (overlay-start ov))
+        (call-interactively #'gptel-rewrite))
+       ;; Everything else: call the corresponding helper with OV.
+       (t (funcall (intern (concat "gptel--rewrite-" action)) ov))))))
+
 ;;; Language detection ----------------------------------------------
 
 ;; Upstream's `gptel--strip-mode-suffix' only returns a language name
@@ -471,6 +535,10 @@ Idempotent.  Safe to call from `use-package' `:config'."
                              'gptel--suffix-rewrite)
       (advice-add 'gptel--suffix-rewrite :around
                   #'bob/gptel-rewrite-with-preset))
+    (unless (advice-member-p #'bob/gptel-rewrite-dispatch-fix-iterate
+                             'gptel--rewrite-dispatch)
+      (advice-add 'gptel--rewrite-dispatch :around
+                  #'bob/gptel-rewrite-dispatch-fix-iterate))
     (unless (advice-member-p #'bob/gptel-rewrite-reject-cleans-insert-placeholder
                              'gptel--rewrite-reject)
       (advice-add 'gptel--rewrite-reject :before
