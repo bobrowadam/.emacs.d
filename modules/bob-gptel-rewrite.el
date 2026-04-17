@@ -509,13 +509,21 @@ Haiku 4.5 -- useful for non-trivial inserts where Haiku stumbles."
       (goto-char placeholder-beg)
       (when nosystem
         (setcar prompt (concat directive "\n\n" (car prompt))))
-      (gptel-request prompt
-        :system directive
-        :stream gptel-stream
-        :context (cons ov (gptel--temp-buffer " *gptel-insert*"))
-        :transforms gptel-prompt-transform-functions
-        :fsm (gptel-make-fsm :handlers gptel--rewrite-handlers)
-        :callback #'gptel--rewrite-callback))))
+      ;; Upstream's `gptel-request--transitions' table has no TPRE
+      ;; state, so `gptel-pre-tool-call-functions' never fires.
+      ;; `gptel-send--transitions' (which includes TPRE) is the table
+      ;; chat uses; borrow it for our FSM so pre-tool hooks run.
+      (let ((gptel-request--transitions
+             (if (boundp 'gptel-send--transitions)
+                 gptel-send--transitions
+               gptel-request--transitions)))
+        (gptel-request prompt
+          :system directive
+          :stream gptel-stream
+          :context (cons ov (gptel--temp-buffer " *gptel-insert*"))
+          :transforms gptel-prompt-transform-functions
+          :fsm (gptel-make-fsm :handlers gptel--rewrite-handlers)
+          :callback #'gptel--rewrite-callback)))))
 
 ;;; Installation ------------------------------------------------------
 
