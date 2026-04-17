@@ -54,12 +54,33 @@
 ;;; Backend ------------------------------------------------------------
 
 (defvar bob/gptel-rewrite-backend
-  (gptel-make-anthropic "Claude rewrite"
-    :stream t
-    ;; No adaptive thinking (rewrites are bounded, latency-sensitive)
-    ;; and no server-side web/code tools (out of scope for inline
-    ;; edits; the preset attaches local read-only tools instead).
-    :request-params '(:max_tokens 8192))
+  (let ((b (gptel-make-anthropic "Claude rewrite"
+             :stream t
+             ;; No adaptive thinking (rewrites are bounded,
+             ;; latency-sensitive) and no server-side web/code tools
+             ;; (out of scope for inline edits; the preset attaches
+             ;; local read-only tools instead).
+             :request-params '(:max_tokens 8192))))
+    ;; The `gptel-anthropic-oauth' module injects OAuth headers via
+    ;; :around advice on `gptel-curl-get-response'.  That advice
+    ;; swaps the header function on the dynamic `gptel-backend'
+    ;; variable -- but by the time the advice runs on a follow-up
+    ;; (after a tool call), `gptel-backend' is the global default
+    ;; ("Claude thinking"), NOT this rewrite backend.  Inside
+    ;; `gptel-curl-get-response' the backend is then rebound to the
+    ;; FSM's backend (us), whose header is never swapped, so the
+    ;; request goes out without x-api-key and 401s.
+    ;;
+    ;; Pin a header function directly on this backend that always
+    ;; uses `gptel-anthropic-oauth--get-oauth-headers'.  That makes
+    ;; auth work on both the first request and every tool-result
+    ;; follow-up, regardless of what `gptel-backend' points at.
+    (when (fboundp 'gptel-anthropic-oauth--get-oauth-headers)
+      (setf (gptel-backend-header b)
+            (lambda (_info)
+              (let ((gptel-backend b))
+                (gptel-anthropic-oauth--get-oauth-headers)))))
+    b)
   "Non-thinking Anthropic backend used by the `rewrite' gptel preset.")
 
 ;;; Tools --------------------------------------------------------------
@@ -337,9 +358,21 @@ a shorter prose-focused variant."
                  "    <POINT/>\n"
                  "    (* x x))\n"
                  "Instruction: add a docstring\n"
-                 "Correct output:\n"
+                 "\n"
+                 "WRONG output (do NOT do any of this):\n"
+                 "  Now I'll add a docstring:\n"
+                 "\n"
+                 "  ```lisp\n"
                  "  \"Return the square of X.\"\n"
-                 "(Note: just the docstring line, no surrounding code, no prose.)")
+                 "  ```\n"
+                 "\n"
+                 "  Since you asked for only the text, here it is:\n"
+                 "  \"Return the square of X.\"\n"
+                 "\n"
+                 "CORRECT output (the ENTIRE response, first character to last):\n"
+                 "  \"Return the square of X.\"\n"
+                 "\n"
+                 "Your very first character must be the first character of the code to insert.  Your very last character must be the last character of the code to insert.  No introductions.  No restatements.  No \"however\".  No \"since you asked\".  Emit the code once, cleanly, and stop.")
                 article lang lang)
       (concat
        (if (string-empty-p lang)
@@ -352,34 +385,102 @@ a shorter prose-focused variant."
 
 ;;; Sanitiser ----------------------------------------------------------
 
+(defun bob/gptel-sanitize--all-fence-bodies ()
+  "Return a list of (BEG . END) for every fenced code block.
+
+Searches the current narrowed buffer for \"```LANG?\\n...\\n```\"
+blocks; BEG and END delimit the body *inside* the fences, not the
+fence lines themselves.  Unterminated opening fences are ignored."
+  (save-excursion
+    (goto-char (point-min))
+    (let (bodies)
+      (while (re-search-forward "^[ \t]*```[^\n]*\n" nil t)
+        (let ((body-start (match-end 0)))
+          (when (re-search-forward "^[ \t]*```[ \t]*$" nil t)
+            (push (cons body-start (match-beginning 0)) bodies))))
+      (nreverse bodies))))
+
 (defun bob/gptel-sanitize-llm-output (beg end)
   "Sanitize LLM output in region BEG..END (rewrite/insert temp buffer).
 
-Runs from `gptel-post-rewrite-functions', inside the rewrite
-temp buffer, before the overlay is populated -- so both the
-streamed preview and the eventually-accepted text are cleaned.
+Runs from `gptel-post-rewrite-functions', inside the rewrite temp
+buffer, before the overlay is populated -- so both the streamed
+preview and the eventually-accepted text are cleaned.
 
-Strips:
+Small models (Haiku in particular) ignore \"no prose, no fences\"
+directives and emit patterns like:
 
-- A single top-level markdown fence wrapping the whole response
-  (``` ``` ```...\\n```` ```).  Mid-output fences are preserved.
-- Leading blank lines.
-- Trailing excess blank lines (collapses to a single newline)."
+    Sure!  Here you go:
+
+    ```lisp
+    (defun foo () 42)
+    ```
+
+    However, since you asked for only the text...
+
+    (defun foo () 42)
+
+This sanitizer handles the common shapes:
+
+1. If any fenced code blocks are present, keep the body of the
+   LAST one.  Haiku typically puts a cleaner restatement last;
+   more importantly, the contents of a fenced block are
+   guaranteed to be code and nothing else.
+2. If NO fenced blocks are present but the output starts with a
+   paragraph of prose followed by a blank line, drop everything
+   up to and including the first blank line.  Heuristic: if the
+   first non-blank line doesn't look like code (no parens,
+   braces, indentation, or common code starters) and a later
+   line does, drop the leading prose.
+3. Trim surrounding blank lines."
   (save-excursion
     (save-restriction
       (narrow-to-region beg end)
-      ;; 1. Unwrap a single top-level fenced code block.
-      (goto-char (point-min))
-      (skip-chars-forward " \t\n")
-      (when (looking-at "```[^\n]*\n")
-        (let ((body-start (match-end 0)))
-          (goto-char (point-max))
-          (skip-chars-backward " \t\n")
-          (when (re-search-backward "^```[ \t]*$" body-start t)
-            (let ((fence-end (match-beginning 0)))
-              (delete-region fence-end (point-max))
-              (delete-region (point-min) body-start)))))
-      ;; 2. Trim surrounding blank lines.
+      ;; 1. Prefer fenced code blocks when present.
+      (let ((bodies (bob/gptel-sanitize--all-fence-bodies)))
+        (when bodies
+          (let* ((last (car (last bodies)))
+                 (body (buffer-substring-no-properties (car last) (cdr last))))
+            (delete-region (point-min) (point-max))
+            (insert body))))
+      ;; 2. No fences?  Try to drop leading prose.
+      (unless (save-excursion
+                (goto-char (point-min))
+                (re-search-forward "^[ \t]*```" nil t))
+        (goto-char (point-min))
+        (skip-chars-forward " \t\n")
+        (let* ((first-line-start (point))
+               (first-line-end (line-end-position))
+               (first-line (buffer-substring-no-properties
+                            first-line-start first-line-end))
+               ;; "Looks like prose": starts with a capital letter or
+               ;; digit followed by a space and no opening paren/brace
+               ;; on the line, AND doesn't start with common code
+               ;; markers.
+               (code-starter-re
+                (rx bos (zero-or-more (any " \t"))
+                    (or "(" ")" "[" "{" "#" ";" "/" "*"
+                        "def " "class " "fn " "let " "const " "var "
+                        "function " "import " "use " "package "
+                        "public " "private " "protected " "static "
+                        "if " "for " "while " "return "
+                        "@" "-" "+" "--" "//")))
+               (prose-p (and (not (string-match-p code-starter-re first-line))
+                             (string-match-p "[[:alpha:]]" first-line))))
+          (when prose-p
+            ;; Find the first subsequent line that looks like code and
+            ;; is preceded by a blank line.
+            (when (re-search-forward
+                   (rx "\n\n"
+                       (group (zero-or-more (any " \t"))
+                              (or "(" ";" "#" "/" "\""
+                                  "def " "class " "fn " "let "
+                                  "const " "var " "function "
+                                  "import " "use " "package "
+                                  "public " "private ")))
+                   nil t)
+              (delete-region (point-min) (match-beginning 1))))))
+      ;; 3. Trim surrounding blank lines.
       (goto-char (point-min))
       (when (looking-at "[ \t]*\n+")
         (replace-match ""))
