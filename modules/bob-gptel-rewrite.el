@@ -102,7 +102,17 @@ instruction."
           (goto-char beg)
           (gptel--rewrite-reject insert-ov)
           (bob/gptel-insert instruction))
-      (gptel-with-preset 'rewrite (apply orig args)))))
+      ;; Work around upstream oversight: `gptel--rewrite-handlers'
+      ;; defines a `TPRE' handler for `gptel-pre-tool-call-functions',
+      ;; but the default `gptel-request--transitions' table never
+      ;; enters `TPRE'.  Rebind to `gptel-send--transitions' (which
+      ;; includes TPRE) while constructing the rewrite FSM so the
+      ;; pre-tool-call hook fires as intended.
+      (let ((gptel-request--transitions
+             (if (boundp 'gptel-send--transitions)
+                 gptel-send--transitions
+               gptel-request--transitions)))
+        (gptel-with-preset 'rewrite (apply orig args))))))
 
 (defun bob/gptel-rewrite-dispatch-fix-iterate (orig &optional ov ci)
   "Intercept the 'iterate' branch of `gptel--rewrite-dispatch'.

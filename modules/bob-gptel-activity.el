@@ -82,15 +82,31 @@ One of `sending', `waiting', `tool', `receiving'.")
 (defvar bob/gptel-activity--spinner-timer nil
   "Repeating timer that advances the spinner while a phase is active.")
 
-(defvar bob/gptel-activity--request-count 0
-  "Number of in-flight gptel requests.")
+(defvar bob/gptel-activity--requests nil
+  "Alist of in-flight requests: (FSM . PLIST).
+
+PLIST keys: `:id', `:backend', `:model', `:buffer', `:start',
+`:tool-count', `:chunks'.  Entries are added when the FSM is first
+seen in `gptel--request-alist' (via `gptel-post-request-hook')
+and removed in `gptel-post-response-functions'.")
 
 (defvar bob/gptel-activity--current-request nil
-  "Plist describing the most recent request (`:id', `:backend', `:model',
-`:buffer', `:start', `:tool-count', `:chunks').")
+  "Plist for the request whose event is currently being logged.
+
+Bound dynamically inside hook handlers so `bob/gptel-activity--log'
+can tag lines with the request id.")
 
 (defvar bob/gptel-activity--next-id 0
   "Monotonic request id counter.")
+
+(defun bob/gptel-activity--current-fsm ()
+  "Return the FSM for the most-recently-started gptel request, or nil.
+
+Found by inspecting `gptel--request-alist'.  Used because
+`gptel-post-request-hook' runs with no arguments, and the buffer
+it fires in is the process buffer, not the user's buffer."
+  (when (and (boundp 'gptel--request-alist) gptel--request-alist)
+    (cadr (car gptel--request-alist))))
 
 ;;; Log buffer ---------------------------------------------------------
 
@@ -227,29 +243,76 @@ One of `sending', `waiting', `tool', `receiving'.")
       (concat (substring s 0 (max 0 (- max 1))) "…"))))
 
 (defun bob/gptel-activity--on-post-request ()
-  "Hook: a new gptel request was just sent."
-  (cl-incf bob/gptel-activity--request-count)
-  (let* ((id (cl-incf bob/gptel-activity--next-id))
-         (backend (and (boundp 'gptel-backend) gptel-backend
-                       (gptel-backend-name gptel-backend)))
-         (model (and (boundp 'gptel-model) gptel-model
-                     (gptel--model-name gptel-model)))
-         (buf (buffer-name)))
-    (setq bob/gptel-activity--current-request
-          (list :id id :backend backend :model model :buffer buf
-                :start (float-time) :tool-count 0 :chunks 0))
-    (bob/gptel-activity--log "→ Request sent  [%s/%s]  in %s"
-                             (or backend "?") (or model "?") buf)
-    (bob/gptel-activity--set-phase 'waiting)))
+  "Hook: gptel entered the WAIT state.
+
+This fires at the start of every request AND after each tool-use
+cycle when the FSM transitions back to WAIT for a follow-up call.
+We log a fresh `Request sent' line only on the first visit; later
+visits just flip the phase back to `waiting'."
+  (let* ((fsm (bob/gptel-activity--current-fsm))
+         (existing (and fsm (alist-get fsm bob/gptel-activity--requests))))
+    (cond
+     ;; Already tracked: this is a post-tool re-request.  Don't log.
+     (existing
+      (setq bob/gptel-activity--current-request existing)
+      (bob/gptel-activity--set-phase 'waiting))
+     ;; Brand-new request.
+     (t
+      (let* ((info (and fsm (gptel-fsm-info fsm)))
+             (buf-name (or (plist-get info :buffer)
+                           ;; Last resort: buffer we're running in.
+                           (buffer-name)))
+             (buf-name (if (bufferp buf-name) (buffer-name buf-name)
+                         buf-name))
+             (backend-obj (and info (plist-get info :backend)))
+             (backend (cond ((gptel-backend-p backend-obj)
+                             (gptel-backend-name backend-obj))
+                            ((and (boundp 'gptel-backend) gptel-backend)
+                             (gptel-backend-name gptel-backend))))
+             (model-sym (and info (plist-get info :model)))
+             (model (cond (model-sym (gptel--model-name model-sym))
+                          ((and (boundp 'gptel-model) gptel-model)
+                           (gptel--model-name gptel-model))))
+             (id (cl-incf bob/gptel-activity--next-id))
+             (plist (list :id id :backend backend :model model
+                          :buffer buf-name :start (float-time)
+                          :tool-count 0 :chunks 0)))
+        (when fsm
+          (push (cons fsm plist) bob/gptel-activity--requests))
+        (setq bob/gptel-activity--current-request plist)
+        (bob/gptel-activity--log "→ Request sent  [%s/%s]  in %s"
+                                 (or backend "?") (or model "?") buf-name)
+        (bob/gptel-activity--set-phase 'waiting))))))
+
+(defun bob/gptel-activity--request-for-plist (plist)
+  "Return the tracked request-plist that matches hook-arg PLIST.
+
+Uses the hook plist's `:buffer' (which is a buffer name string
+provided by gptel) to find the matching entry in
+`bob/gptel-activity--requests'.  Falls back to the
+most-recently-added entry."
+  (let ((hook-buf (plist-get plist :buffer)))
+    (or (cdr
+         (cl-find-if
+          (lambda (entry)
+            (let ((tracked-buf (plist-get (cdr entry) :buffer)))
+              (and hook-buf tracked-buf
+                   (string= hook-buf tracked-buf))))
+          bob/gptel-activity--requests))
+        (cdr (car bob/gptel-activity--requests)))))
 
 (defun bob/gptel-activity--on-pre-tool-call (plist)
   "Hook: a tool call is about to run.  PLIST carries :name, :args."
   (let* ((name (plist-get plist :name))
-         (args (plist-get plist :args)))
-    (plist-put bob/gptel-activity--current-request :tool-count
-               (1+ (or (plist-get bob/gptel-activity--current-request
-                                  :tool-count)
-                       0)))
+         (args (plist-get plist :args))
+         (bob/gptel-activity--current-request
+          (or (bob/gptel-activity--request-for-plist plist)
+              bob/gptel-activity--current-request)))
+    (when bob/gptel-activity--current-request
+      (plist-put bob/gptel-activity--current-request :tool-count
+                 (1+ (or (plist-get bob/gptel-activity--current-request
+                                    :tool-count)
+                         0))))
     (bob/gptel-activity--log "  ↳ Tool %s(%s)"
                              (propertize (or name "?") 'face
                                          'bob/gptel-activity-tool-face)
@@ -261,7 +324,10 @@ One of `sending', `waiting', `tool', `receiving'.")
   "Hook: a tool call just finished.  PLIST carries :name, :result."
   (let* ((name (plist-get plist :name))
          (result (plist-get plist :result))
-         (size (if (stringp result) (length result) 0)))
+         (size (if (stringp result) (length result) 0))
+         (bob/gptel-activity--current-request
+          (or (bob/gptel-activity--request-for-plist plist)
+              bob/gptel-activity--current-request)))
     (bob/gptel-activity--log "    ← %s → %d byte%s"
                              (propertize (or name "?") 'face
                                          'bob/gptel-activity-tool-face)
@@ -279,20 +345,32 @@ One of `sending', `waiting', `tool', `receiving'.")
   (bob/gptel-activity--set-phase 'receiving))
 
 (defun bob/gptel-activity--on-post-response (_beg _end)
-  "Hook: the request finished (DONE, ERRS, or ABRT)."
-  (let* ((req bob/gptel-activity--current-request)
-         (start (plist-get req :start))
-         (dur (and start (- (float-time) start)))
-         (tools (or (plist-get req :tool-count) 0)))
-    (bob/gptel-activity--log "← Done  %s%s"
-                             (if dur (format "(%.1fs)" dur) "")
-                             (if (> tools 0)
-                                 (format ", %d tool call%s"
-                                         tools (if (= tools 1) "" "s"))
-                               "")))
-  (setq bob/gptel-activity--request-count
-        (max 0 (1- bob/gptel-activity--request-count)))
-  (when (zerop bob/gptel-activity--request-count)
+  "Hook: the request finished (DONE, ERRS, or ABRT).
+
+Finds which tracked request just completed by looking for any
+FSM in `bob/gptel-activity--requests' that is no longer in
+`gptel--request-alist'.  Logs a `Done' line for each."
+  (let* ((live-fsms (when (and (boundp 'gptel--request-alist)
+                               gptel--request-alist)
+                      (mapcar (lambda (entry) (cadr entry))
+                              gptel--request-alist)))
+         (completed (cl-remove-if
+                     (lambda (entry) (memq (car entry) live-fsms))
+                     bob/gptel-activity--requests)))
+    (dolist (entry completed)
+      (let* ((bob/gptel-activity--current-request (cdr entry))
+             (start (plist-get (cdr entry) :start))
+             (dur (and start (- (float-time) start)))
+             (tools (or (plist-get (cdr entry) :tool-count) 0)))
+        (bob/gptel-activity--log "← Done  %s%s"
+                                 (if dur (format "(%.1fs)" dur) "")
+                                 (if (> tools 0)
+                                     (format ", %d tool call%s"
+                                             tools (if (= tools 1) "" "s"))
+                                   ""))
+        (setq bob/gptel-activity--requests
+              (delq entry bob/gptel-activity--requests)))))
+  (when (null bob/gptel-activity--requests)
     (bob/gptel-activity--set-phase nil)
     (setq bob/gptel-activity--current-request nil)))
 
@@ -332,7 +410,7 @@ to the `*gptel-activity*' buffer.  Use
     (remove-hook 'gptel-post-response-functions #'bob/gptel-activity--on-post-response)
     (bob/gptel-activity--spinner-stop)
     (bob/gptel-activity--set-phase nil)
-    (setq bob/gptel-activity--request-count 0
+    (setq bob/gptel-activity--requests nil
           bob/gptel-activity--current-request nil))))
 
 (provide 'bob-gptel-activity)
