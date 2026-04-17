@@ -696,16 +696,38 @@
     :bind
      ("C-c g g" . gptel)
      ("C-c g r" . gptel-rewrite)
+     ("C-c g i" . bob/gptel-insert)
      ("C-c g a d" . gptel-add)
      ("C-c g a f" . gptel-add-file)
      ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
      (:map gptel-mode-map ("C-c g s" . gptel-menu))
+     ;; Inside a pending rewrite overlay, upstream binds (see
+     ;; `gptel-rewrite-actions-map' in gptel-rewrite.el):
+     ;;   RET / mouse-1   dispatch transient
+     ;;   C-c C-a         accept        C-c C-r  iterate
+     ;;   C-c C-k         reject        C-c C-m  merge with conflicts
+     ;;   C-c C-d         diff          C-c C-e  ediff
+     ;;   C-c C-n         next overlay  C-c C-p  previous overlay
      :hook
      (org-mode . (lambda ()
                    (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
                      (gptel-mode 1))))
      (gptel-post-stream . gptel-auto-scroll)
      (gptel-post-response . gptel-end-of-response))
+
+  ;; Inline rewrite (`C-c g r') and insert (`C-c g i') commands.
+  ;; Wires up a non-thinking "Claude rewrite" backend, a Haiku-based
+  ;; `rewrite' preset with read-only tools, advice on
+  ;; `gptel--suffix-rewrite' that applies the preset automatically,
+  ;; and an output sanitiser that strips markdown fences /
+  ;; surrounding blank lines.  See `modules/bob-gptel-rewrite.el'.
+  (use-package bob-gptel-rewrite
+    :ensure nil
+    :after gptel
+    :demand t
+    :commands (bob/gptel-insert)
+    :config
+    (bob/gptel-rewrite-install))
 
   (use-package bob-gptel-tools
     :ensure nil
