@@ -209,6 +209,10 @@ buffer.  If tool subprocesses are alive (e.g. a `grep' scanning a
 giant tree), this kills them first so `gptel-abort' returns
 immediately instead of blocking.
 
+Also resets `bob-gptel-activity' state so the modeline spinner
+doesn't outlive the aborted request -- gptel's abort path
+doesn't always run `gptel-post-response-functions'.
+
 Bound to `C-c g k' in the user's config."
   (interactive)
   (let ((n (length bob/gptel-tools--active-processes)))
@@ -216,7 +220,9 @@ Bound to `C-c g k' in the user's config."
       (bob/gptel-tools-kill-all-processes 'user)
       (message "Killed %d tool subprocess%s" n (if (= n 1) "" "es"))))
   (when (fboundp 'gptel-abort)
-    (ignore-errors (gptel-abort (or buffer (current-buffer))))))
+    (ignore-errors (gptel-abort (or buffer (current-buffer)))))
+  (when (fboundp 'bob/gptel-activity-reset)
+    (bob/gptel-activity-reset)))
 
 (defun bob/gptel-tools--format-diff (old-content new-content)
   "Return a pi-style diff string between OLD-CONTENT and NEW-CONTENT.
