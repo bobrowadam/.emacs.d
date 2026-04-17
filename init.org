@@ -707,13 +707,21 @@
      (gptel-post-stream . gptel-auto-scroll)
      (gptel-post-response . gptel-end-of-response))
 
-  (use-package llm-tool-collection
+  (use-package bob-gptel-tools
+    :ensure nil
     :after gptel
     :demand t
-    :ensure (:repo "skissue/llm-tool-collection" :fetcher github :files ("*.el"))
     :config
-    (mapcar (apply-partially #'apply #'gptel-make-tool)
-            (llm-tool-collection-get-all)))
+    ;; Mirrors pi's bash/edit/find/grep/ls/read/write tools plus
+    ;; elisp_eval (from karthink/gptel-agent), and installs them all
+    ;; into `gptel-tools' so they are available by default.
+    (bob/gptel-tools-default-set)
+    ;; Register a pi-inspired system prompt under the `pi' directive
+    ;; and use it as the default for new gptel buffers.
+    (bob/gptel-tools-install-system-prompt)
+    ;; Auto-fold noisy read-only tool blocks (read/ls/find/grep/bash/
+    ;; jina_reader).  Customise `bob/gptel-tools-fold-by-default'.
+    (bob/gptel-tools-fold-hook-install))
 #+end_src
 ** Minuet - ai code completion
 #+begin_src elisp
@@ -751,10 +759,6 @@
   (use-package llm
     :custom
     (llm-warn-on-nonfree nil))
-
-  (use-package llm-tool-collection
-    :disabled t
-    :ensure (:repo "skissue/llm-tool-collection" :fetcher github :files ("*.el")))
 #+end_src
 ** MCP
 #+begin_src elisp
