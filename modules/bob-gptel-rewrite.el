@@ -16,9 +16,9 @@
 ;;   current buffer auto-attached so the model sees the whole file.
 ;;   See `bob/gptel-rewrite-tools'.
 ;;
-;; - Advice on `gptel--suffix-rewrite' that applies the preset around
-;;   every `gptel-rewrite' request -- you do not have to select the
-;;   preset manually.
+;; - `bob/gptel-rewrite': a thin wrapper around upstream
+;;   `gptel-rewrite' that applies the `rewrite' preset automatically,
+;;   without advising internal suffix functions.
 ;;
 ;; - `bob/gptel-insert': the same overlay / dispatch-transient UX as
 ;;   `gptel-rewrite' but for inserting NEW text at point instead of
@@ -37,15 +37,30 @@
 ;;   (require 'bob-gptel-rewrite)
 ;;   (bob/gptel-rewrite-install)
 ;;
-;; Then bind `bob/gptel-insert' to a convenient key (e.g. C-c g i).
-;; `gptel-rewrite' already exists upstream; the advice activates
-;; transparently.
+;; Then bind `bob/gptel-rewrite' and `bob/gptel-insert' to convenient
+;; keys (e.g. C-c g r / C-c g i).
 
 ;;; Code:
 
 (require 'gptel)
 (require 'cl-lib)
 (require 'subr-x)
+
+;; Forward declarations for gptel internals used intentionally here.
+(defvar gptel--rewrite-overlays)
+(defvar gptel--rewrite-handlers)
+(defvar gptel-rewrite-default-action)
+
+(declare-function gptel-make-anthropic "ext:gptel-anthropic" (name &rest args))
+(declare-function gptel-rewrite "ext:gptel-rewrite" ())
+(declare-function gptel--rewrite-reject "ext:gptel-rewrite" (&optional ovs))
+(declare-function gptel--rewrite-update-status "ext:gptel-rewrite" (ov msg))
+(declare-function gptel--rewrite-key-help "ext:gptel-rewrite" (&optional cb))
+(declare-function gptel--rewrite-callback "ext:gptel-rewrite" (&rest args))
+
+(declare-function org-element-at-point "org-element" (&optional epom cached-only))
+(declare-function org-element-type "org-element" (node))
+(declare-function org-element-property "org-element" (property element))
 
 (defgroup bob-gptel-rewrite nil
   "Fast inline rewrite/insert commands for gptel."
@@ -103,113 +118,91 @@ Tools must be registered (via `gptel-make-tool') before the
   :type '(repeat string)
   :group 'bob-gptel-rewrite)
 
-;;; Preset advice ------------------------------------------------------
+;;; Rewrite entry points ----------------------------------------------
 
-(defun bob/gptel-rewrite-with-preset (orig &rest args)
-  "Apply the `rewrite' gptel preset for the duration of ORIG.
+(defun bob/gptel-rewrite--insert-overlay-at-point ()
+  "Return the active `bob/gptel-insert' overlay at point, or nil."
+  (cdr-safe (get-char-property-and-overlay
+             (point) 'bob/gptel-insert-placeholder)))
 
-Used as :around advice on `gptel--suffix-rewrite' so every
-`gptel-rewrite' request picks up Haiku, read-only tools and the
-current buffer as context.
+(defun bob/gptel-rewrite--with-preset (thunk)
+  "Run THUNK with the `rewrite' preset and rewrite FSM transitions."
+  ;; Work around upstream oversight: `gptel--rewrite-handlers'
+  ;; defines a `TPRE' handler for `gptel-pre-tool-call-functions',
+  ;; but the default `gptel-request--transitions' table never enters
+  ;; `TPRE'.  Rebind to `gptel-send--transitions' (which includes
+  ;; TPRE) while constructing the rewrite FSM so pre-tool-call hooks
+  ;; fire as intended.
+  (let ((gptel-request--transitions
+         (if (boundp 'gptel-send--transitions)
+             gptel-send--transitions
+           gptel-request--transitions)))
+    (gptel-with-preset 'rewrite
+      (funcall thunk))))
 
-As a special case: when the overlay at point was created by
-`bob/gptel-insert', upstream's suffix would feed the current
-response back as the thing to rewrite -- wrong semantics for
-insert.  In that case we reject the existing insert overlay and
-fire a fresh `bob/gptel-insert' at the same point with the new
-instruction."
-  (let ((insert-ov (cdr-safe (get-char-property-and-overlay
-                              (point) 'bob/gptel-insert-placeholder))))
-    (if insert-ov
-        (let ((beg (overlay-get insert-ov 'bob/gptel-insert-beg))
-              (instruction (or (car args) gptel--rewrite-message)))
-          (goto-char beg)
-          (gptel--rewrite-reject insert-ov)
-          (bob/gptel-insert instruction))
-      ;; Work around upstream oversight: `gptel--rewrite-handlers'
-      ;; defines a `TPRE' handler for `gptel-pre-tool-call-functions',
-      ;; but the default `gptel-request--transitions' table never
-      ;; enters `TPRE'.  Rebind to `gptel-send--transitions' (which
-      ;; includes TPRE) while constructing the rewrite FSM so the
-      ;; pre-tool-call hook fires as intended.
-      (let ((gptel-request--transitions
-             (if (boundp 'gptel-send--transitions)
-                 gptel-send--transitions
-               gptel-request--transitions)))
-        (gptel-with-preset 'rewrite (apply orig args))))))
+(defun bob/gptel-rewrite--iterate-insert-overlay (ov &optional prompt)
+  "Reject insert overlay OV and launch a fresh insert iteration.
 
-(defun bob/gptel-rewrite-dispatch-fix-iterate (orig &optional ov ci)
-  "Intercept the 'iterate' branch of `gptel--rewrite-dispatch'.
+PROMPT is the minibuffer prompt for the new instruction."
+  (let* ((beg (overlay-get ov 'bob/gptel-insert-beg))
+         (prior-instruction
+          (overlay-get ov 'bob/gptel-insert-instruction))
+         (prior-response (overlay-get ov 'gptel-rewrite))
+         (prior-strong (overlay-get ov 'bob/gptel-insert-strong))
+         (instruction (read-string (or prompt "Iterate insert: ")
+                                   nil nil prior-instruction)))
+    (goto-char beg)
+    (gptel--rewrite-reject ov)
+    (bob/gptel-insert instruction prior-strong
+                      (list :instruction prior-instruction
+                            :response prior-response))))
 
-Upstream has a latent bug: when `gptel-rewrite-default-action' is
-`dispatch', the response handler calls
-`(gptel--rewrite-dispatch ov)' with CI nil.  If the user then
-picks `iterate', dispatch calls `(gptel--rewrite-iterate ov)',
-which is an alias for the `gptel-rewrite' transient prefix -- a
-zero-argument command.  That raises
-  (wrong-number-of-arguments #<subr gptel-rewrite> 1).
+(defun bob/gptel-rewrite-default-action (ov)
+  "Custom `gptel-rewrite-default-action' implementation for OV.
 
-We fix this by reading the user's action ourselves; if they pick
-`iterate', we handle it:
+This mirrors upstream dispatch UX, but fixes the non-interactive
+`iterate' branch and preserves insert semantics when iterating an
+overlay created by `bob/gptel-insert'."
+  (let* ((orig-status (copy-sequence (overlay-get ov 'status)))
+         (choices '((?a "accept") (?k "reject") (?r "iterate")
+                    (?m "merge") (?d "diff") (?e "ediff")))
+         (choice
+          (unwind-protect
+              (progn
+                (gptel--rewrite-update-status
+                 ov (when (fboundp 'rmc--add-key-description)
+                      (concat " "
+                              (mapconcat #'cdr
+                                         (mapcar #'rmc--add-key-description
+                                                 choices)
+                                         ", "))))
+                (read-multiple-choice "Action: " choices))
+            (overlay-put ov 'status orig-status)
+            (overlay-put ov 'before-string
+                         (apply #'concat orig-status))))
+         (action (cadr choice)))
+    (cond
+     ((and (string= action "iterate")
+           (overlay-get ov 'bob/gptel-insert-placeholder))
+      (bob/gptel-rewrite--iterate-insert-overlay ov))
+     ((string= action "iterate")
+      (goto-char (overlay-start ov))
+      (call-interactively #'bob/gptel-rewrite))
+     (t
+      (funcall (intern (concat "gptel--rewrite-" action)) ov)))))
 
-- For a `bob/gptel-insert' overlay, reject it and fire a fresh
-  `bob/gptel-insert' with a newly-prompted instruction (preserves
-  insert semantics instead of feeding the response back).
+;;;###autoload
+(defun bob/gptel-rewrite ()
+  "Run `gptel-rewrite' under the bob `rewrite' preset.
 
-- For a regular rewrite overlay, invoke the `gptel-rewrite'
-  transient interactively -- the only way a transient prefix can
-  be launched.
-
-Any other choice (accept / reject / diff / ediff / merge) is
-dispatched by calling the corresponding `gptel--rewrite-*' helper
-directly with OV, mirroring upstream's own non-interactive path."
-  (if (or ci (null ov))
-      ;; Interactive path or no overlay -- upstream's own handling is
-      ;; fine; `iterate' goes through `call-interactively'.
-      (funcall orig ov ci)
-    ;; Non-interactive path: read the choice ourselves.
-    (let* ((orig-status (copy-sequence (overlay-get ov 'status)))
-           (choices '((?a "accept") (?k "reject") (?r "iterate")
-                      (?m "merge") (?d "diff") (?e "ediff")))
-           (choice
-            (unwind-protect
-                (progn
-                  (gptel--rewrite-update-status
-                   ov (when (fboundp 'rmc--add-key-description)
-                        (concat " "
-                                (mapconcat
-                                 #'cdr
-                                 (mapcar #'rmc--add-key-description choices)
-                                 ", "))))
-                  (read-multiple-choice "Action: " choices))
-              (overlay-put ov 'status orig-status)
-              (overlay-put ov 'before-string
-                           (apply #'concat orig-status))))
-           (action (cadr choice)))
-      (cond
-       ;; Iterate on an insert overlay: fire a fresh insert at the
-       ;; same point, threading the previous instruction + response
-       ;; through so the model can refine rather than start over
-       ;; against a buffer that no longer contains its prior output.
-       ((and (string= action "iterate")
-             (overlay-get ov 'bob/gptel-insert-placeholder))
-        (let* ((beg (overlay-get ov 'bob/gptel-insert-beg))
-               (prior-instruction
-                (overlay-get ov 'bob/gptel-insert-instruction))
-               (prior-response (overlay-get ov 'gptel-rewrite))
-               (prior-strong (overlay-get ov 'bob/gptel-insert-strong))
-               (instruction (read-string "Iterate insert: ")))
-          (goto-char beg)
-          (gptel--rewrite-reject ov)
-          (bob/gptel-insert instruction prior-strong
-                            (list :instruction prior-instruction
-                                  :response prior-response))))
-       ;; Iterate on a regular rewrite overlay: open the transient.
-       ((string= action "iterate")
-        (goto-char (overlay-start ov))
-        (call-interactively #'gptel-rewrite))
-       ;; Everything else: call the corresponding helper with OV.
-       (t (funcall (intern (concat "gptel--rewrite-" action)) ov))))))
+If point is on a pending `bob/gptel-insert' overlay, iterate that
+insert instead of rewriting its generated output."
+  (interactive)
+  (require 'gptel-rewrite)
+  (if-let* ((insert-ov (bob/gptel-rewrite--insert-overlay-at-point)))
+      (bob/gptel-rewrite--iterate-insert-overlay insert-ov "Insert: ")
+    (bob/gptel-rewrite--with-preset
+     (lambda () (call-interactively #'gptel-rewrite)))))
 
 ;;; Language detection ----------------------------------------------
 
@@ -268,6 +261,21 @@ directly with OV, mirroring upstream's own non-interactive path."
     ("sql"  . "sql"))
   "File-extension to language-name fallback for `bob/gptel-rewrite-mode-language'.")
 
+(defconst bob/gptel-rewrite-nonprogramming-languages
+  '("json" "yaml" "toml" "markdown")
+  "Language labels treated as non-programming for insert directives.")
+
+(defconst bob/gptel-rewrite-nonprogramming-extensions
+  '("json" "yaml" "yml" "toml" "md")
+  "File extensions treated as non-programming for insert directives.")
+
+(defun bob/gptel-rewrite--programming-extension-p (ext)
+  "Return non-nil when EXT looks like a source-code extension."
+  (let ((e (downcase (or ext ""))))
+    (and (not (string-empty-p e))
+         (assoc e bob/gptel-rewrite-extension-lang-alist)
+         (not (member e bob/gptel-rewrite-nonprogramming-extensions)))))
+
 (defun bob/gptel-rewrite-mode-language ()
   "Return a best-effort language label for the current buffer/point.
 
@@ -322,81 +330,57 @@ Always returns a (possibly empty) string."
 Used to pick the programmer-vs-editor branch of the insert
 directive.  Treats org src blocks and treesit modes as
 programming even when upstream's `prog-mode' derivation check
-fails."
-  (or (derived-mode-p 'prog-mode)
-      (string-suffix-p "-ts-mode" (symbol-name major-mode))
-      (and (derived-mode-p 'org-mode)
-           (fboundp 'org-element-at-point)
-           (let ((el (ignore-errors (org-element-at-point))))
-             (and el (eq (org-element-type el) 'src-block))))
-      ;; File extension known to be a programming language -- catches
-      ;; buffers in `fundamental-mode' over a .rs file, etc.
-      (when-let* ((f (buffer-file-name))
-                  (ext (file-name-extension f)))
-        (assoc (downcase ext) bob/gptel-rewrite-extension-lang-alist))))
+fails, but avoids classifying data/prose formats (JSON/YAML/TOML/
+Markdown) as code."
+  (or
+   ;; Org src blocks are code even inside prose documents.
+   (and (derived-mode-p 'org-mode)
+        (fboundp 'org-element-at-point)
+        (let ((el (ignore-errors (org-element-at-point))))
+          (and el (eq (org-element-type el) 'src-block))))
+   (let ((lang (bob/gptel-rewrite-mode-language)))
+     (and (not (member lang bob/gptel-rewrite-nonprogramming-languages))
+          (or (derived-mode-p 'prog-mode)
+              (string-suffix-p "-ts-mode" (symbol-name major-mode))
+              ;; File extension known to be source code -- catches
+              ;; buffers in `fundamental-mode' over a .rs file, etc.
+              (when-let* ((f (buffer-file-name))
+                          (ext (file-name-extension f)))
+                (bob/gptel-rewrite--programming-extension-p ext)))))))
 
 ;;; Insert: directive --------------------------------------------------
 
-(defun bob/gptel-insert-directive ()
-  "Return the system directive for `bob/gptel-insert'.
+(defconst bob/gptel-insert-directive-programming-template
+  (concat
+   "You are %s %s programmer. Output only text to insert at <POINT/>.\n"
+   "The full buffer with <POINT/> is already in the user prompt; do not search for it.\n"
+   "Use tools only if the instruction explicitly needs information from other files.\n"
+   "Rules:\n"
+   "- Output ONLY the insertion text (no fences, no prose, no commentary).\n"
+   "- Do not repeat surrounding file content.\n"
+   "- Match local style, naming, and indentation.\n"
+   "- If ambiguous, make the most reasonable assumption and still produce insertion text.\n"
+   "- If request implies rewrites around <POINT/>, output only minimal NEW text to insert.\n"
+   "Example: if asked to add a docstring at <POINT/>, output just: \"Return the square of X.\"")
+  "Template for programming-buffer insert directive.")
 
-Specialised for programming buffers (including treesit modes and
-org src blocks): reinforces the \"output only the text to insert,
-no prose, no fences\" contract with an example.  Other modes get
-a shorter prose-focused variant."
+(defun bob/gptel-insert-directive ()
+  "Return the system directive for `bob/gptel-insert'."
   (let* ((lang (bob/gptel-rewrite-mode-language))
          (article (if (and lang (not (string-empty-p lang))
                            (memq (aref lang 0) '(?a ?e ?i ?o ?u)))
                       "an" "a")))
     (if (bob/gptel-rewrite-mode-is-programmingish)
-        (format (concat
-                 "You are %s %s programmer.  Your ONLY job is to output text that will be inserted verbatim into a file at a specific location.\n"
-                 "\n"
-                 "INPUT FORMAT: You receive the full current file contents with the insertion point marked as the literal token <POINT/>, followed by an instruction describing what to insert there.  The buffer content is provided IN THIS MESSAGE.  You do NOT need to read any file from disk or search for anything -- everything you need is already in the user prompt.  If tools are available, use them ONLY when the instruction explicitly requires information from OTHER files; never call a tool just to find the buffer you've already been shown.\n"
-                 "\n"
-                 "OUTPUT CONTRACT (strict):\n"
-                 "- The <POINT/> marker IS in the user prompt.  If you think you can't find it, re-read the user message carefully; do not search the filesystem.\n"
-                 "- Never ask for clarification.  Never ask where <POINT/> is.  Never say \"I cannot find the file\".  Make an assumption and emit the insertion.\n"
-                 "- Never refuse to produce an insertion.  There is always a sensible insertion for the given instruction.\n"
-                 "- Output ONLY the %s text that should replace the <POINT/> marker.  Nothing else.\n"
-                 "- Do NOT repeat, quote, or echo any surrounding code from the file.\n"
-                 "- Do NOT wrap the output in markdown fences (no ```).\n"
-                 "- Do NOT add commentary, prose, explanations, apologies, progress reports, or meta-discussion.  Not before, not after, not as comments.\n"
-                 "- Do NOT think out loud or reconsider in the output.  Decide silently, then write only the final text.\n"
-                 "- Match the surrounding indentation, naming style, and conventions.\n"
-                 "- If the instruction is ambiguous or the insertion point seems odd, make the most reasonable assumption and produce the insertion anyway.  Never ask a clarifying question in the output.\n"
-                 "- If the instruction would require rewriting existing surrounding code (not just inserting new text), output only the minimal NEW text that achieves the goal at <POINT/>; the user can follow up with a separate rewrite.\n"
-                 "\n"
-                 "EXAMPLE\n"
-                 "Input file:\n"
-                 "  (defun square (x)\n"
-                 "    <POINT/>\n"
-                 "    (* x x))\n"
-                 "Instruction: add a docstring\n"
-                 "\n"
-                 "WRONG output (do NOT do any of this):\n"
-                 "  Now I'll add a docstring:\n"
-                 "\n"
-                 "  ```lisp\n"
-                 "  \"Return the square of X.\"\n"
-                 "  ```\n"
-                 "\n"
-                 "  Since you asked for only the text, here it is:\n"
-                 "  \"Return the square of X.\"\n"
-                 "\n"
-                 "CORRECT output (the ENTIRE response, first character to last):\n"
-                 "  \"Return the square of X.\"\n"
-                 "\n"
-                 "Your very first character must be the first character of the code to insert.  Your very last character must be the last character of the code to insert.  No introductions.  No restatements.  No \"however\".  No \"since you asked\".  Emit the code once, cleanly, and stop.")
-                article lang lang)
+        (format bob/gptel-insert-directive-programming-template
+                article lang)
       (concat
        (if (string-empty-p lang)
            "You are an editor."
          (format "You are %s %s editor." article lang))
-       "  Your ONLY job is to output text that will be inserted verbatim into a document at the <POINT/> marker."
-       "  Output ONLY the replacement text, no markdown fences, no commentary, no explanations."
-       "  Do not repeat surrounding content.  Match the surrounding style."
-       "  If the instruction is ambiguous, make a reasonable assumption and produce the insertion anyway."))))
+       " Output only text to insert at <POINT/>."
+       " No markdown fences, no commentary, no explanation."
+       " Do not repeat surrounding content; match local style."
+       " If ambiguous, make a reasonable assumption and produce insertion text anyway."))))
 
 ;;; Sanitiser ----------------------------------------------------------
 
@@ -415,93 +399,74 @@ fence lines themselves.  Unterminated opening fences are ignored."
             (push (cons body-start (match-beginning 0)) bodies))))
       (nreverse bodies))))
 
+(defcustom bob/gptel-sanitize-llm-output-style 'conservative
+  "How aggressively to sanitize rewrite/insert LLM output.
+
+`conservative' (default):
+- unwrap only when the ENTIRE output is exactly one fenced block
+  (plus surrounding whitespace), then trim surrounding blank lines.
+
+`aggressive':
+- old behavior: if any fenced block exists, keep the body of the
+  last one, then trim surrounding blank lines.
+
+`off':
+- disable sanitizer entirely."
+  :type '(choice (const :tag "Conservative" conservative)
+                 (const :tag "Aggressive" aggressive)
+                 (const :tag "Off" off))
+  :group 'bob-gptel-rewrite)
+
+(defun bob/gptel-sanitize--single-fenced-body ()
+  "Return body text if narrowed buffer is exactly one fenced block.
+
+Allows leading/trailing whitespace outside fences.  Returns nil
+when output includes additional non-whitespace prose or multiple
+fenced blocks."
+  (save-excursion
+    (goto-char (point-min))
+    (skip-chars-forward " \t\n")
+    (when (looking-at "[ \t]*```[^\n]*\n")
+      (let ((body-start (match-end 0)))
+        (when (re-search-forward "^[ \t]*```[ \t]*$" nil t)
+          (let ((body-end (match-beginning 0))
+                (after-end (match-end 0)))
+            (goto-char after-end)
+            (skip-chars-forward " \t\n")
+            (when (= (point) (point-max))
+              (buffer-substring-no-properties body-start body-end))))))))
+
 (defun bob/gptel-sanitize-llm-output (beg end)
   "Sanitize LLM output in region BEG..END (rewrite/insert temp buffer).
 
-Runs from `gptel-post-rewrite-functions', inside the rewrite temp
-buffer, before the overlay is populated -- so both the streamed
-preview and the eventually-accepted text are cleaned.
-
-Small models (Haiku in particular) ignore \"no prose, no fences\"
-directives and emit patterns like:
-
-    Sure!  Here you go:
-
-    ```lisp
-    (defun foo () 42)
-    ```
-
-    However, since you asked for only the text...
-
-    (defun foo () 42)
-
-This sanitizer handles the common shapes:
-
-1. If any fenced code blocks are present, keep the body of the
-   LAST one.  Haiku typically puts a cleaner restatement last;
-   more importantly, the contents of a fenced block are
-   guaranteed to be code and nothing else.
-2. If NO fenced blocks are present but the output starts with a
-   paragraph of prose followed by a blank line, drop everything
-   up to and including the first blank line.  Heuristic: if the
-   first non-blank line doesn't look like code (no parens,
-   braces, indentation, or common code starters) and a later
-   line does, drop the leading prose.
-3. Trim surrounding blank lines."
-  (save-excursion
-    (save-restriction
-      (narrow-to-region beg end)
-      ;; 1. Prefer fenced code blocks when present.
-      (let ((bodies (bob/gptel-sanitize--all-fence-bodies)))
-        (when bodies
-          (let* ((last (car (last bodies)))
-                 (body (buffer-substring-no-properties (car last) (cdr last))))
-            (delete-region (point-min) (point-max))
-            (insert body))))
-      ;; 2. No fences?  Try to drop leading prose.
-      (unless (save-excursion
-                (goto-char (point-min))
-                (re-search-forward "^[ \t]*```" nil t))
+Runs from `gptel-post-rewrite-functions' in the rewrite temp
+buffer, before the overlay is populated.  By default this is
+intentionally conservative to avoid clobbering legitimate
+non-code rewrites."
+  (unless (eq bob/gptel-sanitize-llm-output-style 'off)
+    (save-excursion
+      (save-restriction
+        (narrow-to-region beg end)
+        (pcase bob/gptel-sanitize-llm-output-style
+          ('conservative
+           (when-let* ((body (bob/gptel-sanitize--single-fenced-body)))
+             (delete-region (point-min) (point-max))
+             (insert body)))
+          ('aggressive
+           (let ((bodies (bob/gptel-sanitize--all-fence-bodies)))
+             (when bodies
+               (let* ((last (car (last bodies)))
+                      (body (buffer-substring-no-properties
+                             (car last) (cdr last))))
+                 (delete-region (point-min) (point-max))
+                 (insert body))))))
+        ;; Trim surrounding blank lines.
         (goto-char (point-min))
-        (skip-chars-forward " \t\n")
-        (let* ((first-line-start (point))
-               (first-line-end (line-end-position))
-               (first-line (buffer-substring-no-properties
-                            first-line-start first-line-end))
-               ;; "Looks like prose": starts with a capital letter or
-               ;; digit followed by a space and no opening paren/brace
-               ;; on the line, AND doesn't start with common code
-               ;; markers.
-               (code-starter-re
-                (rx bos (zero-or-more (any " \t"))
-                    (or "(" ")" "[" "{" "#" ";" "/" "*"
-                        "def " "class " "fn " "let " "const " "var "
-                        "function " "import " "use " "package "
-                        "public " "private " "protected " "static "
-                        "if " "for " "while " "return "
-                        "@" "-" "+" "--" "//")))
-               (prose-p (and (not (string-match-p code-starter-re first-line))
-                             (string-match-p "[[:alpha:]]" first-line))))
-          (when prose-p
-            ;; Find the first subsequent line that looks like code and
-            ;; is preceded by a blank line.
-            (when (re-search-forward
-                   (rx "\n\n"
-                       (group (zero-or-more (any " \t"))
-                              (or "(" ";" "#" "/" "\""
-                                  "def " "class " "fn " "let "
-                                  "const " "var " "function "
-                                  "import " "use " "package "
-                                  "public " "private ")))
-                   nil t)
-              (delete-region (point-min) (match-beginning 1))))))
-      ;; 3. Trim surrounding blank lines.
-      (goto-char (point-min))
-      (when (looking-at "[ \t]*\n+")
-        (replace-match ""))
-      (goto-char (point-max))
-      (when (re-search-backward "\n[ \t\n]+\\'" nil t)
-        (replace-match "\n")))))
+        (when (looking-at "[ \t]*\n+")
+          (replace-match ""))
+        (goto-char (point-max))
+        (when (re-search-backward "\n[ \t\n]+\\'" nil t)
+          (replace-match "\n"))))))
 
 ;;; Insert command -----------------------------------------------------
 
@@ -694,13 +659,10 @@ response)."
 
 ;;;###autoload
 (defun bob/gptel-rewrite-install ()
-  "Wire up the rewrite preset, advice and sanitiser.
+  "Wire up rewrite preset, default action, lifecycle cleanup and sanitiser.
 
 Idempotent.  Safe to call from `use-package' `:config'."
   (with-eval-after-load 'gptel-rewrite
-    ;; Pop the dispatch transient when a rewrite response arrives,
-    ;; instead of leaving the overlay idle.
-    (setq gptel-rewrite-default-action 'dispatch)
     ;; Register (or refresh) the preset.
     (gptel-make-preset 'rewrite
       :description "Region rewrites: Haiku, read-only tools, current buffer as context."
@@ -714,14 +676,16 @@ Idempotent.  Safe to call from `use-package' `:config'."
       ;; window.
       :context '(:eval (let ((src (window-buffer (selected-window))))
                          (append gptel-context (list src)))))
-    (unless (advice-member-p #'bob/gptel-rewrite-with-preset
-                             'gptel--suffix-rewrite)
-      (advice-add 'gptel--suffix-rewrite :around
-                  #'bob/gptel-rewrite-with-preset))
-    (unless (advice-member-p #'bob/gptel-rewrite-dispatch-fix-iterate
-                             'gptel--rewrite-dispatch)
-      (advice-add 'gptel--rewrite-dispatch :around
-                  #'bob/gptel-rewrite-dispatch-fix-iterate))
+    ;; Use our custom dispatch as the default post-response action.
+    (setq gptel-rewrite-default-action #'bob/gptel-rewrite-default-action)
+    ;; Remove legacy internal advice if it exists from older versions.
+    (when (advice-member-p 'bob/gptel-rewrite-with-preset
+                           'gptel--suffix-rewrite)
+      (advice-remove 'gptel--suffix-rewrite 'bob/gptel-rewrite-with-preset))
+    (when (advice-member-p 'bob/gptel-rewrite-dispatch-fix-iterate
+                           'gptel--rewrite-dispatch)
+      (advice-remove 'gptel--rewrite-dispatch 'bob/gptel-rewrite-dispatch-fix-iterate))
+    ;; Keep only lifecycle cleanup advice not covered by public hooks.
     (unless (advice-member-p #'bob/gptel-rewrite-reject-cleans-insert-placeholder
                              'gptel--rewrite-reject)
       (advice-add 'gptel--rewrite-reject :before

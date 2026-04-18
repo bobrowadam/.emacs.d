@@ -110,13 +110,17 @@ on every spinner tick with the current frame and phase label.
 The overlay is removed automatically when its buffer dies, the
 overlay itself is deleted, or the related request finishes.")
 
+(defvar bob/gptel-activity--phase-labels nil
+  "Human-readable labels for `bob/gptel-activity--phase'.")
+
 (defvar bob/gptel-activity--requests nil
   "Alist of in-flight requests: (FSM . PLIST).
 
-PLIST keys: `:id', `:backend', `:model', `:buffer', `:start',
-`:tool-count', `:chunks'.  Entries are added when the FSM is first
-seen in `gptel--request-alist' (via `gptel-post-request-hook')
-and removed in `gptel-post-response-functions'.")
+PLIST keys: `:id', `:backend', `:backend-key', `:model',
+`:model-key', `:buffer', `:start', `:tool-count'.  Entries are
+added when the FSM is first seen in `gptel--request-alist' (via
+`gptel-post-request-hook') and removed in
+`gptel-post-response-functions'.")
 
 (defvar bob/gptel-activity--current-request nil
   "Plist for the request whose event is currently being logged.
@@ -135,6 +139,32 @@ Found by inspecting `gptel--request-alist'.  Used because
 it fires in is the process buffer, not the user's buffer."
   (when (and (boundp 'gptel--request-alist) gptel--request-alist)
     (cadr (car gptel--request-alist))))
+
+(defun bob/gptel-activity--buffer-key (bufferish)
+  "Return a comparable string key for BUFFERISH."
+  (cond
+   ((bufferp bufferish) (buffer-name bufferish))
+   ((stringp bufferish) bufferish)
+   ((symbolp bufferish) (symbol-name bufferish))
+   ((null bufferish) nil)
+   (t (format "%s" bufferish))))
+
+(defun bob/gptel-activity--backend-key (backendish)
+  "Return a comparable string key for BACKENDISH."
+  (cond
+   ((gptel-backend-p backendish) (gptel-backend-name backendish))
+   ((stringp backendish) backendish)
+   ((symbolp backendish) (symbol-name backendish))
+   ((null backendish) nil)
+   (t (format "%s" backendish))))
+
+(defun bob/gptel-activity--model-key (modelish)
+  "Return a comparable string key for MODELISH."
+  (cond
+   ((stringp modelish) modelish)
+   ((symbolp modelish) (symbol-name modelish))
+   ((null modelish) nil)
+   (t (format "%s" modelish))))
 
 ;;; Log buffer ---------------------------------------------------------
 
@@ -271,14 +301,6 @@ deleted (start == end == nil)."
                      (bob/gptel-activity--overlay-string))
         (push ov live))))
     (setq bob/gptel-activity--pending-overlays (nreverse live))))
-
-(defun bob/gptel-activity--clear-overlay (ov)
-  "Untrack OV and wipe its `before-string'."
-  (when (overlayp ov)
-    (when (overlay-buffer ov)
-      (overlay-put ov 'before-string nil))
-    (setq bob/gptel-activity--pending-overlays
-          (delq ov bob/gptel-activity--pending-overlays))))
 
 (defun bob/gptel-activity--clear-all-overlays ()
   "Wipe `before-string' on every tracked overlay and drop them."
@@ -460,18 +482,30 @@ visits just flip the phase back to `waiting'."
                (buf-name (if (bufferp buf-name) (buffer-name buf-name)
                            buf-name))
                (backend-obj (and info (plist-get info :backend)))
-               (backend (cond ((gptel-backend-p backend-obj)
-                               (gptel-backend-name backend-obj))
-                              ((and (boundp 'gptel-backend) gptel-backend)
-                               (gptel-backend-name gptel-backend))))
-               (model-sym (and info (plist-get info :model)))
-               (model (cond (model-sym (gptel--model-name model-sym))
-                            ((and (boundp 'gptel-model) gptel-model)
-                             (gptel--model-name gptel-model))))
+               (backend-key (or (bob/gptel-activity--backend-key backend-obj)
+                                (and (boundp 'gptel-backend)
+                                     (bob/gptel-activity--backend-key
+                                      gptel-backend))))
+               (backend backend-key)
+               (model-obj (and info (plist-get info :model)))
+               (model-key (or (bob/gptel-activity--model-key model-obj)
+                              (and (boundp 'gptel-model)
+                                   (bob/gptel-activity--model-key
+                                    gptel-model))))
+               (model (or (and model-obj
+                               (ignore-errors (gptel--model-name model-obj)))
+                          (and (boundp 'gptel-model) gptel-model
+                               (ignore-errors (gptel--model-name gptel-model)))
+                          model-key))
                (id (cl-incf bob/gptel-activity--next-id))
-               (plist (list :id id :backend backend :model model
-                            :buffer buf-name :start (float-time)
-                            :tool-count 0 :chunks 0)))
+               (plist (list :id id
+                            :backend backend
+                            :backend-key backend-key
+                            :model model
+                            :model-key model-key
+                            :buffer buf-name
+                            :start (float-time)
+                            :tool-count 0)))
           (when fsm
             (push (cons fsm plist) bob/gptel-activity--requests))
           (setq bob/gptel-activity--current-request plist)
@@ -480,35 +514,56 @@ visits just flip the phase back to `waiting'."
           (bob/gptel-activity--set-phase 'waiting)))))))
 
 (defun bob/gptel-activity--request-for-plist (plist)
-  "Return the tracked request-plist that matches hook-arg PLIST.
+  "Return the tracked request-plist that best matches hook-arg PLIST.
 
-Uses the hook plist's `:buffer' (which is a buffer name string
-provided by gptel) to find the matching entry in
-`bob/gptel-activity--requests'.  Falls back to the
-most-recently-added entry."
-  (let ((hook-buf (plist-get plist :buffer)))
-    (or (cdr
-         (cl-find-if
-          (lambda (entry)
-            (let ((tracked-buf (plist-get (cdr entry) :buffer)))
-              (and hook-buf tracked-buf
-                   (string= hook-buf tracked-buf))))
-          bob/gptel-activity--requests))
-        (cdr (car bob/gptel-activity--requests)))))
+Matches on `:buffer', `:backend' and `:model' keys (normalized to
+stable string keys).  If no precise match exists, fall back only
+when exactly one request is in flight.  This avoids cross-tagging
+tool events when multiple requests are active in the same buffer."
+  (let* ((hook-buf (bob/gptel-activity--buffer-key (plist-get plist :buffer)))
+         (hook-backend-key (bob/gptel-activity--backend-key
+                            (plist-get plist :backend)))
+         (hook-model-key (bob/gptel-activity--model-key
+                          (plist-get plist :model)))
+         (matches
+          (cl-remove-if-not
+           (lambda (entry)
+             (let ((req (cdr entry)))
+               (and (or (null hook-buf)
+                        (equal hook-buf
+                               (bob/gptel-activity--buffer-key
+                                (plist-get req :buffer))))
+                    (or (null hook-backend-key)
+                        (equal hook-backend-key
+                               (plist-get req :backend-key)))
+                    (or (null hook-model-key)
+                        (equal hook-model-key
+                               (plist-get req :model-key))))))
+           bob/gptel-activity--requests)))
+    (cond
+     ((null matches)
+      (when (= (length bob/gptel-activity--requests) 1)
+        (cdar bob/gptel-activity--requests)))
+     ((= (length matches) 1)
+      (cdr (car matches)))
+     (t
+      (cdr
+       (car
+        (sort (copy-sequence matches)
+              (lambda (a b)
+                (> (or (plist-get (cdr a) :start) 0.0)
+                   (or (plist-get (cdr b) :start) 0.0))))))))))
 
 (defun bob/gptel-activity--on-pre-tool-call (plist)
   "Hook: a tool call is about to run.  PLIST carries :name, :args."
   (bob/gptel-activity--safe-hook 'pre-tool-call
     (let* ((name (plist-get plist :name))
            (args (plist-get plist :args))
-           (bob/gptel-activity--current-request
-            (or (bob/gptel-activity--request-for-plist plist)
-                bob/gptel-activity--current-request)))
-      (when bob/gptel-activity--current-request
-        (plist-put bob/gptel-activity--current-request :tool-count
-                   (1+ (or (plist-get bob/gptel-activity--current-request
-                                      :tool-count)
-                           0))))
+           (matched-request (bob/gptel-activity--request-for-plist plist))
+           (bob/gptel-activity--current-request matched-request))
+      (when matched-request
+        (plist-put matched-request :tool-count
+                   (1+ (or (plist-get matched-request :tool-count) 0))))
       (bob/gptel-activity--log "  ↳ Tool %s(%s)"
                                (propertize (or name "?") 'face
                                            'bob/gptel-activity-tool-face)
@@ -522,9 +577,8 @@ most-recently-added entry."
     (let* ((name (plist-get plist :name))
            (result (plist-get plist :result))
            (size (if (stringp result) (length result) 0))
-           (bob/gptel-activity--current-request
-            (or (bob/gptel-activity--request-for-plist plist)
-                bob/gptel-activity--current-request)))
+           (matched-request (bob/gptel-activity--request-for-plist plist))
+           (bob/gptel-activity--current-request matched-request))
       (bob/gptel-activity--log "    ← %s → %d byte%s"
                                (propertize (or name "?") 'face
                                            'bob/gptel-activity-tool-face)

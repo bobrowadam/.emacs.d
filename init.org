@@ -695,7 +695,7 @@
 
     :bind
      ("C-c g g" . gptel)
-     ("C-c g r" . gptel-rewrite)
+     ("C-c g r" . bob/gptel-rewrite)
      ("C-c g i" . bob/gptel-insert)
      ("C-c g k" . bob/gptel-abort)
      ("C-c g l" . bob/gptel-activity-show)
@@ -719,15 +719,15 @@
 
   ;; Inline rewrite (`C-c g r') and insert (`C-c g i') commands.
   ;; Wires up a non-thinking "Claude rewrite" backend, a Haiku-based
-  ;; `rewrite' preset with read-only tools, advice on
-  ;; `gptel--suffix-rewrite' that applies the preset automatically,
-  ;; and an output sanitiser that strips markdown fences /
-  ;; surrounding blank lines.  See `modules/bob-gptel-rewrite.el'.
+  ;; `rewrite' preset with read-only tools, a custom default action
+  ;; for rewrite overlays (no internal suffix/dispatch advice), and
+  ;; an output sanitiser that strips markdown fences / surrounding
+  ;; blank lines.  See `modules/bob-gptel-rewrite.el'.
   (use-package bob-gptel-rewrite
     :ensure nil
     :after gptel
     :demand t
-    :commands (bob/gptel-insert)
+    :commands (bob/gptel-rewrite bob/gptel-insert)
     :config
     (bob/gptel-rewrite-install))
 
@@ -756,7 +756,24 @@
     (bob/gptel-tools-install-system-prompt)
     ;; Auto-fold noisy read-only tool blocks (read/ls/find/grep/bash/
     ;; jina_reader).  Customise `bob/gptel-tools-fold-by-default'.
-    (bob/gptel-tools-fold-hook-install))
+    (bob/gptel-tools-fold-hook-install)
+    ;; Register the `pi' preset: Claude thinking + all pi tools + pi
+    ;; system prompt.  This is the standard agentic-flow config that
+    ;; new gptel buffers already inherit from global defaults.  Having
+    ;; it as an explicit preset lets you restore it inside any buffer
+    ;; (e.g. after the `rewrite' preset was applied) and keeps it out
+    ;; of the rewrite flow.
+    (gptel-make-preset 'pi
+      :description "Standard agentic flow: Claude Opus 4.7, pi tools, pi system prompt."
+      :backend "Claude thinking"
+      :model 'claude-opus-4-7
+      :use-tools t
+      :tools (mapcar #'gptel-tool-name gptel-tools)
+      :confirm-tool-calls nil
+      :cache t
+      :stream t
+      :system #'bob/gptel-tools-system-prompt
+      :use-context 'system))
 #+end_src
 ** Minuet - ai code completion
 #+begin_src elisp
