@@ -1096,7 +1096,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (eca-chat-use-side-window nil)
     ;; (eca-chat-diff-tool 'ediff)
     (eca-chat-window-side 'bottom)
-    (eca-chat-custom-model "anthropic/claude-opus-4-6")
     :bind
     ("C-c ." . eca-transient-menu)
     ;; Override arrow key bindings with Emacs-like alternatives
@@ -2108,16 +2107,16 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 ** Pr Reviews
 ** PR Review
 #+begin_src elisp
-  (use-package code-review
+  (use-package bob-code-review
     :ensure nil
-    :commands (code-review-show-plan
-               code-review-open-location
-               code-review-open-location-for-kitty
-               code-review-load-review
-               code-review-load-review-for-kitty
-               code-review-send-feedback
-               code-review-show-diff
-               code-review-commit))
+    :commands (bob-code-review-show-plan
+               bob-code-review-open-location
+               bob-code-review-open-location-for-kitty
+               bob-code-review-load-review
+               bob-code-review-load-review-for-kitty
+               bob-code-review-send-feedback
+               bob-code-review-show-diff
+               bob-code-review-commit))
   (use-package bob-pr-review
     :ensure nil
     :preface
