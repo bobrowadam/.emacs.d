@@ -328,6 +328,42 @@
       (message "No themes currently enabled")))
 #+end_src
 
+* Authinfo auto-backup to 1Password
+:PROPERTIES:
+:CUSTOM_ID: authinfo-auto-backup
+:END:
+After saving =~/.authinfo.gpg=, push it to 1Password via the shell helper
+=authinfo-backup= defined in =~/secrets.zsh=. The shell function handles
+account pinning (my.1password.com, never bradwell) and round-trip hash
+verification, so Emacs just invokes it asynchronously and reports.
+
+#+begin_src elisp
+  (defun bob/authinfo-backup-to-1password ()
+    "Run `authinfo-backup` in zsh to push ~/.authinfo.gpg to 1Password.
+Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
+    (let* ((buf (get-buffer-create "*authinfo-backup*"))
+           (proc (start-process
+                  "authinfo-backup" buf
+                  "zsh" "-i" "-c"
+                  "source ~/secrets.zsh && authinfo-backup")))
+      (set-process-sentinel
+       proc
+       (lambda (p _event)
+         (when (eq (process-status p) 'exit)
+           (if (zerop (process-exit-status p))
+               (message "authinfo: backed up to 1Password")
+             (message "authinfo: backup FAILED (see *authinfo-backup*)")))))))
+
+  (defun bob/authinfo-maybe-backup ()
+    "After-save hook: backup if the current buffer is ~/.authinfo.gpg."
+    (when (and buffer-file-name
+               (string= (expand-file-name buffer-file-name)
+                        (expand-file-name "~/.authinfo.gpg")))
+      (bob/authinfo-backup-to-1password)))
+
+  (add-hook 'after-save-hook #'bob/authinfo-maybe-backup)
+#+end_src
+
 * GC improvements
 #+begin_src elisp
   (use-package gcmh
