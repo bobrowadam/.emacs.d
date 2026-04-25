@@ -231,12 +231,8 @@ Walks up from hunk to parent file section if needed."
   "Show difftastic structural diff for the file at point."
   (interactive)
   (if-let* ((filepath (bob/magit-review--file-at-point)))
-      (let* ((range (cond
-                     (magit-buffer-diff-range-oids
-                      (mapconcat #'identity magit-buffer-diff-range-oids ".."))
-                     (magit-buffer-diff-range
-                      magit-buffer-diff-range)
-                     (t nil)))
+      (let* ((range (or magit-buffer-diff-range-oids
+                        magit-buffer-diff-range))
              (args (when (equal magit-buffer-diff-typearg "--cached")
                      (list "--cached"))))
         (difftastic-git-diff-range range args (list filepath)))
