@@ -12,16 +12,6 @@
   "Editor integration for Solveit-style agent workflows."
   :group 'tools)
 
-(defcustom bob-code-review-tts-disabled-flag
-  (seq-find (lambda (path)
-              (file-directory-p (file-name-directory path)))
-            (list (expand-file-name "shared/tts-disabled" "~/.claude")
-                  (expand-file-name "shared-skills/shared/tts-disabled" "~/.codex/skills")
-                  (expand-file-name ".shared-skills/shared/tts-disabled" "~/dotfiles")))
-  "Flag file that disables Solveit narration when it exists."
-  :type '(choice (const :tag "No flag file" nil) file)
-  :group 'bob-code-review)
-
 (defcustom bob-code-review-tts-script
   (expand-file-name "modules/text-to-speech.py" user-emacs-directory)
   "Path to the Solveit text-to-speech helper script."
@@ -252,7 +242,7 @@ absolute path."
 (defun bob-code-review--tts-filter (_proc output)
   "Receive lines from the TTS generator process.
 TMPDIR: prefix -> store tmpdir for later cleanup.
-ERROR: prefix  -> write tts-disabled flag and notify.
+ERROR: prefix  -> log a message; narration is skipped for the rest of the run.
 file path      -> store and play if it matches the current position."
   (setq bob-code-review--tts-output-buffer
         (concat bob-code-review--tts-output-buffer output))
@@ -264,16 +254,8 @@ file path      -> store and play if it matches the current position."
          ((string-prefix-p "TMPDIR:" trimmed)
           (setq bob-code-review--audio-tmpdir (substring trimmed 7)))
          ((string-prefix-p "ERROR:" trimmed)
-          (let ((reason (substring trimmed 6)))
-            (when bob-code-review-tts-disabled-flag
-              (make-directory (file-name-directory bob-code-review-tts-disabled-flag) t)
-              (write-region (format "%s\n" reason) nil bob-code-review-tts-disabled-flag))
-            (message "Solveit TTS error: %s%s"
-                     reason
-                     (if bob-code-review-tts-disabled-flag
-                         (format " -- narration disabled. Fix the issue and delete %s to re-enable."
-                                 bob-code-review-tts-disabled-flag)
-                       " -- narration disabled."))))
+          (message "Solveit TTS error: %s -- narration skipped for this session."
+                   (substring trimmed 6)))
          ((and (> (length trimmed) 0) (file-exists-p trimmed))
           (if bob-code-review--global-mode
               (let ((idx bob-code-review--tts-received-count))
@@ -561,11 +543,13 @@ overlay so feedback can include the original chunk context."
 
 ;;; Entry points
 
-(defun bob-code-review-open-location (file line &optional chunks feedback-target-id)
+(defun bob-code-review-open-location (file line &optional chunks feedback-target-id narrate)
   "Open FILE at LINE with optional single-file review mode.
 CHUNKS: list of (NAME START-LINE END-LINE DESCRIPTION SYMBOLS NARRATION).
 FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
-If nil, auto-discovers the Kitty window ID for the current project."
+If nil, auto-discovers the Kitty window ID for the current project.
+NARRATE, when non-nil, launches TTS narration for the chunks."
+
   (setq feedback-target-id (or feedback-target-id
                                (and (fboundp 'bob/kitty-pi-window-id)
                                     (bob/kitty-pi-window-id))))
@@ -599,8 +583,7 @@ If nil, auto-discovers the Kitty window ID for the current project."
       (goto-char (overlay-start (car bob-code-review--chunk-ovs)))
       (recenter 5))
     (bob-code-review-mode 1)
-    (if (and bob-code-review-tts-disabled-flag (file-exists-p bob-code-review-tts-disabled-flag))
-        (message "Solveit TTS disabled (see %s). Narration skipped." bob-code-review-tts-disabled-flag)
+    (when narrate
       (let* ((narrations (mapcar (lambda (c) (or (nth 5 c) "")) chunks))
              (input-file (make-temp-file "bob-code-review-tts-input-" nil ".json"))
              (script-path (bob-code-review--tts-script))
@@ -610,13 +593,15 @@ If nil, auto-discovers the Kitty window ID for the current project."
         (set-process-sentinel proc #'bob-code-review--tts-sentinel)
         (setq bob-code-review--tts-process proc)))))
 
-(defun bob-code-review-load-review (ops-file &optional feedback-target-id)
+(defun bob-code-review-load-review (ops-file &optional feedback-target-id narrate)
   "Load a multi-file review session from OPS-FILE (JSON array of operation objects).
 Each object must have keys: file, line, name, start_line, end_line,
 description, symbols (array), narration.
 Deletes OPS-FILE after reading.
 FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
-If nil, auto-discovers the Kitty window ID for the current project."
+If nil, auto-discovers the Kitty window ID for the current project.
+NARRATE, when non-nil, launches TTS narration for the chunks."
+
   (setq feedback-target-id (or feedback-target-id
                                (and (fboundp 'bob/kitty-pi-window-id)
                                     (bob/kitty-pi-window-id))))
@@ -660,8 +645,7 @@ If nil, auto-discovers the Kitty window ID for the current project."
           (goto-char (overlay-start ov))
           (recenter 5))))
     ;; Spawn one TTS process for all narrations
-    (if (and bob-code-review-tts-disabled-flag (file-exists-p bob-code-review-tts-disabled-flag))
-        (message "Solveit TTS disabled. Narration skipped.")
+    (when narrate
       (let* ((narrations (mapcar (lambda (op) (or (plist-get op :narration) "")) ops))
              (input-file (make-temp-file "bob-code-review-tts-input-" nil ".json"))
              (script-path (bob-code-review--tts-script))
