@@ -818,12 +818,24 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     ;; Auto-fold noisy read-only tool blocks (read/ls/find/grep/bash/
     ;; jina_reader).  Customise `bob/gptel-tools-fold-by-default'.
     (bob/gptel-tools-fold-hook-install)
-    ;; Register the `pi' preset: Claude thinking + all pi tools + pi
-    ;; system prompt.  This is the standard agentic-flow config that
-    ;; new gptel buffers already inherit from global defaults.  Having
-    ;; it as an explicit preset lets you restore it inside any buffer
-    ;; (e.g. after the `rewrite' preset was applied) and keeps it out
-    ;; of the rewrite flow.
+    ;; Make the global gptel defaults match the `pi' preset so new
+    ;; gptel buffers come up agentic out of the box (Claude thinking
+    ;; backend + claude-opus-4-7 are already set above; here we cover
+    ;; the remaining knobs).  `gptel-tools' is populated by
+    ;; `bob/gptel-tools-default-set' above; `gptel--system-message'
+    ;; is set by `bob/gptel-tools-install-system-prompt' above (we
+    ;; re-set it here to the function symbol so it stays live and
+    ;; matches the `pi' preset's `:system' value).
+    (setq-default gptel-use-tools t
+                  gptel-confirm-tool-calls nil
+                  gptel-cache t
+                  gptel-stream t
+                  gptel-use-context 'system
+                  gptel--system-message #'bob/gptel-tools-system-prompt)
+    ;; Register the `pi' preset: same config as the globals above.
+    ;; Having it as an explicit preset lets you restore it inside
+    ;; any buffer (e.g. after the `rewrite' preset was applied)
+    ;; without touching the rewrite flow.
     (gptel-make-preset 'pi
       :description "Standard agentic flow: Claude Opus 4.7, pi tools, pi system prompt."
       :backend "Claude thinking"
