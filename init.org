@@ -2993,7 +2993,15 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     ;; Use clojure-lsp eldoc instead of cider's
     (cider-eldoc-display-for-symbol-at-point nil)
     ;; Don't override eglot's xref commands
-    (cider-use-xref nil))
+    (cider-use-xref nil)
+    :config
+    ;; Work around occasional Elpaca build missing `cider-session.el`.
+    ;; If that happens, expose the repo lisp dir on `load-path`.
+    (let ((cider-repo-lisp (expand-file-name "elpaca/repos/cider/lisp"
+                                             user-emacs-directory)))
+      (when (and (file-exists-p (expand-file-name "cider-session.el" cider-repo-lisp))
+                 (not (member cider-repo-lisp load-path)))
+        (add-to-list 'load-path cider-repo-lisp))))
 #+end_src
 **** Babashka
 #+begin_src elisp
