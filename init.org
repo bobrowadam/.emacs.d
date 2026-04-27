@@ -3381,8 +3381,12 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
 * Terminal emulation
 #+begin_src elisp
   (use-package ghostel
-    :ensure (:repo "https://github.com/dakra/ghostel"
-                   :fetcher github :files ("*.el"))
+    :ensure (:repo "dakra/ghostel"
+                   :fetcher github
+                   :files ("*.el"
+                           "ghostel-module.*"
+                           "terminfo"
+                           "etc"))
     :commands (ghostel ghostel-project bob/ghostel-top-project)
     :custom
     (ghostel-max-scrollback (* 20 1024 1024))
@@ -3392,7 +3396,11 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     ("C-!" . ghostel)
     ("C-c s j" . bob/jump-to-shell)
     ("C-x p s" . ghostel-project)
-    ("C-x p S" . bob/ghostel-top-project))
+    ("C-x p S" . bob/ghostel-top-project)
+    (:map ghostel-mode-map
+          ("C-c C-e" . ghostel-copy-mode))
+    (:map ghostel-copy-mode-map
+          ("C-c C-j" . ghostel-copy-mode-exit)))
 
   (use-package vterm)
 
