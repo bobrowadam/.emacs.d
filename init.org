@@ -1234,14 +1234,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package agent-shell
     :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el")))
 #+end_src
-** visual-fill-column
-#+begin_src elisp
-  (use-package visual-fill-column :ensure t)
-#+end_src
-** adaptive-wrap
-#+begin_src elisp
-  (use-package adaptive-wrap :ensure t)
-#+end_src
 ** Mentat
 #+begin_src elisp
   (use-package mentat
@@ -1268,11 +1260,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                      :host "platform.openai.com"
                                      :user "bobrowadam")))
 #+end_src
-** OpenCode
-#+begin_src elisp
-  (use-package opencode
-    :ensure (:repo "sczi/opencode.el" :fetcher codeberg :files ("*.el")))
-#+end_src
 ** mevedel
 #+begin_src elisp
   (use-package mevedel
@@ -1296,17 +1283,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     ;;       (cl-loop for (_ . tools) in gptel--known-tools
     ;;                append (mapcar #'cdr tools)))
     )
-#+end_src
-** Amp: AI coding agent
-#+begin_src elisp
-  (use-package amp
-    :ensure nil
-    :disabled t
-    :load-path "~/.emacs.d/modules/amp.el"
-    :demand t
-    :after websocket
-    :config
-    (amp-mode 1))
 #+end_src
 ** Copilot
 #+begin_src elisp
