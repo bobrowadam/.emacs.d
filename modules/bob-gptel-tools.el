@@ -997,6 +997,127 @@ Each entry becomes a bullet under \"Guidelines:\" in the system prompt."
   :type '(repeat string)
   :group 'bob-gptel-tools)
 
+(defcustom bob/gptel-tools-context-files-enabled t
+  "If non-nil, append project AGENTS.md files to the system prompt.
+
+Mirrors pi's behaviour: walks up from `default-directory' picking up
+every `bob/gptel-tools-context-file-name' along the way (stopping at
+the project root, or `$HOME' if no project), then prepends the global
+`bob/gptel-tools-global-context-file'."
+  :type 'boolean
+  :group 'bob-gptel-tools)
+
+(defcustom bob/gptel-tools-context-file-name "AGENTS.md"
+  "Filename to look for when assembling project-context files."
+  :type 'string
+  :group 'bob-gptel-tools)
+
+(defcustom bob/gptel-tools-global-context-file
+  (expand-file-name "~/.pi/agent/AGENTS.md")
+  "Optional global context file prepended before any project files.
+Set to nil to disable.  Defaults to pi's global AGENTS.md."
+  :type '(choice (const :tag "None" nil) file)
+  :group 'bob-gptel-tools)
+
+(defcustom bob/gptel-tools-context-file-max-bytes 32768
+  "Per-file truncation cap for context files included in the system prompt.
+Files larger than this are truncated with a marker so an oversized
+AGENTS.md can't dominate the prompt."
+  :type 'integer
+  :group 'bob-gptel-tools)
+
+(declare-function bob/monorepo-root "init-generated" ())
+
+(defun bob/gptel-tools--context-walk-roots ()
+  "Return (TOP . BOTTOM) for the AGENTS.md walk.
+
+BOTTOM is `default-directory'; TOP is the monorepo root from
+`bob/monorepo-root' if available, else `$HOME', else `/'.  Both
+are absolute, slash-terminated.
+
+Falls back gracefully if `bob/monorepo-root' is unbound (the
+function lives in init.org and may not be loaded yet)."
+  (let* ((bottom (file-name-as-directory
+                  (expand-file-name default-directory)))
+         (root (and (fboundp 'bob/monorepo-root)
+                    (ignore-errors (bob/monorepo-root))))
+         (root (and root (file-name-as-directory
+                          (expand-file-name root))))
+         (home (file-name-as-directory (expand-file-name "~")))
+         ;; `bob/monorepo-root' falls back to `default-directory'
+         ;; when there's no `.git' ancestor.  Detect that by checking
+         ;; whether ROOT actually contains a `.git' entry; if not,
+         ;; treat as "no project" and fall back to $HOME.
+         (project-root (and root
+                            (file-exists-p (expand-file-name ".git" root))
+                            (string-prefix-p root bottom)
+                            root))
+         (top (file-name-as-directory
+               (or project-root
+                   (when (string-prefix-p home bottom) home)
+                   "/"))))
+    (cons top bottom)))
+
+(defun bob/gptel-tools--context-file-paths ()
+  "Return a list of absolute paths to context files, in pi's order.
+
+Order: global file (if set and existing), then walked project files
+from outermost (top of walk) to innermost (`default-directory').
+Duplicates are removed.  Non-readable paths are dropped."
+  (let* ((global (and bob/gptel-tools-global-context-file
+                      (expand-file-name
+                       bob/gptel-tools-global-context-file)))
+         (roots (bob/gptel-tools--context-walk-roots))
+         (top (car roots))
+         (bottom (cdr roots))
+         (paths nil)
+         (dir bottom))
+    ;; Walk bottom -> top, collecting candidate files.
+    (while (and dir (string-prefix-p top dir))
+      (let ((candidate (expand-file-name
+                        bob/gptel-tools-context-file-name dir)))
+        (when (file-readable-p candidate)
+          (push candidate paths)))
+      (let ((parent (file-name-directory (directory-file-name dir))))
+        (setq dir (and parent (not (string= parent dir)) parent))))
+    ;; `paths' is now innermost-first; pi shows outermost first, so
+    ;; reverse.  Then prepend the global file.
+    (setq paths (nreverse paths))
+    (when (and global (file-readable-p global))
+      (push global paths))
+    (cl-delete-duplicates paths :test #'string=)))
+
+(defun bob/gptel-tools--read-context-file (path)
+  "Return PATH's contents, truncated to the per-file cap."
+  (with-temp-buffer
+    (insert-file-contents path)
+    (let* ((raw (buffer-string))
+           (cap bob/gptel-tools-context-file-max-bytes))
+      (if (and (integerp cap) (> cap 0)
+               (> (string-bytes raw) cap))
+          (concat (substring raw 0 cap)
+                  (format "\n\n[... truncated, %s exceeded %d bytes ...]"
+                          (file-name-nondirectory path) cap))
+        raw))))
+
+(defun bob/gptel-tools--context-files-section ()
+  "Return a formatted Project Context block, or empty string."
+  (if (not bob/gptel-tools-context-files-enabled)
+      ""
+    (let ((files (bob/gptel-tools--context-file-paths)))
+      (if (null files)
+          ""
+        (concat
+         "\n\n# Project Context\n\n"
+         "Project-specific instructions and guidelines:\n\n"
+         (mapconcat
+          (lambda (path)
+            (format "## %s\n\n%s"
+                    (abbreviate-file-name path)
+                    (bob/gptel-tools--read-context-file path)))
+          files
+          "\n\n"))))))
+
 (defun bob/gptel-tools--selected-tool-names ()
   "Return the names of currently selected gptel tools as strings.
 Falls back to `bob/gptel-tools-default-names' if none are selected."
@@ -1089,11 +1210,12 @@ Guidelines:
 %s
 
 Current date: %s
-Current working directory: %s"
+Current working directory: %s%s"
             tool-lines
             (mapconcat (lambda (g) (format "- %s" g)) guidelines "\n")
             (format-time-string "%Y-%m-%d")
-            (abbreviate-file-name default-directory))))
+            (abbreviate-file-name default-directory)
+            (bob/gptel-tools--context-files-section))))
 
 ;;; Auto-fold tool blocks ----------------------------------------------
 
