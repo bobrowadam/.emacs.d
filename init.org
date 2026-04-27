@@ -3044,7 +3044,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
             (js-json-mode    . json-ts-mode)
             (python-mode     . python-ts-mode)
             ;; (sh-mode         . bash-ts-mode)
-            (rust-mode       . rust-mode)))
+            (rust-mode       . rust-ts-mode)))
 
     (add-to-list 'auto-mode-alist '("CMakeLists\\'" . cmake-ts-mode))
     (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-ts-mode))
