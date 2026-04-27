@@ -548,6 +548,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (setq xref-search-program 'ripgrep)
 
   (setq python-shell-interpreter (executable-find "python3.12"))
+  (setq python-indent-guess-indent-offset-verbose nil)
 
   (setq custom-safe-themes t)
   (setq custom-theme-directory (concat user-emacs-directory "themes"))
