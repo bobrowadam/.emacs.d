@@ -729,6 +729,34 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
       (push 'claude-opus-4-7 (gptel-backend-models gptel-backend)))
     (require 'gptel-anthropic-oauth)
 
+    ;; Keep `gptel-mode' alive across major-mode re-entry.
+    ;;
+    ;; `gptel-mode' is a buffer-local minor mode, so anything that
+    ;; runs `kill-all-local-variables' (some org-babel evaluation
+    ;; paths, `revert-buffer', `org-mode' being re-run, etc.) silently
+    ;; turns it off and you lose the " GPT" lighter, header-line, and
+    ;; key bindings.  We persist a `permanent-local' flag and re-arm
+    ;; the mode from `after-change-major-mode-hook' (also permanent),
+    ;; so the minor mode survives major-mode re-entry.
+    (defvar-local bob/gptel--was-on nil
+      "Non-nil if `gptel-mode' was enabled before a major-mode change.")
+    (put 'bob/gptel--was-on 'permanent-local t)
+
+    (defun bob/gptel--remember-on-toggle ()
+      "Track `gptel-mode' state in a permanent-local flag."
+      (setq bob/gptel--was-on (bound-and-true-p gptel-mode)))
+    (add-hook 'gptel-mode-hook #'bob/gptel--remember-on-toggle)
+
+    (defun bob/gptel--restore-after-major-mode ()
+      "Re-enable `gptel-mode' after a major-mode change wiped it."
+      (when (and bob/gptel--was-on
+                 (not (bound-and-true-p gptel-mode))
+                 (derived-mode-p 'org-mode 'markdown-mode 'text-mode))
+        (gptel-mode 1)))
+    (put 'bob/gptel--restore-after-major-mode 'permanent-local-hook t)
+    (add-hook 'after-change-major-mode-hook
+              #'bob/gptel--restore-after-major-mode)
+
     :bind
      ("C-c g g" . gptel)
      ("C-c g r" . bob/gptel-rewrite)
