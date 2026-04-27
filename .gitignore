@@ -93,3 +93,4 @@ elisp-autofmt-cache/
 agent/
 /magit-diff-review.sqlite
 .claude/settings.local.json
+/jdbc/
