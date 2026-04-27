@@ -1200,7 +1200,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :bind
     ("C-c C-'" . ai-code-menu)
     :config
-    (ai-code-set-backend  'codex) ;; use claude-code-ide as backend
+    (ai-code-set-backend 'codex) ;; use codex as backend
     ;; Enable global keybinding for the main menu
 
     ;; Optional: Set up Magit integration for AI commands in Magit popups
