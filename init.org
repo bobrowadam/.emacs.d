@@ -724,10 +724,6 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                       (:type "web_search_20260209"
                        :name "web_search")])))
 
-    ;; Opus 4.7 was released 2026-04-16; remove this once gptel ships it.
-    (if (memq 'claude-opus-4-7 (gptel-backend-models gptel-backend))
-        (display-warning 'gptel "claude-opus-4-7 already in gptel models, remove manual addition from init.org")
-      (push 'claude-opus-4-7 (gptel-backend-models gptel-backend)))
     (require 'gptel-anthropic-oauth)
 
     ;; Keep `gptel-mode' alive across major-mode re-entry.
