@@ -3279,6 +3279,38 @@ Falls back to `default-directory' when not in a git repo."
                                     (face-remap-add-relative 'default :family "Monospace")
                                     (toggle-truncate-lines t))))
 #+end_src
+** ejc-sql — JDBC-backed SQL client
+Emacs SQL client backed by Clojure/JDBC. Gives async queries, autocomplete of
+table/column names pulled live from the DB, ElDoc for tables, pretty result
+buffers. Requires =leiningen= on =$PATH= and Java (already installed).
+
+Install once: =brew install leiningen= and drop the Postgres JDBC driver at
+=~/.emacs.d/jdbc/postgresql.jar=.
+
+Connection passwords are read from =~/.authinfo.gpg=. A connection is only
+registered when authinfo has a matching =machine= line — so to add dev or
+prod you just append a line and =M-x bob/ejc-refresh-connections=.
+
+#+begin_example
+machine bradwell-local login postgres password postgres port 5432
+machine bradwell-dev   login bradwell password <pw>     port 5432
+machine bradwell-prod  login bradwell password <pw>     port 5432
+#+end_example
+
+Remote (dev/prod) connections assume a local SSM tunnel on =localhost:5432=,
+started by =task db-connect ENV=dev= (or =ENV=prod=) in the monorepo.
+
+The full configuration lives in =modules/bob-ejc-sql.el=.
+#+begin_src elisp
+  (use-package bob-ejc-sql
+    :ensure nil
+    :demand t
+    :commands (bob/ejc-open
+               bob/ejc-refresh-connections
+               bob/ejc-connect-dev
+               bob/ejc-connect-prod))
+#+end_src
+
 * SQLite
 #+begin_src elisp
   (use-package elsqlite
