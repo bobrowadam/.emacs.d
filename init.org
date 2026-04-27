@@ -3266,15 +3266,15 @@ Falls back to `default-directory' when not in a git repo."
     :config
     (setenv "POSTGRES_DATABASE" "bradwell")
     (setenv "POSTGRES_USER" "postgres")
-    (setenv "POSTGRES_PASSWORD" "postgress"))
+    (setenv "POSTGRES_PASSWORD" "postgres"))
   (use-package ob-sql-mode)
-  (use-package sql-mode
+  (use-package sql
+    :ensure nil
     :custom
     (sql-user "postgres")
     (sql-server "localhost")
-    (sql-database "grain")
-    (sql-password "grain")
-    :ensure nil
+    (sql-database "bradwell")
+    (sql-password "postgres")
     :hook (sql-interactive-mode . (lambda ()
                                     (face-remap-add-relative 'default :family "Monospace")
                                     (toggle-truncate-lines t))))
