@@ -3287,10 +3287,10 @@ buffers. Requires =leiningen= on =$PATH= and Java (already installed).
 Install once: =brew install leiningen= and drop the Postgres JDBC driver at
 =~/.emacs.d/jdbc/postgresql.jar=.
 
-Local uses hardcoded =postgres/postgres= credentials. Remote dev/prod
-connections ensure AWS SSO is logged in, fetch the database password from SSM,
-start an SSM tunnel on =localhost:5432= via =task db-connect ENV=dev= (or
-=ENV=prod=), and then connect.
+Local uses hardcoded =postgres/postgres= credentials on =localhost:5432=.
+Remote dev/prod connections ensure AWS SSO is logged in, fetch the database
+password from SSM, start an SSM tunnel, and then connect via per-environment
+local ports: dev uses =localhost:15432= and prod uses =localhost:25432=.
 
 =~/.authinfo.gpg= entries are optional overrides/fallbacks for remote
 connections:

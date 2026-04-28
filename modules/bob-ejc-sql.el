@@ -17,25 +17,27 @@
 ;; Local is hardcoded as postgres/postgres.  Remote dev/prod connections
 ;; also support an authinfo-free flow:
 ;; `bob/ejc-connect-dev' and `bob/ejc-connect-prod' ensure AWS SSO is
-;; logged in, fetch `/bradwell/ENV/db-password' from SSM, start
-;; `task db-connect ENV=ENV', and then connect via localhost:5432.
+;; logged in, fetch `/bradwell/ENV/db-password' from SSM, start an
+;; SSM tunnel, and then connect via a per-environment localhost port
+;; (dev 15432, prod 25432).
 ;;
 ;;; Code:
 
 (use-package clomacs)
-
 (use-package ejc-sql
   :after clomacs
-  :commands (ejc-connect ejc-connect-existing-repl bob/ejc-open)
-  :custom
-  ;; Use a non-default port so it doesn't fight with langfuse/skaffold on 8080.
-  (clomacs-httpd-default-port 8090)
-  (ejc-result-table-impl 'ejc-result-mode)
-  (ejc-use-flx t)
-  (ejc-flx-threshold 2)
-  :config
-  (require 'seq)
-  (require 'subr-x)
+  :demand t)
+
+(require 'ejc-sql nil t)
+(require 'cl-lib)
+(require 'seq)
+(require 'subr-x)
+
+;; Use a non-default port so it doesn't fight with langfuse/skaffold on 8080.
+(setq clomacs-httpd-default-port 8090
+      ejc-result-table-impl 'ejc-result-mode
+      ejc-use-flx t
+      ejc-flx-threshold 2)
 
   ;; --- Secrets from authinfo -------------------------------------------
   (defun bob/ejc--authinfo-entry (host)
@@ -50,7 +52,7 @@
 
   ;; --- Connection registry --------------------------------------------
   ;; Each connection is a plist: :name :host :db :user and optional
-  ;; :password.  At load time, hardcoded passwords are registered first,
+  ;; :password and :port.  At load time, hardcoded passwords are registered first,
   ;; then ~/.authinfo.gpg entries are used as an optional override/fallback.
   ;; For remote dev/prod, `bob/ejc-connect-env' can also fetch the
   ;; password from SSM after ensuring AWS SSO is logged in.  Defaults
@@ -58,27 +60,29 @@
   ;; migrations.  Override user/db/password per-env by editing this list,
   ;; or user/password by editing the authinfo line (auth-source reads
   ;; :user too).
-  (defvar bob/ejc-connections
-    '((:name "bradwell-local" :host "bradwell-local" :db "bradwell" :user "postgres" :password "postgres")
-      (:name "bradwell-dev"   :host "bradwell-dev"   :db "bradwell" :user "bradwell")
-      (:name "bradwell-prod"  :host "bradwell-prod"  :db "bradwell" :user "bradwell"))
+  (defvar bob/ejc-connections nil
     "Bradwell ejc-sql connections.
 Entries with :password are auto-registered.  Other entries are
 registered iff a matching machine line exists in ~/.authinfo.gpg,
 or when `bob/ejc-connect-env' fetches credentials from SSM.")
 
+  ;; Use `setq' so reloading this module updates an existing Emacs session.
+  (setq bob/ejc-connections
+        '((:name "bradwell-local" :host "bradwell-local" :db "bradwell" :user "postgres" :password "postgres" :port 5432)
+          (:name "bradwell-dev"   :host "bradwell-dev"   :db "bradwell" :user "bradwell"  :port 15432)
+          (:name "bradwell-prod"  :host "bradwell-prod"  :db "bradwell" :user "bradwell"  :port 25432)))
+
   (defun bob/ejc--create-connection (spec user password)
     "Register SPEC with ejc-sql using USER and PASSWORD."
     (let ((name (plist-get spec :name))
-          (db   (plist-get spec :db)))
+          (db   (plist-get spec :db))
+          (port (or (plist-get spec :port) 5432)))
       (ejc-create-connection
        name
        :dependencies '[[org.postgresql/postgresql "42.7.4"]]
        :classname "org.postgresql.Driver"
        :subprotocol "postgresql"
-       ;; All remote connections are expected to be tunneled to localhost:5432
-       ;; (local minikube port-forward; `task db-connect ENV=<env>` for RDS).
-       :subname (format "//localhost:5432/%s" db)
+       :subname (format "//localhost:%s/%s" port db)
        :user user
        :password password)))
 
@@ -199,8 +203,15 @@ Prompts with the list of currently registered connections; defaults to
     "Path to the bradwell-monorepo checkout used for task commands."
     :type 'directory)
 
-  (defun bob/ejc--wait-for-localhost-5432 (on-ready)
-    "Poll localhost:5432 and call ON-READY once reachable."
+  (defun bob/ejc--port-open-p (port)
+    "Return non-nil when localhost PORT is reachable."
+    (ignore-errors
+      (let ((p (open-network-stream "ejc-port-check" nil "localhost" port)))
+        (delete-process p)
+        t)))
+
+  (defun bob/ejc--wait-for-localhost-port (port on-ready)
+    "Poll localhost PORT and call ON-READY once reachable."
     (let ((tries 0)
           timer)
       (setq timer
@@ -208,16 +219,13 @@ Prompts with the list of currently registered connections; defaults to
              0.5 0.5
              (lambda ()
                (setq tries (1+ tries))
-               (if (ignore-errors
-                     (let ((p (open-network-stream "ejc-port-check" nil "localhost" 5432)))
-                       (delete-process p)
-                       t))
+               (if (bob/ejc--port-open-p port)
                    (progn
                      (cancel-timer timer)
                      (funcall on-ready))
                  (when (> tries 120)
                    (cancel-timer timer)
-                   (message "Timed out waiting for localhost:5432"))))))))
+                   (message "Timed out waiting for localhost:%s" port))))))))
 
   (defun bob/ejc--connection-spec (name)
     "Return the connection spec named NAME."
@@ -269,6 +277,50 @@ Prompts with the list of currently registered connections; defaults to
           (error "%s failed: %s" command (string-trim (buffer-string))))
         (string-trim (buffer-string)))))
 
+  (defun bob/ejc--terraform-output (root env output &optional fallback)
+    "Return Terraform OUTPUT for ENV under ROOT, or FALLBACK when unavailable."
+    (let* ((default-directory (expand-file-name
+                               (format "infrastructure/environments/%s/" env)
+                               root))
+           (profile (bob/ejc--aws-profile env))
+           (process-environment
+            (cons (format "AWS_PROFILE=%s" profile)
+                  process-environment)))
+      (cl-labels
+          ((read-output ()
+             (with-temp-buffer
+               (let ((status (call-process "terraform" nil t nil "output" "-raw" output)))
+                 (list status (string-trim (buffer-string))))))
+           (terraform-init ()
+             (let* ((account-id (bob/ejc--aws-output
+                                 "sts" "get-caller-identity"
+                                 "--query" "Account"
+                                 "--output" "text"
+                                 "--profile" profile))
+                    (account-prefix (substring account-id 0 4))
+                    (state-bucket (format "bradwell-terraform-state-%s-%s"
+                                          env account-prefix)))
+               (with-temp-buffer
+                 (let ((status (call-process
+                                "terraform" nil t nil
+                                "init" "-input=false" "-reconfigure"
+                                (format "-backend-config=bucket=%s" state-bucket))))
+                   (unless (and (integerp status) (zerop status))
+                     (error "terraform init failed: %s" (string-trim (buffer-string)))))))))
+        (pcase-let ((`(,status ,text) (read-output)))
+          (cond
+           ((and (integerp status) (zerop status)) text)
+           ((or (not (file-directory-p ".terraform"))
+                (string-match-p "Backend initialization required" text))
+            (terraform-init)
+            (pcase-let ((`(,retry-status ,retry-text) (read-output)))
+              (cond
+               ((and (integerp retry-status) (zerop retry-status)) retry-text)
+               (fallback fallback)
+               (t (error "terraform output -raw %s failed: %s" output retry-text)))))
+           (fallback fallback)
+           (t (error "terraform output -raw %s failed: %s" output text)))))))
+
   (defun bob/ejc--ssm-parameter (env path)
     "Return decrypted SSM parameter PATH for ENV."
     (bob/ejc--aws-output
@@ -290,31 +342,63 @@ Prompts with the list of currently registered connections; defaults to
                      (plist-get spec :user))))
       (bob/ejc--create-connection spec user password)))
 
-  (defun bob/ejc--start-db-connect (env conn buf directory)
-    "Start the ENV database tunnel in BUF from DIRECTORY, then open CONN."
-    (with-current-buffer buf (erase-buffer))
-    (let ((default-directory directory))
-      (make-process
-       :name (format "db-connect-%s" env)
-       :buffer buf
-       :command (list "task" "db-connect" (format "ENV=%s" env))
-       :noquery t
-       :connection-type 'pipe))
-    (message "Started task db-connect ENV=%s (see %s)" env (buffer-name buf))
-    (bob/ejc--wait-for-localhost-5432
-     (lambda ()
-       (bob/ejc-refresh-connections)
-       (unless (member conn (bob/ejc-registered-connections))
-         (bob/ejc--register-env-from-ssm env))
-       (bob/ejc-open conn))))
+  (defun bob/ejc--open-connection-for-buffer (conn origin)
+    "Connect ORIGIN to CONN when it is a SQL buffer, else open a CONN buffer."
+    (if (and (buffer-live-p origin)
+             (with-current-buffer origin (derived-mode-p 'sql-mode)))
+        (progn
+          (with-current-buffer origin
+            (unless (bound-and-true-p ejc-sql-mode) (ejc-sql-mode 1))
+            (ejc-connect conn))
+          (pop-to-buffer origin))
+      (bob/ejc-open conn)))
+
+  (defun bob/ejc--start-db-connect (env conn buf root origin)
+    "Start the ENV database tunnel in BUF from ROOT, then connect ORIGIN to CONN."
+    (let* ((spec (or (bob/ejc--connection-spec conn)
+                     (user-error "No ejc connection spec for %s" conn)))
+           (port (or (plist-get spec :port) 5432))
+           (instance-id (bob/ejc--terraform-output root env "ec2_instance_id"))
+           (rds-endpoint (bob/ejc--terraform-output root env "rds_endpoint"))
+           (region (bob/ejc--terraform-output root env "region" "us-east-1"))
+           (profile (bob/ejc--terraform-output root env "aws_profile" (bob/ejc--aws-profile env)))
+           (params (format "{\"host\":[\"%s\"],\"portNumber\":[\"5432\"],\"localPortNumber\":[\"%s\"]}"
+                           rds-endpoint port)))
+      (if (bob/ejc--port-open-p port)
+          (progn
+            (message "localhost:%s is already open; using existing %s tunnel" port conn)
+            (bob/ejc--open-connection-for-buffer conn origin))
+        (with-current-buffer buf (erase-buffer))
+        (make-process
+         :name (format "db-connect-%s" env)
+         :buffer buf
+         :command (list "aws" "ssm" "start-session"
+                        "--target" instance-id
+                        "--region" region
+                        "--profile" profile
+                        "--document-name" "AWS-StartPortForwardingSessionToRemoteHost"
+                        "--parameters" params)
+         :noquery t
+         :connection-type 'pipe)
+        (message "Started %s DB tunnel on localhost:%s (see %s)"
+                 conn port (buffer-name buf))
+        (bob/ejc--wait-for-localhost-port
+         port
+         (lambda ()
+           (bob/ejc-refresh-connections)
+           ;; Always re-register remote envs from SSM so stale in-memory
+           ;; connection definitions from older module loads are replaced.
+           (bob/ejc--register-env-from-ssm env)
+           (bob/ejc--open-connection-for-buffer conn origin))))))
 
   (defun bob/ejc-connect-env (env)
-    "Ensure AWS SSO, run `task db-connect ENV=ENV', then open ejc buffer."
+    "Ensure AWS SSO, start an SSM tunnel for ENV, then connect with ejc."
     (interactive "sENV (dev/prod): ")
     (let* ((env (downcase env))
            (conn (format "bradwell-%s" env))
            (root (file-name-as-directory
                   (expand-file-name bob/bradwell-monorepo-root)))
+           (origin (current-buffer))
            (buf (get-buffer-create (format "*db-connect:%s*" env))))
       (unless (member env '("dev" "prod"))
         (user-error "ENV must be dev or prod"))
@@ -324,9 +408,10 @@ Prompts with the list of currently registered connections; defaults to
          (condition-case err
              (progn
                (bob/ejc-refresh-connections)
-               (unless (member conn (bob/ejc-registered-connections))
-                 (bob/ejc--register-env-from-ssm env))
-               (bob/ejc--start-db-connect env conn buf root))
+               ;; Always re-register remote envs from SSM so stale in-memory
+               ;; connection definitions from older module loads are replaced.
+               (bob/ejc--register-env-from-ssm env)
+               (bob/ejc--start-db-connect env conn buf root origin))
            (error
             (message "Could not prepare %s ejc connection: %s"
                      conn (error-message-string err))))))))
@@ -343,7 +428,7 @@ Prompts with the list of currently registered connections; defaults to
 
   ;; Back-compat alias.
   (defalias 'bob/ejc-bradwell-local
-    (lambda () (interactive) (bob/ejc-open "bradwell-local"))))
+    (lambda () (interactive) (bob/ejc-open "bradwell-local")))
 
 (provide 'bob-ejc-sql)
 ;;; bob-ejc-sql.el ends here
