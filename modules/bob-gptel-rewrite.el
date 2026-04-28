@@ -49,6 +49,7 @@
 ;; Forward declarations for gptel internals used intentionally here.
 (defvar gptel--rewrite-overlays)
 (defvar gptel--rewrite-handlers)
+(defvar gptel--rewrite-message)
 (defvar gptel-rewrite-default-action)
 
 (declare-function gptel-make-anthropic "ext:gptel-anthropic" (name &rest args))
@@ -57,6 +58,7 @@
 (declare-function gptel--rewrite-update-status "ext:gptel-rewrite" (ov msg))
 (declare-function gptel--rewrite-key-help "ext:gptel-rewrite" (&optional cb))
 (declare-function gptel--rewrite-callback "ext:gptel-rewrite" (&rest args))
+(declare-function gptel--suffix-rewrite "ext:gptel-rewrite" (&optional rewrite-message dry-run))
 
 (declare-function org-element-at-point "org-element" (&optional epom cached-only))
 (declare-function org-element-type "org-element" (node))
@@ -69,37 +71,47 @@
 ;;; Backend ------------------------------------------------------------
 
 (defvar bob/gptel-rewrite-backend
-  (let ((b (gptel-make-anthropic "Claude rewrite"
-             :stream t
-             ;; No adaptive thinking at the backend level -- Haiku
-             ;; rewrites/inserts should stay fast.  16384 accommodates
-             ;; the `C-u' path that enables thinking (see
-             ;; `bob/gptel-insert'); Haiku won't emit anywhere near
-             ;; this much on its own.  No server-side web/code tools
-             ;; -- inline edits use the local read-only tool list
-             ;; attached by the preset.
-             :request-params '(:max_tokens 16384))))
-    ;; The `gptel-anthropic-oauth' module injects OAuth headers via
-    ;; :around advice on `gptel-curl-get-response'.  That advice
-    ;; swaps the header function on the dynamic `gptel-backend'
-    ;; variable -- but by the time the advice runs on a follow-up
-    ;; (after a tool call), `gptel-backend' is the global default
-    ;; ("Claude thinking"), NOT this rewrite backend.  Inside
-    ;; `gptel-curl-get-response' the backend is then rebound to the
-    ;; FSM's backend (us), whose header is never swapped, so the
-    ;; request goes out without x-api-key and 401s.
-    ;;
-    ;; Pin a header function directly on this backend that always
-    ;; uses `gptel-anthropic-oauth--get-oauth-headers'.  That makes
-    ;; auth work on both the first request and every tool-result
-    ;; follow-up, regardless of what `gptel-backend' points at.
-    (when (fboundp 'gptel-anthropic-oauth--get-oauth-headers)
+  (gptel-make-anthropic "Claude rewrite"
+    :stream t
+    ;; No adaptive thinking at the backend level -- Haiku
+    ;; rewrites/inserts should stay fast.  16384 accommodates
+    ;; the `C-u' path that enables thinking (see
+    ;; `bob/gptel-insert'); Haiku won't emit anywhere near
+    ;; this much on its own.  No server-side web/code tools
+    ;; -- inline edits use the local read-only tool list
+    ;; attached by the preset.
+    :request-params '(:max_tokens 16384))
+  "Non-thinking Anthropic backend used by the `rewrite' gptel preset.")
+
+(defun bob/gptel-rewrite--pin-oauth-header ()
+  "Pin OAuth headers on `bob/gptel-rewrite-backend'.
+
+The `gptel-anthropic-oauth' module injects OAuth headers via
+:around advice on `gptel-curl-get-response'.  That advice swaps
+the header function on the dynamic `gptel-backend' variable --
+but by the time the advice runs on a follow-up (after a tool
+call), `gptel-backend' is the global default (\"Claude thinking\"),
+NOT this rewrite backend.  Inside `gptel-curl-get-response' the
+backend is then rebound to the FSM's backend (us), whose header
+is never swapped, so the request goes out without x-api-key and
+401s.
+
+Pin a header function directly on this backend that always uses
+`gptel-anthropic-oauth--get-oauth-headers'.  That makes auth work
+on both the first request and every tool-result follow-up,
+regardless of what `gptel-backend' points at.
+
+Idempotent: re-pins on every call, which lets `bob/gptel-rewrite-install'
+recover from an earlier load order where `gptel-anthropic-oauth' had
+not defined the header function yet (the original `defvar' init form
+is only evaluated once)."
+  (when (and bob/gptel-rewrite-backend
+             (fboundp 'gptel-anthropic-oauth--get-oauth-headers))
+    (let ((b bob/gptel-rewrite-backend))
       (setf (gptel-backend-header b)
             (lambda (_info)
               (let ((gptel-backend b))
-                (gptel-anthropic-oauth--get-oauth-headers)))))
-    b)
-  "Non-thinking Anthropic backend used by the `rewrite' gptel preset.")
+                (gptel-anthropic-oauth--get-oauth-headers)))))))
 
 ;;; Tools --------------------------------------------------------------
 
@@ -120,10 +132,118 @@ Tools must be registered (via `gptel-make-tool') before the
 
 ;;; Rewrite entry points ----------------------------------------------
 
+(defvar bob/gptel-rewrite--source-buffer nil
+  "Originating buffer for the current rewrite/insert request.
+
+Dynamically bound by `bob/gptel-rewrite--with-preset'.  This avoids
+relying on `selected-window' when the preset is applied, which is
+fragile for minibuffers, transients, and special non-file buffers.")
+
+(defun bob/gptel-rewrite--preset-context ()
+  "Return context for the `rewrite' preset.
+
+Always attaches the originating buffer object, not its file name, so
+rewrite works for `*scratch*', gptel chat buffers, Magit/dired/help
+buffers, unsaved buffers, and any other live buffer with a region.
+
+Do not inherit ambient `gptel-context' here: regular chat sessions can
+leave unrelated buffers/files in context, which makes small rewrite
+models treat a simple instruction like \"upcase this\" as ambiguous."
+  (let ((src (or (and (buffer-live-p bob/gptel-rewrite--source-buffer)
+                      bob/gptel-rewrite--source-buffer)
+                 (current-buffer))))
+    (if (and (buffer-live-p src)
+             (not (minibufferp src)))
+        (list src)
+      nil)))
+
 (defun bob/gptel-rewrite--insert-overlay-at-point ()
   "Return the active `bob/gptel-insert' overlay at point, or nil."
   (cdr-safe (get-char-property-and-overlay
              (point) 'bob/gptel-insert-placeholder)))
+
+(defconst bob/gptel-rewrite--source-buffer-syms
+  '(gptel-backend gptel-model gptel-tools gptel-use-tools
+    gptel-use-context gptel-context gptel-cache
+    gptel-stream gptel-include-reasoning
+    gptel--system-message gptel--request-params
+    gptel-temperature gptel-max-tokens)
+  "Gptel symbols that must reflect the rewrite preset in the source buffer.
+
+Gptel's `gptel--with-buffer-copy' (used by `gptel-request' to build
+the prompt buffer) copies these via `buffer-local-value', which
+ignores `let'-bindings.  Without this list, applying the `rewrite'
+preset via `gptel-with-preset' has no effect when the source buffer
+is a `gptel-mode' chat buffer with buffer-local values for these
+variables -- the chat buffer's Opus/thinking config wins and the
+rewrite goes out as Opus instead of Haiku.
+
+Must be a subset of the symbols in `gptel--with-buffer-copy-internal'.")
+
+(defun bob/gptel-rewrite--existing-default-directory (&optional buffer)
+  "Return a usable `default-directory' for BUFFER or the current buffer.
+
+Non-file/special buffers can retain a `default-directory' from a
+worktree or project directory that has since been deleted.  Gptel and
+its tools may then error with \"Setting current directory: No such file
+or directory\" before the request is even sent."
+  (with-current-buffer (or buffer (current-buffer))
+    (file-name-as-directory
+     (expand-file-name
+      (or (and buffer-file-name
+               (file-directory-p (file-name-directory buffer-file-name))
+               (file-name-directory buffer-file-name))
+          (and (stringp default-directory)
+               (file-directory-p default-directory)
+               default-directory)
+          (and (fboundp 'project-current)
+               (when-let* ((project (ignore-errors (project-current nil)))
+                           (root (ignore-errors (project-root project)))
+                           ((file-directory-p root)))
+                 root))
+          user-emacs-directory
+          "~/")))))
+
+(defun bob/gptel-rewrite--with-source-buffer-overrides (thunk)
+  "Run THUNK with rewrite-preset values pushed into the source buffer.
+
+For each symbol in `bob/gptel-rewrite--source-buffer-syms', if the
+source buffer has a buffer-local binding, save it and overwrite it
+with the current dynamic value (which `gptel-with-preset' has set).
+Also temporarily repairs a stale/nonexistent `default-directory'.
+
+On unwind, restore the original buffer-local bindings -- including
+the distinction between `was buffer-local' and `had no buffer-local
+binding'.  If THUNK kicks off an async request that outlives this
+call, the request has already captured the preset values via
+`buffer-local-value', so the restore is safe."
+  (let ((buf (current-buffer))
+        (saved nil)
+        (old-default-directory default-directory))
+    (unwind-protect
+        (progn
+          (with-current-buffer buf
+            (setq default-directory
+                  (bob/gptel-rewrite--existing-default-directory buf)))
+          (dolist (sym bob/gptel-rewrite--source-buffer-syms)
+            (when (boundp sym)
+              (let ((had-local (local-variable-p sym buf))
+                    (old-local (and (local-variable-p sym buf)
+                                    (buffer-local-value sym buf)))
+                    (new-val (symbol-value sym))) ;dynamic value
+                (push (list sym had-local old-local) saved)
+                (with-current-buffer buf
+                  (set (make-local-variable sym) new-val)))))
+          (funcall thunk))
+      (with-current-buffer buf
+        (setq default-directory old-default-directory)
+        (dolist (entry saved)
+          (let ((sym (nth 0 entry))
+                (had-local (nth 1 entry))
+                (old-local (nth 2 entry)))
+            (if had-local
+                (set (make-local-variable sym) old-local)
+              (kill-local-variable sym))))))))
 
 (defun bob/gptel-rewrite--with-preset (thunk)
   "Run THUNK with the `rewrite' preset and rewrite FSM transitions."
@@ -136,9 +256,19 @@ Tools must be registered (via `gptel-make-tool') before the
   (let ((gptel-request--transitions
          (if (boundp 'gptel-send--transitions)
              gptel-send--transitions
-           gptel-request--transitions)))
+           gptel-request--transitions))
+        (bob/gptel-rewrite--source-buffer (current-buffer)))
     (gptel-with-preset 'rewrite
-      (funcall thunk))))
+      ;; `gptel-with-preset' uses dynamic `let'-bindings, but gptel
+      ;; later builds the prompt buffer via `gptel--with-buffer-copy'
+      ;; which calls `buffer-local-value' on the source buffer for
+      ;; `gptel-backend', `gptel-model' etc.  `buffer-local-value'
+      ;; ignores `let'-bindings, so when the source buffer is a
+      ;; chat buffer with buffer-local Opus/thinking config, the
+      ;; preset is silently overridden.  Push the preset's values
+      ;; into the source buffer's locals for the duration of the
+      ;; request setup so the copy picks them up correctly.
+      (bob/gptel-rewrite--with-source-buffer-overrides thunk))))
 
 (defun bob/gptel-rewrite--iterate-insert-overlay (ov &optional prompt)
   "Reject insert overlay OV and launch a fresh insert iteration.
@@ -191,18 +321,246 @@ overlay created by `bob/gptel-insert'."
      (t
       (funcall (intern (concat "gptel--rewrite-" action)) ov)))))
 
+(defvar-local bob/gptel-rewrite--captured-region nil
+  "Captured source region for the next upstream rewrite suffix call.
+
+Value is a cons of markers (BEG . END).  It is set before entering
+upstream's rewrite minibuffer, then consumed by
+`bob/gptel-rewrite--suffix-restores-captured-region'.  Keeping this
+buffer-local lets upstream's `M-RET' transient path survive outside the
+original dynamic extent.")
+
+(defun bob/gptel-rewrite--capture-region ()
+  "Capture the current active region for a later upstream suffix call."
+  (when-let* (((use-region-p))
+              (old bob/gptel-rewrite--captured-region))
+    (set-marker (car old) nil)
+    (set-marker (cdr old) nil))
+  (setq bob/gptel-rewrite--captured-region
+        (cons (copy-marker (region-beginning))
+              (copy-marker (region-end) t))))
+
+(defun bob/gptel-rewrite--clear-captured-region (&optional buffer)
+  "Clear captured rewrite-region markers in BUFFER or current buffer."
+  (with-current-buffer (or buffer (current-buffer))
+    (when bob/gptel-rewrite--captured-region
+      (set-marker (car bob/gptel-rewrite--captured-region) nil)
+      (set-marker (cdr bob/gptel-rewrite--captured-region) nil)
+      (setq bob/gptel-rewrite--captured-region nil))))
+
+(defun bob/gptel-rewrite--valid-captured-region-p ()
+  "Non-nil if `bob/gptel-rewrite--captured-region' is usable."
+  (and-let* ((region bob/gptel-rewrite--captured-region)
+             (beg (car region))
+             (end (cdr region))
+             (buf (marker-buffer beg)))
+    (and (buffer-live-p buf)
+         (eq buf (marker-buffer end))
+         (marker-position beg)
+         (marker-position end))))
+
+(defun bob/gptel-rewrite--current-overlay ()
+  "Return the rewrite overlay covering point, or nil.
+
+Upstream's `gptel--suffix-rewrite' uses the same probe to decide whether
+this is a fresh rewrite or an iterate; we use it to decide whether to
+thread iteration history into the prompt."
+  (cdr-safe (get-char-property-and-overlay (point) 'gptel-rewrite)))
+
+(defun bob/gptel-rewrite--iterate-prompt (overlay current-instruction)
+  "Build a prompt list for an iterate request on OVERLAY.
+
+The returned list interleaves prior instructions and responses so the
+LLM sees the full edit history for this rewrite, ending with the
+current target text and CURRENT-INSTRUCTION.  Falls back to nil when
+the overlay carries no captured original target -- the caller should
+then leave upstream's prompt construction alone."
+  (when-let* ((overlay overlay)
+              (original (overlay-get overlay 'bob/gptel-rewrite-original))
+              (history (overlay-get overlay 'bob/gptel-rewrite-history))
+              (current-target (or (overlay-get overlay 'gptel-rewrite)
+                                  original))
+              (request-line
+               "What is the required change?  I will generate only the final replacement."))
+    (let ((prompt (list original request-line)))
+      (dolist (entry history)
+        (let ((instr (car entry))
+              (resp (cdr entry)))
+          (when (and (stringp instr) (stringp resp))
+            (setq prompt (append prompt (list instr resp request-line))))))
+      (append prompt (list current-target current-instruction)))))
+
+(defvar-local bob/gptel-rewrite--pending-instruction nil
+  "Instruction sent for the most recent rewrite request in this buffer.
+
+Captured by `bob/gptel-rewrite--suffix-restores-captured-region' so
+`bob/gptel-rewrite--record-history' can append it to the resulting
+overlay's history when the response arrives.")
+
+(defvar-local bob/gptel-rewrite--pending-overlay nil
+  "Rewrite overlay associated with the most recent rewrite request.")
+
+(defun bob/gptel-rewrite--ensure-overlay-history (overlay original)
+  "Initialise iteration metadata on OVERLAY if missing.
+
+ORIGINAL is the originally selected text.  Idempotent: already-set
+properties are preserved across iterate cycles."
+  (unless (overlay-get overlay 'bob/gptel-rewrite-original)
+    (overlay-put overlay 'bob/gptel-rewrite-original original))
+  (unless (overlay-get overlay 'bob/gptel-rewrite-history)
+    (overlay-put overlay 'bob/gptel-rewrite-history nil)))
+
+(defun bob/gptel-rewrite--record-history (_beg _end)
+  "Append the latest (instruction . response) to the rewrite overlay.
+
+Runs from `gptel-post-rewrite-functions' inside the rewrite proc-buffer,
+at which point the proc-buffer's contents are the new response and the
+source overlay still lives on `bob/gptel-rewrite--pending-overlay' in
+the originating buffer."
+  (let* ((proc-buf (current-buffer))
+         (response (buffer-substring-no-properties (point-min) (point-max)))
+         (src-buf (cl-some (lambda (buf)
+                             (with-current-buffer buf
+                               (and bob/gptel-rewrite--pending-overlay
+                                    (overlay-buffer
+                                     bob/gptel-rewrite--pending-overlay)
+                                    buf)))
+                           (buffer-list))))
+    (when src-buf
+      (with-current-buffer src-buf
+        (let ((overlay bob/gptel-rewrite--pending-overlay)
+              (instruction bob/gptel-rewrite--pending-instruction))
+          (when (and (overlayp overlay)
+                     (overlay-buffer overlay)
+                     (stringp instruction)
+                     (not (string-empty-p (string-trim instruction)))
+                     (stringp response)
+                     (not (string-empty-p response)))
+            (let ((history (overlay-get overlay 'bob/gptel-rewrite-history)))
+              (overlay-put overlay 'bob/gptel-rewrite-history
+                           (append history
+                                   (list (cons instruction response)))))))
+        (setq bob/gptel-rewrite--pending-instruction nil
+              bob/gptel-rewrite--pending-overlay nil)))
+    (ignore proc-buf)))
+
+(defun bob/gptel-rewrite--suffix-restores-captured-region (orig &rest args)
+  "Advice around `gptel--suffix-rewrite' to restore region and thread history.
+
+Responsibilities:
+
+1. Restore markers captured by `bob/gptel-rewrite' so a deactivated
+   source region or escaped minibuffer mark state cannot make the
+   request lose its target text.
+2. Reapply the `rewrite' preset at suffix time so the upstream `M-RET'
+   transient path -- which is scheduled outside the original dynamic
+   extent of `bob/gptel-rewrite--with-preset' -- still uses Haiku and
+   the rewrite backend instead of inheriting the chat buffer's config.
+3. Thread iteration history.  For iterate calls, replace upstream's
+   single-shot prompt list with one that includes the original target
+   plus every (instruction . response) recorded on the overlay so far,
+   and remember the current instruction + overlay so the
+   post-rewrite hook can append the new pair."
+  (let ((have-region (bob/gptel-rewrite--valid-captured-region-p)))
+    (cl-flet ((run ()
+                (let* ((overlay (bob/gptel-rewrite--current-overlay))
+                       (instruction (or (car args)
+                                        gptel--rewrite-message))
+                       (iterate-prompt
+                        (and overlay (stringp instruction)
+                             (bob/gptel-rewrite--iterate-prompt
+                              overlay instruction)))
+                       (orig-request (symbol-function 'gptel-request)))
+                  ;; Capture metadata so the post-rewrite hook can
+                  ;; finalise the history entry.  Done in the source
+                  ;; buffer (current-buffer here is the source).
+                  (setq bob/gptel-rewrite--pending-instruction instruction
+                        bob/gptel-rewrite--pending-overlay nil)
+                  (cl-letf (((symbol-function 'gptel-request)
+                             (lambda (&rest req-args)
+                               (let* ((req-prompt (car req-args))
+                                      (req-rest (cdr req-args))
+                                      (req-context (plist-get req-rest :context))
+                                      (req-overlay (car-safe req-context))
+                                      (final-prompt
+                                       (or iterate-prompt req-prompt))
+                                      (orig-text
+                                        (cond
+                                         ((stringp req-prompt) req-prompt)
+                                         ((consp req-prompt) (car req-prompt))
+                                         (t nil))))
+                                 (when (and (overlayp req-overlay) orig-text)
+                                   (bob/gptel-rewrite--ensure-overlay-history
+                                    req-overlay orig-text)
+                                   (setq bob/gptel-rewrite--pending-overlay
+                                         req-overlay))
+                                 (apply orig-request final-prompt req-rest)))))
+                    (apply orig args)))))
+      (if (not have-region)
+          (run)
+        (let* ((region bob/gptel-rewrite--captured-region)
+               (beg (car region))
+               (end (cdr region))
+               (buf (marker-buffer beg)))
+          (unwind-protect
+              (with-current-buffer buf
+                (let ((deactivate-mark nil))
+                  (goto-char beg)
+                  (push-mark end t t)
+                  (activate-mark)
+                  (bob/gptel-rewrite--with-preset #'run)))
+            (bob/gptel-rewrite--clear-captured-region buf)))))))
+
 ;;;###autoload
 (defun bob/gptel-rewrite ()
   "Run `gptel-rewrite' under the bob `rewrite' preset.
 
 If point is on a pending `bob/gptel-insert' overlay, iterate that
-insert instead of rewriting its generated output."
+insert instead of rewriting its generated output.
+
+For a fresh active-region rewrite, snapshot the region before handing
+off to upstream so minibuffer mark/cancel behavior cannot make the
+rewrite request lose its target text.  Upstream's prompt, history,
+`M-RET' transient, dry-run inspection, and pending-overlay UX remain
+intact."
   (interactive)
   (require 'gptel-rewrite)
-  (if-let* ((insert-ov (bob/gptel-rewrite--insert-overlay-at-point)))
-      (bob/gptel-rewrite--iterate-insert-overlay insert-ov "Insert: ")
-    (bob/gptel-rewrite--with-preset
-     (lambda () (call-interactively #'gptel-rewrite)))))
+  (cond
+   ((bob/gptel-rewrite--insert-overlay-at-point)
+    (bob/gptel-rewrite--iterate-insert-overlay
+     (bob/gptel-rewrite--insert-overlay-at-point) "Insert: "))
+   (t
+    (when (use-region-p)
+      (bob/gptel-rewrite--capture-region))
+    ;; Suppress upstream's "Rewrite: " placeholder default.  When
+    ;; `gptel--rewrite-message' is nil upstream uses that string as
+    ;; the initial editable input, which then bleeds into the user
+    ;; instruction unless the placeholder is overwritten.  Bind to an
+    ;; empty string so the minibuffer comes up empty for fresh
+    ;; rewrites; iterate paths set their own message before
+    ;; re-prompting and are unaffected.
+    (let ((gptel--rewrite-message (or gptel--rewrite-message "")))
+      (bob/gptel-rewrite--with-preset
+       (lambda () (call-interactively #'gptel-rewrite)))))))
+
+;;; Rewrite directive -------------------------------------------------
+
+(defun bob/gptel-rewrite-directive ()
+  "Return a stricter directive for `gptel-rewrite'."
+  (let* ((lang (bob/gptel-rewrite-mode-language))
+         (article (if (and lang (not (string-empty-p lang))
+                           (memq (aref lang 0) '(?a ?e ?i ?o ?u)))
+                      "an" "a")))
+    (concat
+     (if (string-empty-p lang)
+         "You are an editor."
+       (format "You are %s %s editor." article lang))
+     " Rewrite exactly the target text supplied by the user.\n"
+     "The FIRST user message is the exact text to replace.\n"
+     "The later instruction says how to transform that target.\n"
+     "Any provided buffer/context is only for style and disambiguation; do not rewrite it as a whole.\n"
+     "If the instruction says 'this', it refers to the first user message.\n"
+     "Output ONLY the replacement text, with no explanation, no choices, and no markdown fences.")))
 
 ;;; Language detection ----------------------------------------------
 
@@ -647,13 +1005,20 @@ response)."
              (if (boundp 'gptel-send--transitions)
                  gptel-send--transitions
                gptel-request--transitions)))
-        (gptel-request prompt
-          :system directive
-          :stream gptel-stream
-          :context (cons ov (gptel--temp-buffer " *gptel-insert*"))
-          :transforms gptel-prompt-transform-functions
-          :fsm (gptel-make-fsm :handlers gptel--rewrite-handlers)
-          :callback #'gptel--rewrite-callback)))))
+        ;; Push the preset's dynamic values into the source buffer's
+        ;; locals: gptel's prompt-buffer copy uses `buffer-local-value'
+        ;; which ignores `let'-bindings, so without this the chat
+        ;; buffer's Opus/thinking config silently overrides the preset.
+        ;; See `bob/gptel-rewrite--with-source-buffer-overrides'.
+        (bob/gptel-rewrite--with-source-buffer-overrides
+         (lambda ()
+           (gptel-request prompt
+             :system directive
+             :stream gptel-stream
+             :context (cons ov (gptel--temp-buffer " *gptel-insert*"))
+             :transforms gptel-prompt-transform-functions
+             :fsm (gptel-make-fsm :handlers gptel--rewrite-handlers)
+             :callback #'gptel--rewrite-callback)))))))
 
 ;;; Installation ------------------------------------------------------
 
@@ -662,6 +1027,15 @@ response)."
   "Wire up rewrite preset, default action, lifecycle cleanup and sanitiser.
 
 Idempotent.  Safe to call from `use-package' `:config'."
+  ;; Pin OAuth header on the rewrite backend.  This must run after
+  ;; `gptel-anthropic-oauth' has been loaded; doing it here (rather
+  ;; than at file load time) sidesteps a load-order race where the
+  ;; OAuth header function was not yet `fboundp' when the rewrite
+  ;; backend was constructed -- in which case the backend silently
+  ;; falls back to the default `x-api-key' header and 401s.
+  (bob/gptel-rewrite--pin-oauth-header)
+  (with-eval-after-load 'gptel-anthropic-oauth
+    (bob/gptel-rewrite--pin-oauth-header))
   (with-eval-after-load 'gptel-rewrite
     ;; Register (or refresh) the preset.
     (gptel-make-preset 'rewrite
@@ -671,11 +1045,13 @@ Idempotent.  Safe to call from `use-package' `:config'."
       :use-tools t
       :tools bob/gptel-rewrite-tools
       :use-context 'system
-      ;; `:eval' runs when the preset is applied, inside a temp
-      ;; buffer -- grab the originating buffer via the selected
-      ;; window.
-      :context '(:eval (let ((src (window-buffer (selected-window))))
-                         (append gptel-context (list src)))))
+      ;; Attach the originating buffer as a buffer object, not as a
+      ;; file path, so rewrite works in special/unsaved/non-file
+      ;; buffers too.  `bob/gptel-rewrite--source-buffer' is bound by
+      ;; `bob/gptel-rewrite--with-preset'; fall back to current buffer
+      ;; when the preset is applied manually.
+      :context '(:eval (bob/gptel-rewrite--preset-context))
+      :rewrite-directive #'bob/gptel-rewrite-directive)
     ;; Use our custom dispatch as the default post-response action.
     (setq gptel-rewrite-default-action #'bob/gptel-rewrite-default-action)
     ;; Remove legacy internal advice if it exists from older versions.
@@ -693,9 +1069,18 @@ Idempotent.  Safe to call from `use-package' `:config'."
     (unless (advice-member-p #'bob/gptel-rewrite-accept-cleans-overlay
                              'gptel--rewrite-accept)
       (advice-add 'gptel--rewrite-accept :after
-                  #'bob/gptel-rewrite-accept-cleans-overlay)))
+                  #'bob/gptel-rewrite-accept-cleans-overlay))
+    (unless (advice-member-p #'bob/gptel-rewrite--suffix-restores-captured-region
+                             'gptel--suffix-rewrite)
+      (advice-add 'gptel--suffix-rewrite :around
+                  #'bob/gptel-rewrite--suffix-restores-captured-region)))
   (add-hook 'gptel-post-rewrite-functions
-            #'bob/gptel-sanitize-llm-output))
+            #'bob/gptel-sanitize-llm-output)
+  ;; Append (instruction . response) to the rewrite overlay's history
+  ;; once the response is ready.  Run AFTER the sanitiser so we record
+  ;; the cleaned-up response that the overlay actually shows.
+  (add-hook 'gptel-post-rewrite-functions
+            #'bob/gptel-rewrite--record-history t))
 
 (provide 'bob-gptel-rewrite)
 ;;; bob-gptel-rewrite.el ends here
