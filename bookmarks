@@ -63,11 +63,11 @@
  (position . 1)
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
- (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/20240104T120451--inbox__project.org")
- (front-context-string . "* Read ai-didnt-")
- (rear-context-string . "20240104T120451\n")
- (position . 112)
- (last-modified 27074 37214 744411 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/journal.org")
+ (front-context-string . "**** [2026-04-30")
+ (rear-context-string . "king indication\n")
+ (position . 153)
+ (last-modified 27123 12281 907087 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
