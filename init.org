@@ -2618,7 +2618,8 @@ LSP/DAP servers manager
           ("C-<" . eglot-find-typeDefinition)
           ("C-c C-a" . eglot-code-actions))
     :hook
-    ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode sql-mode haskell-mode roc-ts-mode clojure-ts-mode) . eglot-ensure)
+    ;; sql-mode intentionally excluded: ejc-sql provides completion + eldoc.
+    ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode haskell-mode roc-ts-mode clojure-ts-mode) . eglot-ensure)
     ;; (eglot-managed-mode .  (lambda ()
     ;;                          (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
     ;;                            (flymake-jsts-eslint-enable))))

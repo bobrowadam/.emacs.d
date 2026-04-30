@@ -17,16 +17,11 @@
 ;; Local is hardcoded as postgres/postgres.  Remote dev/prod connections
 ;; also support an authinfo-free flow:
 ;; `bob/ejc-connect-dev' and `bob/ejc-connect-prod' ensure AWS SSO is
-;; logged in, fetch `/bradwell/ENV/db-password' from SSM, start an
+;; logged in, read the DB password from authinfo or SSM, start an
 ;; SSM tunnel, and then connect via a per-environment localhost port
 ;; (dev 15432, prod 25432).
 ;;
 ;;; Code:
-
-(use-package clomacs)
-(use-package ejc-sql
-  :after clomacs
-  :demand t)
 
 (require 'ejc-sql nil t)
 (require 'cl-lib)
@@ -55,7 +50,7 @@
   ;; :password and :port.  At load time, hardcoded passwords are registered first,
   ;; then ~/.authinfo.gpg entries are used as an optional override/fallback.
   ;; For remote dev/prod, `bob/ejc-connect-env' can also fetch the
-  ;; password from SSM after ensuring AWS SSO is logged in.  Defaults
+  ;; password from authinfo or SSM after ensuring AWS SSO is logged in.  Defaults
   ;; match the local minikube pod and the RDS schema used by services/
   ;; migrations.  Override user/db/password per-env by editing this list,
   ;; or user/password by editing the authinfo line (auth-source reads
@@ -69,8 +64,10 @@ or when `bob/ejc-connect-env' fetches credentials from SSM.")
   ;; Use `setq' so reloading this module updates an existing Emacs session.
   (setq bob/ejc-connections
         '((:name "bradwell-local" :host "bradwell-local" :db "bradwell" :user "postgres" :password "postgres" :port 5432)
-          (:name "bradwell-dev"   :host "bradwell-dev"   :db "bradwell" :user "bradwell"  :port 15432)
-          (:name "bradwell-prod"  :host "bradwell-prod"  :db "bradwell" :user "bradwell"  :port 25432)))
+          ;; Remote envs use the RDS master user `postgres` (matches
+          ;; /bradwell/<env>/rds-username in SSM).  Authinfo can override.
+          (:name "bradwell-dev"   :host "bradwell-dev"   :db "bradwell" :user "postgres" :port 15432)
+          (:name "bradwell-prod"  :host "bradwell-prod"  :db "bradwell" :user "postgres" :port 25432)))
 
   (defun bob/ejc--create-connection (spec user password)
     "Register SPEC with ejc-sql using USER and PASSWORD."
@@ -86,6 +83,11 @@ or when `bob/ejc-connect-env' fetches credentials from SSM.")
        :user user
        :password password)))
 
+  (defun bob/ejc--register-default (spec)
+    "Register SPEC using its hardcoded password, if any."
+    (when-let* ((pw (plist-get spec :password)))
+      (bob/ejc--create-connection spec (plist-get spec :user) pw)))
+
   (defun bob/ejc--register (spec)
     "Register the connection described by plist SPEC if a password is available."
     (let* ((host (plist-get spec :host))
@@ -96,6 +98,10 @@ or when `bob/ejc-connect-env' fetches credentials from SSM.")
            (user  (or (and entry (plist-get entry :user)) default-user)))
       (when pw
         (bob/ejc--create-connection spec user pw))))
+
+  (defun bob/ejc--register-default-connections ()
+    "Register hardcoded connections without reading authinfo."
+    (mapc #'bob/ejc--register-default bob/ejc-connections))
 
   (defun bob/ejc-registered-connections ()
     "Names of connections currently registered with ejc-sql."
@@ -109,19 +115,25 @@ or when `bob/ejc-connect-env' fetches credentials from SSM.")
     (mapc #'bob/ejc--register bob/ejc-connections)
     (message "ejc-sql: %s" (bob/ejc-registered-connections)))
 
-  (bob/ejc-refresh-connections)
+  (bob/ejc--register-default-connections)
 
   ;; --- Corfu/CAPF bridge + ElDoc ----------------------------------------
-  (defun bob/ejc--capf-candidates ()
-    "Return merged ejc-sql candidates for completion at point."
+  (defun bob/ejc--capf-candidates (&optional after-dot)
+    "Return ejc-sql candidates for completion at point.
+When AFTER-DOT is non-nil, only return column candidates (ejc has
+already scoped them to the table/alias before the dot).  Otherwise
+return the full merged set of ANSI words, DB keywords, owners,
+tables, views, packages, and unscoped columns."
     (delete-dups
-     (append (or (ejc-get-ansi-sql-words) '())
-             (or (ejc-get-keywords) '())
-             (or (ejc-owners-candidates) '())
-             (or (ejc-tables-candidates) '())
-             (or (ejc-views-candidates) '())
-             (or (ejc-packages-candidates) '())
-             (or (ejc-colomns-candidates) '()))))
+     (if after-dot
+         (or (ejc-colomns-candidates) '())
+       (append (or (ejc-get-ansi-sql-words) '())
+               (or (ejc-get-keywords) '())
+               (or (ejc-owners-candidates) '())
+               (or (ejc-tables-candidates) '())
+               (or (ejc-views-candidates) '())
+               (or (ejc-packages-candidates) '())
+               (or (ejc-colomns-candidates) '())))))
 
   (defun bob/ejc-capf ()
     "CAPF adapter for ejc-sql so Corfu can complete DB objects/keywords."
@@ -138,7 +150,7 @@ or when `bob/ejc-connect-env' fetches credentials from SSM.")
              (end (cdr bounds)))
         (list start end
               (completion-table-dynamic
-               (lambda (_prefix) (bob/ejc--capf-candidates)))
+               (lambda (_prefix) (bob/ejc--capf-candidates dot-pos)))
               :exclusive 'no
               :annotation-function
               (lambda (cand)
@@ -277,6 +289,23 @@ Prompts with the list of currently registered connections; defaults to
           (error "%s failed: %s" command (string-trim (buffer-string))))
         (string-trim (buffer-string)))))
 
+  (defun bob/ejc--aws-credential-error-p (text)
+    "Return non-nil when TEXT looks like an expired/missing AWS SSO credential."
+    (string-match-p
+     (rx (or "No valid credential" "InvalidGrantException"
+             "refresh cached SSO token" "SSO token"))
+     text))
+
+  (defun bob/ejc--aws-sso-login-sync (profile)
+    "Run `aws sso login' for PROFILE synchronously."
+    (let ((buf (get-buffer-create (format "*aws-sso:%s*" profile))))
+      (with-current-buffer buf (erase-buffer))
+      (message "AWS SSO login required for %s; starting browser login (see %s)"
+               profile (buffer-name buf))
+      (let ((status (call-process "aws" nil buf t "sso" "login" "--profile" profile)))
+        (unless (and (integerp status) (zerop status))
+          (error "AWS SSO login failed for %s (see %s)" profile (buffer-name buf))))))
+
   (defun bob/ejc--terraform-output (root env output &optional fallback)
     "Return Terraform OUTPUT for ENV under ROOT, or FALLBACK when unavailable."
     (let* ((default-directory (expand-file-name
@@ -291,6 +320,12 @@ Prompts with the list of currently registered connections; defaults to
              (with-temp-buffer
                (let ((status (call-process "terraform" nil t nil "output" "-raw" output)))
                  (list status (string-trim (buffer-string))))))
+           (read-output-or-error ()
+             (pcase-let ((`(,retry-status ,retry-text) (read-output)))
+               (cond
+                ((and (integerp retry-status) (zerop retry-status)) retry-text)
+                (fallback fallback)
+                (t (error "terraform output -raw %s failed: %s" output retry-text)))))
            (terraform-init ()
              (let* ((account-id (bob/ejc--aws-output
                                  "sts" "get-caller-identity"
@@ -310,14 +345,13 @@ Prompts with the list of currently registered connections; defaults to
         (pcase-let ((`(,status ,text) (read-output)))
           (cond
            ((and (integerp status) (zerop status)) text)
+           ((bob/ejc--aws-credential-error-p text)
+            (bob/ejc--aws-sso-login-sync profile)
+            (read-output-or-error))
            ((or (not (file-directory-p ".terraform"))
                 (string-match-p "Backend initialization required" text))
             (terraform-init)
-            (pcase-let ((`(,retry-status ,retry-text) (read-output)))
-              (cond
-               ((and (integerp retry-status) (zerop retry-status)) retry-text)
-               (fallback fallback)
-               (t (error "terraform output -raw %s failed: %s" output retry-text)))))
+            (read-output-or-error))
            (fallback fallback)
            (t (error "terraform output -raw %s failed: %s" output text)))))))
 
@@ -331,16 +365,26 @@ Prompts with the list of currently registered connections; defaults to
      "--output" "text"
      "--profile" (bob/ejc--aws-profile env)))
 
-  (defun bob/ejc--register-env-from-ssm (env)
-    "Register bradwell ENV connection by fetching its password from SSM."
+  (defun bob/ejc--register-env-credentials (env)
+    "Register bradwell ENV, preferring authinfo and falling back to SSM."
+    ;; Drop any cached auth-source result so a freshly-edited authinfo entry
+    ;; (or one decrypted after the previous lookup) is actually picked up.
+    (auth-source-forget-all-cached)
     (let* ((conn (format "bradwell-%s" env))
            (spec (or (bob/ejc--connection-spec conn)
                      (user-error "No ejc connection spec for %s" conn)))
-           (password (bob/ejc--ssm-parameter env (format "/bradwell/%s/db-password" env)))
-           (user (or (ignore-errors
-                       (bob/ejc--ssm-parameter env (format "/bradwell/%s/rds-username" env)))
-                     (plist-get spec :user))))
-      (bob/ejc--create-connection spec user password)))
+           (entry (bob/ejc--authinfo-entry conn))
+           (authinfo-password (bob/ejc--authinfo-password entry)))
+      (if authinfo-password
+          (bob/ejc--create-connection
+           spec
+           (or (and entry (plist-get entry :user)) (plist-get spec :user))
+           authinfo-password)
+        (let ((password (bob/ejc--ssm-parameter env (format "/bradwell/%s/db-password" env)))
+              (user (or (ignore-errors
+                          (bob/ejc--ssm-parameter env (format "/bradwell/%s/rds-username" env)))
+                        (plist-get spec :user))))
+          (bob/ejc--create-connection spec user password)))))
 
   (defun bob/ejc--open-connection-for-buffer (conn origin)
     "Connect ORIGIN to CONN when it is a SQL buffer, else open a CONN buffer."
@@ -357,39 +401,43 @@ Prompts with the list of currently registered connections; defaults to
     "Start the ENV database tunnel in BUF from ROOT, then connect ORIGIN to CONN."
     (let* ((spec (or (bob/ejc--connection-spec conn)
                      (user-error "No ejc connection spec for %s" conn)))
-           (port (or (plist-get spec :port) 5432))
-           (instance-id (bob/ejc--terraform-output root env "ec2_instance_id"))
-           (rds-endpoint (bob/ejc--terraform-output root env "rds_endpoint"))
-           (region (bob/ejc--terraform-output root env "region" "us-east-1"))
-           (profile (bob/ejc--terraform-output root env "aws_profile" (bob/ejc--aws-profile env)))
-           (params (format "{\"host\":[\"%s\"],\"portNumber\":[\"5432\"],\"localPortNumber\":[\"%s\"]}"
-                           rds-endpoint port)))
+           (port (or (plist-get spec :port) 5432)))
       (if (bob/ejc--port-open-p port)
           (progn
             (message "localhost:%s is already open; using existing %s tunnel" port conn)
+            (bob/ejc--register-default-connections)
+            ;; Re-register remote envs so stale in-memory connection
+            ;; definitions (e.g. registered before authinfo was loaded) are replaced.
+            (bob/ejc--register-env-credentials env)
             (bob/ejc--open-connection-for-buffer conn origin))
-        (with-current-buffer buf (erase-buffer))
-        (make-process
-         :name (format "db-connect-%s" env)
-         :buffer buf
-         :command (list "aws" "ssm" "start-session"
-                        "--target" instance-id
-                        "--region" region
-                        "--profile" profile
-                        "--document-name" "AWS-StartPortForwardingSessionToRemoteHost"
-                        "--parameters" params)
-         :noquery t
-         :connection-type 'pipe)
-        (message "Started %s DB tunnel on localhost:%s (see %s)"
-                 conn port (buffer-name buf))
-        (bob/ejc--wait-for-localhost-port
-         port
-         (lambda ()
-           (bob/ejc-refresh-connections)
-           ;; Always re-register remote envs from SSM so stale in-memory
-           ;; connection definitions from older module loads are replaced.
-           (bob/ejc--register-env-from-ssm env)
-           (bob/ejc--open-connection-for-buffer conn origin))))))
+        (let* ((instance-id (bob/ejc--terraform-output root env "ec2_instance_id"))
+               (rds-endpoint (bob/ejc--terraform-output root env "rds_endpoint"))
+               (region (bob/ejc--terraform-output root env "region" "us-east-1"))
+               (profile (bob/ejc--terraform-output root env "aws_profile" (bob/ejc--aws-profile env)))
+               (params (format "{\"host\":[\"%s\"],\"portNumber\":[\"5432\"],\"localPortNumber\":[\"%s\"]}"
+                               rds-endpoint port)))
+          (with-current-buffer buf (erase-buffer))
+          (make-process
+           :name (format "db-connect-%s" env)
+           :buffer buf
+           :command (list "aws" "ssm" "start-session"
+                          "--target" instance-id
+                          "--region" region
+                          "--profile" profile
+                          "--document-name" "AWS-StartPortForwardingSessionToRemoteHost"
+                          "--parameters" params)
+           :noquery t
+           :connection-type 'pipe)
+          (message "Started %s DB tunnel on localhost:%s (see %s)"
+                   conn port (buffer-name buf))
+          (bob/ejc--wait-for-localhost-port
+           port
+           (lambda ()
+             (bob/ejc--register-default-connections)
+             ;; Always re-register remote envs so stale in-memory connection
+             ;; definitions from older module loads are replaced.
+             (bob/ejc--register-env-credentials env)
+             (bob/ejc--open-connection-for-buffer conn origin)))))))
 
   (defun bob/ejc-connect-env (env)
     "Ensure AWS SSO, start an SSM tunnel for ENV, then connect with ejc."
@@ -407,10 +455,10 @@ Prompts with the list of currently registered connections; defaults to
        (lambda ()
          (condition-case err
              (progn
-               (bob/ejc-refresh-connections)
-               ;; Always re-register remote envs from SSM so stale in-memory
-               ;; connection definitions from older module loads are replaced.
-               (bob/ejc--register-env-from-ssm env)
+               (bob/ejc--register-default-connections)
+               ;; Always re-register remote envs so stale in-memory connection
+               ;; definitions from older module loads are replaced.
+               (bob/ejc--register-env-credentials env)
                (bob/ejc--start-db-connect env conn buf root origin))
            (error
             (message "Could not prepare %s ejc connection: %s"
