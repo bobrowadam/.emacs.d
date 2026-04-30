@@ -1932,6 +1932,9 @@ Align tables in markdown and org-mode
                    :discard (:tag "chennofar@gmailcom")
                    :time-grid t
                    :order 0)
+            (:name "NEXT"
+                   :todo "NEXT"
+                   :order 1)
             ;; Group Linear items by state and project
             (:auto-map
              (lambda (item)
@@ -3593,8 +3596,8 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     (setenv "LINEAR_API_KEY" (auth-source-pick-first-password
                               :host "linear.app"
                               :user "linear_api_key"))
-    (advice-add 'org-agenda :before
-                (lambda (&rest _) (linear-emacs-list-issues)))
+    (defun bob/linear-refresh-before-org-agenda (&rest _)
+      (linear-emacs-list-issues))
     (defun bob/linear-schedule-unscheduled-next ()
       "Schedule unscheduled NEXT items in `linear-emacs-org-file-path' for today."
       (when (file-exists-p linear-emacs-org-file-path)
@@ -3607,12 +3610,21 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
                 (org-schedule nil (format-time-string "%Y-%m-%d"))))
             "/NEXT" 'file))
           (save-buffer))))
-    (advice-add 'linear-emacs-list-issues :after
-                (lambda (&rest _)
-                  (bob/linear-schedule-unscheduled-next)
-                  (when-let* ((win (get-buffer-window "*Org Agenda*" t)))
-                    (with-selected-window win
-                      (org-agenda-redo-all))))))
+    (defun bob/linear-post-refresh-agenda (&rest _)
+      (bob/linear-schedule-unscheduled-next)
+      (when-let* ((win (get-buffer-window "*Org Agenda*" t)))
+        (with-selected-window win
+          (org-agenda-redo-all))))
+    (advice-mapc (lambda (advice _props)
+                   (when (string-match-p "linear-emacs-list-issues"
+                                         (prin1-to-string advice))
+                     (advice-remove 'org-agenda advice)))
+                 'org-agenda)
+    (advice-mapc (lambda (advice _props)
+                   (advice-remove 'linear-emacs-list-issues advice))
+                 'linear-emacs-list-issues)
+    (advice-add 'org-agenda :before #'bob/linear-refresh-before-org-agenda)
+    (advice-add 'linear-emacs-list-issues :after #'bob/linear-post-refresh-agenda))
 #+end_src
 
 #+end_src
