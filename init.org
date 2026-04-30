@@ -3595,8 +3595,21 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
                               :user "linear_api_key"))
     (advice-add 'org-agenda :before
                 (lambda (&rest _) (linear-emacs-list-issues)))
+    (defun bob/linear-schedule-unscheduled-next ()
+      "Schedule unscheduled NEXT items in `linear-emacs-org-file-path' for today."
+      (when (file-exists-p linear-emacs-org-file-path)
+        (with-current-buffer (find-file-noselect linear-emacs-org-file-path)
+          (org-with-wide-buffer
+           (org-map-entries
+            (lambda ()
+              (when (and (string= (org-get-todo-state) "NEXT")
+                         (not (org-entry-get nil "SCHEDULED")))
+                (org-schedule nil (format-time-string "%Y-%m-%d"))))
+            "/NEXT" 'file))
+          (save-buffer))))
     (advice-add 'linear-emacs-list-issues :after
                 (lambda (&rest _)
+                  (bob/linear-schedule-unscheduled-next)
                   (when-let* ((win (get-buffer-window "*Org Agenda*" t)))
                     (with-selected-window win
                       (org-agenda-redo-all))))))
