@@ -3178,17 +3178,33 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 *** Doom Themes
 #+begin_src elisp
   (use-package doom-themes
-    :custom
-    (doom-ayu t)
+    :after kanagawa-themes
     :init
-    (load-theme 'doom-ayu-dark))
+    (defun bob/register-and-load-themes (themes)
+      "Register THEMES and load the first one in the list.
+  Creates a `bob/cycle-themes' function to cycle through the themes."
+      (unless themes
+        (error "Themes list cannot be empty"))
+      (let ((theme-list themes)
+            (current-index 0))
+        (load-theme (car theme-list) t)
+        (defun bob/cycle-themes ()
+          "Cycle through registered themes."
+          (interactive)
+          (setq current-index (mod (1+ current-index) (length theme-list)))
+          (mapc #'disable-theme custom-enabled-themes)
+          (load-theme (nth current-index theme-list) t))))
+
+    (bob/register-and-load-themes '(kanagawa-lotus kanagawa-dragon doom-gruvbox doom-material)))
 #+end_src
 *** bob-kanagawa-wave
 #+begin_src elisp
   (use-package bob-kanagawa-wave-theme
     :disabled t
     :ensure nil
-    :init (load-theme 'bob-kanagawa-wave))
+    :init 
+    
+    (load-theme 'bob-kanagawa-wave))
 #+end_src
 
 *** Modus Themes
@@ -3233,9 +3249,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** kanagawa-themes
 #+begin_src elisp
-  (use-package kanagawa-themes
-    ;; :init (load-theme 'kanagawa-wave)
-  )
+  (use-package kanagawa-themes :demand t)
 #+end_src
 ** Spacious padding
 #+begin_src elisp
