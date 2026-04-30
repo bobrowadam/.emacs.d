@@ -2882,6 +2882,23 @@ LSP/DAP servers manager
                 '("jest.config.ts" "jest.config.js"
                   "jest.config.mjs" "jest.config.cjs"))))
 
+  (defun bob/jest-ts--get-inspected-node-processes ()
+    "Return alist of (PID . PORT) for running `node --inspect=PORT' processes."
+    (let (result)
+      (dolist (pid (list-system-processes))
+        (when-let* ((attrs (process-attributes pid))
+                    (args (alist-get 'args attrs))
+                    ((string-match "node .*--inspect=\\([0-9]+\\)" args)))
+          (push (cons pid (match-string 1 args)) result)))
+      result))
+
+  (defun bob/jest-ts-next-inspect-port (&optional default-port)
+    "Return the next free port for `node --inspect'.
+When no inspected node processes are running, return DEFAULT-PORT or 9229."
+    (if-let* ((ports (mapcar #'cdr (bob/jest-ts--get-inspected-node-processes))))
+        (1+ (string-to-number (car (sort ports #'string>))))
+      (or default-port 9229)))
+
   (defun bob/maybe-enable-jest-ts-mode ()
     "Enable `jest-ts-mode' only when a Jest config is found above this file."
     (when (bob/jest-ts--locate-config)
@@ -2896,7 +2913,7 @@ LSP/DAP servers manager
     :hook (typescript-ts-mode . bob/maybe-enable-jest-ts-mode)
     :custom
     (jest-ts/environment-variables '(("IN_MEMORY_DB" . "true")))
-    (jest-ts/inspect-port #'get-next-available-inspect-port)
+    (jest-ts/inspect-port #'bob/jest-ts-next-inspect-port)
     :config
     ;; Upstream only looks for jest.config.ts; also accept jest.config.js / .mjs / .cjs.
     (defun jest-ts/find--jest-config-parent-directory ()
@@ -2905,7 +2922,38 @@ Searches upward from the current directory for jest.config.{ts,js,mjs,cjs}.
 Returns the directory path or signals an error if not found."
       (or (bob/jest-ts--locate-config)
           (error "No jest-config found.  default directory: %s"
-                 default-directory))))
+                 default-directory)))
+
+    (defun bob/jest-ts--config-filename (dir)
+      "Return the Jest config filename present in DIR (just the basename)."
+      (seq-find (lambda (name)
+                  (file-exists-p (expand-file-name name dir)))
+                '("jest.config.ts" "jest.config.js"
+                  "jest.config.mjs" "jest.config.cjs")))
+
+    ;; Upstream hardcodes "jest.config.ts" in the --config flag; use the
+    ;; actual filename present in JEST-CONFIG-DIR.
+    (defun jest-ts/test--command (jest-config-dir &optional test-file-name-and-pattern)
+      "Build the shell command that runs Jest for a single test.
+JEST-CONFIG-DIR is the directory containing the Jest config file.
+TEST-FILE-NAME-AND-PATTERN is a plist with optional `:file-name'
+and `:test-name'."
+      (let* ((file-name (or (plist-get test-file-name-and-pattern :file-name) ""))
+             (test-name (plist-get test-file-name-and-pattern :test-name))
+             (config-file (or (bob/jest-ts--config-filename jest-config-dir)
+                              "jest.config.ts")))
+        (->>
+         (format "node --inspect=%s %s --config %s%s %s %s"
+                 (if (functionp jest-ts/inspect-port)
+                     (funcall jest-ts/inspect-port)
+                   jest-ts/inspect-port)
+                 (funcall jest-ts/jest-command-fn)
+                 jest-config-dir
+                 config-file
+                 file-name
+                 (if test-name (format "-t \"%s\"" test-name) ""))
+         s-trim-right
+         (s-replace-regexp "\\[\\|\\]" "\\\\\\&")))))
 
 #+end_src
 **** Prettier
