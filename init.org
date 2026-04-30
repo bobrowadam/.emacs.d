@@ -1771,7 +1771,12 @@ Align tables in markdown and org-mode
      `(("t" "entry" entry
         (file
          ,(concat org-directory "20240104T120451--inbox__project.org"))
-        "* %?\n  %i")))
+        "* %?\n  %i")
+       ("j" "Interstitial journal" entry
+        (file+datetree
+         ,(concat org-directory "journal.org"))
+        "* %U\n%?"
+        :empty-lines 0)))
     (org-refile-targets '((org-agenda-files :maxlevel . 3)))
     (org-refile-use-outline-path 'file)
     (org-deadline-warning-days 1)
@@ -1866,8 +1871,9 @@ Align tables in markdown and org-mode
                         "20240103T130349--reminders__project.org"
                         "20240103T130420--tasks__project.org"))
     (org-agenda-custom-commands
-     '(("b" tags "+OngoingBugs")
+     `(("b" tags "+OngoingBugs")
        ("n" "Todo next" ((todo "NEXT")))
+       ("j" "Interstitial journal (today)" bob/journal-show-today)
        ("d" "Daily view"
         ((agenda "" ((org-agenda-span 'day)))
          (alltodo "" ((org-agenda-overriding-header "")
@@ -1881,6 +1887,18 @@ Align tables in markdown and org-mode
     :ensure nil
     :config
     (org-super-agenda-mode 1)
+    (defun bob/journal-show-today (&optional _)
+      "Open the interstitial journal and narrow to today's datetree subtree."
+      (interactive)
+      (let ((file (concat org-directory "journal.org"))
+            (today (decode-time)))
+        (find-file file)
+        (widen)
+        (goto-char (point-min))
+        (org-datetree-find-date-create
+         (list (nth 4 today) (nth 3 today) (nth 5 today)))
+        (org-narrow-to-subtree)
+        (org-show-subtree)))
     ;; iCloud files can intermittently fail with "Operation canceled/timed out"
     ;; when they haven't been downloaded locally yet. Skip them gracefully.
     (advice-add 'org-get-agenda-file-buffer :around
@@ -3279,7 +3297,7 @@ Falls back to `default-directory' when not in a git repo."
                                     (face-remap-add-relative 'default :family "Monospace")
                                     (toggle-truncate-lines t))))
 #+end_src
-** ejc-sql — JDBC-backed SQL client
+* ejc-sql — JDBC-backed SQL client
 Emacs SQL client backed by Clojure/JDBC. Gives async queries, autocomplete of
 table/column names pulled live from the DB, ElDoc for tables, pretty result
 buffers. Requires =leiningen= on =$PATH= and Java (already installed).
@@ -3296,14 +3314,18 @@ local ports: dev uses =localhost:15432= and prod uses =localhost:25432=.
 connections:
 
 #+begin_example
-machine bradwell-dev   login bradwell password <pw> port 5432
-machine bradwell-prod  login bradwell password <pw> port 5432
+  machine bradwell-dev   login bradwell password <pw> port 5432
+  machine bradwell-prod  login bradwell password <pw> port 5432
 #+end_example
 
 The full configuration lives in =modules/bob-ejc-sql.el=.
 #+begin_src elisp
+  (use-package clomacs)
+  (use-package ejc-sql)
+
   (use-package bob-ejc-sql
     :ensure nil
+    :after ejc-sql
     :demand t
     :commands (bob/ejc-open
                bob/ejc-refresh-connections
@@ -3568,7 +3590,8 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     (setenv "LINEAR_API_KEY" (auth-source-pick-first-password
                               :host "linear.app"
                               :user "linear_api_key"))
-    (advice-add 'org-agenda :before #'linear-emacs-list-issues)
+    (advice-add 'org-agenda :before
+                (lambda (&rest _) (linear-emacs-list-issues)))
     (advice-add 'linear-emacs-list-issues :after
                 (lambda (&rest _)
                   (when-let* ((win (get-buffer-window "*Org Agenda*" t)))
