@@ -2351,6 +2351,15 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
 #+end_src
 
 * Auto Completion and Minibuffer actions
+** Compatibility shims
+#+begin_src elisp
+  ;; Vertico 2.8 requires `set-local' via compat 31, but Emacs 31's bundled
+  ;; compat library can be loaded instead of the GNU ELPA compat package.
+  (unless (fboundp 'set-local)
+    (defun set-local (variable value)
+      "Set VARIABLE buffer-locally to VALUE."
+      (set (make-local-variable variable) value)))
+#+end_src
 ** Vertico
 #+begin_src elisp
   (use-package vertico
