@@ -3195,7 +3195,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
           (mapc #'disable-theme custom-enabled-themes)
           (load-theme (nth current-index theme-list) t))))
 
-    (bob/register-and-load-themes '(kanagawa-lotus kanagawa-dragon doom-gruvbox doom-material)))
+    (bob/register-and-load-themes '(modus-flexoki-light modus-flexoki-dark kanagawa-lotus kanagawa-dragon doom-gruvbox doom-material)))
 #+end_src
 *** bob-kanagawa-wave
 #+begin_src elisp
@@ -3250,6 +3250,11 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 *** kanagawa-themes
 #+begin_src elisp
   (use-package kanagawa-themes :demand t)
+#+end_src
+*** modus-flexoki
+#+begin_src elisp
+(use-package modus-flexoki
+  :ensure (:repo "dpassen/modus-flexoki" :fetcher github))
 #+end_src
 ** Spacious padding
 #+begin_src elisp
