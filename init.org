@@ -848,6 +848,18 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
       :system #'bob/gptel-tools-system-prompt
       :use-context 'system))
 #+end_src
+** GPTEL quick - posframe lookups from any buffer
+#+begin_src elisp
+  ;; Fast, non-agentic quick lookup popup with a posframe spinner.
+  ;; Empty prompt summarizes region/thing/buffer; typed prompt asks
+  ;; about that same text.  Press `+' in the popup for a longer answer,
+  ;; `M-w' to copy, `M-RET' to promote into a chat buffer, `C-g' to dismiss.
+  (use-package bob-gptel-quick
+    :ensure nil
+    :after gptel
+    :demand t
+    :bind (("C-c g q" . bob/gptel-quick)))
+#+end_src
 ** Minuet - ai code completion
 #+begin_src elisp
   (use-package minuet
