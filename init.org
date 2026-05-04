@@ -2106,6 +2106,8 @@ Align tables in markdown and org-mode
 
     (require 'bradwell-utils)
     (require 'magit-diff-review)
+    (require 'magit-ci)
+    (add-hook 'magit-status-sections-hook #'bob/magit-ci-insert-section t)
 
     (magit-wip-mode 1)
     (transient-append-suffix 'magit-file-dispatch
