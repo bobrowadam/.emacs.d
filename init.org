@@ -3216,7 +3216,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
           (mapc #'disable-theme custom-enabled-themes)
           (load-theme (nth current-index theme-list) t))))
 
-    (bob/register-and-load-themes '(modus-flexoki-light modus-flexoki-dark kanagawa-lotus kanagawa-dragon doom-gruvbox doom-material)))
+    (bob/register-and-load-themes '(modus-flexoki-light modus-flexoki-dark kanagawa-lotus kanagawa-dragon doom-gruvbox doom-material))
+    :bind ("C-c t" . bob/cycle-themes))
 #+end_src
 *** bob-kanagawa-wave
 #+begin_src elisp
