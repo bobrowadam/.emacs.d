@@ -3520,9 +3520,9 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
   (use-package ghostel
     :ensure (:repo "dakra/ghostel"
                    :fetcher github
-                   :files ("*.el"
+                   :files (:defaults
+                           "lisp/*.el"
                            "ghostel-module.*"
-                           "terminfo"
                            "etc"))
     :commands (ghostel ghostel-project bob/ghostel-top-project)
     :custom
