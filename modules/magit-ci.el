@@ -406,18 +406,28 @@ hidden buffers cost effectively nothing."
 
 ;;;###autoload
 (defun bob/magit-ci-visit-check ()
-  "Open the link of the CI check at point in a browser."
+  "Open the link of the CI check at point in a browser.
+When point is on a non-CI section, fall back to `magit-visit-thing'
+so that e.g. forge topics open their normal link."
   (interactive)
-  (when-let* ((sec (magit-current-section))
-              (val (and (eq (oref sec type) 'bob/magit-ci-check)
-                        (oref sec value)))
-              (link (plist-get val :link)))
-    (if (and link (not (string-empty-p link)))
-        (browse-url link)
-      (user-error "No link for this check"))))
+  (let* ((sec (magit-current-section))
+         (val (and sec
+                   (eq (oref sec type) 'bob/magit-ci-check)
+                   (oref sec value)))
+         (link (and val (plist-get val :link))))
+    (cond
+     ((and link (not (string-empty-p link)))
+      (browse-url link))
+     (val
+      (user-error "No link for this check"))
+     ((fboundp 'forge-browse)
+      (call-interactively #'forge-browse))
+     (t
+      (call-interactively #'magit-visit-thing)))))
 
 (with-eval-after-load 'magit
-  (define-key magit-mode-map (kbd "C-c C-i") #'bob/magit-ci-refresh))
+  (define-key magit-mode-map (kbd "C-c C-i") #'bob/magit-ci-refresh)
+  (define-key magit-mode-map (kbd "C-c C-o") #'bob/magit-ci-visit-check))
 
 (provide 'magit-ci)
 ;;; magit-ci.el ends here
