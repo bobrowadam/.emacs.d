@@ -165,14 +165,19 @@ Refresh requests for the same SHA within this window are ignored."
 ;; Async fetch
 
 (defun bob/magit-ci--refresh-status-buffers (repo-root)
-  "Refresh any visible magit-status buffers for REPO-ROOT."
-  (dolist (buf (buffer-list))
-    (when (buffer-live-p buf)
-      (with-current-buffer buf
-        (when (and (derived-mode-p 'magit-status-mode)
-                   (when-let ((tl (magit-toplevel)))
-                     (string= (file-truename tl) repo-root)))
-          (when (get-buffer-window buf t)
+  "Refresh any visible magit-status buffers for REPO-ROOT.
+
+Avoids shelling out to git for every buffer: in a `magit-status-mode'
+buffer, `default-directory' is already the toplevel, so we just compare
+truenames. We also check `get-buffer-window' before any other work so
+hidden buffers cost effectively nothing."
+  (let ((root (file-truename repo-root)))
+    (dolist (buf (buffer-list))
+      (when (and (buffer-live-p buf)
+                 (get-buffer-window buf t))
+        (with-current-buffer buf
+          (when (and (derived-mode-p 'magit-status-mode)
+                     (string= (file-truename default-directory) root))
             (let ((inhibit-message t))
               (magit-refresh-buffer))))))))
 
