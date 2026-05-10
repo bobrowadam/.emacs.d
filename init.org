@@ -3556,11 +3556,7 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     ("C-!" . ghostel)
     ("C-c s j" . bob/jump-to-shell)
     ("C-x p s" . ghostel-project)
-    ("C-x p S" . bob/ghostel-top-project)
-    (:map ghostel-mode-map
-          ("C-c C-e" . ghostel-copy-mode))
-    (:map ghostel-copy-mode-map
-          ("C-c C-j" . ghostel-copy-mode-exit)))
+    ("C-x p S" . bob/ghostel-top-project))
 
   (use-package vterm)
 
