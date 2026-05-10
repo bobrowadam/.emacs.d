@@ -2017,6 +2017,27 @@ Align tables in markdown and org-mode
     :bind ("C-c d t" . denote-journal-new-or-existing-entry))
 #+end_src
 
+* Grove
+Obsidian-like note-taking workspace: file tree sidebar, wikilinks,
+backlinks, daily notes, and a Graphviz-powered graph view. No DB —
+just org files in a directory + ripgrep.
+#+begin_src elisp
+  (use-package grove
+    :ensure (:repo "jonathanchu/grove" :fetcher github :files ("*.el"))
+    :bind-keymap ("C-c v" . grove-command-map)
+    :custom
+    (grove-directory "~/notes/")
+    :config
+    (unless (file-directory-p grove-directory)
+      (make-directory grove-directory t)
+      (message "grove: created vault directory %s" grove-directory))
+    ;; Workaround: grove--refresh-cache chokes on Emacs lock symlinks (.#foo.org)
+    ;; See: https://github.com/jonathanchu/grove/issues/10
+    (add-hook 'grove-mode-hook
+              (lambda () (setq-local create-lockfiles nil)))
+    (global-grove-mode 1))
+#+end_src
+
 * EKG
 #+begin_src elisp
   (use-package ekg
