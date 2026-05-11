@@ -2139,8 +2139,6 @@ just org files in a directory + ripgrep.
 
     (require 'bradwell-utils)
     (require 'magit-diff-review)
-    (require 'magit-ci)
-    (add-hook 'magit-status-sections-hook #'bob/magit-ci-insert-section t)
 
     (magit-wip-mode 1)
     (transient-append-suffix 'magit-file-dispatch
@@ -2200,6 +2198,15 @@ just org files in a directory + ripgrep.
       "f"
       '("F" "Fetch & Rebase" bob/magit-fetch-and-rebase)))
 
+#+end_src
+
+** Magit GH
+#+begin_src elisp
+  (use-package magit-gh
+    :after magit
+    :ensure (:repo "jonathanchu/magit-gh" :fetcher github :files ("*.el"))
+    :custom
+    (magit-gh-pr-limit 50))
 #+end_src
 
 ** Magit Prime
