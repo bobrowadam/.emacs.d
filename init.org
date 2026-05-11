@@ -1877,8 +1877,30 @@ Align tables in markdown and org-mode
                         "reminders.org"
                         "tasks.org"))
     (org-agenda-custom-commands
-     `(("b" tags "+OngoingBugs")
+     `(("a" "Agenda"
+        ((agenda "" ((org-agenda-span 'day)
+                     (org-agenda-skip-function
+                      #'bob/org-agenda-skip-active-todos)))
+         (alltodo ""
+                  ((org-agenda-overriding-header "")
+                   (org-agenda-skip-function
+                    #'bob/org-agenda-skip-unless-active)))))
+       ("b" tags "+OngoingBugs")
        ("n" "Todo next" ((todo "NEXT")))
+       ("l" "Linear active issues"
+        ((todo "NEXT"
+               ((org-agenda-overriding-header "Linear NEXT")
+                (org-agenda-files (list (expand-file-name "linear-emacs.org" org-directory)))))
+         (todo "TODO"
+               ((org-agenda-overriding-header "Linear TODO")
+                (org-agenda-files (list (expand-file-name "linear-emacs.org" org-directory)))))
+         (todo "WAITING"
+               ((org-agenda-overriding-header "Linear WAITING")
+                (org-agenda-files (list (expand-file-name "linear-emacs.org" org-directory)))))))
+       ("L" "Linear backlog/later"
+        ((todo "BACKLOG"
+               ((org-agenda-overriding-header "Linear BACKLOG/LATER")
+                (org-agenda-files (list (expand-file-name "linear-emacs.org" org-directory)))))))
        ("d" "Daily view"
         ((agenda "" ((org-agenda-span 'day)))
          (alltodo "" ((org-agenda-overriding-header "")
@@ -1891,6 +1913,18 @@ Align tables in markdown and org-mode
           ("C-c C-g" . linear/update-linear-issues))
     :ensure nil
     :config
+    (defun bob/org-agenda-skip-active-todos ()
+      "Skip active TODO entries from the calendar block of the plain agenda."
+      (when (member (org-get-todo-state) '("NEXT" "TODO" "WAITING"))
+        (save-excursion
+          (or (outline-next-heading) (point-max)))))
+
+    (defun bob/org-agenda-skip-unless-active ()
+      "Skip entries that should not appear in the plain agenda task list."
+      (unless (member (org-get-todo-state) '("NEXT" "TODO" "WAITING"))
+        (save-excursion
+          (or (outline-next-heading) (point-max)))))
+
     (org-super-agenda-mode 1)
     ;; iCloud files can intermittently fail with "Operation canceled/timed out"
     ;; when they haven't been downloaded locally yet. Skip them gracefully.
@@ -1911,9 +1945,11 @@ Align tables in markdown and org-mode
             (:name "Backlog"
                    :todo "BACKLOG"
                    :order 5)
+            ;; Match reminders before Calendar's discard and before the generic
+            ;; TODO group, but display them after the main task states.
             (:name "Reminders"
                    :file-path "reminders"
-                   :order 1)
+                   :order 4)
             (:name "Calendar"
                    :discard (:file-path "reminders")
                    :discard (:tag "chennofar@gmailcom")
@@ -1922,6 +1958,12 @@ Align tables in markdown and org-mode
             (:name "NEXT"
                    :todo "NEXT"
                    :order 1)
+            (:name "TODO"
+                   :todo "TODO"
+                   :order 2)
+            (:name "WAITING"
+                   :todo "WAITING"
+                   :order 3)
             ;; Group Linear items by state and project
             (:auto-map
              (lambda (item)
@@ -3740,17 +3782,30 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
                                          ("In Review" . "WAITING")
                                          ("Blocked" . "WAITING")
                                          ("Backlog" . "BACKLOG")
+                                         ("Later" . "BACKLOG")
                                          ("Working in production" . "DONE")))
     (linear-emacs-org-file-path (format "%s/%s" org-directory "linear-emacs.org"))
     :config
     (setenv "LINEAR_API_KEY" (auth-source-pick-first-password
                               :host "linear.app"
                               :user "linear_api_key"))
+    (defvar bob/linear-refresh-in-progress nil)
+    (defvar bob/linear-suppress-refresh nil)
+
     (defun bob/linear-refresh-before-org-agenda (&rest _)
-      (linear-emacs-list-issues))
+      (unless (or bob/linear-refresh-in-progress
+                  bob/linear-suppress-refresh)
+        (setq bob/linear-refresh-in-progress t)
+        (linear-emacs-list-issues)))
+
     (defun bob/linear-schedule-unscheduled-next ()
       "Schedule unscheduled NEXT items in `linear-emacs-org-file-path' for today."
       (when (file-exists-p linear-emacs-org-file-path)
+        ;; `linear-emacs-list-issues' writes the file from a temp buffer, so an
+        ;; existing visiting buffer can be stale when agenda refreshes with `g'.
+        (when-let* ((buffer (get-file-buffer linear-emacs-org-file-path)))
+          (with-current-buffer buffer
+            (revert-buffer :ignore-auto :noconfirm)))
         (with-current-buffer (find-file-noselect linear-emacs-org-file-path)
           (org-with-wide-buffer
            (org-map-entries
@@ -3760,11 +3815,23 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
                 (org-schedule nil (format-time-string "%Y-%m-%d"))))
             "/NEXT" 'file))
           (save-buffer))))
+
+    (defun bob/linear-finish-refresh-when-idle ()
+      ;; `linear-emacs-list-issues' is async; its function returns before the
+      ;; file is written.  Wait until the Linear request callback has completed.
+      (if (and (boundp 'linear-emacs--active-requests)
+               (> linear-emacs--active-requests 0))
+          (run-at-time 0.5 nil #'bob/linear-finish-refresh-when-idle)
+        (bob/linear-schedule-unscheduled-next)
+        (setq bob/linear-refresh-in-progress nil)
+        (when-let* ((win (get-buffer-window "*Org Agenda*" t)))
+          (with-selected-window win
+            (let ((bob/linear-suppress-refresh t))
+              (org-agenda-redo-all))))))
+
     (defun bob/linear-post-refresh-agenda (&rest _)
-      (bob/linear-schedule-unscheduled-next)
-      (when-let* ((win (get-buffer-window "*Org Agenda*" t)))
-        (with-selected-window win
-          (org-agenda-redo-all))))
+      (run-at-time 0.5 nil #'bob/linear-finish-refresh-when-idle))
+
     (advice-mapc (lambda (advice _props)
                    (when (string-match-p "linear-emacs-list-issues"
                                          (prin1-to-string advice))
@@ -3773,7 +3840,13 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     (advice-mapc (lambda (advice _props)
                    (advice-remove 'linear-emacs-list-issues advice))
                  'linear-emacs-list-issues)
+    (advice-mapc (lambda (advice _props)
+                   (when (string-match-p "linear-emacs-list-issues"
+                                         (prin1-to-string advice))
+                     (advice-remove 'org-agenda-redo advice)))
+                 'org-agenda-redo)
     (advice-add 'org-agenda :before #'bob/linear-refresh-before-org-agenda)
+    (advice-add 'org-agenda-redo :before #'bob/linear-refresh-before-org-agenda)
     (advice-add 'linear-emacs-list-issues :after #'bob/linear-post-refresh-agenda))
 #+end_src
 
