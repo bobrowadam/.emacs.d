@@ -74,7 +74,9 @@
 * Which key
 #+begin_src elisp
   (use-package which-key
-    :init (which-key-mode 1))
+    :defer 0.5
+    :config
+    (which-key-mode 1))
 #+end_src
 * Init Server
 #+begin_src elisp
@@ -604,7 +606,6 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     ("C-^" . (lambda () (interactive (delete-indentation -1))))
     ("M-C-h" . backward-kill-sexp)
     ("C-x -" . bob/golden-ratio)
-    ("C-x f" . recentf-open-files)
     ("C-x k" . bob/kill-this-buffer)
     ("M-SPC" . cycle-spacing)
     ("<s-return>" . toggle-frame-fullscreen)
@@ -945,11 +946,16 @@ For claude code protocol via web-sockets
 
   (use-package monet
     :ensure (:repo "stevemolitor/monet" :fetcher github :files ("*.el") :branch "main")
-    :demand t
+    :commands (monet-mode
+               monet-start-server
+               monet-start-server-function
+               monet-start-server-in-directory)
     :custom
     (monet-diff-tool 'monet-simple-diff-tool)
     :config
-    (add-hook 'after-init-hook #'bob/cleanup-stale-monet-lockfiles))
+    (if after-init-time
+        (bob/cleanup-stale-monet-lockfiles)
+      (add-hook 'after-init-hook #'bob/cleanup-stale-monet-lockfiles)))
 #+end_src
 *** ClaudEmacs
 #+begin_src elisp
@@ -1127,6 +1133,7 @@ WINDOW-ID may be a string or integer; this is the value returned by
   (defun bob/open-claude-in-kitty ()
     "Open or focus Claude Code in Kitty for the current monorepo root."
     (interactive)
+    (require 'monet)
     (let* ((dir (expand-file-name (bob/monorepo-root)))
            (title (file-name-nondirectory (directory-file-name dir)))
            (tab-id (gethash dir bob/kitty-claude-tabs)))
@@ -1643,9 +1650,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (setq savehist-save-minibuffer-history t)
     (savehist-mode))
 
-  (use-package recentf-mode
+  (use-package recentf
     :ensure nil
-    :init (recentf-mode))
+    :bind ("C-x f" . recentf-open-files)
+    :init
+    (run-with-idle-timer 1 nil #'recentf-mode))
 #+end_src
 
 * Markdown
@@ -2856,21 +2865,24 @@ LSP/DAP servers manager
 
 ** Snippets
 #+begin_src elisp
-  (use-package yasnippet-snippets)
+  (use-package yasnippet-snippets
+    :defer t)
   (use-package yasnippet
+    :commands (yas-expand yas-global-mode yas-minor-mode-on)
     :custom
     (yas-wrap-around-region t)
     (yas-also-auto-indent-first-line t)
-    :hook
-    (prog-mode . yas-minor-mode-on)
-    (emacs-lisp-mode . yas-minor-mode-on)
-    (text-mode . yas-minor-mode-on)
+    :init
+    (add-hook 'emacs-startup-hook
+              (lambda ()
+                (run-with-idle-timer 1 nil #'yas-global-mode)))
     :bind (:map yas-minor-mode-map
                 ("C-<tab>" . yas-expand))
     :config
-    (setq yas-snippet-dirs
-          `(,(concat user-emacs-directory "snippets")
-            ,yasnippet-snippets-dir))
+    (let ((dirs (list (concat user-emacs-directory "snippets"))))
+      (when (require 'yasnippet-snippets nil t)
+        (push yasnippet-snippets-dir dirs))
+      (setq yas-snippet-dirs (nreverse dirs)))
     (yas-reload-all))
 #+end_src
 ** Highlight indent guides
@@ -3268,8 +3280,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 ** Mode line
 #+begin_src elisp
   (use-package doom-modeline
-    :demand t
-    :after (:any eglot magit dired prog-mode)
+    :defer 0.5
     :custom
     (doom-modeline-percent-position nil)
     (doom-modeline-time-icon nil)
