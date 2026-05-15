@@ -2027,6 +2027,7 @@ Align tables in markdown and org-mode
 * Denote
 #+begin_src elisp
   (use-package denote
+    :disabled t
     :commands (denote denote-mode denote-open-or-create denote-directory-files)
     :init
     ;; Keep Denote available for archived legacy notes while new notes move to Grove.
@@ -2039,6 +2040,7 @@ Align tables in markdown and org-mode
     ("C-c d d" . denote-open-or-create))
 
   (use-package denote-journal
+    :disabled t
     :ensure (:repo "protesilaos/denote-journal" :fetcher github :files ("*.el" "*.texi"))
     :config
     (add-hook 'calendar-mode-hook #'denote-journal-calendar-mode)
