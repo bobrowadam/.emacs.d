@@ -2024,29 +2024,6 @@ Align tables in markdown and org-mode
     (global-org-modern-mode))
 #+end_src
 
-* Denote
-#+begin_src elisp
-  (use-package denote
-    :disabled t
-    :commands (denote denote-mode denote-open-or-create denote-directory-files)
-    :init
-    ;; Keep Denote available for archived legacy notes while new notes move to Grove.
-    (setq denote-directory (expand-file-name "archive/denote/" org-directory))
-    :custom
-    ;; (denote-open-or-create-fn 'consult-file)
-    (denote-date-prompt-use-org-read-date t)
-    (denote-prompts '(title keywords file-type))
-    :bind
-    ("C-c d d" . denote-open-or-create))
-
-  (use-package denote-journal
-    :disabled t
-    :ensure (:repo "protesilaos/denote-journal" :fetcher github :files ("*.el" "*.texi"))
-    :config
-    (add-hook 'calendar-mode-hook #'denote-journal-calendar-mode)
-    :bind ("C-c d t" . denote-journal-new-or-existing-entry))
-#+end_src
-
 * Grove
 Obsidian-like note-taking workspace: file tree sidebar, wikilinks,
 backlinks, daily notes, and a Graphviz-powered graph view. No DB —
@@ -3649,6 +3626,7 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
      '(("https://learncodethehardway.com/feed.rss" programming learning c)
        ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
        ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
+       ("https://www.reddit.com/r/PiCodingAgent/.rss" programming pi reddit)
        ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
        ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
        ("https://danluu.com/atom.xml" programming blog danluu)
