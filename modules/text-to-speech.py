@@ -76,7 +76,7 @@ for i, text in enumerate(texts):
     try:
         audio = client.text_to_speech.convert(
             text=text,
-            voice_id="HIGUfNOdjuWQwwapnTRW",
+            voice_id="VU16byTywsWv5JpI8rbc",
             model_id="eleven_multilingual_v2",
             output_format="mp3_44100_128",
             voice_settings=VoiceSettings(stability=0.5, similarity_boost=0.75, speed=1.0),
