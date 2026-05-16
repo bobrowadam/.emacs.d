@@ -3624,14 +3624,17 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     :custom
     (elfeed-feeds
      '(("https://learncodethehardway.com/feed.rss" programming learning c)
+       
        ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
        ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
-       ("https://www.reddit.com/r/PiCodingAgent/.rss" programming pi reddit)
+       
        ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
        ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
        ("https://danluu.com/atom.xml" programming blog danluu)
        ("https://protesilaos.com/master.xml" programming blog emacs)
-       ("https://eshelyaron.com/rss.xml" programming blog emacs)))
+       ("https://eshelyaron.com/rss.xml" programming blog emacs)
+       ("https://www.reddit.com/r/PiCodingAgent/.rss" programming pi reddit)
+       ("https://pi.dev/news.xml" programming blog pi)))
     :bind
     ("C-c w" . elfeed)
     (:map elfeed-search-mode-map
