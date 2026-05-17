@@ -3287,7 +3287,9 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
              (interactive)
              (setq theme-ring (-rotate -1 theme-ring))
              (mapc #'disable-theme custom-enabled-themes)
-             (load-theme (car theme-ring) t))
+             (let ((theme (car theme-ring)))
+               (load-theme theme t)
+               (message "Loaded %s" theme)))
            "Cycle through registered themes.")))
 
     (bob/register-and-load-themes modus-flexoki-light modus-flexoki-dark kanagawa-lotus kanagawa-dragon doom-gruvbox doom-material)
