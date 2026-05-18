@@ -2666,7 +2666,7 @@ LSP/DAP servers manager
 **** Basic Settings
 #+begin_src elisp
   (use-package eglot
-    ;; :ensure (:wait t)
+    :ensure nil
     :after (fnm exec-path-from-shell)
     :custom-face (eglot-highlight-symbol-face ((t (:inherit bold :underline t :slant italic))))
     :commands (eglot eglot-ensure eglot-shutdown-all)
