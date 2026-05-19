@@ -3512,7 +3512,9 @@ connections:
 The full configuration lives in =modules/bob-ejc-sql.el=.
 #+begin_src elisp
   (use-package clomacs)
-  (use-package ejc-sql)
+  (use-package ejc-sql
+    :config
+    (ejc-set-column-width-limit 0))
 
   (use-package bob-ejc-sql
     :ensure nil
