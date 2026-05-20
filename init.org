@@ -2122,6 +2122,7 @@ just org files in a directory + ripgrep.
     (magit-process-apply-ansi-colors 'filter)
     (magit-commit-show-diff nil)
     (magit-diff-refine-hunk (quote all))
+    (magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
     (magit-read-worktree-directory-function #'bob/magit-read-worktree-directory)
     :config
     (add-hook 'magit-status-sections-hook #'magit-insert-worktrees t)
