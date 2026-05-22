@@ -98,7 +98,7 @@ as string, or nil.  Prefers the focused window when multiple match."
 ;;; Keybindings
 
 (global-set-key (kbd "C-c p p") #'bob/open-pi-in-kitty)
-(global-set-key (kbd "C-c p s") #'pi/send-buffer-context)
+(global-set-key (kbd "C-c p s") #'bob/pi-send-buffer-context)
 (global-set-key (kbd "C-c p a") #'pi/ask)
 
 (provide 'kitty-pi)

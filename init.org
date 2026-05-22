@@ -1320,12 +1320,58 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 *** pi-coding-agent
 #+begin_src elisp
   (use-package pi-coding-agent
+    :preface
+    (defun bob/pi-cycle-solveit-mode ()
+      "Cycle the solveit extension mode for the current Pi session."
+      (interactive)
+      (pi-coding-agent-run-command "cycle-mode"))
+
+    (defun bob/pi-coding-agent-send-region-context (prompt)
+      "Send the active region and PROMPT to the current project Pi chat.
+Return non-nil when a matching Pi chat buffer handled the message."
+      (unless (use-region-p)
+        (user-error "No active region"))
+      (when-let* ((chat-buf (car (pi-coding-agent-project-buffers))))
+        (let* ((file (buffer-file-name))
+               (line (line-number-at-pos (region-beginning)))
+               (lang (replace-regexp-in-string
+                      "-ts-mode\\|-mode" "" (symbol-name major-mode)))
+               (selection (buffer-substring-no-properties
+                           (region-beginning) (region-end)))
+               (message (format "%s%s%s\n```%s\n%s\n```"
+                                (if (string-empty-p prompt) "" (concat prompt "\n\n"))
+                                (if file (format "%s:%s\n" file line) "")
+                                (if file "" (format "%s\n" (buffer-name)))
+                                lang
+                                selection)))
+          (with-current-buffer chat-buf
+            (pi-coding-agent--prepare-and-send message))
+          t)))
+
+    (defun bob/pi-send-buffer-context (prompt)
+      "Send context to Emacs Pi when available, otherwise fall back to Kitty Pi."
+      (interactive "sMessage for Pi: ")
+      (unless (bob/pi-coding-agent-send-region-context prompt)
+        (pi/send-buffer-context prompt)))
+
+    (defun bob/pi-hide-before-navigation (orig &rest args)
+      "Hide an active Pi session before running navigation command ORIG."
+      (when (derived-mode-p 'pi-coding-agent-chat-mode 'pi-coding-agent-input-mode)
+        (pi-coding-agent-toggle))
+      (apply orig args))
     :init (defalias 'pi 'pi-coding-agent)
-    :bind ("C-c C-." . pi-coding-agent-toggle)
+    :bind (("C-c C-." . pi-coding-agent-toggle)
+           :map pi-coding-agent-chat-mode-map
+           ("C-c m" . bob/pi-cycle-solveit-mode)
+           ("S-<tab>" . pi-coding-agent-cycle-thinking)
+           :map pi-coding-agent-input-mode-map
+           ("C-c m" . bob/pi-cycle-solveit-mode)
+           ("S-<tab>" . pi-coding-agent-cycle-thinking))
+
     :custom
-    (pi-coding-agent-input-window-height 0.15)
-    (pi-coding-agent-tool-preview-lines 2)
-    (pi-coding-agent-bash-preview-lines 5)
+    (pi-coding-agent-input-window-height 5)
+    (pi-coding-agent-tool-preview-lines 0)
+    (pi-coding-agent-bash-preview-lines 0)
     (pi-coding-agent-context-warning-threshold 70)
     (pi-coding-agent-context-error-threshold 90)
     (pi-coding-agent-visit-file-other-window t)
@@ -1337,13 +1383,9 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (pi-coding-agent-image-preview-max-width 900)
     (pi-coding-agent-input-markdown-highlighting t)
     :config
-    (defun bob/pi-cycle-solveit-mode ()
-      "Cycle the solveit extension mode for the current Pi session."
-      (interactive)
-      (pi-coding-agent-run-command "cycle-mode"))
-
-    (define-key pi-coding-agent-chat-mode-map (kbd "C-c m") #'bob/pi-cycle-solveit-mode)
-    (define-key pi-coding-agent-input-mode-map (kbd "C-c m") #'bob/pi-cycle-solveit-mode)
+    (advice-add 'consult-buffer :around #'bob/pi-hide-before-navigation)
+    (advice-add 'consult-project-buffer :around #'bob/pi-hide-before-navigation)
+    (advice-add 'project-switch-project :around #'bob/pi-hide-before-navigation)
 
     ;; Workaround: Emacs 31 `bash-ts-mode' has :around advice that
     ;; redirects to `sh-mode' in buffers without a filename.  This
