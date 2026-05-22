@@ -1830,6 +1830,7 @@ Align tables in markdown and org-mode
     (add-to-list 'org-src-lang-modes '("bun" . typescript-ts))
     (add-to-list 'org-src-lang-modes '("mermaid" . mermaid-mode))
     (add-to-list 'org-src-lang-modes '("ts" . typescript-ts))
+    (add-to-list 'org-src-lang-modes '("typescript" . typescript-ts))
     (add-to-list 'org-src-lang-modes '("rust" . rust-ts))
     ;; Fix imenu to use org-mode's specialized function
     (add-hook
