@@ -1323,16 +1323,28 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :init (defalias 'pi 'pi-coding-agent)
     :bind ("C-c C-." . pi-coding-agent-toggle)
     :custom
-    (pi-coding-agent-input-window-height 10)
-    (pi-coding-agent-tool-preview-lines 10)
+    (pi-coding-agent-input-window-height 0.15)
+    (pi-coding-agent-tool-preview-lines 2)
     (pi-coding-agent-bash-preview-lines 5)
     (pi-coding-agent-context-warning-threshold 70)
     (pi-coding-agent-context-error-threshold 90)
     (pi-coding-agent-visit-file-other-window t)
     (pi-coding-agent-hot-tail-turn-count 3)
     (pi-coding-agent-copy-raw-markdown t)
+    (pi-coding-agent-extension-status-faces
+     '(("solveit-mode" . (:foreground "#eed49f" :weight bold))
+       ("mempalace" . (:foreground "#c6a0f6" :weight bold))))
+    (pi-coding-agent-image-preview-max-width 900)
     (pi-coding-agent-input-markdown-highlighting t)
     :config
+    (defun bob/pi-cycle-solveit-mode ()
+      "Cycle the solveit extension mode for the current Pi session."
+      (interactive)
+      (pi-coding-agent-run-command "cycle-mode"))
+
+    (define-key pi-coding-agent-chat-mode-map (kbd "C-c m") #'bob/pi-cycle-solveit-mode)
+    (define-key pi-coding-agent-input-mode-map (kbd "C-c m") #'bob/pi-cycle-solveit-mode)
+
     ;; Workaround: Emacs 31 `bash-ts-mode' has :around advice that
     ;; redirects to `sh-mode' in buffers without a filename.  This
     ;; breaks `md-ts-mode' grammar harvesting for bash code blocks.
