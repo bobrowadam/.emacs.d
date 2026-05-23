@@ -3491,6 +3491,22 @@ Falls back to `default-directory' when not in a git repo."
      '(("\\_<\\([[:lower:]][[:alnum:]_-]*\\)=" 1 'font-lock-keyword-face prepend))
      'append))
 
+  (defun bob/kubed-log-font-lock ()
+    "Highlight common lines in kubed log buffers."
+    (font-lock-add-keywords
+     nil
+     '(("^\\(\\[[0-9:.]+\\]\\)" 1 'shadow prepend)
+       ("^\\([0-9]+:[0-9][0-9]:[0-9][0-9] [AP]M\\)" 1 'shadow prepend)
+       ("\\[[0-9:.]+\\] \\(ERROR\\)" 1 'error prepend)
+       ("\\[[0-9:.]+\\] \\(WARN\\)" 1 'warning prepend)
+       ("\\[[0-9:.]+\\] \\(INFO\\)" 1 'success prepend)
+       ("\\[[0-9:.]+\\] \\(DEBUG\\|TRACE\\)" 1 'font-lock-comment-face prepend)
+       ("Found 0 errors" . 'success)
+       ("Found [1-9][0-9]* errors?" . 'error)
+       ("File change detected\\|Starting incremental compilation\\|Restarting .+" . 'font-lock-keyword-face))
+     'append)
+    (font-lock-flush))
+
   (use-package logview
     :mode ("\\.log\\(?:\\.[0-9]+\\)?\\'" . logview-mode)
     :custom
@@ -3780,7 +3796,49 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
 #+end_src
 * Kubed
 #+begin_src elisp
-  (use-package kubed)
+  (use-package kubed
+    :config
+    (require 'xterm-color nil t)
+
+    (defun bob/kubed-colorize-log-output (output)
+      "Apply xterm ANSI colors to kubed log OUTPUT."
+      (if (fboundp 'xterm-color-filter)
+          (xterm-color-filter output)
+        output))
+
+    (defun bob/kubed-log-process-filter (proc output)
+      "Insert kubed log OUTPUT with ANSI/xterm colors applied."
+      (when (buffer-live-p (process-buffer proc))
+        (with-current-buffer (process-buffer proc)
+          (let ((inhibit-read-only t)
+                (moving (= (point) (process-mark proc))))
+            (save-excursion
+              (goto-char (process-mark proc))
+              (insert (bob/kubed-colorize-log-output output))
+              (set-marker (process-mark proc) (point)))
+            (when moving (goto-char (process-mark proc)))))))
+
+    (defun bob/kubed-colorize-log-process (proc)
+      "Install ANSI/xterm color filtering on kubed log PROC."
+      (when-let* ((buf (process-buffer proc)))
+        (when (string-prefix-p "*kubed-logs" (buffer-name buf))
+          (set-process-filter proc #'bob/kubed-log-process-filter))))
+
+    (defun bob/kubed-colorize-started-log-process (proc)
+      "Colorize kubed log PROC after `kubed-logs' creates it."
+      (bob/kubed-colorize-log-process proc)
+      proc)
+
+    (defun bob/kubed-logview-mode ()
+      "Use lightweight log highlighting in kubed log buffers."
+      (font-lock-mode 1)
+      (bob/kubed-log-font-lock))
+
+    (remove-hook 'kubed-logs-setup-hook #'bob/kubed-enable-log-colors)
+    (remove-hook 'kubed-logs-setup-hook #'bob/kubed-colorize-log-process)
+    (add-hook 'kubed-logs-setup-hook #'bob/kubed-logview-mode)
+    (advice-add 'start-file-process :filter-return
+                #'bob/kubed-colorize-started-log-process))
 #+end_src
 * Combobulate
 #+begin_src elisp
