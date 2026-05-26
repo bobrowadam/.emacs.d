@@ -60,7 +60,11 @@ as string, or nil.  Prefers the focused window when multiple match."
 (defun bob/open-pi-in-kitty ()
   "Open or focus Pi coding agent in Kitty for the current project root."
   (interactive)
-  (let* ((dir (expand-file-name (bob/monorepo-root)))
+  (let* ((dir (file-name-as-directory
+               (expand-file-name
+                (or (when-let* ((project (project-current nil)))
+                      (project-root project))
+                    (bob/monorepo-root)))))
          (tab-id (gethash dir bob/kitty-pi-tabs)))
     ;; Try hash first, then discover existing tab by cwd+process, then launch new.
     (cond
