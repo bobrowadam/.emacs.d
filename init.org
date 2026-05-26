@@ -176,13 +176,13 @@
                 (set-last-shell-buffer-as-first
                  (seq-filter
                   (lambda (b) (or (equal (with-current-buffer b major-mode) 'vterm-mode)
-                             (equal (with-current-buffer b major-mode) 'eshell-mode)
-                             (with-current-buffer b (derived-mode-p 'comint-mode))
-                             (with-current-buffer b (derived-mode-p 'compilation-mode))
-                             (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
-                             (equal (with-current-buffer b major-mode) 'ghostel-mode)
-                             (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
-                             (equal (with-current-buffer b major-mode) 'pgmacs-mode)))
+                                  (equal (with-current-buffer b major-mode) 'eshell-mode)
+                                  (with-current-buffer b (derived-mode-p 'comint-mode))
+                                  (with-current-buffer b (derived-mode-p 'compilation-mode))
+                                  (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
+                                  (equal (with-current-buffer b major-mode) 'ghostel-mode)
+                                  (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
+                                  (equal (with-current-buffer b major-mode) 'pgmacs-mode)))
                   (mapcar (function buffer-name)
                           (buffer-list))))))
               (shell-buffer (consult--read shell-buffers
@@ -216,20 +216,18 @@
                 (package-json-raw (bob/read-file-content "package.json"))
                 (package-json (json-parse-string package-json-raw
                                                  :object-type 'alist)))
-      (or (assocdr 'check-types (assocdr 'scripts package-json))
-          (assocdr 'typecheck (assocdr 'scripts package-json))
-          (assocdr 'type-check (assocdr 'scripts package-json)))))
+      (assocdr 'check-types (assocdr 'scripts package-json))))
 
   (defun bob/npm--project-name ()
     "Get the current project name from the package json file."
     (when-let* ((project (project-current))
-                (project-root-path (project-root project))
-                (package-json-file-path (format "%s/package.json" project-root-path))
-                (package-json (and
-                               (file-exists-p package-json-file-path)
-                               (json-parse-string (bob/read-file-content
-                                                   (format "%s/package.json" project-root-path))
-                                                  :object-type 'alist))))
+               (project-root-path (project-root project))
+               (package-json-file-path (format "%s/package.json" project-root-path))
+               (package-json (and
+                              (file-exists-p package-json-file-path)
+                              (json-parse-string (bob/read-file-content
+                                                  (format "%s/package.json" project-root-path))
+                                                 :object-type 'alist))))
       (assocdr 'name package-json)))
 
   (defun bob/compilation-buffer-name ()
@@ -263,7 +261,7 @@
                                   t (lambda (_)
                                       compilation-buffer-name)))
               (t
-               (compilation-start local-check-types-command
+               (compilation-start "npm run check-types -- -w"
                                   t (lambda (_)
                                       compilation-buffer-name))))
       (error "probably not a typescript application")))
@@ -2182,8 +2180,6 @@ just org files in a directory + ripgrep.
     (magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
     (magit-read-worktree-directory-function #'bob/magit-read-worktree-directory)
     :config
-    (require 'seq)
-    (require 'subr-x)
     (add-hook 'magit-status-sections-hook #'magit-insert-worktrees t)
     (defun bob/create-github-repo ()
       "Create a new Github repo using the Github API."
@@ -2265,104 +2261,6 @@ just org files in a directory + ripgrep.
       (car (-find (lambda (worktree)
                     (member branch-name worktree))
                   (magit-list-worktrees))))
-
-    (defvar bob/magit-cleanup-protected-branches '("main" "master" "develop" "dev" "staging" "production" "HEAD")
-      "Branch names never deleted by `bob/magit-cleanup-merged-branches'.")
-
-    (defvar bob/magit-cleanup-base-branches '("develop" "main" "master")
-      "Preferred base branches for merged branch cleanup.")
-
-    (defun bob/magit-cleanup--default-base-branch ()
-      "Return the first preferred base branch that exists."
-      (or (seq-find #'magit-rev-name bob/magit-cleanup-base-branches)
-          (magit-get-current-branch)))
-
-    (defun bob/magit-cleanup--read-base-branch ()
-      "Read the branch into which candidate branches must be merged."
-      (magit-completing-read "Branches merged into"
-                             (magit-list-local-branch-names)
-                             nil t nil nil
-                             (bob/magit-cleanup--default-base-branch)))
-
-    (defun bob/magit-cleanup--patch-equivalent-p (base branch)
-      "Return non-nil if BRANCH's unique patches are already in BASE."
-      (let ((cherry (magit-git-lines "cherry" base branch)))
-        (and cherry
-             (seq-every-p (lambda (line)
-                            (string-prefix-p "-" line))
-                          cherry))))
-
-    (defun bob/magit-cleanup--branch-deletable-p (base branch)
-      "Return non-nil if BRANCH is ancestry-merged or squash-merged into BASE."
-      (or (magit-rev-ancestor-p branch base)
-          (bob/magit-cleanup--patch-equivalent-p base branch)))
-
-    (defun bob/magit-cleanup--local-candidates (base)
-      "Return local branch names deletable after merge or squash into BASE."
-      (let ((protected (append bob/magit-cleanup-protected-branches
-                               (list base (magit-get-current-branch)))))
-        (seq-filter (lambda (branch)
-                      (and (not (member branch protected))
-                           (bob/magit-cleanup--branch-deletable-p base branch)))
-                    (magit-list-local-branch-names))))
-
-    (defun bob/magit-cleanup--read-branches (prompt candidates)
-      "Read branch CANDIDATES for PROMPT, defaulting to all candidates."
-      (let ((crm-separator "[ \t]*,[ \t]*"))
-        (or (magit-completing-read-multiple prompt candidates nil t nil nil
-                                            (string-join candidates ","))
-            candidates)))
-
-    (defun bob/magit-cleanup--remote-for-base (base)
-      "Return the remote associated with BASE, falling back to the first remote."
-      (let ((remote (magit-get "branch" base "remote")))
-        (or (and remote (not (string= remote ".")) remote)
-            (car (magit-list-remotes)))))
-
-    (defun bob/magit-cleanup--remote-candidates (base local-branches)
-      "Return remote branches matching LOCAL-BRANCHES deletable after merge/squash."
-      (when-let* ((remote (bob/magit-cleanup--remote-for-base base))
-                  (remote-base (format "%s/%s" remote base))
-                  (_ (magit-rev-name remote-base)))
-        (let* ((prefix (concat remote "/"))
-               (protected (append bob/magit-cleanup-protected-branches (list base)))
-               (remote-branches (magit-git-lines "branch" "-r" "--format=%(refname:short)")))
-          (seq-filter (lambda (branch)
-                        (let ((remote-branch (concat prefix branch)))
-                          (and (member branch local-branches)
-                               (not (member branch protected))
-                               (bob/magit-cleanup--branch-deletable-p remote-base remote-branch))))
-                      (delq nil
-                            (mapcar (lambda (branch)
-                                      (when (string-prefix-p prefix branch)
-                                        (substring branch (length prefix))))
-                                    remote-branches))))))
-
-    (defun bob/magit-cleanup--maybe-delete-origin-branches (base local-branches)
-      "Offer to delete matching remote LOCAL-BRANCHES merged into remote BASE."
-      (when-let* ((remote (bob/magit-cleanup--remote-for-base base))
-                  (candidates (bob/magit-cleanup--remote-candidates base local-branches)))
-        (when (and candidates
-                   (yes-or-no-p (format "Also delete %d matching merged branch(es) from %s? "
-                                        (length candidates) remote)))
-          (let ((selected (bob/magit-cleanup--read-branches "Delete remote branches: " candidates)))
-            (when selected
-              (apply #'magit-run-git-async "push" remote "--delete" selected))))))
-
-    (defun bob/magit-cleanup-merged-branches (&optional base)
-      "Delete local branches merged or squash-merged into BASE using Magit.
-  Also offers to delete matching branches from the base branch's remote."
-      (interactive)
-      (let* ((base (or base (bob/magit-cleanup--read-base-branch)))
-             (candidates (bob/magit-cleanup--local-candidates base)))
-        (if (null candidates)
-            (message "No local branches merged into %s" base)
-          (let ((selected (bob/magit-cleanup--read-branches "Delete local merged/squashed branches: " candidates)))
-            (when (and selected
-                       (yes-or-no-p (format "Delete %d local branch(es) merged/squashed into %s? "
-                                            (length selected) base)))
-              (apply #'magit-run-git-async "branch" "-d" selected)
-              (bob/magit-cleanup--maybe-delete-origin-branches base selected))))))
 
     (defun bob/magit-fetch-and-rebase ()
       "Fetch and rebase current branch onto main/master."
