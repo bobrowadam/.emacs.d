@@ -342,6 +342,20 @@ overlay/buffer goes away."
 
 ;;; Watchdog ----------------------------------------------------------
 
+(defun bob/gptel-activity--live-fsms ()
+  "Return FSMs still backed by live `gptel--request-alist' processes."
+  (when (and (boundp 'gptel--request-alist)
+             gptel--request-alist)
+    (mapcar (lambda (entry) (cadr entry))
+            (setq gptel--request-alist
+                  (cl-remove-if
+                   (lambda (entry)
+                     (let ((proc (car-safe entry)))
+                       (and (processp proc)
+                            (memq (process-status proc)
+                                  '(exit signal closed failed)))))
+                   gptel--request-alist)))))
+
 (defun bob/gptel-activity--watchdog-tick ()
   "Reconcile tracked requests against `gptel--request-alist'.
 
@@ -351,10 +365,7 @@ via an error or abort path that didn't run
 `gptel-post-response-functions').  Stop the watchdog itself when
 there is nothing left to track."
   (condition-case err
-      (let* ((live-fsms (when (and (boundp 'gptel--request-alist)
-                                   gptel--request-alist)
-                          (mapcar (lambda (entry) (cadr entry))
-                                  gptel--request-alist)))
+      (let* ((live-fsms (bob/gptel-activity--live-fsms))
              (stale (cl-remove-if
                      (lambda (entry) (memq (car entry) live-fsms))
                      bob/gptel-activity--requests)))
@@ -602,10 +613,7 @@ FSM in `bob/gptel-activity--requests' that is no longer in
 `gptel--request-alist'.  Logs a `Done' line for each.  The
 watchdog catches any stragglers."
   (bob/gptel-activity--safe-hook 'post-response
-    (let* ((live-fsms (when (and (boundp 'gptel--request-alist)
-                                 gptel--request-alist)
-                        (mapcar (lambda (entry) (cadr entry))
-                                gptel--request-alist)))
+    (let* ((live-fsms (bob/gptel-activity--live-fsms))
            (completed (cl-remove-if
                        (lambda (entry) (memq (car entry) live-fsms))
                        bob/gptel-activity--requests)))
