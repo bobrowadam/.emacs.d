@@ -2831,19 +2831,36 @@ LSP/DAP servers manager
     ;; (eglot-booster-mode)
     (setq-default eglot-workspace-configuration
                    '(:biome (:enabled t)))
+    (defun bob/typescript-tsconfig-has-effect-plugin-p ()
+      "Return non-nil when the nearest tsconfig enables @effect/language-service."
+      (when-let* ((tsconfig-dir (locate-dominating-file default-directory "tsconfig.json"))
+                  (tsconfig (expand-file-name "tsconfig.json" tsconfig-dir)))
+        (with-temp-buffer
+          (insert-file-contents tsconfig)
+          (goto-char (point-min))
+          (re-search-forward "\"@effect/language-service\"" nil t))))
+
     (add-to-list 'eglot-server-programs
                  `((js2-mode js-mode js-ts-mode typescript-ts-mode tsx-ts-mode)
                    . ,(lambda (&rest _)
                         (let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
                                (biome (and nm-dir (expand-file-name "node_modules/.bin/biome" nm-dir)))
                                (tsserver-path (and nm-dir (expand-file-name "node_modules/typescript/lib" nm-dir)))
-                               (init-options (and tsserver-path
-                                                  (file-directory-p tsserver-path)
-                                                  `(:tsserver (:path ,tsserver-path))))
+                               (effect-ls-path (and nm-dir (expand-file-name "node_modules/@effect/language-service" nm-dir)))
+                               (init-options nil)
                                (command (if (and biome (file-executable-p biome))
                                             (list "rass" "--" "typescript-language-server" "--stdio"
                                                   "--" biome "lsp-proxy")
                                           '("typescript-language-server" "--stdio"))))
+                          (when (and tsserver-path (file-directory-p tsserver-path))
+                            (setq init-options (plist-put init-options :tsserver `(:path ,tsserver-path))))
+                          (when (and effect-ls-path
+                                     (file-directory-p effect-ls-path)
+                                     (bob/typescript-tsconfig-has-effect-plugin-p))
+                            (setq init-options
+                                  (plist-put init-options :plugins
+                                             (vector (list :name "@effect/language-service"
+                                                           :location effect-ls-path)))))
                           (if init-options
                               (append command (list :initializationOptions init-options))
                             command)))))
