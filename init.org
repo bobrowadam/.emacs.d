@@ -1315,7 +1315,10 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** PI
 *** pi-coding-agent
 #+begin_src elisp
-  (load-file (expand-file-name "agent/extensions/emacs/elisp/pi-emacs.el" "~/.pi"))
+  (use-package pi-emacs
+    :ensure nil
+    :after project
+    :demand t)
 
   (use-package pi-coding-agent
     :config
@@ -2731,7 +2734,7 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
 ** Project
 #+begin_src elisp
   (use-package project
-    ;; :ensure nil
+    :ensure nil
     :custom
     (project-list-file (format "%sprojects" user-emacs-directory))
     (project-vc-extra-root-markers '("package.json"))
