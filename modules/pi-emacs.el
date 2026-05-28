@@ -370,18 +370,25 @@ Press q or Escape to dismiss."
     (expand-file-name (concat encoded ".sock")
                       (pi/socket-dir))))
 
+(defun pi/socket-paths-for-dir (dir)
+  "Return hashed and legacy socket paths for DIR."
+  (mapcar (lambda (encoded)
+            (expand-file-name (concat encoded ".sock") (pi/socket-dir)))
+          (list (pi/encode-cwd dir) (pi/legacy-encode-cwd dir))))
+
 (defun pi/socket-path-candidates (&optional cwd)
   "Return candidate Unix socket paths for CWD.
-The hashed path is preferred, with the legacy full-path socket path as a
-fallback for pre-migration sessions."
-  (let* ((dir (pi/socket-root cwd))
-         (primary (expand-file-name (concat (pi/encode-cwd dir) ".sock")
-                                    (pi/socket-dir)))
-         (legacy (expand-file-name (concat (pi/legacy-encode-cwd dir) ".sock")
-                                   (pi/socket-dir))))
-    (if (string= primary legacy)
-        (list primary)
-      (list primary legacy))))
+Try CWD's project root first, then its Git/worktree root."
+  (let* ((root (pi/socket-root cwd))
+         (git-root (when-let* ((dir (locate-dominating-file root ".git")))
+                     (directory-file-name (expand-file-name dir))))
+         (dirs (delete-dups (delq nil (list root git-root))))
+         candidates)
+    (dolist (dir dirs)
+      (dolist (path (pi/socket-paths-for-dir dir))
+        (unless (member path candidates)
+          (setq candidates (append candidates (list path))))))
+    candidates))
 
 (defun pi/send (message &optional cwd)
   "Send MESSAGE (a plist) as newline-delimited JSON to Pi's socket.
@@ -476,6 +483,11 @@ Marks the message for terminal focus and submit on the receiver side."
      (pi/--add-selection-and-language)
      (pi/--add-text text)
      (pi/add-flymake-diagnostics))))
+
+(defun bob/pi-send-buffer-context (&optional text)
+  "Send current buffer context to Pi."
+  (interactive "sMessage for Pi: ")
+  (pi/send-buffer-context text))
 
 (defun pi/--add-buffer-file (msg)
   "Add file and line number to MSG if buffer is visiting a file."

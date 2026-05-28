@@ -36,25 +36,39 @@ Searches the hash table first, then queries Kitty.  Returns a string or nil."
 
 ;;; Open / focus
 
-(defun bob/kitty-find-pi-tab (dir)
-  "Find a Kitty tab running pi in DIR, return its active window ID
-as string, or nil.  Prefers the focused window when multiple match."
+(defun bob/kitty-find-pi-tab (dir &optional include-nested)
+  "Find a Kitty tab running pi in DIR, return its active window ID.
+When INCLUDE-NESTED is non-nil, also match pi sessions in subdirectories of DIR.
+Prefers exact cwd matches, then focused nested matches, then the first nested match."
   (condition-case nil
       (let ((os-windows (json-parse-string (bob/kitten "ls") :array-type 'list))
+            (dir (directory-file-name (expand-file-name dir)))
             (focused nil)
-            (first-match nil))
+            (first-match nil)
+            (focused-nested nil)
+            (first-nested nil))
         (dolist (os-win os-windows)
           (dolist (tab (gethash "tabs" os-win))
             (dolist (win (gethash "windows" tab))
-              (when (cl-some (lambda (proc)
-                               (and (string= (gethash "cwd" proc) (directory-file-name dir))
-                                    (member "pi" (append (gethash "cmdline" proc) nil))))
-                             (append (gethash "foreground_processes" win) nil))
-                (let ((id (number-to-string (gethash "id" win))))
-                  (unless first-match (setq first-match id))
-                  (when (eq (gethash "is_focused" win) t)
-                    (setq focused id)))))))
-        (or focused first-match))
+              (when-let* ((proc (cl-find-if
+                                  (lambda (proc)
+                                    (member "pi" (append (gethash "cmdline" proc) nil)))
+                                  (append (gethash "foreground_processes" win) nil)))
+                          (cwd (gethash "cwd" proc))
+                          (cwd (directory-file-name (expand-file-name cwd))))
+                (let ((exact (string= cwd dir))
+                      (nested (and include-nested (file-in-directory-p cwd dir)))
+                      (id (number-to-string (gethash "id" win))))
+                  (cond
+                   (exact
+                    (unless first-match (setq first-match id))
+                    (when (eq (gethash "is_focused" win) t)
+                      (setq focused id)))
+                   (nested
+                    (unless first-nested (setq first-nested id))
+                    (when (eq (gethash "is_focused" win) t)
+                      (setq focused-nested id)))))))))
+        (or focused first-match focused-nested first-nested))
     (error nil)))
 
 (defun bob/open-pi-in-kitty ()
@@ -70,7 +84,7 @@ as string, or nil.  Prefers the focused window when multiple match."
     (cond
      ((and tab-id (bob/kitty-tab-exists-p tab-id))
       (bob/kitty-focus-tab tab-id))
-     ((when-let* ((found-id (bob/kitty-find-pi-tab dir)))
+     ((when-let* ((found-id (bob/kitty-find-pi-tab dir (derived-mode-p 'magit-status-mode))))
         (puthash dir found-id bob/kitty-pi-tabs)
         (bob/kitty-focus-tab found-id)
         t))
