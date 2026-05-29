@@ -2215,8 +2215,12 @@ just org files in a directory + ripgrep.
         (project-forget-projects-under worktree t)
         ;; Delete the worktree
         (funcall orig-fun worktree)
-        ;; Delete local branches
-        (magit-run-git "branch" "-D" branch-name)))
+        ;; Delete local branch
+        (magit-run-git "branch" "-D" branch-name)
+        ;; Optionally delete remote branch
+        (when (and (magit-get "remote" "origin" "url")
+                   (yes-or-no-p (format "Delete remote branch origin/%s? " branch-name)))
+          (magit-run-git "push" "origin" "--delete" branch-name))))
 
     (advice-add 'magit-worktree-delete :around #'bob/remove-project-roots-advice)
 
