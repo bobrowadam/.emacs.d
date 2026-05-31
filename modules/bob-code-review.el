@@ -18,10 +18,21 @@
   :type '(choice (const :tag "No TTS script" nil) file)
   :group 'bob-code-review)
 
+(defcustom bob-code-review-tts-python
+  (expand-file-name ".venv/bin/python" user-emacs-directory)
+  "Python interpreter used for the Solveit text-to-speech helper."
+  :type 'file
+  :group 'bob-code-review)
+
 (defun bob-code-review--tts-script ()
   "Return the configured Solveit TTS helper script."
   (or bob-code-review-tts-script
       (user-error "Solveit TTS script is not configured")))
+
+(defun bob-code-review--tts-python ()
+  "Return the configured Solveit TTS Python interpreter."
+  (or bob-code-review-tts-python
+      (user-error "Solveit TTS Python is not configured")))
 
 ;;; Faces
 
@@ -588,7 +599,7 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
              (input-file (make-temp-file "bob-code-review-tts-input-" nil ".json"))
              (script-path (bob-code-review--tts-script))
              (_ (with-temp-file input-file (insert (json-encode narrations))))
-             (proc (start-process "bob-code-review-tts" "*bob-code-review-tts*" "python" script-path input-file)))
+             (proc (start-process "bob-code-review-tts" "*bob-code-review-tts*" (bob-code-review--tts-python) script-path input-file)))
         (set-process-filter proc #'bob-code-review--tts-filter)
         (set-process-sentinel proc #'bob-code-review--tts-sentinel)
         (setq bob-code-review--tts-process proc)))))
@@ -650,7 +661,7 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
              (input-file (make-temp-file "bob-code-review-tts-input-" nil ".json"))
              (script-path (bob-code-review--tts-script))
              (_ (with-temp-file input-file (insert (json-encode narrations))))
-             (proc (start-process "bob-code-review-tts" "*bob-code-review-tts*" "python" script-path input-file)))
+             (proc (start-process "bob-code-review-tts" "*bob-code-review-tts*" (bob-code-review--tts-python) script-path input-file)))
         (set-process-filter proc #'bob-code-review--tts-filter)
         (set-process-sentinel proc #'bob-code-review--tts-sentinel)
         (setq bob-code-review--tts-process proc)))))
