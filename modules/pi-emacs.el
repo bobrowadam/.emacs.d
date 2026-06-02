@@ -351,6 +351,28 @@ Press q or Escape to dismiss."
   "Return the directory containing Pi Unix sockets."
   (expand-file-name "sockets" "~/.pi"))
 
+(defun pi/worktree-socket-dir (root)
+  "Return the worktree-index socket directory for ROOT."
+  (expand-file-name
+   (concat "by-worktree/" (pi/encode-cwd root))
+   (pi/socket-dir)))
+
+(defun pi/worktree-socket-candidates (root)
+  "Return newest worktree-index socket symlinks for ROOT."
+  (let ((dir (pi/worktree-socket-dir root)))
+    (when (file-directory-p dir)
+      (mapcar
+       #'car
+       (sort
+        (seq-filter
+         (lambda (entry)
+           (and (string-suffix-p ".sock" (car entry))
+                (file-exists-p (car entry))))
+         (directory-files-and-attributes dir t "\\.sock\\'" nil 'integer))
+        (lambda (a b)
+          (time-less-p (file-attribute-modification-time (cdr b))
+                       (file-attribute-modification-time (cdr a)))))))))
+
 (defun pi/socket-root (&optional cwd)
   "Return the root directory used for Pi socket discovery."
   (directory-file-name
@@ -378,12 +400,16 @@ Press q or Escape to dismiss."
 
 (defun pi/socket-path-candidates (&optional cwd)
   "Return candidate Unix socket paths for CWD.
-Try CWD's project root first, then its Git/worktree root."
+Try worktree-index sockets first, then CWD's project root and Git root."
   (let* ((root (pi/socket-root cwd))
          (git-root (when-let* ((dir (locate-dominating-file root ".git")))
                      (directory-file-name (expand-file-name dir))))
          (dirs (delete-dups (delq nil (list root git-root))))
          candidates)
+    (dolist (dir dirs)
+      (dolist (path (pi/worktree-socket-candidates dir))
+        (unless (member path candidates)
+          (setq candidates (append candidates (list path))))))
     (dolist (dir dirs)
       (dolist (path (pi/socket-paths-for-dir dir))
         (unless (member path candidates)
