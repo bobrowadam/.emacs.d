@@ -1330,9 +1330,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (defun bob/pi-coding-agent-send-region-context (prompt)
       "Send the active region and PROMPT to the current project Pi chat.
 Return non-nil when a matching Pi chat buffer handled the message."
-      (unless (use-region-p)
-        (user-error "No active region"))
-      (when-let* ((chat-buf (car (pi-coding-agent-project-buffers))))
+      (when-let* (((use-region-p))
+                  (chat-buf (car (pi-coding-agent-project-buffers))))
         (let* ((file (buffer-file-name))
                (line (line-number-at-pos (region-beginning)))
                (lang (replace-regexp-in-string
@@ -1350,10 +1349,9 @@ Return non-nil when a matching Pi chat buffer handled the message."
           t)))
 
     (defun bob/pi-send-buffer-context (prompt)
-      "Send context to Emacs Pi when available, otherwise fall back to Kitty Pi."
+      "Send current buffer context to the matching Pi socket."
       (interactive "sMessage for Pi: ")
-      (unless (bob/pi-coding-agent-send-region-context prompt)
-        (pi/send-buffer-context prompt)))
+      (pi/send-buffer-context prompt))
 
     (defun bob/pi-hide-before-navigation (orig &rest args)
       "Hide an active Pi session before running navigation command ORIG."
@@ -2406,6 +2404,7 @@ just org files in a directory + ripgrep.
 #+begin_src elisp
   (use-package magit-gh
     :after magit
+    :demand t
     :ensure (:repo "jonathanchu/magit-gh" :fetcher github :files ("*.el"))
     :custom
     (magit-gh-pr-limit 50))
@@ -3937,6 +3936,8 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
 * Kubed
 #+begin_src elisp
   (use-package kubed
+    :bind
+    ("C-c k" . kubed-transient)
     :config
     (require 'xterm-color nil t)
 
