@@ -2087,7 +2087,20 @@ just org files in a directory + ripgrep.
 #+begin_src elisp
   (use-package grove
     :ensure (:repo "jonathanchu/grove" :fetcher github :files ("*.el"))
-    :bind-keymap ("C-c v" . grove-command-map)
+    :bind (:prefix-map grove-command-map
+                       :prefix "C-c n"
+                       ("v" . grove-open)
+                       ("q" . grove-close)
+                       ("c" . grove-capture)
+                       ("f" . grove-find)
+                       ("s" . grove-search)
+                       ("t" . grove-search-tag)
+                       ("d" . grove-daily)
+                       ("b" . grove-backlinks)
+                       ("i" . grove-inbox-review)
+                       ("l" . grove-link-insert)
+                       ("g" . grove-graph)
+                       ("j" . bob/grove-daily-log-entry))
     :init
     ;; Workaround: previewing files from the tree triggers Grove's
     ;; current-file tracking hooks, which can snap point back during n/p
@@ -2121,8 +2134,6 @@ just org files in a directory + ripgrep.
           (insert "\n"))
         (insert (format-time-string "** %H:%M\n\n"))
         (forward-line -1)))
-    (with-eval-after-load 'grove
-      (define-key grove-command-map (kbd "j") #'bob/grove-daily-log-entry))
     :config
     (setq grove-directory (expand-file-name "grove/" org-directory))
     (unless (file-directory-p grove-directory)
