@@ -3,8 +3,8 @@
 ;; kitty-pi.el — launch/focus the Kitty tab that hosts pi for the current
 ;; monorepo, plus the three global keybindings that drive pi from Emacs.
 ;; Everything pi-generic (sending regions, pulse-on-edit, image paste,
-;; responses, diagnostics) lives in the pi extension itself:
-;;   ~/.pi/agent/extensions/emacs/elisp/pi-emacs.el
+;; responses, diagnostics) lives in the local pi-emacs module:
+;;   ~/.emacs.d/modules/pi-emacs.el
 ;;
 ;; Assumes the following helpers are defined in init.org:
 ;;   bob/monorepo-root, bob/kitten, bob/kitty-socket,
@@ -109,9 +109,8 @@ Prefers exact cwd matches, then focused nested matches, then the first nested ma
         (call-process "open" nil nil nil "-a" "kitty"))))))
 
 ;; Sending regions to pi, pulse-on-edit, and clipboard-image paste all live
-;; in the pi-coding-agent emacs extension now (see
-;; ~/.pi/agent/extensions/emacs/elisp/pi-emacs.el).  This file is only for
-;; things that depend on my personal Kitty + monorepo setup.
+;; in the pi-emacs module now (see ~/.emacs.d/modules/pi-emacs.el).  This file
+;; is only for things that depend on my personal Kitty + monorepo setup.
 
 ;;; Keybindings
 
