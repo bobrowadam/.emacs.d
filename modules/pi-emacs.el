@@ -398,21 +398,43 @@ Press q or Escape to dismiss."
             (expand-file-name (concat encoded ".sock") (pi/socket-dir)))
           (list (pi/encode-cwd dir) (pi/legacy-encode-cwd dir))))
 
+(defun pi/socket-ancestor-dirs (&optional cwd)
+  "Return CWD's ancestor dirs from closest to Git root/project root."
+  (let* ((start (directory-file-name
+                 (expand-file-name (or cwd default-directory))))
+         (project-root (pi/socket-root cwd))
+         (git-root (when-let* ((dir (locate-dominating-file start ".git")))
+                     (directory-file-name (expand-file-name dir))))
+         (stop (or git-root project-root))
+         dirs
+         parent)
+    (while (and start (not (member start dirs)))
+      (setq dirs (append dirs (list start)))
+      (setq parent (directory-file-name (file-name-directory start)))
+      (setq start (unless (or (string= start stop)
+                              (string= parent start))
+                    parent)))
+    (delete-dups (append dirs (delq nil (list project-root git-root))))))
+
 (defun pi/socket-path-candidates (&optional cwd)
   "Return candidate Unix socket paths for CWD.
-Try worktree-index sockets first, then CWD's project root and Git root."
-  (let* ((root (pi/socket-root cwd))
-         (git-root (when-let* ((dir (locate-dominating-file root ".git")))
-                     (directory-file-name (expand-file-name dir))))
-         (dirs (delete-dups (delq nil (list root git-root))))
-         candidates)
-    (dolist (dir dirs)
-      (dolist (path (pi/worktree-socket-candidates dir))
-        (unless (member path candidates)
-          (setq candidates (append candidates (list path))))))
+Prefer the closest parent Pi session, then farther parent sessions."
+  (let ((dirs (pi/socket-ancestor-dirs cwd))
+        direct-paths
+        direct-basenames
+        candidates)
     (dolist (dir dirs)
       (dolist (path (pi/socket-paths-for-dir dir))
-        (unless (member path candidates)
+        (unless (member path direct-paths)
+          (setq direct-paths (append direct-paths (list path))))))
+    (setq direct-basenames (mapcar #'file-name-nondirectory direct-paths))
+    (dolist (path direct-paths)
+      (unless (member path candidates)
+        (setq candidates (append candidates (list path)))))
+    (dolist (dir dirs)
+      (dolist (path (pi/worktree-socket-candidates dir))
+        (when (and (member (file-name-nondirectory path) direct-basenames)
+                   (not (member path candidates)))
           (setq candidates (append candidates (list path))))))
     candidates))
 

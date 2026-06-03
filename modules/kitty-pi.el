@@ -10,6 +10,8 @@
 ;;   bob/monorepo-root, bob/kitten, bob/kitty-socket,
 ;;   bob/kitty-tab-exists-p, bob/kitty-focus-tab
 
+(require 'cl-lib)
+
 (declare-function bob/monorepo-root "init")
 (declare-function bob/kitten "init")
 (declare-function bob/kitty-socket "init")
@@ -24,9 +26,10 @@
 ;;; Kitty window ID lookup
 
 (defun bob/kitty-pi-window-id (&optional dir)
-  "Return the Kitty window ID for the pi session in DIR (or current project).
+  "Return the Kitty window ID for the closest parent Pi session.
 Searches the hash table first, then queries Kitty.  Returns a string or nil."
-  (let* ((dir (expand-file-name (or dir (bob/monorepo-root))))
+  (let* ((dir (directory-file-name
+               (expand-file-name (or dir default-directory))))
          (cached (gethash dir bob/kitty-pi-tabs)))
     (if (and cached (bob/kitty-tab-exists-p cached))
         cached
@@ -36,17 +39,17 @@ Searches the hash table first, then queries Kitty.  Returns a string or nil."
 
 ;;; Open / focus
 
-(defun bob/kitty-find-pi-tab (dir &optional include-nested)
-  "Find a Kitty tab running pi in DIR, return its active window ID.
-When INCLUDE-NESTED is non-nil, also match pi sessions in subdirectories of DIR.
-Prefers exact cwd matches, then focused nested matches, then the first nested match."
+(defun bob/kitty-find-pi-tab (dir)
+  "Find the closest parent Kitty tab running pi for DIR.
+Only Pi sessions whose cwd is DIR or an ancestor of DIR match.  This avoids
+focusing a child project when the current buffer is in a parent worktree."
   (condition-case nil
       (let ((os-windows (json-parse-string (bob/kitten "ls") :array-type 'list))
             (dir (directory-file-name (expand-file-name dir)))
-            (focused nil)
-            (first-match nil)
-            (focused-nested nil)
-            (first-nested nil))
+            (best nil)
+            (best-depth -1)
+            (best-focused nil)
+            (best-focused-depth -1))
         (dolist (os-win os-windows)
           (dolist (tab (gethash "tabs" os-win))
             (dolist (win (gethash "windows" tab))
@@ -56,42 +59,42 @@ Prefers exact cwd matches, then focused nested matches, then the first nested ma
                                   (append (gethash "foreground_processes" win) nil)))
                           (cwd (gethash "cwd" proc))
                           (cwd (directory-file-name (expand-file-name cwd))))
-                (let ((exact (string= cwd dir))
-                      (nested (and include-nested (file-in-directory-p cwd dir)))
-                      (id (number-to-string (gethash "id" win))))
-                  (cond
-                   (exact
-                    (unless first-match (setq first-match id))
-                    (when (eq (gethash "is_focused" win) t)
-                      (setq focused id)))
-                   (nested
-                    (unless first-nested (setq first-nested id))
-                    (when (eq (gethash "is_focused" win) t)
-                      (setq focused-nested id)))))))))
-        (or focused first-match focused-nested first-nested))
+                (when (or (string= cwd dir)
+                          (file-in-directory-p dir (file-name-as-directory cwd)))
+                  (let ((depth (length (split-string cwd "/" t)))
+                        (id (number-to-string (gethash "id" win))))
+                    (when (> depth best-depth)
+                      (setq best id
+                            best-depth depth))
+                    (when (and (eq (gethash "is_focused" win) t)
+                               (> depth best-focused-depth))
+                      (setq best-focused id
+                            best-focused-depth depth))))))))
+        (or best-focused best))
     (error nil)))
 
 (defun bob/open-pi-in-kitty ()
-  "Open or focus Pi coding agent in Kitty for the current project root."
+  "Open or focus Pi coding agent for the closest parent project in Kitty."
   (interactive)
-  (let* ((dir (file-name-as-directory
-               (expand-file-name
-                (or (when-let* ((project (project-current nil)))
-                      (project-root project))
-                    (bob/monorepo-root)))))
-         (tab-id (gethash dir bob/kitty-pi-tabs)))
+  (let* ((launch-dir (file-name-as-directory
+                      (expand-file-name
+                       (or (when-let* ((project (project-current nil)))
+                             (project-root project))
+                           (bob/monorepo-root)))))
+         (search-dir (directory-file-name (expand-file-name default-directory)))
+         (tab-id (gethash search-dir bob/kitty-pi-tabs)))
     ;; Try hash first, then discover existing tab by cwd+process, then launch new.
     (cond
      ((and tab-id (bob/kitty-tab-exists-p tab-id))
       (bob/kitty-focus-tab tab-id))
-     ((when-let* ((found-id (bob/kitty-find-pi-tab dir (derived-mode-p 'magit-status-mode))))
-        (puthash dir found-id bob/kitty-pi-tabs)
+     ((when-let* ((found-id (bob/kitty-find-pi-tab search-dir)))
+        (puthash search-dir found-id bob/kitty-pi-tabs)
         (bob/kitty-focus-tab found-id)
         t))
      (t
-      (remhash dir bob/kitty-pi-tabs)
+      (remhash search-dir bob/kitty-pi-tabs)
       (let* ((args (list "launch" "--type=tab"
-                         "--cwd" dir
+                         "--cwd" launch-dir
                          "/bin/zsh" "-li" "-c" "pi; exec /bin/zsh -li"))
              (out (apply #'bob/kitten args))
              (win-id (when (string-match "\\([0-9]+\\)" out)
@@ -104,7 +107,7 @@ Prefers exact cwd matches, then focused nested matches, then the first nested ma
                           (if dark-p "kanagawa.conf" "kanagawa-light.conf")
                           "~/.config/kitty")))
         (when win-id
-          (puthash dir win-id bob/kitty-pi-tabs)
+          (puthash search-dir win-id bob/kitty-pi-tabs)
           (bob/kitten "set-colors" "--match" (format "id:%s" win-id) theme-file))
         (call-process "open" nil nil nil "-a" "kitty"))))))
 
