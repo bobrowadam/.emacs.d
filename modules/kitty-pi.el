@@ -89,25 +89,40 @@ Falls back to `bob/monorepo-root' or DIR when no git root is found."
     (or (file-exists-p indexed)
         (file-exists-p direct))))
 
-(defun bob/kitty-pi--live-session-records ()
+(defun bob/kitty-pi--process-p (proc)
+  "Return non-nil when PROC looks like a Pi foreground process."
+  (seq-some (lambda (arg)
+              (string= (file-name-nondirectory arg) "pi"))
+            (append (gethash "cmdline" proc) nil)))
+
+(defun bob/kitty-pi--foreground-pi-process (win)
+  "Return WIN's foreground Pi process, or nil."
+  (cl-find-if #'bob/kitty-pi--process-p
+              (append (gethash "foreground_processes" win) nil)))
+
+(defun bob/kitty-pi--live-session-records (&optional _target-root)
   "Return live Pi Kitty windows in plists.
-Each record has :id, :cwd, :git-root, :focused, :title, and :cmdline keys."
+Each record has :id, :cwd, :git-root, :focused, :title, and :cmdline keys.
+Uses the foreground Pi process cwd, not Kitty's window cwd, so forked sessions
+survive stale Kitty cwd values after worktree renames.  A foreground Pi process
+is sufficient for Kitty tab switching even if its socket pathname was unlinked."
   (condition-case nil
       (let ((os-windows (json-parse-string (bob/kitten "ls") :array-type 'list))
             sessions)
         (dolist (os-win os-windows)
           (dolist (tab (gethash "tabs" os-win))
             (dolist (win (gethash "windows" tab))
-              (when-let* ((cwd (gethash "cwd" win))
+              (when-let* ((proc (bob/kitty-pi--foreground-pi-process win))
+                          (cwd (gethash "cwd" proc))
                           (cwd (bob/kitty-pi--normalize-dir cwd))
-                          (git-root (bob/kitty-pi--git-root cwd))
-                          ((bob/kitty-pi--live-cwd-p git-root cwd)))
+                          (git-root (bob/kitty-pi--git-root cwd)))
                 (push (list :id (number-to-string (gethash "id" win))
                             :cwd cwd
                             :git-root git-root
+                            :socket-live (bob/kitty-pi--live-cwd-p git-root cwd)
                             :focused (eq (gethash "is_focused" win) t)
                             :title (or (gethash "title" win) "")
-                            :cmdline (string-join (append (gethash "cmdline" win) nil) " "))
+                            :cmdline (string-join (append (gethash "cmdline" proc) nil) " "))
                       sessions)))))
         (nreverse sessions))
     (error nil)))
@@ -144,7 +159,7 @@ Each record has :id, :cwd, :git-root, :focused, :title, and :cmdline keys."
          (sessions (cl-remove-if-not
                     (lambda (session)
                       (string= (plist-get session :git-root) git-root))
-                    (bob/kitty-pi--live-session-records))))
+                    (bob/kitty-pi--live-session-records git-root))))
     (sort sessions
           (lambda (a b)
             (let* ((a-last (equal (plist-get a :id) last-id))
