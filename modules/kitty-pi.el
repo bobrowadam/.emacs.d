@@ -11,6 +11,8 @@
 ;;   bob/kitty-tab-exists-p, bob/kitty-focus-tab
 
 (require 'cl-lib)
+(require 'project)
+(require 'subr-x)
 
 (declare-function bob/monorepo-root "init")
 (declare-function bob/kitten "init")
@@ -21,78 +23,214 @@
 ;;; Session tracking
 
 (defvar bob/kitty-pi-tabs (make-hash-table :test 'equal)
-  "Maps monorepo root dirs to Kitty window IDs for pi sessions.")
+  "Maps git roots to the last chosen Kitty window ID for live pi sessions.")
+
+(defvar bob/kitty-pi--last-session-per-root (make-hash-table :test 'equal)
+  "Maps git roots to the most recently chosen live Pi window ID.")
+
+(defun bob/kitty-pi--normalize-dir (dir)
+  "Normalize DIR for stable workspace comparisons."
+  (directory-file-name (expand-file-name dir)))
+
+(defun bob/kitty-pi--git-root (&optional dir)
+  "Return the git-root workspace for DIR.
+Falls back to `bob/monorepo-root' or DIR when no git root is found."
+  (let ((dir (bob/kitty-pi--normalize-dir (or dir default-directory))))
+    (bob/kitty-pi--normalize-dir
+     (or (locate-dominating-file dir ".git")
+         (and (fboundp 'bob/monorepo-root)
+              (bob/monorepo-root))
+         dir))))
+
+(defun bob/kitty-pi--launch-dir ()
+  "Return the directory to use when launching a new Pi session."
+  (bob/kitty-pi--normalize-dir
+   (or (when-let* ((project (project-current nil)))
+         (project-root project))
+       (and (fboundp 'bob/monorepo-root)
+            (bob/monorepo-root))
+       default-directory)))
+
+(defconst bob/kitty-pi--socket-name-basename-length 24
+  "Maximum basename prefix length used in Pi socket filenames.")
+
+(defconst bob/kitty-pi--socket-name-hash-length 16
+  "Hex digest length used in Pi socket filenames.")
+
+(defun bob/kitty-pi--encode-cwd (cwd)
+  "Encode CWD to match Pi's hashed session socket naming."
+  (let* ((dir (bob/kitty-pi--normalize-dir cwd))
+         (base (file-name-nondirectory dir))
+         (safe-base (replace-regexp-in-string
+                     "^-+\\|-+$" ""
+                     (replace-regexp-in-string "[^[:alnum:]._-]+" "-" base)))
+         (safe-base (if (string-empty-p safe-base) "cwd" safe-base))
+         (safe-base (if (> (length safe-base) bob/kitty-pi--socket-name-basename-length)
+                        (substring safe-base 0 bob/kitty-pi--socket-name-basename-length)
+                      safe-base))
+         (hash (substring (secure-hash 'sha256 dir)
+                          0 bob/kitty-pi--socket-name-hash-length)))
+    (format "%s-%s" safe-base hash)))
+
+(defun bob/kitty-pi--socket-dir ()
+  "Return the directory containing Pi Unix sockets."
+  (expand-file-name "sockets" "~/.pi"))
+
+(defun bob/kitty-pi--live-cwd-p (git-root cwd)
+  "Return non-nil when CWD has a live Pi socket for GIT-ROOT."
+  (let* ((encoded-cwd (bob/kitty-pi--encode-cwd cwd))
+         (direct (expand-file-name (concat encoded-cwd ".sock")
+                                   (bob/kitty-pi--socket-dir)))
+         (indexed (expand-file-name
+                   (concat "by-worktree/"
+                           (bob/kitty-pi--encode-cwd git-root)
+                           "/" encoded-cwd ".sock")
+                   (bob/kitty-pi--socket-dir))))
+    (or (file-exists-p indexed)
+        (file-exists-p direct))))
+
+(defun bob/kitty-pi--live-session-records ()
+  "Return live Pi Kitty windows in plists.
+Each record has :id, :cwd, :git-root, :focused, :title, and :cmdline keys."
+  (condition-case nil
+      (let ((os-windows (json-parse-string (bob/kitten "ls") :array-type 'list))
+            sessions)
+        (dolist (os-win os-windows)
+          (dolist (tab (gethash "tabs" os-win))
+            (dolist (win (gethash "windows" tab))
+              (when-let* ((cwd (gethash "cwd" win))
+                          (cwd (bob/kitty-pi--normalize-dir cwd))
+                          (git-root (bob/kitty-pi--git-root cwd))
+                          ((bob/kitty-pi--live-cwd-p git-root cwd)))
+                (push (list :id (number-to-string (gethash "id" win))
+                            :cwd cwd
+                            :git-root git-root
+                            :focused (eq (gethash "is_focused" win) t)
+                            :title (or (gethash "title" win) "")
+                            :cmdline (string-join (append (gethash "cmdline" win) nil) " "))
+                      sessions)))))
+        (nreverse sessions))
+    (error nil)))
+
+(defun bob/kitty-pi--session-display (session)
+  "Return a human-friendly label for SESSION."
+  (let* ((git-root (plist-get session :git-root))
+         (cwd (plist-get session :cwd))
+         (title (plist-get session :title))
+         (focused (plist-get session :focused))
+         (last-id (gethash git-root bob/kitty-pi--last-session-per-root))
+         (workspace (file-name-nondirectory git-root))
+         (relative (if (string= cwd git-root)
+                       "."
+                     (file-relative-name cwd git-root)))
+         (base (if (string= relative ".")
+                   workspace
+                 (format "%s › %s" workspace relative)))
+         (label (if (and title (not (string-empty-p title)))
+                    (format "%s — %s" base title)
+                  base))
+         (markers (delq nil
+                        (list (when focused "focused")
+                              (when (equal (plist-get session :id) last-id)
+                                "last")))))
+    (if markers
+        (format "%s [%s]" label (string-join markers ", "))
+      label)))
+
+(defun bob/kitty-pi--sessions-for-root (git-root)
+  "Return live Pi Kitty windows for GIT-ROOT, ordered by priority."
+  (let* ((git-root (bob/kitty-pi--git-root git-root))
+         (last-id (gethash git-root bob/kitty-pi--last-session-per-root))
+         (sessions (cl-remove-if-not
+                    (lambda (session)
+                      (string= (plist-get session :git-root) git-root))
+                    (bob/kitty-pi--live-session-records))))
+    (sort sessions
+          (lambda (a b)
+            (let* ((a-last (equal (plist-get a :id) last-id))
+                   (b-last (equal (plist-get b :id) last-id))
+                   (a-focused (plist-get a :focused))
+                   (b-focused (plist-get b :focused))
+                   (a-depth (length (split-string (plist-get a :cwd) "/" t)))
+                   (b-depth (length (split-string (plist-get b :cwd) "/" t))))
+              (cond
+               ((and a-last (not b-last)) t)
+               ((and b-last (not a-last)) nil)
+               ((and a-focused (not b-focused)) t)
+               ((and b-focused (not a-focused)) nil)
+               ((/= a-depth b-depth) (> a-depth b-depth))
+               (t (string< (plist-get a :cwd)
+                           (plist-get b :cwd)))))))))
+
+(defun bob/kitty-pi--remember-session (git-root session-id)
+  "Remember SESSION-ID as the last visited live Pi window for GIT-ROOT."
+  (puthash git-root session-id bob/kitty-pi-tabs)
+  (puthash git-root session-id bob/kitty-pi--last-session-per-root)
+  session-id)
 
 ;;; Kitty window ID lookup
 
 (defun bob/kitty-pi-window-id (&optional dir)
-  "Return the Kitty window ID for the closest parent Pi session.
-Searches the hash table first, then queries Kitty.  Returns a string or nil."
-  (let* ((dir (directory-file-name
-               (expand-file-name (or dir default-directory))))
-         (cached (gethash dir bob/kitty-pi-tabs)))
-    (if (and cached (bob/kitty-tab-exists-p cached))
-        cached
-      (when-let* ((found (bob/kitty-find-pi-tab dir)))
-        (puthash dir found bob/kitty-pi-tabs)
-        found))))
+  "Return a live Kitty window ID for DIR's git root.
+Prefers the most recently chosen session, then the focused live session, then
+another live session in the same git-root workspace. Returns a string or nil."
+  (let* ((git-root (bob/kitty-pi--git-root dir))
+         (cached (gethash git-root bob/kitty-pi-tabs)))
+    (cond
+     ((and cached (bob/kitty-tab-exists-p cached)) cached)
+     (t
+      (when-let* ((session (car (bob/kitty-pi--sessions-for-root git-root))))
+        (bob/kitty-pi--remember-session git-root (plist-get session :id)))))))
 
 ;;; Open / focus
 
+(defun bob/kitty-pi--choose-session (git-root)
+  "Prompt for one live Pi session in GIT-ROOT and return the matching record."
+  (let* ((sessions (bob/kitty-pi--sessions-for-root git-root))
+         (choices (mapcar (lambda (session)
+                            (cons (bob/kitty-pi--session-display session)
+                                  session))
+                          sessions))
+         (selected
+          (cond
+           ((null choices) nil)
+           ((= (length choices) 1) (caar choices))
+           ((fboundp 'consult--read)
+            (consult--read (mapcar #'car choices)
+                           :prompt (format "Pi session for %s: "
+                                           (file-name-nondirectory git-root))
+                           :sort nil
+                           :require-match t
+                           :default (caar choices)))
+           (t
+            (completing-read (format "Pi session for %s: "
+                                     (file-name-nondirectory git-root))
+                             (mapcar #'car choices)
+                             nil t nil nil (caar choices))))))
+    (cdr (assoc selected choices))))
+
 (defun bob/kitty-find-pi-tab (dir)
-  "Find the closest parent Kitty tab running pi for DIR.
-Only Pi sessions whose cwd is DIR or an ancestor of DIR match.  This avoids
-focusing a child project when the current buffer is in a parent worktree."
-  (condition-case nil
-      (let ((os-windows (json-parse-string (bob/kitten "ls") :array-type 'list))
-            (dir (directory-file-name (expand-file-name dir)))
-            (best nil)
-            (best-depth -1)
-            (best-focused nil)
-            (best-focused-depth -1))
-        (dolist (os-win os-windows)
-          (dolist (tab (gethash "tabs" os-win))
-            (dolist (win (gethash "windows" tab))
-              (when-let* ((proc (cl-find-if
-                                  (lambda (proc)
-                                    (member "pi" (append (gethash "cmdline" proc) nil)))
-                                  (append (gethash "foreground_processes" win) nil)))
-                          (cwd (gethash "cwd" proc))
-                          (cwd (directory-file-name (expand-file-name cwd))))
-                (when (or (string= cwd dir)
-                          (file-in-directory-p dir (file-name-as-directory cwd)))
-                  (let ((depth (length (split-string cwd "/" t)))
-                        (id (number-to-string (gethash "id" win))))
-                    (when (> depth best-depth)
-                      (setq best id
-                            best-depth depth))
-                    (when (and (eq (gethash "is_focused" win) t)
-                               (> depth best-focused-depth))
-                      (setq best-focused id
-                            best-focused-depth depth))))))))
-        (or best-focused best))
-    (error nil)))
+  "Find the closest live Pi tab for DIR's git root.
+Only Pi sessions whose cwd shares the same git root match.  This keeps child
+projects from stealing focus when the current buffer is inside a parent or
+sibling worktree."
+  (let* ((git-root (bob/kitty-pi--git-root dir))
+         (sessions (bob/kitty-pi--sessions-for-root git-root)))
+    (when-let* ((session (car sessions)))
+      (plist-get session :id))))
 
 (defun bob/open-pi-in-kitty ()
-  "Open or focus Pi coding agent for the closest parent project in Kitty."
+  "Open or focus Pi coding agent for the current git-root workspace."
   (interactive)
-  (let* ((launch-dir (file-name-as-directory
-                      (expand-file-name
-                       (or (when-let* ((project (project-current nil)))
-                             (project-root project))
-                           (bob/monorepo-root)))))
-         (search-dir (directory-file-name (expand-file-name default-directory)))
-         (tab-id (gethash search-dir bob/kitty-pi-tabs)))
-    ;; Try hash first, then discover existing tab by cwd+process, then launch new.
+  (let* ((workspace-root (bob/kitty-pi--git-root default-directory))
+         (launch-dir (bob/kitty-pi--launch-dir))
+         (session (bob/kitty-pi--choose-session workspace-root))
+         (tab-id (and session (plist-get session :id))))
     (cond
-     ((and tab-id (bob/kitty-tab-exists-p tab-id))
+     (tab-id
+      (bob/kitty-pi--remember-session workspace-root tab-id)
       (bob/kitty-focus-tab tab-id))
-     ((when-let* ((found-id (bob/kitty-find-pi-tab search-dir)))
-        (puthash search-dir found-id bob/kitty-pi-tabs)
-        (bob/kitty-focus-tab found-id)
-        t))
      (t
-      (remhash search-dir bob/kitty-pi-tabs)
       (let* ((args (list "launch" "--type=tab"
                          "--cwd" launch-dir
                          "/bin/zsh" "-li" "-c" "pi; exec /bin/zsh -li"))
@@ -107,7 +245,7 @@ focusing a child project when the current buffer is in a parent worktree."
                           (if dark-p "kanagawa.conf" "kanagawa-light.conf")
                           "~/.config/kitty")))
         (when win-id
-          (puthash search-dir win-id bob/kitty-pi-tabs)
+          (bob/kitty-pi--remember-session workspace-root win-id)
           (bob/kitten "set-colors" "--match" (format "id:%s" win-id) theme-file))
         (call-process "open" nil nil nil "-a" "kitty"))))))
 
