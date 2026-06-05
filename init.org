@@ -2084,6 +2084,8 @@ backlinks, daily notes, and a Graphviz-powered graph view. No DB —
 just org files in a directory + ripgrep.
 #+begin_src elisp
   (use-package grove
+    :after (org)
+    :demand t
     :ensure (:repo "jonathanchu/grove" :fetcher github :files ("*.el"))
     :bind (:prefix-map grove-command-map
                        :prefix "C-c n"
@@ -2215,22 +2217,30 @@ just org files in a directory + ripgrep.
                                      current-branch
                                      current-branch))))
 
+    (defun bob/remember-worktree-project-advice (orig-fun directory &rest args)
+      "Remember new worktree DIRECTORY in Emacs' project list."
+      (prog1 (apply orig-fun directory args)
+        (when-let* ((project (project-current nil directory)))
+          (project-remember-project project))))
+
     (defun bob/remove-project-roots-advice (orig-fun worktree)
       "Remove project roots and associated branches when deleting git worktrees."
-      ;; Get the branch name associated with this worktree before deletion
-      (when-let* ((default-directory worktree)
-                  (branch-name (magit-get-current-branch)))
-        ;; Remove project roots
-        (project-forget-projects-under worktree t)
+      (let ((branch-name (let ((default-directory worktree))
+                           (magit-get-current-branch))))
         ;; Delete the worktree
         (funcall orig-fun worktree)
+        ;; Remove project roots
+        (project-forget-projects-under worktree t)
         ;; Delete local branch
-        (magit-run-git "branch" "-D" branch-name)
-        ;; Optionally delete remote branch
-        (when (and (magit-get "remote" "origin" "url")
-                   (yes-or-no-p (format "Delete remote branch origin/%s? " branch-name)))
-          (magit-run-git "push" "origin" "--delete" branch-name))))
+        (when branch-name
+          (magit-run-git "branch" "-D" branch-name)
+          ;; Optionally delete remote branch
+          (when (and (magit-get "remote" "origin" "url")
+                     (yes-or-no-p (format "Delete remote branch origin/%s? " branch-name)))
+            (magit-run-git "push" "origin" "--delete" branch-name)))))
 
+    (advice-add 'magit-worktree-checkout :around #'bob/remember-worktree-project-advice)
+    (advice-add 'magit-worktree-branch :around #'bob/remember-worktree-project-advice)
     (advice-add 'magit-worktree-delete :around #'bob/remove-project-roots-advice)
 
     (defun bob/magit-read-worktree-directory (prompt branch)
