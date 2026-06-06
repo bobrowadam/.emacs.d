@@ -9,6 +9,10 @@
 (require 'project)
 (require 'json)
 (require 'subr-x)
+(require 'cl-lib)
+
+(declare-function magit-commit-create "magit-commit" (&optional args))
+(declare-function magit-process-error-summary "magit-process" (process-buf section))
 
 (defun pi/encode-result (text)
   "Encode TEXT as base64 UTF-8 for transport."
@@ -464,6 +468,79 @@ Optional CWD overrides the project root for socket discovery."
       (if last-error
           (user-error "Pi socket unavailable: %s" (error-message-string last-error))
         (user-error "Pi socket not found: %s" (string-join sock-paths ", "))))))
+
+;;; --- Magit integration ---
+
+(when (and (fboundp 'pi/magit--commit-process-finish-advice)
+           (advice-member-p #'pi/magit--commit-process-finish-advice
+                            'magit-process-finish))
+  (advice-remove 'magit-process-finish
+                 #'pi/magit--commit-process-finish-advice))
+
+(defun pi/magit--process-error-details (process)
+  "Return a useful error summary for failed Magit PROCESS."
+  (let* ((process-buffer (process-buffer process))
+         (section (process-get process 'section))
+         (summary (and (buffer-live-p process-buffer)
+                       section
+                       (with-current-buffer process-buffer
+                         (magit-process-error-summary process-buffer section))))
+         (tail (and (buffer-live-p process-buffer)
+                    (with-current-buffer process-buffer
+                      (buffer-substring-no-properties
+                       (max (point-min) (- (point-max) 2000))
+                       (point-max))))))
+    (or summary
+        (and tail (not (string-empty-p (string-trim tail))) tail)
+        (format "git commit exited %s" (process-exit-status process)))))
+
+(defun pi/magit--notify-commit-failure (process root callback-cwd)
+  "Notify Pi if Magit commit PROCESS failed."
+  (when (and (processp process)
+             (memq (process-status process) '(exit signal))
+             (not (= (process-exit-status process) 0)))
+    (ignore-errors
+      (pi/send (list :type "input"
+                     :text (format "Magit commit failed in %s:\n%s"
+                                   root
+                                   (pi/magit--process-error-details process))
+                     :submit t)
+               callback-cwd))))
+
+(defun pi/magit--watch-commit-process (process root callback-cwd)
+  "Attach Pi failure reporting to Magit commit PROCESS."
+  (when (processp process)
+    (let ((old-sentinel (process-sentinel process)))
+      (set-process-sentinel
+       process
+       (lambda (proc event)
+         (when old-sentinel
+           (condition-case err
+               (funcall old-sentinel proc event)
+             (error (message "Magit process sentinel error: %s"
+                             (error-message-string err)))))
+         (pi/magit--notify-commit-failure proc root callback-cwd))))))
+
+(defun pi/magit-commit (git-root callback-cwd &optional message-base64)
+  "Open Magit's commit editor for GIT-ROOT and report failures to CALLBACK-CWD.
+Optional MESSAGE-BASE64 is decoded and passed to git as the initial message."
+  (let* ((default-directory (file-name-as-directory (expand-file-name git-root)))
+         (pi-commit-root (directory-file-name (expand-file-name git-root)))
+         (message (and message-base64
+                       (decode-coding-string
+                        (base64-decode-string message-base64)
+                        'utf-8))))
+    (select-frame-set-input-focus (selected-frame))
+    (require 'magit)
+    (require 'magit-commit)
+    (require 'magit-process)
+    (pi/magit--watch-commit-process
+     (magit-commit-create
+      (when message
+        (list "--edit" (concat "--message=" message))))
+     pi-commit-root
+     callback-cwd)
+    (delete-other-windows)))
 
 (defun pi/--language-from-mode ()
   "Return a short language tag for the current buffer's major mode, or nil.
