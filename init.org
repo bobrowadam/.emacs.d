@@ -3828,6 +3828,9 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     (ghostel-max-scrollback (* 20 1024 1024))
     (ghostel-module-auto-install 'ask)
     (ghostel-keymap-exceptions '("C-c" "C-x" "C-u" "C-g" "M-x" "M-o" "M-:" "C-\\"))
+    :hook
+    (ghostel-mode . (lambda ()
+                      (setq-local mode-line-format nil)))
     :bind
     ("C-!" . ghostel)
     ("C-c s j" . bob/jump-to-shell)
