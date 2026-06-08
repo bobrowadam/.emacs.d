@@ -113,6 +113,10 @@
     :ensure t)
 
   (use-package aio)
+
+  (use-package timeout
+    :ensure (:host github
+             :repo "karthink/timeout"))
 #+end_src
 
 * My elisp utils
@@ -1275,10 +1279,11 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+begin_src elisp
   (use-package pi-emacs
     :ensure nil
-    :after project
-    :demand t)
+    :demand t
+    :after project)
 
   (use-package pi-coding-agent
+    :disabled t
     :config
     (defun bob/pi-cycle-solveit-mode ()
       "Cycle the solveit extension mode for the current Pi session."
@@ -1287,7 +1292,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 
     (defun bob/pi-coding-agent-send-region-context (prompt)
       "Send the active region and PROMPT to the current project Pi chat.
-Return non-nil when a matching Pi chat buffer handled the message."
+  Return non-nil when a matching Pi chat buffer handled the message."
       (when-let* (((use-region-p))
                   (chat-buf (car (pi-coding-agent-project-buffers))))
         (let* ((file (buffer-file-name))
@@ -1351,8 +1356,8 @@ Return non-nil when a matching Pi chat buffer handled the message."
     (with-eval-after-load 'md-ts-mode
       (defun md-ts--harvest-treesit-configs (mode)
         "Harvest tree-sitter configs from MODE.
-  Return a plist with :font-lock, :simple-indent, and :range keys,
-  or nil if MODE fails to activate (e.g. missing grammar dependencies)."
+    Return a plist with :font-lock, :simple-indent, and :range keys,
+    or nil if MODE fails to activate (e.g. missing grammar dependencies)."
         (condition-case err
             (with-temp-buffer
               (delay-mode-hooks (funcall mode))
@@ -1372,14 +1377,29 @@ Return non-nil when a matching Pi chat buffer handled the message."
     :demand t)
 #+end_src
 
+*** FNM - node version manager (like nvm replacement)
+#+begin_src elisp
+  (use-package fnm
+    :demand t
+    :ensure
+    (:fetcher github
+              :repo "bobrowadam/fnm.el"
+              :branch "main"
+              :files ("fnm.el"))
+    :config
+    (fnm-enable-auto-use))
+#+end_src
+
 *** PI.el
 Another emacs pi implementation, using PI in RPC mode and emacs as UI
 #+begin_src elisp
   (use-package pi
-    :ensure t
-    :vc (:url "git@github.com:ananthakumaran/pi.el.git"
-         :rev :newest)
-    :commands (pi-chat))
+    :ensure (:host github
+             :repo "bobrowadam/pi.el")
+    :after fnm
+    :commands (pi-chat)
+    :config
+    (setq pi-executable (expand-file-name "pi" (fnm-node-bin-path (fnm-default-node-version)))))
 #+end_src
 
 * Ediff
@@ -3259,18 +3279,6 @@ and `:test-name'."
               :files ("eglot-booster.el")
               :fetcher github
               :repo "jdtsmith/eglot-booster"))
-#+end_src
-**** FNM - node version manager (like nvm replacment)
-#+begin_src elisp
-  (use-package fnm
-    :demand t
-    :ensure
-    (:fetcher github
-              :repo "bobrowadam/fnm.el"
-              :branch "main"
-              :files ("fnm.el"))
-    :config
-    (fnm-enable-auto-use))
 #+end_src
 
 *** Roc
