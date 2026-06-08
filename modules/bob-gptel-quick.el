@@ -17,7 +17,8 @@
 (declare-function posframe-show "posframe")
 (declare-function posframe-hide "posframe")
 (declare-function posframe-poshandler-window-center "posframe")
-(declare-function gptel-anthropic-oauth--get-oauth-headers "gptel-anthropic-oauth")
+(declare-function gptel-make-openai "ext:gptel-openai" (name &rest args))
+(declare-function bob/gptel-openai-api-key "init" ())
 
 (defgroup bob-gptel-quick nil
   "Fast posframe lookups with gptel."
@@ -61,14 +62,16 @@ falls back to the echo area."
   :group 'bob-gptel-quick)
 
 (defvar bob/gptel-quick-backend
-  (gptel-make-anthropic "Claude quick"
-    :stream t
-    ;; No thinking and no tools: quick lookups should be a single fast
-    ;; round-trip, not an agentic session.
-    :request-params '(:max_tokens 2048))
-  "Non-thinking Anthropic backend used by `bob/gptel-quick'.")
+  (gptel-make-openai "OpenAI quick"
+    :stream nil
+    :key #'bob/gptel-openai-api-key
+    :models '((gpt-5.4-mini
+               :description "GPT-5.4 mini"
+               :capabilities (media tool json url)
+               :context-window 400)))
+  "OpenAI backend used by `bob/gptel-quick'.")
 
-(defvar bob/gptel-quick-model 'claude-sonnet-4-6
+(defvar bob/gptel-quick-model 'gpt-5.4-mini
   "Model used by `bob/gptel-quick'.")
 
 (defconst bob/gptel-quick--buffer-name " *gptel-quick*"
@@ -82,20 +85,6 @@ falls back to the echo area."
 
 (defvar bob/gptel-quick--spinner-pos nil
   "Position where the pending spinner should be displayed.")
-
-(defun bob/gptel-quick--pin-oauth-header ()
-  "Pin OAuth headers on `bob/gptel-quick-backend'.
-
-The global `gptel-anthropic-oauth' advice swaps headers on the
-dynamic `gptel-backend', but inside gptel's request machinery the
-backend is rebound to the FSM's backend.  Pin a header function on
-this backend directly so it authenticates on every request."
-  (when (and bob/gptel-quick-backend
-             (fboundp 'gptel-anthropic-oauth--get-oauth-headers))
-    (setf (gptel-backend-header bob/gptel-quick-backend)
-          (lambda (_info)
-            (let ((gptel-backend bob/gptel-quick-backend))
-              (gptel-anthropic-oauth--get-oauth-headers))))))
 
 (defun bob/gptel-quick--system-message (count)
   "Return the quick lookup system message for COUNT words."
@@ -252,7 +241,7 @@ If RENDER-MARKDOWN is non-nil, enable `gfm-view-mode' after inserting TEXT."
 (defun bob/gptel-quick--spinner-text ()
   "Return the pending quick lookup spinner text."
   (concat (bob/gptel-quick--spinner-frame)
-          " Querying Claude…"))
+          " Querying OpenAI…"))
 
 (defun bob/gptel-quick--spinner-tick ()
   "Advance and redraw the quick lookup spinner."
@@ -324,7 +313,6 @@ COUNT and POS are used by the longer-answer command."
 
 (defun bob/gptel-quick--request (prompt count pos)
   "Send PROMPT as a quick lookup request for COUNT words near POS."
-  (bob/gptel-quick--pin-oauth-header)
   (bob/gptel-quick--spinner-start pos)
   (let* ((gptel-backend bob/gptel-quick-backend)
          (gptel-model bob/gptel-quick-model)

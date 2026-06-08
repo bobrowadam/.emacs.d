@@ -661,16 +661,12 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (use-package gptel
     :custom
     (gptel-default-mode 'org-mode)
-    ;; (gptel-max-tokens 800)
     (gptel-expert-commands t)
-    ;; (gptel-org-branching-context t)
     (gptel-cache t)
     (gptel-use-tools t)
     (gptel-confirm-tool-calls nil)
     :config
     (exec-path-from-shell-initialize)
-    ;; (setf (alist-get 'org-mode gptel-prompt-prefix-alist) "~@user~\n")
-    ;; (setf (alist-get 'org-mode gptel-response-prefix-alist) "~@assistant~\n")
     (defun bob/gptel-switch-to-gptel-buffer ()
       "Switch to a buffer with `gptel-mode' active."
       (interactive)
@@ -684,54 +680,22 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
           (switch-to-buffer gptel-buffer)
         (message "No GPTel buffers found.")))
 
-    ;; gptel's `gptel--merge-plists' overwrites `:tools' when the backend
-    ;; `:request-params' sets it, dropping all locally-registered tools.
-    ;; This advice concatenates backend/server-side tools onto the local
-    ;; tools array so both coexist in the final payload.
-    (defun bob/gptel-anthropic-preserve-local-tools (orig-fun backend prompts)
-      "Merge backend `:request-params' `:tools' with local `gptel-tools'."
-      (let ((result (funcall orig-fun backend prompts))
-            (backend-tools (plist-get (gptel-backend-request-params backend)
-                                      :tools)))
-        (when (and (cl-typep backend 'gptel-anthropic)
-                   backend-tools
-                   gptel-use-tools
-                   gptel-tools)
-          (let ((local-tools (gptel--parse-tools backend gptel-tools)))
-            (plist-put result :tools (vconcat local-tools backend-tools))))
-        result))
-    (advice-add 'gptel--request-data :around
-                #'bob/gptel-anthropic-preserve-local-tools)
+    (defun bob/gptel-openai-api-key ()
+      "Return the OpenAI API key from auth-source."
+      (auth-source-pick-first-password
+       :host "api.openai.com"
+       :user "bradwell-codex"))
 
-    (setq gptel-model 'claude-opus-4-7
+    (setq gptel-model 'gpt-5.5
           gptel-backend
-          (gptel-make-anthropic "Claude thinking"
+          (gptel-make-openai "OpenAI GPT"
             :stream t
-            :request-params
-            ;; Claude Opus 4.7 requires adaptive thinking (manual
-            ;; `:type "enabled"' returns 400). `:display "summarized"'
-            ;; makes the thinking text visible; the default on 4.7 is
-            ;; "omitted" (empty thinking blocks, signature only).
-            ;; code_execution is required for web_search dynamic
-            ;; filtering and is free when paired with web_search.
-            '(:thinking (:type "adaptive" :display "summarized")
-              :max_tokens 16384
-              :tools [(:type "code_execution_20260120"
-                       :name "code_execution")
-                      (:type "web_search_20260209"
-                       :name "web_search")])))
+            :key #'bob/gptel-openai-api-key
+            :models '((gpt-5.5
+                       :description "GPT-5.5"
+                       :capabilities (media tool json url)
+                       :context-window 400))))
 
-    (require 'gptel-anthropic-oauth)
-
-    ;; Keep `gptel-mode' alive across major-mode re-entry.
-    ;;
-    ;; `gptel-mode' is a buffer-local minor mode, so anything that
-    ;; runs `kill-all-local-variables' (some org-babel evaluation
-    ;; paths, `revert-buffer', `org-mode' being re-run, etc.) silently
-    ;; turns it off and you lose the " GPT" lighter, header-line, and
-    ;; key bindings.  We persist a `permanent-local' flag and re-arm
-    ;; the mode from `after-change-major-mode-hook' (also permanent),
-    ;; so the minor mode survives major-mode re-entry.
     (defvar-local bob/gptel--was-on nil
       "Non-nil if `gptel-mode' was enabled before a major-mode change.")
     (put 'bob/gptel--was-on 'permanent-local t)
@@ -761,22 +725,16 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
      ("C-c g a f" . gptel-add-file)
      ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
      (:map gptel-mode-map ("C-c g s" . gptel-menu))
-     ;; Inside a pending rewrite overlay, upstream binds (see
-     ;; `gptel-rewrite-actions-map' in gptel-rewrite.el):
-     ;;   RET / mouse-1   dispatch transient
-     ;;   C-c C-a         accept        C-c C-r  iterate
-     ;;   C-c C-k         reject        C-c C-m  merge with conflicts
-     ;;   C-c C-d         diff          C-c C-e  ediff
-     ;;   C-c C-n         next overlay  C-c C-p  previous overlay
      :hook
      (org-mode . (lambda ()
-                   (when (-some->> (buffer-file-name) (s-match "^.+gptel\.org$" ))
+                   (when (-some->> (buffer-file-name)
+                           (s-match "^.+gptel\.org$" ))
                      (gptel-mode 1))))
      (gptel-post-stream . gptel-auto-scroll)
      (gptel-post-response . gptel-end-of-response))
 
   ;; Inline rewrite (`C-c g r') and insert (`C-c g i') commands.
-  ;; Wires up a non-thinking "Claude rewrite" backend, a Haiku-based
+  ;; Wires up an "OpenAI rewrite" backend, a GPT-5.4-mini-based
   ;; `rewrite' preset with read-only tools, a custom default action
   ;; for rewrite overlays (no internal suffix/dispatch advice), and
   ;; an output sanitiser that strips markdown fences / surrounding
@@ -816,8 +774,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     ;; jina_reader).  Customise `bob/gptel-tools-fold-by-default'.
     (bob/gptel-tools-fold-hook-install)
     ;; Make the global gptel defaults match the `pi' preset so new
-    ;; gptel buffers come up agentic out of the box (Claude thinking
-    ;; backend + claude-opus-4-7 are already set above; here we cover
+    ;; gptel buffers come up agentic out of the box (OpenAI GPT
+    ;; backend + GPT-5.5 are already set above; here we cover
     ;; the remaining knobs).  `gptel-tools' is populated by
     ;; `bob/gptel-tools-default-set' above; `gptel--system-message'
     ;; is set by `bob/gptel-tools-install-system-prompt' above (we
@@ -834,9 +792,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     ;; any buffer (e.g. after the `rewrite' preset was applied)
     ;; without touching the rewrite flow.
     (gptel-make-preset 'pi
-      :description "Standard agentic flow: Claude Opus 4.7, pi tools, pi system prompt."
-      :backend "Claude thinking"
-      :model 'claude-opus-4-7
+      :description "Standard agentic flow: GPT-5.5 with pi tools, pi system prompt."
+      :backend "OpenAI GPT"
+      :model 'gpt-5.5
       :use-tools t
       :tools (mapcar #'gptel-tool-name gptel-tools)
       :confirm-tool-calls nil
@@ -1412,6 +1370,16 @@ Return non-nil when a matching Pi chat buffer handled the message."
   (use-package kitty-pi
     :ensure nil
     :demand t)
+#+end_src
+
+*** PI.el
+Another emacs pi implementation, using PI in RPC mode and emacs as UI
+#+begin_src elisp
+  (use-package pi
+    :ensure t
+    :vc (:url "git@github.com:ananthakumaran/pi.el.git"
+         :rev :newest)
+    :commands (pi-chat))
 #+end_src
 
 * Ediff

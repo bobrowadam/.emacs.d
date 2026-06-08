@@ -7,11 +7,10 @@
 ;;
 ;; This module provides:
 ;;
-;; - A dedicated "Claude rewrite" Anthropic backend: streaming, no
-;;   adaptive thinking, no server-side web/code tools.  See
-;;   `bob/gptel-rewrite-backend'.
+;; - A dedicated "OpenAI rewrite" backend: streaming, no server-side
+;;   web/code tools.  See `bob/gptel-rewrite-backend'.
 ;;
-;; - A `rewrite' gptel preset bound to Haiku 4.5, with read-only
+;; - A `rewrite' gptel preset bound to GPT-5.4 mini, with read-only
 ;;   context-discovery tools (`read', `ls', `find', `grep') and the
 ;;   current buffer auto-attached so the model sees the whole file.
 ;;   See `bob/gptel-rewrite-tools'.
@@ -24,7 +23,7 @@
 ;;   `gptel-rewrite' but for inserting NEW text at point instead of
 ;;   replacing a region.  Sends the full buffer with a <POINT/>
 ;;   marker and uses an insert-specific system directive.  Prefix arg
-;;   upgrades from Haiku to Sonnet 4.6.
+;;   keeps the rewrite tool list enabled for cross-file inserts.
 ;;
 ;; - `bob/gptel-sanitize-llm-output': registered on
 ;;   `gptel-post-rewrite-functions' to strip the most common "I told
@@ -52,7 +51,8 @@
 (defvar gptel--rewrite-message)
 (defvar gptel-rewrite-default-action)
 
-(declare-function gptel-make-anthropic "ext:gptel-anthropic" (name &rest args))
+(declare-function gptel-make-openai "ext:gptel-openai" (name &rest args))
+(declare-function bob/gptel-openai-api-key "init" ())
 (declare-function gptel-rewrite "ext:gptel-rewrite" ())
 (declare-function gptel--rewrite-reject "ext:gptel-rewrite" (&optional ovs))
 (declare-function gptel--rewrite-update-status "ext:gptel-rewrite" (ov msg))
@@ -71,47 +71,14 @@
 ;;; Backend ------------------------------------------------------------
 
 (defvar bob/gptel-rewrite-backend
-  (gptel-make-anthropic "Claude rewrite"
+  (gptel-make-openai "OpenAI rewrite"
     :stream t
-    ;; No adaptive thinking at the backend level -- Haiku
-    ;; rewrites/inserts should stay fast.  16384 accommodates
-    ;; the `C-u' path that enables thinking (see
-    ;; `bob/gptel-insert'); Haiku won't emit anywhere near
-    ;; this much on its own.  No server-side web/code tools
-    ;; -- inline edits use the local read-only tool list
-    ;; attached by the preset.
-    :request-params '(:max_tokens 16384))
-  "Non-thinking Anthropic backend used by the `rewrite' gptel preset.")
-
-(defun bob/gptel-rewrite--pin-oauth-header ()
-  "Pin OAuth headers on `bob/gptel-rewrite-backend'.
-
-The `gptel-anthropic-oauth' module injects OAuth headers via
-:around advice on `gptel-curl-get-response'.  That advice swaps
-the header function on the dynamic `gptel-backend' variable --
-but by the time the advice runs on a follow-up (after a tool
-call), `gptel-backend' is the global default (\"Claude thinking\"),
-NOT this rewrite backend.  Inside `gptel-curl-get-response' the
-backend is then rebound to the FSM's backend (us), whose header
-is never swapped, so the request goes out without x-api-key and
-401s.
-
-Pin a header function directly on this backend that always uses
-`gptel-anthropic-oauth--get-oauth-headers'.  That makes auth work
-on both the first request and every tool-result follow-up,
-regardless of what `gptel-backend' points at.
-
-Idempotent: re-pins on every call, which lets `bob/gptel-rewrite-install'
-recover from an earlier load order where `gptel-anthropic-oauth' had
-not defined the header function yet (the original `defvar' init form
-is only evaluated once)."
-  (when (and bob/gptel-rewrite-backend
-             (fboundp 'gptel-anthropic-oauth--get-oauth-headers))
-    (let ((b bob/gptel-rewrite-backend))
-      (setf (gptel-backend-header b)
-            (lambda (_info)
-              (let ((gptel-backend b))
-                (gptel-anthropic-oauth--get-oauth-headers)))))))
+    :key #'bob/gptel-openai-api-key
+    :models '((gpt-5.4-mini
+               :description "GPT-5.4 mini"
+               :capabilities (media tool json url)
+               :context-window 400)))
+  "OpenAI backend used by the `rewrite' gptel preset.")
 
 ;;; Tools --------------------------------------------------------------
 
@@ -176,7 +143,7 @@ ignores `let'-bindings.  Without this list, applying the `rewrite'
 preset via `gptel-with-preset' has no effect when the source buffer
 is a `gptel-mode' chat buffer with buffer-local values for these
 variables -- the chat buffer's Opus/thinking config wins and the
-rewrite goes out as Opus instead of Haiku.
+rewrite goes out as Opus instead of GPT-5.5.
 
 Must be a subset of the symbols in `gptel--with-buffer-copy-internal'.")
 
@@ -454,7 +421,7 @@ Responsibilities:
    request lose its target text.
 2. Reapply the `rewrite' preset at suffix time so the upstream `M-RET'
    transient path -- which is scheduled outside the original dynamic
-   extent of `bob/gptel-rewrite--with-preset' -- still uses Haiku and
+   extent of `bob/gptel-rewrite--with-preset' -- still uses GPT-5.5 and
    the rewrite backend instead of inheriting the chat buffer's config.
 3. Thread iteration history.  For iterate calls, replace upstream's
    single-shot prompt list with one that includes the original target
@@ -883,15 +850,14 @@ Shows the same accept/reject/diff/iterate overlay UX as
 `gptel-rewrite'.  The full buffer is sent with a <POINT/> marker
 so the model knows exactly where the insertion goes.
 
-By default uses Haiku 4.5 with NO tools: the buffer is already
+By default uses GPT-5.4 mini with NO tools: the buffer is already
 in the prompt, so context-discovery tools (read/grep/find/ls)
-tend to confuse small models into reading random paths and
-asking \"where is <POINT/>?\".
+tend to confuse the model into reading random paths and asking
+\"where is <POINT/>?\".
 
-With a prefix argument STRONG, upgrade to Claude Sonnet 4.6 and
-re-enable the rewrite preset's read-only tool list -- useful
-for non-trivial inserts that genuinely need to look at sibling
-files.
+With a prefix argument STRONG, re-enable the rewrite preset's
+read-only tool list -- useful for non-trivial inserts that
+genuinely need to look at sibling files.
 
 PRIOR, when non-nil, is a plist of iterate context from a
 previous `bob/gptel-insert' whose response the user wants to
@@ -903,7 +869,7 @@ previous answer instead of starting from scratch (which would
 be confused by a buffer that no longer contains the prior
 response)."
   (interactive (list (read-string (if current-prefix-arg
-                                      "Insert (Sonnet + tools): "
+                                      "Insert (tools): "
                                     "Insert: "))
                      current-prefix-arg))
   (when (string-empty-p (string-trim instruction))
@@ -914,23 +880,13 @@ response)."
   ;; - Default: parent is `rewrite', but override :tools/:use-tools
   ;;   to turn tools OFF.  The full buffer is in the prompt as
   ;;   <POINT/>...</POINT/>, so context-discovery tools are noise
-  ;;   that Haiku invariably abuses (reads random paths, greps the
+  ;;   that GPT-5.5 invariably abuses (reads random paths, greps the
   ;;   home directory, ends up asking "where is <POINT/>?").
-  ;; - With C-u: upgrade to Sonnet 4.6 with adaptive thinking AND
-  ;;   keep the rewrite preset's tool list, for cross-file inserts
-  ;;   that genuinely need to look around.  `:request-params' here
-  ;;   overrides the "Claude rewrite" backend's non-thinking
-  ;;   defaults (see `bob/gptel-rewrite-backend').
+  ;; - With C-u: keep the rewrite preset's tool list for cross-file
+  ;;   inserts that genuinely need to look around.
   (gptel-with-preset
       (if strong
-          ;; Sonnet 4.6 + adaptive thinking for hard inserts.  Tools
-          ;; inherit from the parent `rewrite' preset (read/ls/find/grep).
-          ;; `:max_tokens' comes from the "Claude rewrite" backend
-          ;; (16384), which is plenty for insert output plus thinking.
-          '(:model claude-sonnet-4-6
-            :parents (rewrite)
-            :request-params (:thinking (:type "adaptive"
-                                        :display "summarized")))
+          '(:parents (rewrite))
         '(:parents (rewrite) :use-tools nil :tools nil))
     ;; The preset attaches the current buffer to `gptel-context'; we
     ;; inline the buffer with a <POINT/> marker into the user prompt
@@ -1027,21 +983,12 @@ response)."
   "Wire up rewrite preset, default action, lifecycle cleanup and sanitiser.
 
 Idempotent.  Safe to call from `use-package' `:config'."
-  ;; Pin OAuth header on the rewrite backend.  This must run after
-  ;; `gptel-anthropic-oauth' has been loaded; doing it here (rather
-  ;; than at file load time) sidesteps a load-order race where the
-  ;; OAuth header function was not yet `fboundp' when the rewrite
-  ;; backend was constructed -- in which case the backend silently
-  ;; falls back to the default `x-api-key' header and 401s.
-  (bob/gptel-rewrite--pin-oauth-header)
-  (with-eval-after-load 'gptel-anthropic-oauth
-    (bob/gptel-rewrite--pin-oauth-header))
   (with-eval-after-load 'gptel-rewrite
     ;; Register (or refresh) the preset.
     (gptel-make-preset 'rewrite
-      :description "Region rewrites: Haiku, read-only tools, current buffer as context."
-      :backend "Claude rewrite"
-      :model 'claude-haiku-4-5-20251001
+      :description "Region rewrites: GPT-5.4 mini, read-only tools, current buffer as context."
+      :backend "OpenAI rewrite"
+      :model 'gpt-5.4-mini
       :use-tools t
       :tools bob/gptel-rewrite-tools
       :use-context 'system
