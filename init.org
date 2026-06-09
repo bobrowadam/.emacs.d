@@ -720,6 +720,61 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                        :capabilities (media tool-use json url)
                        :context-window 400))))
 
+    (defconst bob/gptel-thinking-efforts '(nil "low" "medium" "high" "xhigh")
+      "OpenAI reasoning effort values cycled in gptel buffers.")
+
+    (defun bob/gptel-thinking-effort ()
+      "Return the buffer-local OpenAI reasoning effort, or nil."
+      (plist-get (plist-get gptel--request-params :reasoning) :effort))
+
+    (defun bob/gptel-set-thinking-effort (effort)
+      "Set buffer-local OpenAI reasoning EFFORT for this gptel buffer."
+      (setq-local gptel--request-params (copy-sequence gptel--request-params))
+      (if effort
+          (plist-put gptel--request-params :reasoning (list :effort effort))
+        (setq gptel--request-params
+              (cl-loop for (key value) on gptel--request-params by #'cddr
+                       unless (eq key :reasoning)
+                       append (list key value))))
+      (force-mode-line-update t)
+      (message "gptel thinking effort: %s" (or effort "default")))
+
+    (defun bob/gptel-cycle-thinking-effort (&optional reverse)
+      "Cycle buffer-local OpenAI reasoning effort.
+With REVERSE, cycle backwards."
+      (interactive "P")
+      (let* ((current (bob/gptel-thinking-effort))
+             (values bob/gptel-thinking-efforts)
+             (index (or (cl-position current values :test #'equal) 0))
+             (next (nth (mod (+ index (if reverse -1 1)) (length values))
+                        values)))
+        (bob/gptel-set-thinking-effort next)))
+
+    (defun bob/gptel-cycle-thinking-effort-backward ()
+      "Cycle buffer-local OpenAI reasoning effort backwards."
+      (interactive)
+      (bob/gptel-cycle-thinking-effort t))
+
+    (defun bob/gptel-thinking-effort-header ()
+      "Return a gptel header-line indicator for reasoning effort."
+      (let ((effort (bob/gptel-thinking-effort)))
+        (propertize (format " [Think: %s]" (or effort "default"))
+                    'face (if effort 'mode-line-emphasis 'shadow)
+                    'help-echo "Buffer-local OpenAI reasoning effort; C-{ / C-} cycles")))
+
+    (defun bob/gptel-install-thinking-effort-header ()
+      "Add thinking effort to the gptel header line."
+      (when (and (bound-and-true-p gptel-mode)
+                 (consp header-line-format)
+                 (not (member '(:eval (bob/gptel-thinking-effort-header))
+                              header-line-format)))
+        (setq-local header-line-format
+                    (append (butlast header-line-format)
+                            (list '(:eval (bob/gptel-thinking-effort-header))
+                                  (car (last header-line-format)))))))
+    (advice-add 'gptel-use-header-line :after
+                #'bob/gptel-install-thinking-effort-header)
+
     (defvar-local bob/gptel--was-on nil
       "Non-nil if `gptel-mode' was enabled before a major-mode change.")
     (put 'bob/gptel--was-on 'permanent-local t)
@@ -748,7 +803,10 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
      ("C-c g a d" . gptel-add)
      ("C-c g a f" . gptel-add-file)
      ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
-     (:map gptel-mode-map ("C-c g s" . gptel-menu))
+     (:map gptel-mode-map
+           ("C-c g s" . gptel-menu)
+           ("C-{" . bob/gptel-cycle-thinking-effort-backward)
+           ("C-}" . bob/gptel-cycle-thinking-effort))
      :hook
      (org-mode . (lambda ()
                    (when (-some->> (buffer-file-name)
