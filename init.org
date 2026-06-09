@@ -690,6 +690,26 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
        :host "api.openai.com"
        :user "bradwell-codex"))
 
+    (require 'gptel-openai-responses)
+
+    (defconst bob/gptel-openai-web-search-request-params
+      '(:tools [(:type "web_search"
+                 :search_context_size "medium"
+                 :external_web_access t)]
+        :tool_choice "auto"
+        :include ["web_search_call.action.sources"])
+      "OpenAI Responses API params for hosted server-side web search.")
+
+    (defvar bob/gptel-openai-responses-backend
+      (gptel-make-openai-responses "OpenAI Responses"
+        :stream t
+        :key #'bob/gptel-openai-api-key
+        :models '((gpt-5.5
+                   :description "GPT-5.5 (Responses API)"
+                   :capabilities (media tool-use json url responses-api)
+                   :context-window 400)))
+      "OpenAI Responses API backend for gptel.")
+
     (setq gptel-model 'gpt-5.5
           gptel-backend
           (gptel-make-openai "OpenAI GPT"
@@ -697,7 +717,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
             :key #'bob/gptel-openai-api-key
             :models '((gpt-5.5
                        :description "GPT-5.5"
-                       :capabilities (media tool json url)
+                       :capabilities (media tool-use json url)
                        :context-window 400))))
 
     (defvar-local bob/gptel--was-on nil
@@ -802,6 +822,17 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
       :use-tools t
       :tools (mapcar #'gptel-tool-name gptel-tools)
       :confirm-tool-calls nil
+      :cache t
+      :stream t
+      :system #'bob/gptel-tools-system-prompt
+      :use-context 'system)
+
+    (gptel-make-preset 'web-search
+      :description "OpenAI Responses API with hosted web_search and source metadata."
+      :backend "OpenAI Responses"
+      :model 'gpt-5.5
+      :use-tools nil
+      :request-params bob/gptel-openai-web-search-request-params
       :cache t
       :stream t
       :system #'bob/gptel-tools-system-prompt
