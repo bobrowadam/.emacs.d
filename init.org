@@ -2621,20 +2621,27 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 ** Paredit
 #+begin_src elisp
   (use-package paredit
-    :hook
-    ((emacs-lisp-mode lisp-mode lisp-data-mode clojure-ts-mode cider-repl-mode)
-     . bob/paredit-mode-maybe)
-    :bind (:map paredit-mode-map ("{" . paredit-open-curly))
+    :demand t
     :init
     (defun bob/paredit-mode-maybe ()
-      "Enable paredit only in buffers visiting actual Lisp files.
+      "Enable paredit only in Lisp buffers.
 Guards against `lm-package-version' which temporarily enables
 `emacs-lisp-mode' on arbitrary files, firing mode hooks and
 making paredit's `check-parens' blow up on non-Lisp syntax."
-      (when (and buffer-file-name
-               (string-match-p "\\.\\(el\\|clj[sc]?\\|lisp\\|scm\\|rkt\\)\\(?:\\.gz\\)?\\'"
-                               buffer-file-name))
-        (paredit-mode 1))))
+      (when (or (not buffer-file-name)
+                (string-match-p "\\.\\(el\\|clj[sc]?\\|lisp\\|scm\\|rkt\\)\\(?:\\.gz\\)?\\'"
+                                buffer-file-name))
+        (paredit-mode 1)))
+    :hook ((emacs-lisp-mode . bob/paredit-mode-maybe)
+           (lisp-interaction-mode . bob/paredit-mode-maybe)
+           (lisp-mode . paredit-mode)
+           (lisp-data-mode . paredit-mode)
+           (clojure-ts-mode . paredit-mode)
+           (cider-repl-mode . paredit-mode))
+    :bind (:map paredit-mode-map ("{" . paredit-open-curly))
+    :config
+    (remove-hook 'emacs-lisp-mode-hook #'paredit-mode)
+    (add-hook 'inferior-emacs-lisp-mode-hook #'paredit-mode))
 
   (defun bob/simple-minibuffer-parens ()
     (require 'paredit)
