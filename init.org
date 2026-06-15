@@ -1307,7 +1307,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :load-path "~/source/mentat"
     :after fnm
     :commands (mentat-search
+               mentat-vibe
                mentat-rewrite
+               mentat-open
+               mentat-view-logs
+               mentat-requests
+               mentat-clear-previous-requests
+               mentat-stop-all-requests
                mentat-abort
                mentat-switch-to-rpc-log
                mentat-stop-session
