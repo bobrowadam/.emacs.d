@@ -1307,6 +1307,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :load-path "~/source/mentat"
     :after fnm
     :commands (mentat-search
+               mentat-rewrite
                mentat-abort
                mentat-switch-to-rpc-log
                mentat-stop-session
@@ -1323,6 +1324,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                        :thinking "low"
                                        :history ephemeral)))
     :bind (("C-c C-; s" . mentat-search)
+           ("C-c C-; r" . mentat-rewrite)
            ("C-c C-; g" . mentat-abort)
            ("C-c C-; l" . mentat-switch-to-rpc-log)
            ("C-c C-; q" . mentat-stop-session))
