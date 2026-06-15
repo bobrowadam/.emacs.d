@@ -986,7 +986,7 @@ For claude code protocol via web-sockets
     "Start a monet server for the monorepo root if one isn't running yet.
     Only starts a server when inside an actual git repo. No-ops if a server is
     already running for that root."
-    (when-let ((root (locate-dominating-file default-directory ".git")))
+    (when-let* ((root (locate-dominating-file default-directory ".git")))
       (let ((root (expand-file-name root)))
         (unless (monet--get-session root)
           (monet-start-server-in-directory root root)))))
@@ -1303,28 +1303,29 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 ** Mentat
 #+begin_src elisp
   (use-package mentat
-    :disabled t
+    :ensure nil
     :load-path "~/source/mentat"
-    :commands (mentat-menu)
-    :bind ("C-c C-." . mentat-menu)
-    ;; :ensure (mentat
-    ;;          :repo "git@github.com:bobrowadam/mentat.git"
-    ;;          :fetcher git
-    ;;          :files ("*.el")
-    ;;          :build (:not elpaca--compile-info
-    ;;                  ("make" "compile")))
+    :after fnm
+    :commands (mentat-search
+               mentat-abort
+               mentat-switch-to-rpc-log
+               mentat-stop-session
+               mentat-stop-all-sessions)
     :custom
-    (mentat-enable-code-cell-sessions t)
-    (mentat-confirm-cell-delete nil)
-    (mentat-server-path "~/source/mentat/mentat-server/")
-    (mentat-default-behaviour 'mentor)
-    (mentat-use-vui t)
-    (mentat-debug t)
-    (mentat-rewrite-model "sonnet")
-    :config
-    (setenv "MENTAT_OPENAI_API_KEY" (auth-source-pick-first-password
-                                     :host "platform.openai.com"
-                                     :user "bobrowadam")))
+    (mentat-pi-log-level 'verbose)
+    (mentat-command-options '((search :model "openai-codex/gpt-5.5"
+                                      :thinking "high"
+                                      :history reset)
+                              (vibe :model "openai-codex/gpt-5.5"
+                                    :thinking "medium"
+                                    :history keep)
+                              (rewrite :model "openai-codex/gpt-5.4-mini"
+                                       :thinking "low"
+                                       :history ephemeral)))
+    :bind (("C-c C-' s" . mentat-search)
+           ("C-c C-' g" . mentat-abort)
+           ("C-c C-' l" . mentat-switch-to-rpc-log)
+           ("C-c C-' q" . mentat-stop-session)))
 #+end_src
 ** mevedel
 #+begin_src elisp
@@ -1372,7 +1373,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :after project)
 
   (use-package pi-coding-agent
-    :disabled t
     :config
     (defun bob/pi-cycle-solveit-mode ()
       "Cycle the solveit extension mode for the current Pi session."
