@@ -1308,7 +1308,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :after fnm
     :commands (mentat-menu)
     :custom
-    (mentat-pi-log-level 'verbose)
+    (mentat-pi-log-level 'summary)
     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
                                       :thinking "high"
                                       :history reset)
@@ -1316,7 +1316,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                     :thinking "medium"
                                     :history keep)
                               (rewrite :model "openai-codex/gpt-5.4-mini"
-                                       :thinking "low"
+                                       :thinking "medium"
                                        :history ephemeral)))
     :bind (("C-c C-;" . mentat-menu))
     :config (fnm-use))
