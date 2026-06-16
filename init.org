@@ -3915,19 +3915,36 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
 * RSS feed
 #+begin_src elisp
   (use-package elfeed
+    :preface
+    (defun bob/reddit-rss-feed-token ()
+      "Return the Reddit RSS feed token from auth-source.
+  Accept either the raw token, `feed=TOKEN', or a full Reddit RSS URL."
+      (require 'auth-source)
+      (require 'url-util)
+      (auth-source-pick-first-password
+       :host "reddit.com"
+       :user "rss-feed"))
+
+    (defun bob/reddit-rss-url (url)
+      "Append Reddit's authenticated RSS parameters to URL when available."
+      (concat url
+              (if (string-match-p "\\?" url) "&" "?")
+              "feed=" (bob/reddit-rss-feed-token)
+              "&user=McBobrow"))
+
     :custom
     (elfeed-feeds
-     '(("https://learncodethehardway.com/feed.rss" programming learning c)
+     `(("https://learncodethehardway.com/feed.rss" programming learning c)
        
        ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
-       ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
+       (,(bob/reddit-rss-url "https://www.reddit.com/r/emacs/.rss") programming emacs reddit)
        
-       ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
-       ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
+       (,(bob/reddit-rss-url "https://www.reddit.com/r/roc_lang/.rss") programming roc reddit)
+       (,(bob/reddit-rss-url "https://www.reddit.com/r/planetemacs/.rss") programming emacs reddit)
        ("https://danluu.com/atom.xml" programming blog danluu)
        ("https://protesilaos.com/master.xml" programming blog emacs)
        ("https://eshelyaron.com/rss.xml" programming blog emacs)
-       ("https://www.reddit.com/r/PiCodingAgent/.rss" programming pi reddit)
+       (,(bob/reddit-rss-url "https://www.reddit.com/r/PiCodingAgent/.rss") programming pi reddit)
        ("https://pi.dev/news.xml" programming blog pi)))
     :bind
     ("C-c w" . elfeed)
