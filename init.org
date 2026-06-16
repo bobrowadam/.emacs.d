@@ -1306,18 +1306,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :ensure nil
     :load-path "~/source/mentat"
     :after fnm
-    :commands (mentat-search
-               mentat-vibe
-               mentat-rewrite
-               mentat-open
-               mentat-view-logs
-               mentat-requests
-               mentat-clear-previous-requests
-               mentat-stop-all-requests
-               mentat-abort
-               mentat-switch-to-rpc-log
-               mentat-stop-session
-               mentat-stop-all-sessions)
+    :commands (mentat-menu)
     :custom
     (mentat-pi-log-level 'verbose)
     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
@@ -1329,11 +1318,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                               (rewrite :model "openai-codex/gpt-5.4-mini"
                                        :thinking "low"
                                        :history ephemeral)))
-    :bind (("C-c C-; s" . mentat-search)
-           ("C-c C-; r" . mentat-rewrite)
-           ("C-c C-; g" . mentat-abort)
-           ("C-c C-; l" . mentat-switch-to-rpc-log)
-           ("C-c C-; q" . mentat-stop-session))
+    :bind (("C-c C-;" . mentat-menu))
     :config (fnm-use))
 #+end_src
 ** mevedel
