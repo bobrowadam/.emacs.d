@@ -94,3 +94,4 @@ agent/
 /magit-diff-review.sqlite
 .claude/settings.local.json
 /jdbc/
+/.mentat/state
