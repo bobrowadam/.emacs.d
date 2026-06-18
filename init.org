@@ -1421,14 +1421,13 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (mentat-prompt-extra-completion-at-point-functions
      (list #'bob/mentat-word-completion-at-point))
     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
-                                      :thinking "high"
-                                      :history reset)
+                                      :thinking "high")
                               (vibe :model "openai-codex/gpt-5.5"
-                                    :thinking "high"
-                                    :history keep)
+                                    :thinking "high")
+                              (ask :model "openai-codex/gpt-5.5"
+                                   :thinking "medium")
                               (rewrite :model "openai-codex/gpt-5.4-mini"
-                                       :thinking "medium"
-                                       :history ephemeral)))
+                                       :thinking "medium")))
     :bind (("C-c C-;" . mentat-menu))
     :config (fnm-use))
 #+end_src
