@@ -1258,21 +1258,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (transient-append-suffix 'eca--transient-menu-prefix "S"
       '("w" "ECA re-write" eca-rewrite)))
 #+end_src
-** ai-code-interface
-#+begin_src elisp
-  (use-package ai-code-interface
-    :disabled t
-    :ensure (:fetcher github :repo "tninja/ai-code-interface.el" :files ("*.el"))
-    :bind
-    ("C-c C-'" . ai-code-menu)
-    :config
-    (ai-code-set-backend 'codex) ;; use codex as backend
-    ;; Enable global keybinding for the main menu
-
-    ;; Optional: Set up Magit integration for AI commands in Magit popups
-    (with-eval-after-load 'magit
-      (ai-code-magit-setup-transients)))
-#+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
   (use-package elisp-dev-mcp
