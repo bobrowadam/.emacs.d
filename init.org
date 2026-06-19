@@ -1420,6 +1420,18 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :commands (mentat-menu)
     :custom
     (mentat-pi-log-level 'summary)
+    (mentat-extension-paths
+     (let ((extensions (mapcar (lambda (file)
+                                 (expand-file-name file "~/.pi/agent/extensions/src/"))
+                               '("check-elisp.ts"
+                                 "emacs.ts"
+                                 "web-search.ts"
+                                 "mempalace.ts"
+                                 "resolve-symlinks.ts"))))
+       `((ask . ,extensions)
+         (search . ,extensions)
+         (vibe . ,extensions)
+         (tutorial . ,extensions))))
     (mentat-prompt-extra-completion-at-point-functions
      (list #'bob/mentat-word-completion-at-point))
     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
