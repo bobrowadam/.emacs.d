@@ -10,6 +10,9 @@
 (require 'json)
 (require 'subr-x)
 (require 'cl-lib)
+(require 'help-fns)
+(require 'find-func)
+(require 'info-look)
 
 (declare-function magit-commit-create "magit-commit" (&optional args))
 (declare-function magit-process-error-summary "magit-process" (process-buf section))
@@ -110,6 +113,178 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
         (funcall mode))
       (set-buffer-modified-p nil))
     (buffer-name buffer)))
+
+;;; --- Agent-facing Elisp inspection helpers ---
+
+(defun pi/eval-elisp (code)
+  "Evaluate Elisp CODE in the running Emacs and return base64 result text."
+  (unless (stringp code)
+    (user-error "Invalid Elisp code"))
+  (pi/encode-result
+   (prin1-to-string
+    (let (form result)
+      (with-temp-buffer
+        (insert code)
+        (goto-char (point-min))
+        (while (progn
+                 (skip-chars-forward " \t\n\r")
+                 (not (eobp)))
+          (setq form (read (current-buffer)))
+          (setq result (eval form t))))
+      result))))
+
+(defun pi/eval-elisp-file (path)
+  "Load Elisp file PATH in the running Emacs and return base64 result text."
+  (unless (and (stringp path) (file-readable-p path))
+    (user-error "Elisp file is not readable: %s" path))
+  (pi/encode-result
+   (format "Loaded %s => %S" path (load-file path))))
+
+(defun pi/--json-bool (value)
+  "Return VALUE as an Emacs JSON boolean."
+  (if value t :json-false))
+
+(defun pi/--validate-symbol-name (name kind &optional intern-p)
+  "Validate NAME as a symbol name for KIND.
+When INTERN-P is non-nil, return the interned symbol."
+  (unless (stringp name)
+    (user-error "Invalid %s name" kind))
+  (when (string-empty-p name)
+    (user-error "Empty %s name" kind))
+  (when intern-p
+    (intern name)))
+
+(defun pi/elisp-describe-function (function)
+  "Return base64-encoded documentation for Emacs Lisp FUNCTION."
+  (let ((sym (pi/--validate-symbol-name function "function" t)))
+    (unless (fboundp sym)
+      (user-error "Function %s is void" function))
+    (pi/encode-result
+     (with-temp-buffer
+       (let ((standard-output (current-buffer)))
+         (describe-function-1 sym)
+         (buffer-string))))))
+
+(defun pi/--function-definition-bounds ()
+  "Return source bounds around the function definition at point."
+  (save-excursion
+    (unless (looking-at-p "(\\s-*\\(?:cl-\\)?def")
+      (beginning-of-defun))
+    (let ((start (point)))
+      (save-excursion
+        (end-of-defun)
+        (cons start (point))))))
+
+(defun pi/elisp-get-function-definition (function)
+  "Return base64-encoded JSON source location for Emacs Lisp FUNCTION."
+  (let ((sym (pi/--validate-symbol-name function "function" t)))
+    (unless (fboundp sym)
+      (user-error "Function %s is not found" function))
+    (condition-case err
+        (pcase-let* ((`(,buffer . ,pos) (find-function-noselect sym))
+                     (file (or (buffer-file-name buffer) "<interactively defined>")))
+          (with-current-buffer buffer
+            (save-excursion
+              (goto-char pos)
+              (pcase-let* ((`(,start . ,end) (pi/--function-definition-bounds))
+                           (source (buffer-substring-no-properties start end)))
+                (pi/encode-result
+                 (json-encode
+                  `((source . ,source)
+                    (file-path . ,file)
+                    (start-line . ,(line-number-at-pos start))
+                    (end-line . ,(line-number-at-pos end)))))))))
+      (error
+       (pi/encode-result
+        (json-encode
+         `((found . :json-false)
+           (function . ,function)
+           (message . ,(error-message-string err)))))))))
+
+(defun pi/elisp-describe-variable (variable)
+  "Return base64-encoded JSON metadata for Emacs Lisp VARIABLE.
+Does not expose the variable's value."
+  (let* ((sym (pi/--validate-symbol-name variable "variable" t))
+         (doc (documentation-property sym 'variable-documentation t))
+         (file (find-lisp-object-file-name sym 'defvar))
+         (custom-p (custom-variable-p sym))
+         (custom-group (get sym 'custom-group))
+         (obsolete (get sym 'byte-obsolete-variable)))
+    (unless (or (boundp sym) doc file custom-p obsolete)
+      (user-error "Variable %s is not defined" variable))
+    (pi/encode-result
+     (json-encode
+      `((name . ,variable)
+        (bound . ,(pi/--json-bool (boundp sym)))
+        (value-type . ,(when (boundp sym) (symbol-name (type-of (symbol-value sym)))))
+        (documentation . ,doc)
+        (source-file . ,(or file "<interactively defined>"))
+        (is-custom . ,(pi/--json-bool custom-p))
+        (custom-group . ,(when custom-group (symbol-name custom-group)))
+        (custom-type . ,(when custom-p (format "%S" (get sym 'custom-type))))
+        (is-obsolete . ,(pi/--json-bool obsolete))
+        (obsolete-info . ,(when obsolete (format "%S" obsolete))))))))
+
+(defun pi/--clean-info-content (content)
+  "Clean Info navigation markup from CONTENT while preserving prose."
+  (with-temp-buffer
+    (insert content)
+    (goto-char (point-min))
+    (while (re-search-forward "\\*[Nn]ote[ \n][^:]*::" nil t)
+      (replace-match "[See: \\&]"))
+    (buffer-string)))
+
+(defun pi/--extract-info-node-content ()
+  "Extract the current Info node content without its header."
+  (let (start end)
+    (goto-char (point-min))
+    (when (re-search-forward "^File: [^,]+,  Node: [^,\n]+.*\n" nil t)
+      (setq start (point)))
+    (when start
+      (goto-char start)
+      (setq end (if (re-search-forward "^\^_" nil t)
+                    (match-beginning 0)
+                  (point-max))))
+    (when (and start end)
+      (pi/--clean-info-content
+       (buffer-substring-no-properties start end)))))
+
+(defun pi/elisp-info-lookup-symbol (symbol)
+  "Return base64-encoded JSON Info documentation lookup for SYMBOL."
+  (pi/--validate-symbol-name symbol "symbol")
+  (let (result)
+    (condition-case nil
+        (with-temp-buffer
+          (let ((mode 'emacs-lisp-mode)
+                info-buf node manual content)
+            (emacs-lisp-mode)
+            (save-window-excursion
+              (info-lookup-symbol symbol mode)
+              (setq info-buf (get-buffer "*info*"))
+              (when info-buf
+                (with-current-buffer info-buf
+                  (goto-char (point-min))
+                  (when (re-search-forward "^File: \\([^,]+\\),  Node: \\([^,\n]+\\)" nil t)
+                    (setq manual (match-string 1))
+                    (setq node (match-string 2))
+                    (when (string-match "\\.info\\'" manual)
+                      (setq manual (substring manual 0 (match-beginning 0)))))
+                  (setq content (pi/--extract-info-node-content)))))
+            (when (and node content)
+              (setq result
+                    `((found . t)
+                      (symbol . ,symbol)
+                      (node . ,node)
+                      (manual . ,manual)
+                      (content . ,content)
+                      (info-ref . ,(format "(%s)%s" manual node)))))))
+      (error nil))
+    (pi/encode-result
+     (json-encode
+      (or result
+          `((found . :json-false)
+            (symbol . ,symbol)
+            (message . ,(format "Symbol '%s' not found in Elisp Info documentation" symbol))))))))
 
 (defun pi/get-context ()
   "Return base64-encoded context for the current buffer."
