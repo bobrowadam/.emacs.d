@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Effect FlatMap
+# key: efp
+# --
+Effect.flatMap(($1) => $2)
