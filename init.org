@@ -3057,7 +3057,7 @@ LSP/DAP servers manager
     (eglot-events-buffer-config '(:size 0 :format full))
     (eglot-sync-connect 0)
     :config
-    ;; (eglot-booster-mode)
+    (eglot-booster-mode)
     (setq-default eglot-workspace-configuration
                    '(:biome (:enabled t)))
     (defun bob/typescript-tsconfig-has-effect-plugin-p ()
@@ -3487,7 +3487,6 @@ and `:test-name'."
     (add-hook hook #'bob/setup-ts-formatter))
 
   (use-package eglot-booster
-    :disabled t
     :ensure ( :package "eglot-booster"
               :protocol https
               :files ("eglot-booster.el")
