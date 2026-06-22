@@ -1584,31 +1584,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :demand t)
 #+end_src
 
-*** FNM - node version manager (like nvm replacement)
-#+begin_src elisp
-  (use-package fnm
-    :demand t
-    :ensure
-    (:fetcher github
-              :repo "bobrowadam/fnm.el"
-              :branch "main"
-              :files ("fnm.el"))
-    :config
-    (fnm-enable-auto-use))
-#+end_src
-
-*** PI.el
-Another emacs pi implementation, using PI in RPC mode and emacs as UI
-#+begin_src elisp
-  (use-package pi
-    :ensure (:host github
-             :repo "bobrowadam/pi.el")
-    :after fnm
-    :commands (pi-chat)
-    :config
-    (setq pi-executable (expand-file-name "pi" (fnm-node-bin-path (fnm-default-node-version)))))
-#+end_src
-
 * Ediff
 #+begin_src elisp
   (defvar ediff-buffer-A)
@@ -2733,6 +2708,14 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     :demand t
     :after magit
     :config (abridge-diff-mode 1))
+
+  (use-package topsy
+    :ensure t
+    :after magit
+    :hook (magit-diff-mode . topsy-mode)
+    :config
+    (setf (alist-get 'magit-diff-mode topsy-mode-functions)
+          #'topsy--magit-section))
 #+end_src
 
 * Handle parentesis editing
@@ -3492,6 +3475,18 @@ and `:test-name'."
               :files ("eglot-booster.el")
               :fetcher github
               :repo "jdtsmith/eglot-booster"))
+#+end_src
+**** FNM - node version manager (like nvm replacement)
+#+begin_src elisp
+  (use-package fnm
+    :demand t
+    :ensure
+    (:fetcher github
+              :repo "bobrowadam/fnm.el"
+              :branch "main"
+              :files ("fnm.el"))
+    :config
+    (fnm-enable-auto-use))
 #+end_src
 
 *** Roc
