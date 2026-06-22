@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: Effect Gen
+# key: gen
+# --
+return Effect.gen(function* () {
+  $0
+})
