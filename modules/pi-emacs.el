@@ -380,6 +380,24 @@ Does not expose the variable's value."
              (t "no diagnostics backend active in this buffer (eglot, flymake, or flycheck)"))))
       (pi/encode-result text))))
 
+(defun pi/screenshot-target ()
+  "Return metadata for screenshotting the selected Emacs frame."
+  (require 'json)
+  (let* ((frame (selected-frame))
+         (window (frame-selected-window frame))
+         (buffer (window-buffer window))
+         (file (buffer-file-name buffer))
+         (project-root (when (fboundp 'project-current)
+                         (when-let* ((project (project-current nil (buffer-local-value 'default-directory buffer))))
+                           (expand-file-name (project-root project))))))
+    (pi/encode-result
+     (json-encode
+      `((frameName . ,(or (frame-parameter frame 'name) ""))
+        (bufferName . ,(buffer-name buffer))
+        (majorMode . ,(symbol-name (buffer-local-value 'major-mode buffer)))
+        (file . ,file)
+        (project . ,project-root))))))
+
 (defun pi/get-snapshot ()
   "Return base64-encoded lightweight snapshot of the current buffer."
   (with-current-buffer (window-buffer (selected-window))
