@@ -2265,6 +2265,7 @@ just org files in a directory + ripgrep.
                        ("f" . grove-find)
                        ("s" . grove-search)
                        ("t" . grove-search-tag)
+                       ("T" . grove-add-filetag)
                        ("d" . grove-daily)
                        ("b" . grove-backlinks)
                        ("i" . grove-inbox-review)
