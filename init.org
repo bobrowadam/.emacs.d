@@ -4312,8 +4312,8 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
                                          (prin1-to-string advice))
                      (advice-remove 'org-agenda-redo advice)))
                  'org-agenda-redo)
+    (advice-remove 'org-agenda-redo 'bob/linear-refresh-before-org-agenda)
     (advice-add 'org-agenda :before #'bob/linear-refresh-before-org-agenda)
-    (advice-add 'org-agenda-redo :before #'bob/linear-refresh-before-org-agenda)
     (advice-add 'linear-emacs-list-issues :after #'bob/linear-post-refresh-agenda))
 #+end_src
 
