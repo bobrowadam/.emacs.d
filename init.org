@@ -2306,7 +2306,8 @@ just org files in a directory + ripgrep.
         (insert (format-time-string "** %H:%M\n\n"))
         (forward-line -1)))
     :config
-    (setq grove-directory (expand-file-name "grove/" org-directory))
+    (setq grove-directory (expand-file-name "grove/" org-directory)
+          grove-inbox-review-checks '(untagged in-inbox))
     (unless (file-directory-p grove-directory)
       (make-directory grove-directory t)
       (message "grove: created vault directory %s" grove-directory))
