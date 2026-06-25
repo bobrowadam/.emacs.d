@@ -2161,15 +2161,28 @@ Align tables in markdown and org-mode
     (org-super-agenda-mode 1)
     ;; iCloud files can intermittently fail with "Operation canceled/timed out"
     ;; when they haven't been downloaded locally yet. Skip them gracefully.
+    (defun bob/org-skip-unavailable-agenda-file (orig file)
+      "Skip unavailable agenda FILE while Org prepares agenda buffers."
+      (condition-case err
+          (funcall orig file)
+        (file-error
+         (message "org-agenda: skipping unavailable file %s (%s)"
+                  (file-name-nondirectory file)
+                  (error-message-string err))
+         (throw 'nextfile nil))))
+
+    ;; Remove the old anonymous version of this advice from already-running
+    ;; Emacs sessions; it returned nil, which later made Org call set-buffer nil.
+    (advice-mapc
+     (lambda (advice _props)
+       (when (and (not (eq advice 'bob/org-skip-unavailable-agenda-file))
+                  (string-match-p "org-agenda: skipping unavailable file"
+                                  (prin1-to-string advice)))
+         (advice-remove 'org-get-agenda-file-buffer advice)))
+     'org-get-agenda-file-buffer)
+    (advice-remove 'org-get-agenda-file-buffer 'bob/org-skip-unavailable-agenda-file)
     (advice-add 'org-get-agenda-file-buffer :around
-                (lambda (orig file)
-                  (condition-case err
-                      (funcall orig file)
-                    (file-error
-                     (message "org-agenda: skipping unavailable file %s (%s)"
-                              (file-name-nondirectory file)
-                              (error-message-string err))
-                     nil)))))
+                'bob/org-skip-unavailable-agenda-file))
 
   (use-package org-super-agenda
     :config
@@ -3044,7 +3057,14 @@ LSP/DAP servers manager
     :config
     (eglot-booster-mode)
     (setq-default eglot-workspace-configuration
-                   '(:biome (:enabled t)))
+                  '(:biome (:enabled t)))
+    (defun bob/eglot-events-buffer-config-toggle ()
+      (interactive)
+      (let* ((current-size (plist-get eglot-events-buffer-config :size))
+             (new-size (if (and (integerp current-size) (> current-size 0))
+                           0
+                         (* 2 1024 1024))))
+        (setq eglot-events-buffer-config `(:size ,new-size :format full))))
     (defun bob/typescript-tsconfig-has-effect-plugin-p ()
       "Return non-nil when the nearest tsconfig enables @effect/language-service."
       (when-let* ((tsconfig-dir (locate-dominating-file default-directory "tsconfig.json"))
@@ -3057,7 +3077,7 @@ LSP/DAP servers manager
     (add-to-list 'eglot-server-programs
                  `((js2-mode js-mode js-ts-mode typescript-ts-mode tsx-ts-mode)
                    . ,(lambda (&rest _)
-                        (let* ((nm-dir (locate-dominating-file default-directory "node_modules"))
+                        (let* ((nm-dir (bob/monorepo-root))
                                (biome (and nm-dir (expand-file-name "node_modules/.bin/biome" nm-dir)))
                                (tsserver-path (and nm-dir (expand-file-name "node_modules/typescript/lib" nm-dir)))
                                (effect-ls-path (and nm-dir (expand-file-name "node_modules/@effect/language-service" nm-dir)))
