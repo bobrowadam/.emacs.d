@@ -2256,7 +2256,7 @@ just org files in a directory + ripgrep.
   (use-package grove
     :after (org)
     :demand t
-    :ensure (:repo "jonathanchu/grove" :fetcher github :files ("*.el"))
+    :ensure (:repo "bobrowadam/grove" :fetcher github :branch "fix-icloud-cache-timeouts" :files ("*.el"))
     :bind (:prefix-map grove-command-map
                        :prefix "C-c n"
                        ("v" . grove-open)
