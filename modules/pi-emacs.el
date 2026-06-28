@@ -736,55 +736,221 @@ Optional CWD overrides the project root for socket discovery."
 
 ;;; --- Magit integration ---
 
+(defconst pi/magit-commit-running-threshold-seconds 120
+  "Seconds before Pi reports that a Magit commit is still running.")
+
 (when (and (fboundp 'pi/magit--commit-process-finish-advice)
            (advice-member-p #'pi/magit--commit-process-finish-advice
                             'magit-process-finish))
   (advice-remove 'magit-process-finish
                  #'pi/magit--commit-process-finish-advice))
 
-(defun pi/magit--process-error-details (process)
-  "Return a useful error summary for failed Magit PROCESS."
-  (let* ((process-buffer (process-buffer process))
-         (section (process-get process 'section))
-         (summary (and (buffer-live-p process-buffer)
-                       section
-                       (with-current-buffer process-buffer
-                         (magit-process-error-summary process-buffer section))))
-         (tail (and (buffer-live-p process-buffer)
-                    (with-current-buffer process-buffer
-                      (buffer-substring-no-properties
-                       (max (point-min) (- (point-max) 2000))
-                       (point-max))))))
-    (or summary
-        (and tail (not (string-empty-p (string-trim tail))) tail)
-        (format "git commit exited %s" (process-exit-status process)))))
+(defun pi/magit--buffer-tail (buffer &optional max-lines)
+  "Return the tail of BUFFER, keeping at most MAX-LINES lines."
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      (save-excursion
+        (goto-char (point-max))
+        (forward-line (- (or max-lines 200)))
+        (string-trim
+         (buffer-substring-no-properties (point) (point-max)))))))
 
-(defun pi/magit--notify-commit-failure (process root callback-cwd)
-  "Notify Pi if Magit commit PROCESS failed."
+(defun pi/magit--strip-control-sequences (text)
+  "Remove ANSI/control sequences from TEXT."
+  (when text
+    (let ((clean text))
+      (setq clean (replace-regexp-in-string "\r" "\n" clean))
+      (setq clean (replace-regexp-in-string "\x1b\[[0-9;?]*[ -/]*[@-~]" "" clean))
+      (setq clean (replace-regexp-in-string "\x1b\][^\a]*\a" "" clean))
+      (string-trim clean))))
+
+(defun pi/magit--string-tail (text &optional max-lines)
+  "Return the tail of TEXT, keeping at most MAX-LINES lines."
+  (when (and text (not (string-empty-p text)))
+    (with-temp-buffer
+      (insert text)
+      (pi/magit--buffer-tail (current-buffer) max-lines))))
+
+(defun pi/magit--process-command-string (process)
+  "Return PROCESS command as a shell-escaped string, or nil."
+  (when-let* ((command (process-command process)))
+    (string-join (mapcar #'shell-quote-argument command) " ")))
+
+(defun pi/magit--process-duration (process)
+  "Return elapsed seconds for PROCESS, or nil if unavailable."
+  (when-let* ((start-time (process-get process 'pi-magit-start-time)))
+    (max 0.0 (- (float-time) start-time))))
+
+(defun pi/magit--process-error-summary (process)
+  "Return Magit's structured error summary for PROCESS, if available."
+  (let* ((process-buffer (process-buffer process))
+         (section (process-get process 'section)))
+    (and (buffer-live-p process-buffer)
+         section
+         (with-current-buffer process-buffer
+           (magit-process-error-summary process-buffer section)))))
+
+(defun pi/magit--detect-hook-hints (text)
+  "Return a list of likely hook-related hints from TEXT."
+  (let ((haystack (downcase (or text "")))
+        hints)
+    (when (string-match-p "lefthook" haystack)
+      (push "Lefthook output detected" hints))
+    (when (string-match-p "pre-commit" haystack)
+      (push "A pre-commit hook appears to be running" hints))
+    (when (or (string-match-p "npm warn exec" haystack)
+              (string-match-p "will be installed" haystack)
+              (string-match-p "\\bnpx\\b" haystack))
+      (push "npm/npx warmup or package resolution may be delaying the hook" hints))
+    (delete-dups (nreverse hints))))
+
+(defun pi/magit--run-git-diagnostic (root &rest args)
+  "Run `git ARGS' in ROOT and return a plist with command, exit, and output."
+  (with-temp-buffer
+    (let* ((default-directory (file-name-as-directory (expand-file-name root)))
+           (command (string-join
+                     (cons "git" (mapcar #'shell-quote-argument args))
+                     " "))
+           (exit (apply #'process-file "git" nil (current-buffer) nil args))
+           (output (pi/magit--strip-control-sequences (buffer-string))))
+      (list :command command
+            :exit exit
+            :output output))))
+
+(defun pi/magit--format-git-diagnostic (diagnostic &optional max-lines)
+  "Format DIAGNOSTIC plist, keeping at most MAX-LINES of output."
+  (let ((command (plist-get diagnostic :command))
+        (exit (plist-get diagnostic :exit))
+        (output (pi/magit--string-tail (plist-get diagnostic :output) max-lines)))
+    (string-join
+     (delq nil
+           (list (and command (format "$ %s" command))
+                 (format "exit %s" exit)
+                 (and output (not (string-empty-p output)) output)))
+     "\n")))
+
+(defun pi/magit--process-report-body (process)
+  "Return a plist with summary, tail, and hook hints for PROCESS."
+  (let* ((summary (pi/magit--strip-control-sequences
+                   (pi/magit--process-error-summary process)))
+         (tail (pi/magit--strip-control-sequences
+                (pi/magit--buffer-tail (process-buffer process) 200)))
+         (combined (string-join (delq nil (list summary tail)) "\n\n"))
+         (hints (pi/magit--detect-hook-hints combined)))
+    (list :summary summary
+          :tail tail
+          :hints hints)))
+
+(defun pi/magit--format-process-outcome (process event)
+  "Return a human-friendly outcome string for PROCESS and sentinel EVENT."
+  (let ((status (process-status process))
+        (code (process-exit-status process))
+        (event-text (string-trim (or event ""))))
+    (cond
+     ((eq status 'signal)
+      (format "terminated by signal %s%s"
+              code
+              (if (string-empty-p event-text)
+                  ""
+                (format " (%s)" event-text))))
+     (t
+      (format "exit %s%s"
+              code
+              (if (string-empty-p event-text)
+                  ""
+                (format " (%s)" event-text)))))))
+
+(defun pi/magit--notify-commit-running (process root callback-cwd)
+  "Notify Pi that Magit commit PROCESS in ROOT is still running."
+  (when (and (process-live-p process)
+             (not (process-get process 'pi-magit-running-notified)))
+    (process-put process 'pi-magit-running-notified t)
+    (let* ((duration (or (pi/magit--process-duration process) 0.0))
+           (command (pi/magit--process-command-string process))
+           (report (pi/magit--process-report-body process))
+           (tail (plist-get report :tail))
+           (hints (plist-get report :hints))
+           (sections
+            (delq nil
+                  (list
+                   (format "Magit commit still running in %s" root)
+                   (format "State: still running after %.1fs" duration)
+                   (and command (format "Command: %s" command))
+                   (and hints
+                        (concat "Possible blockers:\n- "
+                                (string-join hints "\n- ")))
+                   (and tail
+                        (not (string-empty-p tail))
+                        (concat "Recent output tail:\n" tail))
+                   "The commit may still finish in Emacs; first-run hook installs or npx warmups can take a while."))))
+      (ignore-errors
+        (pi/send (list :type "input"
+                       :text (string-join sections "\n\n")
+                       :submit t)
+                 callback-cwd)))))
+
+(defun pi/magit--notify-commit-failure (process root callback-cwd event)
+  "Notify Pi if Magit commit PROCESS failed in ROOT.
+EVENT is the process sentinel event string."
   (when (and (processp process)
              (memq (process-status process) '(exit signal))
              (not (= (process-exit-status process) 0)))
-    (ignore-errors
-      (pi/send (list :type "input"
-                     :text (format "Magit commit failed in %s:\n%s"
-                                   root
-                                   (pi/magit--process-error-details process))
-                     :submit t)
-               callback-cwd))))
+    (let* ((duration (pi/magit--process-duration process))
+           (command (pi/magit--process-command-string process))
+           (report (pi/magit--process-report-body process))
+           (summary (plist-get report :summary))
+           (tail (plist-get report :tail))
+           (hints (plist-get report :hints))
+           (status-diagnostic (pi/magit--run-git-diagnostic root "status" "--short"))
+           (dry-run-diagnostic (pi/magit--run-git-diagnostic root "commit" "--dry-run" "--verbose"))
+           (sections
+            (delq nil
+                  (list
+                   (format "Magit commit failed in %s" root)
+                   (format "Result: %s" (pi/magit--format-process-outcome process event))
+                   (and duration (format "Duration: %.1fs" duration))
+                   (and command (format "Command: %s" command))
+                   (and hints
+                        (concat "Likely blockers:\n- "
+                                (string-join hints "\n- ")))
+                   (and summary
+                        (not (string-empty-p summary))
+                        (concat "Magit summary:\n" summary))
+                   (and tail
+                        (not (string-empty-p tail))
+                        (concat "Process output tail:\n" tail))
+                   (concat "Safe diagnostics:\n"
+                           (pi/magit--format-git-diagnostic status-diagnostic 80)
+                           "\n\n"
+                           (pi/magit--format-git-diagnostic dry-run-diagnostic 120))))))
+      (ignore-errors
+        (pi/send (list :type "input"
+                       :text (string-join sections "\n\n")
+                       :submit t)
+                 callback-cwd)))))
 
 (defun pi/magit--watch-commit-process (process root callback-cwd)
-  "Attach Pi failure reporting to Magit commit PROCESS."
+  "Attach Pi status reporting to Magit commit PROCESS."
   (when (processp process)
-    (let ((old-sentinel (process-sentinel process)))
+    (let ((old-sentinel (process-sentinel process))
+          (timer (run-at-time
+                  pi/magit-commit-running-threshold-seconds nil
+                  (lambda ()
+                    (pi/magit--notify-commit-running process root callback-cwd)))))
+      (process-put process 'pi-magit-start-time (float-time))
+      (process-put process 'pi-magit-watchdog timer)
       (set-process-sentinel
        process
        (lambda (proc event)
+         (when-let* ((watchdog (process-get proc 'pi-magit-watchdog)))
+           (cancel-timer watchdog)
+           (process-put proc 'pi-magit-watchdog nil))
          (when old-sentinel
            (condition-case err
                (funcall old-sentinel proc event)
              (error (message "Magit process sentinel error: %s"
                              (error-message-string err)))))
-         (pi/magit--notify-commit-failure proc root callback-cwd))))))
+         (pi/magit--notify-commit-failure proc root callback-cwd event))))))
 
 (defun pi/magit-commit (git-root callback-cwd &optional message-base64)
   "Open Magit's commit editor for GIT-ROOT and report failures to CALLBACK-CWD.
