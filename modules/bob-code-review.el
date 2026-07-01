@@ -145,6 +145,13 @@ The review input JSON path is appended as the final argument."
         "No narration provided for this section."
       trimmed)))
 
+(defun bob-code-review--should-narrate-p (narrate narrations)
+  "Return non-nil when narration should start for NARRATIONS."
+  (or narrate
+      (seq-some (lambda (text)
+                  (not (string-empty-p (string-trim (or text "")))))
+                narrations)))
+
 (defun bob-code-review--chunk-overlay ()
   "Return the overlay for the currently active chunk, if any."
   (let ((idx (if bob-code-review--global-mode
@@ -331,16 +338,16 @@ file path      -> store and play if it matches the current position."
 ;;; Feedback
 
 (defun bob-code-review-send-feedback (feedback)
-  "Append FEEDBACK with chunk context to the configured feedback target (no submit)."
+  "Send FEEDBACK with chunk context to the matching Pi session."
   (interactive "sFeedback: ")
+  (unless (fboundp 'pi/send)
+    (error "pi/send is not loaded"))
   (let* ((chunk-context (bob-code-review--chunk-context))
          (context (concat chunk-context "\nfeedback: " feedback "\n"))
-         (tab-id (or bob-code-review--feedback-target-id
-                    bob-code-review--session-feedback-target-id)))
-    (unless tab-id
-      (error "No feedback target tab id set for this review buffer"))
-    (bob/kitten "send-text" "--match" (format "id:%s" tab-id) context)
-    (message "Feedback sent to configured tab")))
+         (cwd (or (and buffer-file-name (file-name-directory buffer-file-name))
+                  default-directory)))
+    (pi/send (list :type "input" :text context :focus t :submit t) cwd)
+    (message "Feedback sent to Pi session")))
 
 (defun bob-code-review-set-feedback-target (tab-id)
   "Set TAB-ID as the explicit feedback target for the active review buffer."
@@ -608,9 +615,10 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
       (goto-char (overlay-start (car bob-code-review--chunk-ovs)))
       (recenter 5))
     (bob-code-review-mode 1)
-    (when narrate
-      (bob-code-review--start-tts
-       (mapcar (lambda (c) (bob-code-review--narration-text (nth 5 c))) chunks))))))
+    (let ((narrations (mapcar (lambda (c) (nth 5 c)) chunks)))
+      (when (bob-code-review--should-narrate-p narrate narrations)
+        (bob-code-review--start-tts
+         (mapcar #'bob-code-review--narration-text narrations)))))))
 
 (defun bob-code-review-load-review (ops-file &optional feedback-target-id narrate)
   "Load a multi-file review session from OPS-FILE (JSON array of operation objects).
@@ -666,9 +674,10 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
           (goto-char (overlay-start ov))
           (recenter 5))))
     ;; Spawn one TTS process for all narrations
-    (when narrate
-      (bob-code-review--start-tts
-       (mapcar (lambda (op) (bob-code-review--narration-text (plist-get op :narration))) ops))))))
+    (let ((narrations (mapcar (lambda (op) (plist-get op :narration)) ops)))
+      (when (bob-code-review--should-narrate-p narrate narrations)
+        (bob-code-review--start-tts
+         (mapcar #'bob-code-review--narration-text narrations)))))))
 
 ;; Deprecated: feedback target is now auto-discovered.  Kept as aliases
 ;; for backward compatibility with older skill invocations.
