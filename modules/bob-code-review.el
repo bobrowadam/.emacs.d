@@ -12,27 +12,18 @@
   "Editor integration for Solveit-style agent workflows."
   :group 'tools)
 
-(defcustom bob-code-review-tts-script
-  (expand-file-name "modules/text-to-speech.py" user-emacs-directory)
-  "Path to the Solveit text-to-speech helper script."
-  :type '(choice (const :tag "No TTS script" nil) file)
+(defcustom bob-code-review-tts-command
+  (list "node" "--experimental-strip-types"
+        (expand-file-name ".pi/agent/extensions/src/read-aloud/speech-files-cli.ts" "~"))
+  "Command prefix used to generate narration MP3 files.
+The review input JSON path is appended as the final argument."
+  :type '(repeat string)
   :group 'bob-code-review)
 
-(defcustom bob-code-review-tts-python
-  (expand-file-name ".venv/bin/python" user-emacs-directory)
-  "Python interpreter used for the Solveit text-to-speech helper."
-  :type 'file
-  :group 'bob-code-review)
-
-(defun bob-code-review--tts-script ()
-  "Return the configured Solveit TTS helper script."
-  (or bob-code-review-tts-script
-      (user-error "Solveit TTS script is not configured")))
-
-(defun bob-code-review--tts-python ()
-  "Return the configured Solveit TTS Python interpreter."
-  (or bob-code-review-tts-python
-      (user-error "Solveit TTS Python is not configured")))
+(defun bob-code-review--tts-command ()
+  "Return the configured TTS command prefix."
+  (or bob-code-review-tts-command
+      (user-error "Code review TTS command is not configured")))
 
 ;;; Faces
 
@@ -265,7 +256,7 @@ file path      -> store and play if it matches the current position."
          ((string-prefix-p "TMPDIR:" trimmed)
           (setq bob-code-review--audio-tmpdir (substring trimmed 7)))
          ((string-prefix-p "ERROR:" trimmed)
-          (message "Solveit TTS error: %s -- narration skipped for this session."
+          (message "Code review TTS error: %s -- narration skipped for this session."
                    (substring trimmed 6)))
          ((and (> (length trimmed) 0) (file-exists-p trimmed))
           (if bob-code-review--global-mode
@@ -284,6 +275,20 @@ file path      -> store and play if it matches the current position."
          ((> (length trimmed) 0)
           (setq bob-code-review--tts-stderr
                 (concat bob-code-review--tts-stderr trimmed "\n"))))))))
+
+(defun bob-code-review--start-tts (narrations)
+  "Start the shared Pi read-aloud TTS generator for NARRATIONS."
+  (let* ((input-file (make-temp-file "bob-code-review-tts-input-" nil ".json"))
+         (command (bob-code-review--tts-command))
+         (_ (with-temp-file input-file (insert (json-encode narrations))))
+         (proc (apply #'start-process
+                      "bob-code-review-tts"
+                      "*bob-code-review-tts*"
+                      (car command)
+                      (append (cdr command) (list input-file)))))
+    (set-process-filter proc #'bob-code-review--tts-filter)
+    (set-process-sentinel proc #'bob-code-review--tts-sentinel)
+    (setq bob-code-review--tts-process proc)))
 
 ;;; Tooltip
 
@@ -595,14 +600,8 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
       (recenter 5))
     (bob-code-review-mode 1)
     (when narrate
-      (let* ((narrations (mapcar (lambda (c) (or (nth 5 c) "")) chunks))
-             (input-file (make-temp-file "bob-code-review-tts-input-" nil ".json"))
-             (script-path (bob-code-review--tts-script))
-             (_ (with-temp-file input-file (insert (json-encode narrations))))
-             (proc (start-process "bob-code-review-tts" "*bob-code-review-tts*" (bob-code-review--tts-python) script-path input-file)))
-        (set-process-filter proc #'bob-code-review--tts-filter)
-        (set-process-sentinel proc #'bob-code-review--tts-sentinel)
-        (setq bob-code-review--tts-process proc)))))
+      (bob-code-review--start-tts
+       (mapcar (lambda (c) (or (nth 5 c) "")) chunks)))))
 
 (defun bob-code-review-load-review (ops-file &optional feedback-target-id narrate)
   "Load a multi-file review session from OPS-FILE (JSON array of operation objects).
@@ -657,14 +656,8 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
           (recenter 5))))
     ;; Spawn one TTS process for all narrations
     (when narrate
-      (let* ((narrations (mapcar (lambda (op) (or (plist-get op :narration) "")) ops))
-             (input-file (make-temp-file "bob-code-review-tts-input-" nil ".json"))
-             (script-path (bob-code-review--tts-script))
-             (_ (with-temp-file input-file (insert (json-encode narrations))))
-             (proc (start-process "bob-code-review-tts" "*bob-code-review-tts*" (bob-code-review--tts-python) script-path input-file)))
-        (set-process-filter proc #'bob-code-review--tts-filter)
-        (set-process-sentinel proc #'bob-code-review--tts-sentinel)
-        (setq bob-code-review--tts-process proc)))))
+      (bob-code-review--start-tts
+       (mapcar (lambda (op) (or (plist-get op :narration) "")) ops)))))
 
 ;; Deprecated: feedback target is now auto-discovered.  Kept as aliases
 ;; for backward compatibility with older skill invocations.
