@@ -555,10 +555,14 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (setq custom-safe-themes t)
   (setq custom-theme-directory (concat user-emacs-directory "themes"))
 
-  (let ((calculated-font-size
-         (if (>= (nth 3 (assoc 'geometry (frame-monitor-attributes))) 1920)
-             23
-           19)))
+  (let* ((monitor-geometry (assoc 'geometry (frame-monitor-attributes)))
+         (monitor-width (or (and monitor-geometry (nth 3 monitor-geometry))
+                            (display-pixel-width)
+                            0))
+         (calculated-font-size
+          (if (>= monitor-width 1920)
+              23
+            19)))
     ;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" calculated-font-size)
     ;;                 'keep-size t)
     (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)
@@ -1369,11 +1373,9 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                (fboundp 'mentat--prompt-history-for)
                (fboundp 'mentat--request-prompt-history-for))
       (string-join
-       (seq-take
-        (append (mentat--prompt-history-for mentat-prompt-root mentat-prompt-kind)
-                (mentat--request-prompt-history-for mentat-prompt-root
-                                                    mentat-prompt-kind))
-        20)
+       (append (mentat--prompt-history-for mentat-prompt-root mentat-prompt-kind)
+               (mentat--request-prompt-history-for mentat-prompt-root
+                                                   mentat-prompt-kind))
        "\n")))
 
   (defun bob/mentat-word-completion-at-point ()

@@ -178,10 +178,14 @@
 (setq custom-safe-themes t)
 (setq custom-theme-directory (concat user-emacs-directory "themes"))
 
-(let ((calculated-font-size
-       (if (>= (nth 3 (assoc 'geometry (frame-monitor-attributes))) 1920)
-           25
-         23)))
+(let* ((monitor-geometry (assoc 'geometry (frame-monitor-attributes)))
+       (monitor-width (or (and monitor-geometry (nth 3 monitor-geometry))
+                          (display-pixel-width)
+                          0))
+       (calculated-font-size
+        (if (>= monitor-width 1920)
+            25
+          23)))
   ;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" calculated-font-size)
   ;;                 'keep-size t)
   (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)
