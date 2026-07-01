@@ -1293,26 +1293,53 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 #+end_src
 ** Prose completion
 #+begin_src elisp
+  (require 'seq)
+  (require 'subr-x)
+
   (defvar bob/prose-word-completion-frequency-file
     "~/.pi/agent/extensions/src/vendor/wordfreq-en-25000-log.tsv")
 
+  (defvar bob/prose-word-completion-project-buffer-limit 24)
+  (defvar bob/prose-word-completion-project-buffer-max-chars 60000)
+  (defvar bob/prose-word-completion-prefix-index-length 4)
+  (defvar bob/prose-word-completion-candidate-limit 200)
+
   (defvar bob/prose-word-completion--cache nil)
   (defvar bob/prose-word-completion--cache-file nil)
+  (defvar-local bob/prose-word-completion--buffer-word-cache nil)
+
+  (defun bob/prose-word-completion--bucket-key (word)
+    (let ((word (downcase word)))
+      (when (>= (length word) bob/prose-word-completion-prefix-index-length)
+        (substring word 0 bob/prose-word-completion-prefix-index-length))))
+
+  (defun bob/prose-word-completion--build-word-buckets (words)
+    (let ((buckets (make-hash-table :test #'equal)))
+      (dolist (word words buckets)
+        (when-let* ((key (bob/prose-word-completion--bucket-key word)))
+          (push word (gethash key buckets))))))
+
+  (defun bob/prose-word-completion--bucket-words (buckets prefix)
+    (when-let* ((key (bob/prose-word-completion--bucket-key prefix)))
+      (gethash key buckets)))
 
   (defun bob/prose-word-completion--build-cache (file)
     (with-temp-buffer
       (insert-file-contents file)
-      (let ((table (make-hash-table :test #'equal)) words
+      (let ((frequencies (make-hash-table :test #'equal)) words
             (file-lines (split-string (buffer-string) "\n" t)))
         (dolist (line file-lines)
           (pcase-let ((`(,word ,frequency . ,_)
                        (split-string line "\t")))
             (when (and word frequency
                        (string-match-p "\\`[a-z][a-z'-]+\\'" word))
-              (unless (gethash word table)
+              (unless (gethash word frequencies)
                 (push word words))
-              (puthash word (string-to-number frequency) table))))
-        (cons (sort words #'string<) table))))
+              (puthash word (string-to-number frequency) frequencies))))
+        (setq words (sort words #'string<))
+        (list :words words
+              :frequencies frequencies
+              :buckets (bob/prose-word-completion--build-word-buckets words)))))
 
   (defun bob/prose-word-completion--frequency-data ()
     "Return cached word-frequency data as (WORDS . TABLE)."
@@ -1339,7 +1366,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
 
   (defun bob/prose-word-completion--score (word prefix source-score)
     (let* ((data (bob/prose-word-completion--frequency-data))
-           (frequency (and data (gethash (downcase word) (cdr data))))
+           (frequencies (plist-get data :frequencies))
+           (frequency (and frequencies (gethash (downcase word) frequencies)))
            (frequency-score (if frequency
                                 (* 30 (max 0 (min 1 (/ (- frequency -13.7)
                                                        (- -2.8 -13.7)))))
@@ -1350,21 +1378,93 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (defun bob/prose-word-completion--add-candidate (table word prefix score)
     (let ((normalized (downcase word)))
       (when (and (not (equal normalized (downcase prefix)))
-                 (string-prefix-p (downcase prefix) normalized)
+                 (equal (bob/prose-word-completion--bucket-key normalized)
+                        (bob/prose-word-completion--bucket-key prefix))
                  (string-match-p "\\`[[:alpha:]][[:alpha:]'-]\\{2,\\}\\'" word))
         (let ((existing (gethash normalized table)))
           (when (or (not existing) (> score (cdr existing)))
             (puthash normalized (cons word score) table))))))
 
+  (defun bob/prose-word-completion--words-in-buffer (&optional max-chars)
+    "Return cached prose words from current buffer, scanning at most MAX-CHARS."
+    (let* ((tick (buffer-chars-modified-tick))
+           (limit max-chars)
+           (cache bob/prose-word-completion--buffer-word-cache))
+      (if (and cache
+               (equal (nth 0 cache) tick)
+               (equal (nth 1 cache) limit))
+          (nth 2 cache)
+        (let ((words nil)
+              (seen (make-hash-table :test #'equal))
+              (case-fold-search nil))
+          (save-excursion
+            (save-restriction
+              (widen)
+              (goto-char (point-min))
+              (let ((end (if limit
+                             (min (point-max) (+ (point-min) limit))
+                           (point-max))))
+                (while (re-search-forward "[[:alpha:]][[:alpha:]'-]\\{2,\\}" end t)
+                  (let* ((word (match-string-no-properties 0))
+                         (normalized (downcase word)))
+                    (unless (gethash normalized seen)
+                      (puthash normalized t seen)
+                      (push word words)))))))
+          (setq words (nreverse words))
+          (setq bob/prose-word-completion--buffer-word-cache
+                (list tick limit words
+                      (bob/prose-word-completion--build-word-buckets words)))
+          (nth 2 bob/prose-word-completion--buffer-word-cache)))))
+
+  (defun bob/prose-word-completion--bucket-words-in-buffer (prefix &optional max-chars)
+    "Return cached prose words from current buffer's PREFIX bucket."
+    (bob/prose-word-completion--words-in-buffer max-chars)
+    (bob/prose-word-completion--bucket-words
+     (nth 3 bob/prose-word-completion--buffer-word-cache) prefix))
+
+  (defun bob/prose-word-completion--add-words (table words prefix score)
+    (dolist (word words)
+      (bob/prose-word-completion--add-candidate
+       table word prefix
+       (bob/prose-word-completion--score word prefix score))))
+
+  (defun bob/prose-word-completion--add-buffer (table buffer prefix score
+                                                      &optional max-chars)
+    (when (buffer-live-p buffer)
+      (with-current-buffer buffer
+        (bob/prose-word-completion--add-words
+         table (bob/prose-word-completion--bucket-words-in-buffer prefix max-chars)
+         prefix score))))
+
   (defun bob/prose-word-completion--add-text (table text prefix score)
     (with-temp-buffer
       (insert text)
-      (goto-char (point-min))
-      (while (re-search-forward "[[:alpha:]][[:alpha:]'-]\\{2,\\}" nil t)
-        (bob/prose-word-completion--add-candidate
-         table (match-string-no-properties 0) prefix
-         (bob/prose-word-completion--score
-          (match-string-no-properties 0) prefix score)))))
+      (bob/prose-word-completion--add-buffer table (current-buffer) prefix score)))
+
+  (defun bob/prose-word-completion--project-root ()
+    (when-let* ((project (project-current nil)))
+      (expand-file-name (project-root project))))
+
+  (defun bob/prose-word-completion--project-file-buffers ()
+    "Return open file buffers under the current project root."
+    (when-let* ((root (bob/prose-word-completion--project-root)))
+      (let ((buffers nil)
+            (count 0))
+        (dolist (buffer (buffer-list) (nreverse buffers))
+          (when (and (< count bob/prose-word-completion-project-buffer-limit)
+                     (not (eq buffer (current-buffer))))
+            (with-current-buffer buffer
+              (when-let* ((file buffer-file-name))
+                (when (and (not (file-remote-p file))
+                           (file-in-directory-p (expand-file-name file) root))
+                  (setq count (1+ count))
+                  (push buffer buffers)))))))))
+
+  (defun bob/prose-word-completion--add-project-buffers (table prefix score)
+    (dolist (buffer (bob/prose-word-completion--project-file-buffers))
+      (bob/prose-word-completion--add-buffer
+       table buffer prefix score
+       bob/prose-word-completion-project-buffer-max-chars)))
 
   (defun bob/prose-word-completion--mentat-history-text ()
     "Return Mentat prompt history when the current buffer has Mentat context."
@@ -1383,23 +1483,24 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (when-let* ((bounds (bob/prose-word-completion--bounds))
                 (prefix (buffer-substring-no-properties (car bounds) (cdr bounds))))
       (let ((table (make-hash-table :test #'equal)))
-        (bob/prose-word-completion--add-text table (buffer-string) prefix 300)
+        (bob/prose-word-completion--add-buffer table (current-buffer) prefix 300)
+        (bob/prose-word-completion--add-project-buffers table prefix 180)
         (when-let* ((history (bob/prose-word-completion--mentat-history-text)))
           (bob/prose-word-completion--add-text table history prefix 200))
         (when-let* ((data (bob/prose-word-completion--frequency-data)))
           (let ((added 0))
             (catch 'done
-              (dolist (word (car data))
-                (when (string-prefix-p (downcase prefix) word)
-                  (setq added (1+ added))
-                  (bob/prose-word-completion--add-candidate
-                   table word prefix
-                   (bob/prose-word-completion--score word prefix 60))
-                  (when (>= added 200)
-                    (throw 'done nil)))))))
+              (dolist (word (bob/prose-word-completion--bucket-words
+                             (plist-get data :buckets) prefix))
+                (setq added (1+ added))
+                (bob/prose-word-completion--add-candidate
+                 table word prefix
+                 (bob/prose-word-completion--score word prefix 60))
+                (when (>= added 200)
+                  (throw 'done nil))))))
         (when-let* ((data (bob/prose-word-completion--frequency-data)))
           (when (and (not (string-suffix-p "s" prefix t))
-                     (gethash (downcase prefix) (cdr data)))
+                     (gethash (downcase prefix) (plist-get data :frequencies)))
             (bob/prose-word-completion--add-candidate table (concat prefix "s")
                                                       prefix 40)))
         (let ((candidates
@@ -1411,7 +1512,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                      (> score-diff 0)
                                    (string< (car a) (car b)))))))))
           (when candidates
-            (list (car bounds) (cdr bounds) (seq-take candidates 20)
+            (list (car bounds) (cdr bounds)
+                  (seq-take candidates bob/prose-word-completion-candidate-limit)
                   :exclusive 'no
                   :annotation-function (lambda (_) " word")))))))
 
