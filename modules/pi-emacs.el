@@ -16,6 +16,7 @@
 
 (declare-function magit-commit-create "magit-commit" (&optional args))
 (declare-function magit-process-error-summary "magit-process" (process-buf section))
+(declare-function magit-refresh-all "magit-mode" ())
 
 (defun pi/encode-result (text)
   "Encode TEXT as base64 UTF-8 for transport."
@@ -929,6 +930,15 @@ EVENT is the process sentinel event string."
                        :submit t)
                  callback-cwd)))))
 
+(defun pi/magit--refresh-after-commit (process root)
+  "Refresh Magit buffers for ROOT after successful commit PROCESS."
+  (when (and (eq (process-status process) 'exit)
+             (= (process-exit-status process) 0)
+             (file-directory-p root))
+    (let ((default-directory (file-name-as-directory (expand-file-name root))))
+      (ignore-errors
+        (magit-refresh-all)))))
+
 (defun pi/magit--watch-commit-process (process root callback-cwd)
   "Attach Pi status reporting to Magit commit PROCESS."
   (when (processp process)
@@ -950,6 +960,7 @@ EVENT is the process sentinel event string."
                (funcall old-sentinel proc event)
              (error (message "Magit process sentinel error: %s"
                              (error-message-string err)))))
+         (pi/magit--refresh-after-commit proc root)
          (pi/magit--notify-commit-failure proc root callback-cwd event))))))
 
 (defun pi/magit-commit (git-root callback-cwd &optional message-base64)
