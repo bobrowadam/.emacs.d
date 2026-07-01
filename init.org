@@ -1291,16 +1291,15 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
   (use-package agent-shell
     :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el")))
 #+end_src
-** Mentat
+** Prose completion
 #+begin_src elisp
-  (defvar bob/mentat-word-completion-frequency-file
+  (defvar bob/prose-word-completion-frequency-file
     "~/.pi/agent/extensions/src/vendor/wordfreq-en-25000-log.tsv")
 
-  (defvar bob/mentat-word-completion--cache nil)
-  (defvar bob/mentat-word-completion--cache-file nil)
+  (defvar bob/prose-word-completion--cache nil)
+  (defvar bob/prose-word-completion--cache-file nil)
 
-
-  (defun bob/gen--mentat-word-completion--cache (file)
+  (defun bob/prose-word-completion--build-cache (file)
     (with-temp-buffer
       (insert-file-contents file)
       (let ((table (make-hash-table :test #'equal)) words
@@ -1315,18 +1314,18 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
               (puthash word (string-to-number frequency) table))))
         (cons (sort words #'string<) table))))
 
-  (defun bob/mentat-word-completion--frequency-data ()
+  (defun bob/prose-word-completion--frequency-data ()
     "Return cached word-frequency data as (WORDS . TABLE)."
-    (when-let* ((file (expand-file-name bob/mentat-word-completion-frequency-file))
+    (when-let* ((file (expand-file-name bob/prose-word-completion-frequency-file))
                 (file-readable-p file))
-      (if (and (equal file bob/mentat-word-completion--cache-file)
-               bob/mentat-word-completion--cache)
-          bob/mentat-word-completion--cache
-        (setq bob/mentat-word-completion--cache-file file
-              bob/mentat-word-completion--cache
-              (bob/gen--mentat-word-completion--cache file)))))
+      (if (and (equal file bob/prose-word-completion--cache-file)
+               bob/prose-word-completion--cache)
+          bob/prose-word-completion--cache
+        (setq bob/prose-word-completion--cache-file file
+              bob/prose-word-completion--cache
+              (bob/prose-word-completion--build-cache file)))))
 
-  (defun bob/mentat-word-completion--bounds ()
+  (defun bob/prose-word-completion--bounds ()
     (let ((end (point)) start)
       (when (not (looking-at-p "[[:alpha:]'-]"))
         (save-excursion
@@ -1338,8 +1337,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                    (not (memq (char-before start) '(?/ ?@ ?# ?$ ?. ?:))))
           (cons start end)))))
 
-  (defun bob/mentat-word-completion--score (word prefix source-score)
-    (let* ((data (bob/mentat-word-completion--frequency-data))
+  (defun bob/prose-word-completion--score (word prefix source-score)
+    (let* ((data (bob/prose-word-completion--frequency-data))
            (frequency (and data (gethash (downcase word) (cdr data))))
            (frequency-score (if frequency
                                 (* 30 (max 0 (min 1 (/ (- frequency -13.7)
@@ -1348,7 +1347,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
       (+ source-score frequency-score
          (- (- (length word) (length prefix))))))
 
-  (defun bob/mentat-word-completion--add-candidate (table word prefix score)
+  (defun bob/prose-word-completion--add-candidate (table word prefix score)
     (let ((normalized (downcase word)))
       (when (and (not (equal normalized (downcase prefix)))
                  (string-prefix-p (downcase prefix) normalized)
@@ -1357,17 +1356,18 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
           (when (or (not existing) (> score (cdr existing)))
             (puthash normalized (cons word score) table))))))
 
-  (defun bob/mentat-word-completion--add-text (table text prefix score)
+  (defun bob/prose-word-completion--add-text (table text prefix score)
     (with-temp-buffer
       (insert text)
       (goto-char (point-min))
       (while (re-search-forward "[[:alpha:]][[:alpha:]'-]\\{2,\\}" nil t)
-        (bob/mentat-word-completion--add-candidate
+        (bob/prose-word-completion--add-candidate
          table (match-string-no-properties 0) prefix
-         (bob/mentat-word-completion--score
+         (bob/prose-word-completion--score
           (match-string-no-properties 0) prefix score)))))
 
-  (defun bob/mentat-word-completion--history-text ()
+  (defun bob/prose-word-completion--mentat-history-text ()
+    "Return Mentat prompt history when the current buffer has Mentat context."
     (when (and (boundp 'mentat-prompt-root) mentat-prompt-root
                (boundp 'mentat-prompt-kind) mentat-prompt-kind
                (fboundp 'mentat--prompt-history-for)
@@ -1378,30 +1378,30 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                                    mentat-prompt-kind))
        "\n")))
 
-  (defun bob/mentat-word-completion-at-point ()
-    "Pi-style ranked word CAPF for Mentat prompt buffers."
-    (when-let* ((bounds (bob/mentat-word-completion--bounds))
+  (defun bob/prose-word-completion-at-point ()
+    "Ranked prose word CAPF for natural-language buffers."
+    (when-let* ((bounds (bob/prose-word-completion--bounds))
                 (prefix (buffer-substring-no-properties (car bounds) (cdr bounds))))
       (let ((table (make-hash-table :test #'equal)))
-        (bob/mentat-word-completion--add-text table (buffer-string) prefix 300)
-        (when-let* ((history (bob/mentat-word-completion--history-text)))
-          (bob/mentat-word-completion--add-text table history prefix 200))
-        (when-let* ((data (bob/mentat-word-completion--frequency-data)))
+        (bob/prose-word-completion--add-text table (buffer-string) prefix 300)
+        (when-let* ((history (bob/prose-word-completion--mentat-history-text)))
+          (bob/prose-word-completion--add-text table history prefix 200))
+        (when-let* ((data (bob/prose-word-completion--frequency-data)))
           (let ((added 0))
             (catch 'done
               (dolist (word (car data))
                 (when (string-prefix-p (downcase prefix) word)
                   (setq added (1+ added))
-                  (bob/mentat-word-completion--add-candidate
+                  (bob/prose-word-completion--add-candidate
                    table word prefix
-                   (bob/mentat-word-completion--score word prefix 60))
+                   (bob/prose-word-completion--score word prefix 60))
                   (when (>= added 200)
                     (throw 'done nil)))))))
-        (when-let* ((data (bob/mentat-word-completion--frequency-data)))
+        (when-let* ((data (bob/prose-word-completion--frequency-data)))
           (when (and (not (string-suffix-p "s" prefix t))
                      (gethash (downcase prefix) (cdr data)))
-            (bob/mentat-word-completion--add-candidate table (concat prefix "s")
-                                                       prefix 40)))
+            (bob/prose-word-completion--add-candidate table (concat prefix "s")
+                                                      prefix 40)))
         (let ((candidates
                (mapcar #'car
                        (sort (hash-table-values table)
@@ -1415,6 +1415,17 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                   :exclusive 'no
                   :annotation-function (lambda (_) " word")))))))
 
+  (defun bob/prose-word-completion-setup ()
+    "Use Bob's ranked prose CAPF in natural-language buffers."
+    (add-hook 'completion-at-point-functions
+              #'bob/prose-word-completion-at-point nil t))
+
+  (use-package text-mode
+    :ensure nil
+    :hook (text-mode . bob/prose-word-completion-setup))
+#+end_src
+** Mentat
+#+begin_src elisp
   (use-package mentat
     :ensure nil
     :load-path "~/source/mentat"
@@ -1435,7 +1446,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
          (vibe . ,extensions)
          (tutorial . ,extensions))))
     (mentat-prompt-extra-completion-at-point-functions
-     (list #'bob/mentat-word-completion-at-point))
+     (list #'bob/prose-word-completion-at-point)
     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
                                       :thinking "high")
                               (vibe :model "openai-codex/gpt-5.5"
@@ -2371,6 +2382,10 @@ just org files in a directory + ripgrep.
 
 ** Magit
 #+begin_src elisp
+  (use-package git-commit
+    :ensure nil
+    :hook (git-commit-mode . bob/prose-word-completion-setup))
+
   (use-package magit
     :custom
     (magit-process-apply-ansi-colors 'filter)
