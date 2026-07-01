@@ -1424,8 +1424,8 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
      (let ((extensions (mapcar (lambda (file)
                                  (expand-file-name file "~/.pi/agent/extensions/src/"))
                                '("check-elisp.ts"
-                                 "emacs.ts"
-                                 "web-search.ts"
+                                 "emacs"
+                                 "web-search"
                                  "mempalace.ts"
                                  "resolve-symlinks.ts"))))
        `((ask . ,extensions)
@@ -2880,7 +2880,14 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
   (use-package embark
     :bind
     (("C-." . embark-act)
-     ("C-h B" . embark-bindings)))
+     ("C-h B" . embark-bindings))
+    :config
+    (defun bob/embark-forget-project (dir)
+      "Forget DIR as a known project."
+      (interactive "DForget project: ")
+      (project-forget-project (file-name-as-directory (expand-file-name dir))))
+    (keymap-set embark-file-map "P" #'bob/embark-forget-project))
+
 
   (use-package embark-consult
     :hook
@@ -3703,7 +3710,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
                (message "Loaded %s" theme)))
            "Cycle through registered themes.")))
 
-    (bob/register-and-load-themes kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
+    (bob/register-and-load-themes kusanagi kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
     :bind ("C-c t" . bob/cycle-themes))
 #+end_src
 *** bob-kanagawa-wave
@@ -3761,6 +3768,11 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package kanagawa-themes :demand t)
 #+end_src
 *** modus-flexoki
+*** kusanagi-theme
+#+begin_src elisp
+  (use-package kusanagi-theme
+    :ensure (:fetcher github :repo "LionyxML/kusanagi-theme"))
+#+end_src
 #+begin_src elisp
 (use-package modus-flexoki
   :ensure (:repo "dpassen/modus-flexoki" :fetcher github))
@@ -4075,10 +4087,10 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     :custom
     (elfeed-feeds
      `(("https://learncodethehardway.com/feed.rss" programming learning c)
-       
+
        ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
        (,(bob/reddit-rss-url "https://www.reddit.com/r/emacs/.rss") programming emacs reddit)
-       
+
        (,(bob/reddit-rss-url "https://www.reddit.com/r/roc_lang/.rss") programming roc reddit)
        (,(bob/reddit-rss-url "https://www.reddit.com/r/planetemacs/.rss") programming emacs reddit)
        ("https://danluu.com/atom.xml" programming blog danluu)
