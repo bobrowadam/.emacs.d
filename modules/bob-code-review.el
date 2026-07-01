@@ -138,6 +138,13 @@ The review input JSON path is appended as the final argument."
                (split-string text "\n")
                "\n")))
 
+(defun bob-code-review--narration-text (text)
+  "Return a non-empty narration TEXT for TTS generation."
+  (let ((trimmed (string-trim (or text ""))))
+    (if (string-empty-p trimmed)
+        "No narration provided for this section."
+      trimmed)))
+
 (defun bob-code-review--chunk-overlay ()
   "Return the overlay for the currently active chunk, if any."
   (let ((idx (if bob-code-review--global-mode
@@ -566,9 +573,10 @@ FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
 If nil, auto-discovers the Kitty window ID for the current project.
 NARRATE, when non-nil, launches TTS narration for the chunks."
 
-  (setq feedback-target-id (or feedback-target-id
-                               (and (fboundp 'bob/kitty-pi-window-id)
-                                    (bob/kitty-pi-window-id))))
+  (save-current-buffer
+    (setq feedback-target-id (or feedback-target-id
+                                 (and (fboundp 'bob/kitty-pi-window-id)
+                                      (bob/kitty-pi-window-id))))
   (when (and bob-code-review--active-buffer
              (buffer-live-p bob-code-review--active-buffer))
     (with-current-buffer bob-code-review--active-buffer
@@ -588,6 +596,7 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
     (setq bob-code-review--audio-files nil)
     (setq bob-code-review--audio-tmpdir nil)
     (setq bob-code-review--tts-output-buffer "")
+    (setq bob-code-review--tts-stderr "")
     (setq bob-code-review--feedback-target-id feedback-target-id)
     (setq bob-code-review--session-feedback-target-id (or feedback-target-id
                                                         bob-code-review--session-feedback-target-id))
@@ -601,7 +610,7 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
     (bob-code-review-mode 1)
     (when narrate
       (bob-code-review--start-tts
-       (mapcar (lambda (c) (or (nth 5 c) "")) chunks)))))
+       (mapcar (lambda (c) (bob-code-review--narration-text (nth 5 c))) chunks))))))
 
 (defun bob-code-review-load-review (ops-file &optional feedback-target-id narrate)
   "Load a multi-file review session from OPS-FILE (JSON array of operation objects).
@@ -612,10 +621,11 @@ FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
 If nil, auto-discovers the Kitty window ID for the current project.
 NARRATE, when non-nil, launches TTS narration for the chunks."
 
-  (setq feedback-target-id (or feedback-target-id
-                               (and (fboundp 'bob/kitty-pi-window-id)
-                                    (bob/kitty-pi-window-id))))
-  (let* ((raw (json-read-file ops-file))
+  (save-current-buffer
+    (setq feedback-target-id (or feedback-target-id
+                                 (and (fboundp 'bob/kitty-pi-window-id)
+                                      (bob/kitty-pi-window-id))))
+    (let* ((raw (json-read-file ops-file))
          (_ (delete-file ops-file))
          (ops (mapcar (lambda (obj)
                         (list :file        (alist-get 'file obj)
@@ -641,6 +651,7 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
     (setq bob-code-review--global-audio-list (make-list (length ops) nil))
     (setq bob-code-review--tts-received-count 0)
     (setq bob-code-review--tts-output-buffer "")
+    (setq bob-code-review--tts-stderr "")
     (setq bob-code-review--audio-tmpdir nil)
     (setq bob-code-review--session-feedback-target-id feedback-target-id)
     ;; Open first file and apply its highlights
@@ -657,7 +668,7 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
     ;; Spawn one TTS process for all narrations
     (when narrate
       (bob-code-review--start-tts
-       (mapcar (lambda (op) (or (plist-get op :narration) "")) ops)))))
+       (mapcar (lambda (op) (bob-code-review--narration-text (plist-get op :narration))) ops))))))
 
 ;; Deprecated: feedback target is now auto-discovered.  Kept as aliases
 ;; for backward compatibility with older skill invocations.
