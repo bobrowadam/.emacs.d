@@ -2231,8 +2231,10 @@ Align tables in markdown and org-mode
                       #'bob/org-agenda-skip-active-todos)))
          (alltodo ""
                   ((org-agenda-overriding-header "")
+                   (org-agenda-todo-ignore-scheduled 'future)
                    (org-agenda-skip-function
-                    #'bob/org-agenda-skip-unless-active)))))
+                    #'bob/org-agenda-skip-unless-active)))
+         ))
        ("b" tags "+OngoingBugs")
        ("n" "Todo next" ((todo "NEXT")))
        ("l" "Linear active issues"
