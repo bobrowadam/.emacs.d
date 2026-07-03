@@ -2009,7 +2009,44 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (markdown-fontify-code-blocks-natively t)
     (markdown-list-indent-width 2)
     :hook (markdown-mode . (lambda () (setq truncate-lines t)))
+    :preface
+    (defvar-local bob/markdown-view-return-mode nil
+      "Major mode to restore when toggling out of markdown view mode.")
+    (put 'bob/markdown-view-return-mode 'permanent-local t)
+    (defun bob/toggle-markdown-view-mode ()
+      "Toggle the current Markdown buffer between edit and view modes."
+      (interactive)
+      (let ((pos (point)))
+        (cond
+         ((derived-mode-p 'markdown-view-mode 'gfm-view-mode)
+          (let ((mode (or bob/markdown-view-return-mode
+                          (if (fboundp 'markdown-ts-mode)
+                              'markdown-ts-mode
+                            'markdown-mode))))
+            (read-only-mode -1)
+            (funcall mode)
+            (goto-char (min pos (point-max)))))
+         ((derived-mode-p 'markdown-ts-mode 'markdown-mode 'gfm-mode)
+          (let ((mode (if (derived-mode-p 'gfm-mode)
+                          'gfm-view-mode
+                        'markdown-view-mode)))
+            (setq-local bob/markdown-view-return-mode major-mode)
+            (unless (fboundp mode)
+              (require 'markdown-mode))
+            (funcall mode)
+            (goto-char (min pos (point-max)))))
+         (t
+          (user-error "Not in a Markdown buffer")))))
+    :bind
+    (:map markdown-mode-map
+          ("C-c C-v" . bob/toggle-markdown-view-mode)
+          :map markdown-view-mode-map
+          ("C-c C-v" . bob/toggle-markdown-view-mode)
+          :map gfm-view-mode-map
+          ("C-c C-v" . bob/toggle-markdown-view-mode))
+
     :config
+
     (defun bob/markdown-view-mode-setup ()
       "Adjust markdown view buffers for LLM-oriented rendering."
       (setq-local markdown-list-indent-width 2))
@@ -2041,6 +2078,14 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     (add-hook 'gfm-view-mode-hook #'bob/markdown-view-mode-setup)
     (add-hook 'enable-theme-functions #'bob/markdown-update-header-faces)
     (add-hook 'enable-theme-functions #'bob/markdown-update-list-bullets))
+#+end_src
+** markdown-ts-mode
+#+begin_src elisp
+  (use-package markdown-ts-mode
+    :ensure nil
+    :defer t
+    :config
+    (define-key markdown-ts-mode-map (kbd "C-c C-v") #'bob/toggle-markdown-view-mode))
 #+end_src
 ** edit-indirect (a markdown mode dependency for editing code blocks)
 #+begin_src elisp
