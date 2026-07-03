@@ -28,20 +28,42 @@ The review input JSON path is appended as the final argument."
 ;;; Faces
 
 (defface bob-code-review-highlight-face
-  '((t :extend t))
-  "Face for highlighted regions in review mode."
+  '((t :inherit region :extend t))
+  "Theme-derived face for highlighted regions in review mode."
   :group 'faces)
-
 (set-face-attribute 'bob-code-review-highlight-face nil
-                    :background (color-lighten-name
-                                 (face-attribute 'default :background) 20)
+                    :inherit 'region
+                    :background 'unspecified
                     :extend t)
 
 (defface bob-code-review-symbol-face
   '((t :inherit highlight))
-  "Face for specific symbols within highlighted regions."
+  "Theme-derived face for specific symbols within highlighted regions."
   :group 'faces)
-(set-face-attribute 'bob-code-review-symbol-face nil :inherit 'highlight)
+
+(defun bob-code-review--theme-color (face attribute fallback)
+  "Return FACE ATTRIBUTE as a usable color, or FALLBACK."
+  (let ((color (face-attribute face attribute nil t)))
+    (if (or (null color) (eq color 'unspecified)) fallback color)))
+
+(defun bob-code-review--refresh-faces ()
+  "Refresh theme-derived review faces."
+  (let* ((default-bg (bob-code-review--theme-color 'default :background "#000000"))
+         (highlight-bg (bob-code-review--theme-color 'highlight :background default-bg))
+         (soft-highlight-rgb (color-blend (color-name-to-rgb highlight-bg)
+                                          (color-name-to-rgb default-bg)
+                                          0.45))
+         (soft-highlight-bg (apply #'color-rgb-to-hex soft-highlight-rgb)))
+    (set-face-attribute 'bob-code-review-highlight-face nil
+                        :inherit 'region
+                        :background 'unspecified
+                        :extend t)
+    (set-face-attribute 'bob-code-review-symbol-face nil
+                        :inherit nil
+                        :foreground 'unspecified
+                        :background soft-highlight-bg)))
+
+(bob-code-review--refresh-faces)
 
 ;;; Buffer-local state
 
@@ -574,8 +596,10 @@ overlay so feedback can include the original chunk context."
 ;;; Entry points
 
 (defun bob-code-review-open-location (file line &optional chunks feedback-target-id narrate)
-  "Open FILE at LINE with optional single-file review mode.
-CHUNKS: list of (NAME START-LINE END-LINE DESCRIPTION SYMBOLS NARRATION).
+  "Open FILE at LINE with optional legacy single-file review mode.
+Agents should prefer `bob-code-review-load-review' with a JSON OPS-FILE.
+CHUNKS is a legacy/internal list of
+(NAME START-LINE END-LINE DESCRIPTION SYMBOLS NARRATION).
 FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
 If nil, auto-discovers the Kitty window ID for the current project.
 NARRATE, when non-nil, launches TTS narration for the chunks."
@@ -621,13 +645,14 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
          (mapcar #'bob-code-review--narration-text narrations)))))))
 
 (defun bob-code-review-load-review (ops-file &optional feedback-target-id narrate)
-  "Load a multi-file review session from OPS-FILE (JSON array of operation objects).
-Each object must have keys: file, line, name, start_line, end_line,
-description, symbols (array), narration.
+  "Load the canonical agent review API from OPS-FILE JSON.
+OPS-FILE must contain a JSON array of operation objects.  Each object
+must have keys: file, line, name, start_line, end_line, description,
+symbols (array of strings), and narration.
 Deletes OPS-FILE after reading.
 FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
 If nil, auto-discovers the Kitty window ID for the current project.
-NARRATE, when non-nil, launches TTS narration for the chunks."
+NARRATE, when non-nil, launches TTS narration for the operations."
 
   (save-current-buffer
     (setq feedback-target-id (or feedback-target-id
