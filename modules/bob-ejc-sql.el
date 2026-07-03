@@ -211,7 +211,7 @@ Prompts with the list of currently registered connections; defaults to
       (pop-to-buffer buf)))
 
   ;; --- Tunnel + connect helpers ----------------------------------------
-  (defcustom bob/bradwell-monorepo-root "~/source/bradwell-monorepo"
+  (defcustom bob/bradwell-monorepo-root "~/source/gist/bradwell-monorepo"
     "Path to the bradwell-monorepo checkout used for task commands."
     :type 'directory)
 

@@ -1,7 +1,7 @@
 # Eglot TypeScript + Python Setup for bradwell-monorepo
 
 **Date:** 2026-02-22
-**Repo:** `~/source/bradwell-monorepo`
+**Repo:** `~/source/gist/bradwell-monorepo`
 
 ## Context
 

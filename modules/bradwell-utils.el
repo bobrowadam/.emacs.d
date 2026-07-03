@@ -1,7 +1,7 @@
 ;;; bradwell-utils.el --- Bradwell worktree helpers -*- lexical-binding: t; -*-
 
 (defconst bob/bradwell-main-worktree-directory
-  (expand-file-name "~/source/bradwell-monorepo")
+  (expand-file-name "~/source/gist/bradwell-monorepo")
   "Path to the main Bradwell checkout.")
 
 (defun bob/is-bradwell-project (path)

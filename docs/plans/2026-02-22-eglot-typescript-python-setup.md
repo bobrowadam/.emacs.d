@@ -116,7 +116,7 @@ git commit -m "Fix eglot TS server to use rass+biome, remove pyright auto-instal
 **Step 1: Open a TypeScript file in the monorepo**
 
 ```bash
-emacsclient ~/source/bradwell-monorepo/services/chats/src/main.ts
+emacsclient ~/source/gist/bradwell-monorepo/services/chats/src/main.ts
 ```
 
 (or any `.ts` file)
@@ -156,7 +156,7 @@ Run `C-c C-f` (`eglot-format`) in a TypeScript buffer. The file should be format
 **Step 1: Create a test worktree**
 
 ```bash
-cd ~/source/bradwell-monorepo
+cd ~/source/gist/bradwell-monorepo
 git worktree add .claude/worktrees/eglot-test-wt HEAD
 ```
 
@@ -183,7 +183,7 @@ git worktree remove ~/.claude/worktrees/eglot-test-wt
 **Step 1: Open a Python file in the monorepo**
 
 ```bash
-emacsclient ~/source/bradwell-monorepo/services/research-py/research_py/main.py
+emacsclient ~/source/gist/bradwell-monorepo/services/research-py/research_py/main.py
 ```
 
 (or any `.py` file)
