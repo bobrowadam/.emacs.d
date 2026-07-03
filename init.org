@@ -1541,6 +1541,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                '("check-elisp.ts"
                                  "emacs"
                                  "web-search"
+                                 "session-scripts.ts"
                                  "mempalace.ts"
                                  "resolve-symlinks.ts"))))
        `((ask . ,extensions)
@@ -1549,16 +1550,20 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
          (tutorial . ,extensions))))
     (mentat-prompt-extra-completion-at-point-functions
      (list #'bob/prose-word-completion-at-point)
-    (mentat-command-options '((search :model "openai-codex/gpt-5.5"
-                                      :thinking "high")
-                              (vibe :model "openai-codex/gpt-5.5"
+     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
+                                       :thinking "medium")
+                               (vibe :model "openai-codex/gpt-5.5"
+                                     :thinking "high")
+                               (ask :model "openai-codex/gpt-5.5"
                                     :thinking "high")
-                              (ask :model "openai-codex/gpt-5.5"
-                                   :thinking "medium")
-                              (rewrite :model "openai-codex/gpt-5.4-mini"
-                                       :thinking "medium")))
-    :bind (("C-c C-;" . mentat-menu))
-    :config (fnm-use))
+                               (rewrite :model "openai-codex/gpt-5.4-mini"
+                                        :thinking "medium")))
+     :bind (("C-c C-;" . mentat-menu))
+     :config
+     (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
+                               :host "api.openai.com"
+                               :user "bradwell-codex"))
+     (fnm-use)))
 #+end_src
 ** mevedel
 #+begin_src elisp
