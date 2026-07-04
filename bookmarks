@@ -2,12 +2,18 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("ghosty config"
-  (filename . "~/dotfiles/ghostty/config")
-  (front-context-string . "# Font settings ")
-  (rear-context-string)
-  (position . 1)
-  (last-modified 27064 22711 888014 0))
+(("Mentat TODOS"
+  (filename . "~/source/mentat/todo.org")
+  (front-context-string)
+  (rear-context-string . "continue.ts)\n** ")
+  (position . 487)
+  (last-modified 27208 45623 562325 0))
+("ghosty config"
+ (filename . "~/dotfiles/ghostty/config")
+ (front-context-string . "# Font settings ")
+ (rear-context-string)
+ (position . 1)
+ (last-modified 27064 22711 888014 0))
 ("claude settings.json"
  (filename . "~/dotfiles/.claude/settings.json")
  (front-context-string . "\n      \"Bash(git")
