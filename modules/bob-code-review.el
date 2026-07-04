@@ -359,6 +359,42 @@ file path      -> store and play if it matches the current position."
 
 ;;; Feedback
 
+(defun bob-code-review--project-key (dir)
+  "Return a stable project key for DIR, grouping PR worktrees with their base repo."
+  (let* ((root (or (locate-dominating-file dir ".git") dir))
+         (name (file-name-nondirectory (directory-file-name root))))
+    (replace-regexp-in-string "-pr-[0-9]+\\'" "" name)))
+
+(defun bob-code-review--live-pi-cwd-for-target (target-id)
+  "Return the live Pi cwd for Kitty TARGET-ID, or nil."
+  (when (and target-id (fboundp 'bob/kitty-pi--live-session-records))
+    (when-let* ((session (seq-find
+                          (lambda (session)
+                            (equal (plist-get session :id) target-id))
+                          (bob/kitty-pi--live-session-records))))
+      (plist-get session :cwd))))
+
+(defun bob-code-review--live-pi-cwd-for-project (cwd)
+  "Return a live socket-backed Pi cwd for CWD's project family, or nil."
+  (when (fboundp 'bob/kitty-pi--live-session-records)
+    (let ((project-key (bob-code-review--project-key cwd)))
+      (when-let* ((session (seq-find
+                            (lambda (session)
+                              (and (plist-get session :socket-live)
+                                   (equal (bob-code-review--project-key
+                                           (plist-get session :cwd))
+                                          project-key)))
+                            (bob/kitty-pi--live-session-records))))
+        (plist-get session :cwd)))))
+
+(defun bob-code-review--feedback-cwd (cwd)
+  "Return the cwd that should receive review feedback for CWD."
+  (or (bob-code-review--live-pi-cwd-for-target
+       (or bob-code-review--feedback-target-id
+           bob-code-review--session-feedback-target-id))
+      (bob-code-review--live-pi-cwd-for-project cwd)
+      cwd))
+
 (defun bob-code-review-send-feedback (feedback)
   "Send FEEDBACK with chunk context to the matching Pi session."
   (interactive "sFeedback: ")
@@ -367,8 +403,9 @@ file path      -> store and play if it matches the current position."
   (let* ((chunk-context (bob-code-review--chunk-context))
          (context (concat chunk-context "\nfeedback: " feedback "\n"))
          (cwd (or (and buffer-file-name (file-name-directory buffer-file-name))
-                  default-directory)))
-    (pi/send (list :type "input" :text context :focus t :submit t) cwd)
+                  default-directory))
+         (target-cwd (bob-code-review--feedback-cwd cwd)))
+    (pi/send (list :type "input" :text context :focus t :submit t) target-cwd)
     (message "Feedback sent to Pi session")))
 
 (defun bob-code-review-set-feedback-target (tab-id)
