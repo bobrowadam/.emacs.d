@@ -2929,9 +2929,26 @@ and `:test-name'."
   (use-package prettier
     :disabled t)
 
+  (defun bob/biome-root ()
+    "Find nearest Biome install without crossing the current git worktree root."
+    (when-let* ((file (or (buffer-file-name) default-directory))
+                (start (file-name-directory (expand-file-name file))))
+      (let* ((git-root (or (locate-dominating-file start ".git") start))
+             (dir (file-name-as-directory start))
+             found)
+        (while (and dir (not found))
+          (let ((biome (expand-file-name "node_modules/.bin/biome" dir)))
+            (if (file-executable-p biome)
+                (setq found dir)
+              (if (or (file-equal-p dir git-root)
+                      (equal dir (file-name-directory (directory-file-name dir))))
+                  (setq dir nil)
+                (setq dir (file-name-directory (directory-file-name dir)))))))
+        found)))
+
   (defun bob/biome-format-on-save ()
     "Run biome check --fix on the current file after saving."
-    (when-let* ((root  (bob/monorepo-root))
+    (when-let* ((root  (bob/biome-root))
                 (biome (expand-file-name "node_modules/.bin/biome" root))
                 ((file-executable-p biome))
                 (file (buffer-file-name)))
@@ -2943,10 +2960,10 @@ and `:test-name'."
 
   (defun bob/setup-ts-formatter ()
     "Use biome for formatting if available in the project, otherwise fall back to prettier."
-    (if-let* ((root  (bob/monorepo-root))
-              (biome (expand-file-name "node_modules/.bin/biome" root))
-              ((file-executable-p biome)))
-        (add-hook 'after-save-hook #'bob/biome-format-on-save nil t)))
+    (when-let* ((root  (bob/biome-root))
+                (biome (expand-file-name "node_modules/.bin/biome" root))
+                ((file-executable-p biome)))
+      (add-hook 'after-save-hook #'bob/biome-format-on-save nil t)))
 
   (dolist (hook '(typescript-ts-mode-hook tsx-ts-mode-hook js2-mode-hook js-ts-mode-hook))
     (add-hook hook #'bob/setup-ts-formatter))
