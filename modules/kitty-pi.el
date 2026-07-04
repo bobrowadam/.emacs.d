@@ -6,19 +6,53 @@
 ;; responses, diagnostics) lives in the local pi-emacs module:
 ;;   ~/.emacs.d/modules/pi-emacs.el
 ;;
-;; Assumes the following helpers are defined in init.org:
-;;   bob/monorepo-root, bob/kitten, bob/kitty-socket,
-;;   bob/kitty-tab-exists-p, bob/kitty-focus-tab
+;; Assumes `bob/monorepo-root' is defined in init.org.
 
 (require 'cl-lib)
 (require 'project)
 (require 'subr-x)
 
 (declare-function bob/monorepo-root "init")
-(declare-function bob/kitten "init")
-(declare-function bob/kitty-socket "init")
-(declare-function bob/kitty-tab-exists-p "init")
-(declare-function bob/kitty-focus-tab "init")
+(declare-function bob/pi-send-buffer-context "init")
+(declare-function pi/ask "pi-emacs")
+
+;;; Kitty helpers
+
+(defun bob/kitty-socket ()
+  "Find the Kitty remote control socket."
+  (car (file-expand-wildcards "/tmp/kitty-emacs*")))
+
+(defun bob/kitten (&rest args)
+  "Run kitten with --to socket and ARGS. Return trimmed stdout."
+  (if-let* ((sock (bob/kitty-socket)))
+      (string-trim
+       (with-output-to-string
+         (apply #'call-process "kitten" nil standard-output nil
+                "@" "--to" (concat "unix:" sock) args)))
+    (error "No Kitty socket found — is Kitty running?")))
+
+(defalias 'pi/kitten #'bob/kitten)
+
+(defun bob/kitty-tab-exists-p (window-id)
+  "Return non-nil if a Kitty tab containing WINDOW-ID still exists.
+WINDOW-ID may be a string or integer; this is the value returned by
+`kitten @ launch'."
+  (condition-case nil
+      (let* ((numeric-id (if (stringp window-id) (string-to-number window-id) window-id))
+             (os-windows (json-parse-string (bob/kitten "ls") :array-type 'list)))
+        (cl-some (lambda (os-win)
+                   (cl-some (lambda (tab)
+                              (cl-some (lambda (win)
+                                         (= (gethash "id" win) numeric-id))
+                                       (gethash "windows" tab)))
+                            (gethash "tabs" os-win)))
+                 os-windows))
+    (error nil)))
+
+(defun bob/kitty-focus-tab (tab-id)
+  "Focus the Kitty tab with TAB-ID."
+  (bob/kitten "focus-tab" "--match" (format "id:%s" tab-id))
+  (call-process "open" nil nil nil "-a" "kitty"))
 
 ;;; Session tracking
 
