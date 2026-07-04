@@ -664,603 +664,44 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 #+end_src
 
 * AI and LLM integrations
-** GPTEL
+** Mentat
 #+begin_src elisp
-  (use-package gptel
-    :custom
-    (gptel-default-mode 'org-mode)
-    (gptel-expert-commands t)
-    (gptel-cache t)
-    (gptel-use-tools t)
-    (gptel-confirm-tool-calls nil)
-    :config
-    (exec-path-from-shell-initialize)
-    (defun bob/gptel-switch-to-gptel-buffer ()
-      "Switch to a buffer with `gptel-mode' active."
-      (interactive)
-      (if-let* ((gptel-buffers
-                (seq-filter
-                 (lambda (buff)
-                   (with-current-buffer buff
-                     (bound-and-true-p gptel-mode)))
-                 (buffer-list)))
-               (gptel-buffer (completing-read "GPT buffer: " (mapcar 'buffer-name gptel-buffers))))
-          (switch-to-buffer gptel-buffer)
-        (message "No GPTel buffers found.")))
-
-    (defun bob/gptel-openai-api-key ()
-      "Return the OpenAI API key from auth-source."
-      (auth-source-pick-first-password
-       :host "api.openai.com"
-       :user "bradwell-codex"))
-
-    (require 'gptel-openai-responses)
-
-    (defconst bob/gptel-openai-web-search-request-params
-      '(:tools [(:type "web_search"
-                 :search_context_size "medium"
-                 :external_web_access t)]
-        :tool_choice "auto"
-        :include ["web_search_call.action.sources"])
-      "OpenAI Responses API params for hosted server-side web search.")
-
-    (defvar bob/gptel-openai-responses-backend
-      (gptel-make-openai-responses "OpenAI Responses"
-        :stream t
-        :key #'bob/gptel-openai-api-key
-        :models '((gpt-5.5
-                   :description "GPT-5.5 (Responses API)"
-                   :capabilities (media tool-use json url responses-api)
-                   :context-window 400)))
-      "OpenAI Responses API backend for gptel.")
-
-    (setq gptel-model 'gpt-5.5
-          gptel-backend
-          (gptel-make-openai "OpenAI GPT"
-            :stream t
-            :key #'bob/gptel-openai-api-key
-            :models '((gpt-5.5
-                       :description "GPT-5.5"
-                       :capabilities (media tool-use json url)
-                       :context-window 400))))
-
-    (defconst bob/gptel-thinking-efforts '(nil "low" "medium" "high" "xhigh")
-      "OpenAI reasoning effort values cycled in gptel buffers.")
-
-    (defun bob/gptel-thinking-effort ()
-      "Return the buffer-local OpenAI reasoning effort, or nil."
-      (plist-get (plist-get gptel--request-params :reasoning) :effort))
-
-    (defun bob/gptel-set-thinking-effort (effort)
-      "Set buffer-local OpenAI reasoning EFFORT for this gptel buffer."
-      (setq-local gptel--request-params (copy-sequence gptel--request-params))
-      (if effort
-          (plist-put gptel--request-params :reasoning (list :effort effort))
-        (setq gptel--request-params
-              (cl-loop for (key value) on gptel--request-params by #'cddr
-                       unless (eq key :reasoning)
-                       append (list key value))))
-      (force-mode-line-update t)
-      (message "gptel thinking effort: %s" (or effort "default")))
-
-    (defun bob/gptel-cycle-thinking-effort (&optional reverse)
-      "Cycle buffer-local OpenAI reasoning effort.
-With REVERSE, cycle backwards."
-      (interactive "P")
-      (let* ((current (bob/gptel-thinking-effort))
-             (values bob/gptel-thinking-efforts)
-             (index (or (cl-position current values :test #'equal) 0))
-             (next (nth (mod (+ index (if reverse -1 1)) (length values))
-                        values)))
-        (bob/gptel-set-thinking-effort next)))
-
-    (defun bob/gptel-cycle-thinking-effort-backward ()
-      "Cycle buffer-local OpenAI reasoning effort backwards."
-      (interactive)
-      (bob/gptel-cycle-thinking-effort t))
-
-    (defun bob/gptel-thinking-effort-header ()
-      "Return a gptel header-line indicator for reasoning effort."
-      (let ((effort (bob/gptel-thinking-effort)))
-        (propertize (format " [Think: %s]" (or effort "default"))
-                    'face (if effort 'mode-line-emphasis 'shadow)
-                    'help-echo "Buffer-local OpenAI reasoning effort; C-{ / C-} cycles")))
-
-    (defun bob/gptel-install-thinking-effort-header ()
-      "Add thinking effort to the gptel header line."
-      (when (and (bound-and-true-p gptel-mode)
-                 (consp header-line-format)
-                 (not (member '(:eval (bob/gptel-thinking-effort-header))
-                              header-line-format)))
-        (setq-local header-line-format
-                    (append (butlast header-line-format)
-                            (list '(:eval (bob/gptel-thinking-effort-header))
-                                  (car (last header-line-format)))))))
-    (advice-add 'gptel-use-header-line :after
-                #'bob/gptel-install-thinking-effort-header)
-
-    (defvar-local bob/gptel--was-on nil
-      "Non-nil if `gptel-mode' was enabled before a major-mode change.")
-    (put 'bob/gptel--was-on 'permanent-local t)
-
-    (defun bob/gptel--remember-on-toggle ()
-      "Track `gptel-mode' state in a permanent-local flag."
-      (setq bob/gptel--was-on (bound-and-true-p gptel-mode)))
-    (add-hook 'gptel-mode-hook #'bob/gptel--remember-on-toggle)
-
-    (defun bob/gptel--restore-after-major-mode ()
-      "Re-enable `gptel-mode' after a major-mode change wiped it."
-      (when (and bob/gptel--was-on
-                 (not (bound-and-true-p gptel-mode))
-                 (derived-mode-p 'org-mode 'markdown-mode 'text-mode))
-        (gptel-mode 1)))
-    (put 'bob/gptel--restore-after-major-mode 'permanent-local-hook t)
-    (add-hook 'after-change-major-mode-hook
-              #'bob/gptel--restore-after-major-mode)
-
-    :bind
-     ("C-c g g" . gptel)
-     ("C-c g r" . bob/gptel-rewrite)
-     ("C-c g i" . bob/gptel-insert)
-     ("C-c g k" . bob/gptel-abort)
-     ("C-c g l" . bob/gptel-activity-show)
-     ("C-c g a d" . gptel-add)
-     ("C-c g a f" . gptel-add-file)
-     ("C-c g z" . bob/gptel-switch-to-gptel-buffer)
-     (:map gptel-mode-map
-           ("C-c g s" . gptel-menu)
-           ("C-{" . bob/gptel-cycle-thinking-effort-backward)
-           ("C-}" . bob/gptel-cycle-thinking-effort))
-     :hook
-     (org-mode . (lambda ()
-                   (when (-some->> (buffer-file-name)
-                           (s-match "^.+gptel\.org$" ))
-                     (gptel-mode 1))))
-     (gptel-post-stream . gptel-auto-scroll)
-     (gptel-post-response . gptel-end-of-response))
-
-  ;; Inline rewrite (`C-c g r') and insert (`C-c g i') commands.
-  ;; Wires up an "OpenAI rewrite" backend, a GPT-5.4-mini-based
-  ;; `rewrite' preset with read-only tools, a custom default action
-  ;; for rewrite overlays (no internal suffix/dispatch advice), and
-  ;; an output sanitiser that strips markdown fences / surrounding
-  ;; blank lines.  See `modules/bob-gptel-rewrite.el'.
-  (use-package bob-gptel-rewrite
+  (use-package mentat
     :ensure nil
-    :after gptel
-    :demand t
-    :commands (bob/gptel-rewrite bob/gptel-insert)
-    :config
-    (bob/gptel-rewrite-install))
-
-  ;; Activity indicator: modeline spinner + `*gptel-activity*' log,
-  ;; one line per request / tool call / response.  Hooks into gptel's
-  ;; public abnormal hooks; no advice.
-  (use-package bob-gptel-activity
-    :ensure nil
-    :after gptel
-    :demand t
-    :commands (bob/gptel-activity-show bob/gptel-activity-clear)
-    :config
-    (bob/gptel-activity-mode 1))
-
-  (use-package bob-gptel-tools
-    :ensure nil
-    :after gptel
-    :demand t
-    :config
-    ;; Mirrors pi's bash/edit/find/grep/ls/read/write tools plus
-    ;; elisp_eval (from karthink/gptel-agent), and installs them all
-    ;; into `gptel-tools' so they are available by default.
-    (bob/gptel-tools-default-set)
-    ;; Register a pi-inspired system prompt under the `pi' directive
-    ;; and use it as the default for new gptel buffers.
-    (bob/gptel-tools-install-system-prompt)
-    ;; Auto-fold noisy read-only tool blocks (read/ls/find/grep/bash/
-    ;; jina_reader).  Customise `bob/gptel-tools-fold-by-default'.
-    (bob/gptel-tools-fold-hook-install)
-    ;; Make the global gptel defaults match the `pi' preset so new
-    ;; gptel buffers come up agentic out of the box (OpenAI GPT
-    ;; backend + GPT-5.5 are already set above; here we cover
-    ;; the remaining knobs).  `gptel-tools' is populated by
-    ;; `bob/gptel-tools-default-set' above; `gptel--system-message'
-    ;; is set by `bob/gptel-tools-install-system-prompt' above (we
-    ;; re-set it here to the function symbol so it stays live and
-    ;; matches the `pi' preset's `:system' value).
-    (setq-default gptel-use-tools t
-                  gptel-confirm-tool-calls nil
-                  gptel-cache t
-                  gptel-stream t
-                  gptel-use-context 'system
-                  gptel--system-message #'bob/gptel-tools-system-prompt)
-    ;; Register the `pi' preset: same config as the globals above.
-    ;; Having it as an explicit preset lets you restore it inside
-    ;; any buffer (e.g. after the `rewrite' preset was applied)
-    ;; without touching the rewrite flow.
-    (gptel-make-preset 'pi
-      :description "Standard agentic flow: GPT-5.5 with pi tools, pi system prompt."
-      :backend "OpenAI GPT"
-      :model 'gpt-5.5
-      :use-tools t
-      :tools (mapcar #'gptel-tool-name gptel-tools)
-      :confirm-tool-calls nil
-      :cache t
-      :stream t
-      :system #'bob/gptel-tools-system-prompt
-      :use-context 'system)
-
-    (gptel-make-preset 'web-search
-      :description "OpenAI Responses API with hosted web_search and source metadata."
-      :backend "OpenAI Responses"
-      :model 'gpt-5.5
-      :use-tools nil
-      :request-params bob/gptel-openai-web-search-request-params
-      :cache t
-      :stream t
-      :system #'bob/gptel-tools-system-prompt
-      :use-context 'system))
-#+end_src
-** GPTEL quick - posframe lookups from any buffer
-#+begin_src elisp
-  ;; Fast, non-agentic quick lookup popup with a posframe spinner.
-  ;; Empty prompt summarizes region/thing/buffer; typed prompt asks
-  ;; about that same text.  Press `+' in the popup for a longer answer,
-  ;; `M-w' to copy, `M-RET' to promote into a chat buffer, `C-g' to dismiss.
-  (use-package bob-gptel-quick
-    :ensure nil
-    :after gptel
-    :demand t
-    :bind (("C-c g q" . bob/gptel-quick)))
-#+end_src
-** Minuet - ai code completion
-#+begin_src elisp
-  (use-package minuet
-    :disabled t
+    :after consult
+    :load-path "~/source/mentat"
+    :commands (mentat-menu)
     :custom
-    (minuet-provider 'claude)
-    :bind
-    (:map prog-mode-map ("C-M-i" . #'minuet-complete-with-minibuffer))
-    :config
-    (setenv "ANTHROPIC_API_KEY"
-            (-some-> (plist-get (car (auth-source-search :host "claude.ai")) :secret) funcall))
-
-    (defvar minuet-claude-options
-      `(:model "claude-3-haiku-20240307"
-               :max_tokens 512
-               :api-key "ANTHROPIC_API_KEY"
-               :system
-               (:template minuet-default-system-template
-                          :prompt minuet-default-prompt
-                          :guidelines minuet-default-guidelines
-                          :n-completions-template minuet-default-n-completion-template)
-               :fewshots minuet-default-fewshots
-               :chat-input
-               (:template minuet-default-chat-input-template
-                          :language-and-tab minuet--default-chat-input-language-and-tab-function
-                          :context-before-cursor minuet--default-chat-input-before-cursor-function
-                          :context-after-cursor minuet--default-chat-input-after-cursor-function)
-               :optional nil)
-      "config options for Minuet Claude provider"))
-#+end_src
-
-** LLM package
-#+begin_src elisp
-  (use-package llm
-    :custom
-    (llm-warn-on-nonfree nil))
-#+end_src
-** MCP
-#+begin_src elisp
-  (use-package mcp
-    :ensure (:repo "lizqwerscott/mcp.el" :fetcher github :files ("*.el"))
-    :config
-    (require 'gptel-integrations)
-    (setq mcp-hub-servers
-          `(("linear" . (
-                         :command "npx"
-                         :args ("-y" "mcp-remote" "https://mcp.linear.app/sse")
-                         ))
-            ("postgres" . (
-                           :command  "postgres-mcp"
-                           :args ("--access-mode=unrestricted")
-                           :env (:DATABASE_URI "postgresql://postgres:grain@localhost:5432/grain")))
-            ("elisp-dev" . (
-                            :command  "/Users/bob/.emacs.d/emacs-mcp-stdio.sh"
-                            :args ("--init-function=elisp-dev-mcp-enable","--stop-function=elisp-dev-mcp-disable","--server-id=elisp-dev-mcp")
-                            :env ())))))
-
-#+end_src
-** Claude Code
-*** Monet
-For claude code protocol via web-sockets
-#+begin_src elisp
-  (defun bob/cleanup-stale-monet-lockfiles ()
-    "Remove monet lock files that have no corresponding live monet session."
-    (let ((dir (expand-file-name "~/.claude/ide/"))
-          live-ports)
-      (maphash (lambda (_k v) (push (monet--session-port v) live-ports))
-               monet--sessions)
-      (when (file-directory-p dir)
-        (dolist (file (directory-files dir t "\\.lock$"))
-          (let ((port (string-to-number (file-name-base file))))
-            (unless (member port live-ports)
-              (delete-file file)))))))
-
-  (defun bob/ensure-monet-server ()
-    "Start a monet server for the monorepo root if one isn't running yet.
-    Only starts a server when inside an actual git repo. No-ops if a server is
-    already running for that root."
-    (when-let* ((root (locate-dominating-file default-directory ".git")))
-      (let ((root (expand-file-name root)))
-        (unless (monet--get-session root)
-          (monet-start-server-in-directory root root)))))
-
-  (use-package monet
-    :ensure (:repo "stevemolitor/monet" :fetcher github :files ("*.el") :branch "main")
-    :commands (monet-mode
-               monet-start-server
-               monet-start-server-function
-               monet-start-server-in-directory)
-    :custom
-    (monet-diff-tool 'monet-simple-diff-tool)
-    :config
-    (if after-init-time
-        (bob/cleanup-stale-monet-lockfiles)
-      (add-hook 'after-init-hook #'bob/cleanup-stale-monet-lockfiles)))
-#+end_src
-*** ClaudEmacs
-#+begin_src elisp
-  (use-package claudemacs
-    :disabled t
-    :ensure (:fetcher github :repo "cpoile/claudemacs")
-    ;; :custom
-
-    :hook (claudemacs-startup . (lambda () (monet-start-server)))
-    :config
-    ;; (let ((default-directory (expand-file-name user-emacs-directory))
-    ;;       (solveit-prompt (read-file  "./solveit-prompt.md")))
-    ;;   (setq claudemacs-program-switches (list "--append-system-prompt" solveit-prompt)))
-    (monet-mode 1))
-  ;;
-  ;; font insanity for Claudemacs
-  ;;
-  (defun my/setup-custom-font-fallbacks-mac ()
-    (interactive)
-    "Configure font fallbacks on mac for symbols and emojis.
-  This will need to be called every time you change your font size,
-  to load the new symbol and emoji fonts."
-    (setq use-default-font-for-symbols nil)
-
-    ;; --- Configure for 'symbol' script ---
-    ;; We add fonts one by one. Since we use 'prepend',
-    ;; the last one added here will be the first one Emacs tries.
-    ;; So, list them in reverse order of your preference.
-
-    ;; Least preferred among this list for symbols (will be at the end of our preferred list)
-    (set-fontset-font t 'symbol "Hiragino Sans" nil 'prepend)
-    (set-fontset-font t 'symbol "STIX Two Math" nil 'prepend)
-    (set-fontset-font t 'symbol "Zapf Dingbats" nil 'prepend)
-    (set-fontset-font t 'symbol "Monaco" nil 'prepend)
-    (set-fontset-font t 'symbol "Menlo" nil 'prepend)
-    ;; Most preferred for symbols -- use your main font here
-    (set-fontset-font t 'symbol "JetBrainsMono Nerd Font Mono" nil 'prepend)
-
-
-    ;; --- Configure for 'emoji' script ---
-    ;; Add fonts one by one, in reverse order of preference.
-
-    ;; Least preferred among this list for emojis
-    (set-fontset-font t 'emoji "Hiragino Sans" nil 'prepend)
-    (set-fontset-font t 'emoji "STIX Two Math" nil 'prepend)
-    (set-fontset-font t 'emoji "Zapf Dingbats" nil 'prepend)
-    (set-fontset-font t 'emoji "Monaco" nil 'prepend)
-    (set-fontset-font t 'emoji "Menlo" nil 'prepend)
-    ;; (set-fontset-font t 'emoji "Noto Emoji" nil 'prepend) ;; If you install Noto Emoji
-    ;; Most preferred for emojis -- use your main font here
-    (set-fontset-font t 'emoji "JetBrainsMono Nerd Font Mono" nil 'prepend))
-
-  ;; Then, add the fonts after your setup is complete:
-  (add-hook 'emacs-startup-hook
-            (lambda ()
-              (progn
-                (when (string-equal system-type "darwin")
-                  (my/setup-custom-font-fallbacks-mac)))))
-#+end_src
-*** claude-code.el This is broken since claude-code-emacs is overriding it. maybe we can try it out
-#+begin_src elisp
-  (use-package claude-code
-    :disabled t
-    :ensure (:name "claude-code" :repo "stevemolitor/claude-code.el" :fetcher github :files "*.el")
-    :bind (:map claude-code-command-map
-                ("F" . claude-code-send-file))
-    :custom
-    (claude-code-no-delete-other-windows nil)
-    (claude-code-toggle-auto-select t)
-    :config
-    (exec-path-from-shell-initialize)
-    ;; cursor settings for claude-code (was eat-specific, may need ghostel equivalent)
-    (setq claude-code-eat-read-only-mode-cursor-type '(bar nil nil))
-
-    (defun claude-code-get-flymake-diagnostics (buffer-or-file-name)
-      "Get the content of the flymake diagnostics for a specific buffer."
-      (if-let* ((buff (or (get-buffer buffer-or-file-name)
-                         (get-file-buffer buffer-or-file-name))))
-          (with-current-buffer buff
-            (mapconcat (lambda (diag)
-                         (format "%s   %s"
-                                 (line-number-at-pos (flymake-diagnostic-beg diag))
-                                 (substring-no-properties
-                                  (flymake-diagnostic-message diag))))
-                       (flymake-diagnostics (point-min)
-                                            (point-max))
-                       "\n"))
-        (format "buffer %s does not exist" buffer-or-file-name)))
-
-    (defun bob/claude-notify (title message)
-      "Display a macOS notification with sound."
-      (shell-command (format "terminal-notifier -title \"%s\" -message \"%s\" -sound Ping -sender \"org.gnu.Emacs\""
-                             title message)))
-
-    (setq claude-code-notification-function #'bob/claude-notify)
-    (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
-    (monet-mode 1)
-    (claude-code-mode))
-#+end_src
-*** claude-code-ide
-#+begin_src elisp
-  (use-package claude-code-ide
-    :disabled t
-    :ensure (:repo "manzaltu/claude-code-ide.el" :fetcher github :files ("*.el") :branch "main")
-    ;; This is just untill I open a PR. replace the repo path later back to "manzaltu/claude-code-ide.el"
-    ;; :ensure (:repo "bobrowadam/claude-code-ide.el" :fetcher github :files ("*.el") :branch "fix-eat-cursor-invisible")
-    :bind ("C-c C-'" . claude-code-ide-menu)
-    :custom
-    (claude-code-ide-terminal-backend 'ghostel)
-    (claude-code-ide-window-width 60)
-    (claude-code-ide-window-side 'bottom)
-    :config
-    (exec-path-from-shell-initialize)
-    (claude-code-ide-emacs-tools-setup)
-
-    ;; Fix cursor visibility in copy/navigation modes
-    (defun bob/claude-code-vterm-copy-mode-cursor-fix ()
-      "Toggle cursor visibility based on vterm-copy-mode state."
-      (when (and (derived-mode-p 'vterm-mode)
-                 (string-prefix-p "*claude-code[" (buffer-name)))
-        (if vterm-copy-mode
-            (setq-local cursor-type t)
-          (setq-local cursor-type nil))))
-
-    (add-hook 'vterm-copy-mode-hook #'bob/claude-code-vterm-copy-mode-cursor-fix))
-#+end_src
-*** Open Claude in Kitty
-#+begin_src elisp
-  (global-set-key (kbd "C-c m g") #'bob/open-claude-in-kitty)
-
-  (defvar bob/kitty-claude-tabs (make-hash-table :test 'equal)
-    "Maps monorepo root dirs to Kitty tab IDs for claude sessions.")
-
-  (defun bob/kitty-socket ()
-    "Find the Kitty remote control socket."
-    (car (file-expand-wildcards "/tmp/kitty-emacs*")))
-
-  (defun bob/kitten (&rest args)
-    "Run kitten with --to socket and ARGS. Return trimmed stdout."
-    (if-let* ((sock (bob/kitty-socket)))
-        (string-trim
-         (with-output-to-string
-           (apply #'call-process "kitten" nil standard-output nil
-                  "@" "--to" (concat "unix:" sock) args)))
-      (error "No Kitty socket found — is Kitty running?")))
-
-  (defun bob/kitty-tab-exists-p (window-id)
-    "Return non-nil if a Kitty tab containing WINDOW-ID still exists.
-WINDOW-ID may be a string or integer; this is the value returned by
-`kitten @ launch'."
-    (condition-case nil
-        (let* ((numeric-id (if (stringp window-id) (string-to-number window-id) window-id))
-               (os-windows (json-parse-string (bob/kitten "ls") :array-type 'list)))
-          (cl-some (lambda (os-win)
-                     (cl-some (lambda (tab)
-                                (cl-some (lambda (win)
-                                           (= (gethash "id" win) numeric-id))
-                                         (gethash "windows" tab)))
-                              (gethash "tabs" os-win)))
-                   os-windows))
-      (error nil)))
-
-  (defun bob/kitty-focus-tab (tab-id)
-    "Focus the Kitty tab with TAB-ID."
-    (bob/kitten "focus-tab" "--match" (format "id:%s" tab-id))
-    (call-process "open" nil nil nil "-a" "kitty"))
-
-  (defun bob/kitty-prune-claude-tabs ()
-    "Remove all stale entries from `bob/kitty-claude-tabs'."
-    (maphash (lambda (dir tab-id)
-               (unless (bob/kitty-tab-exists-p tab-id)
-                 (remhash dir bob/kitty-claude-tabs)))
-             bob/kitty-claude-tabs))
-
-  (defun bob/open-claude-in-kitty ()
-    "Open or focus Claude Code in Kitty for the current monorepo root."
-    (interactive)
-    (require 'monet)
-    (let* ((dir (expand-file-name (bob/monorepo-root)))
-           (title (file-name-nondirectory (directory-file-name dir)))
-           (tab-id (gethash dir bob/kitty-claude-tabs)))
-      (if (and tab-id (bob/kitty-tab-exists-p tab-id))
-          (bob/kitty-focus-tab tab-id)
-        (remhash dir bob/kitty-claude-tabs)
-        (let* ((session (monet--get-session dir))
-               (env-args (if session
-                             (list "--env" "ENABLE_IDE_INTEGRATION=t"
-                                   "--env" (format "CLAUDE_CODE_SSE_PORT=%d" (monet--session-port session)))
-                           (let ((s (monet-start-server-in-directory dir dir)))
-                             (list "--env" "ENABLE_IDE_INTEGRATION=t"
-                                   "--env" (format "CLAUDE_CODE_SSE_PORT=%d" (monet--session-port s))))))
-               (args (append (list "launch" "--type=tab"
-                                   "--tab-title" title
-                                   "--cwd" dir)
-                             env-args
-                             (list "/bin/zsh" "-li" "-c" "claude; exec /bin/zsh -li")))
-               (out (apply #'bob/kitten args))
-               (win-id (when (string-match "\\([0-9]+\\)" out)
-                          (match-string 1 out)))
-               (dark-p (string= "Dark"
-                                (string-trim
-                                 (shell-command-to-string
-                                  "defaults read -g AppleInterfaceStyle 2>/dev/null || echo Light"))))
-               (theme-file (expand-file-name
-                            (if dark-p "kanagawa.conf" "kanagawa-light.conf")
-                            "~/.config/kitty")))
-          (when win-id
-            (puthash dir win-id bob/kitty-claude-tabs)
-            (bob/kitten "set-colors" "--match" (format "id:%s" win-id) theme-file))
-          (call-process "open" nil nil nil "-a" "kitty")))))
-#+end_src
-*** project-claude
-#+begin_src elisp
-  (when-let* ((project-claude-dir (bob/elpaca-package-dir "project-claude")))
-    (add-to-list 'load-path project-claude-dir)
-    (use-package project-claude
-      :defer t))
-#+end_src
-** ECA
-ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for Emacs. Inspired by lsp-mode’s JSONRPC handling, it connects to an external eca server process to provide interactive chat, code suggestions, context management and more.
-#+begin_src elisp
-  (use-package eca
-    ;; :ensure (:repo "bobrowadam/eca-emacs" :fetcher github :files ("*.el") :ref "master")
-    :ensure (:repo "editor-code-assistant/eca-emacs" :fetcher github :files ("*.el"))
-    :custom
-    (eca-custom-command '("~/source/eca/eca" "server" "--verbose" "--log-level" "debug"))
-    (eca-find-root-for-buffer-function 'bob/monorepo-root)
-    (eca-chat-window-width 0.6)
-    (eca-chat-window-height 0.6)
-    (eca-chat-use-side-window nil)
-    ;; (eca-chat-diff-tool 'ediff)
-    (eca-chat-window-side 'bottom)
-    :bind
-    ("C-c ." . eca-transient-menu)
-    ;; Override arrow key bindings with Emacs-like alternatives
-    (:map eca-chat-mode-map
-          ("C-c C-p" . eca-chat-go-to-prev-expandable-block)
-          ("C-c C-n" . eca-chat-go-to-next-expandable-block)
-          ("M-p" . eca-chat-go-to-prev-user-message)
-          ("M-n" . eca-chat-go-to-next-user-message)
-          ("C-m" . eca-chat--key-pressed-return))
-    :config
-    ;; (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
-    ;;                           :host "api.openai.com"
-    ;;                           :user "grain@finanance.co"))
-    (transient-replace-suffix 'eca--transient-menu-prefix "o"
-      '("." "Open/close chat window" eca-chat-toggle-window))
-    (transient-remove-suffix 'eca--transient-menu-prefix "s")
-    (transient-append-suffix 'eca--transient-menu-prefix "t"
-      '("s" "Send prompt" eca-chat-send-prompt))
-    (transient-append-suffix 'eca--transient-menu-prefix "S"
-      '("D" "NREPL connect" eca-debug-nrepl-connect))
-    (transient-append-suffix 'eca--transient-menu-prefix "S"
-      '("w" "ECA re-write" eca-rewrite)))
+    (mentat-pi-log-level 'summary)
+    (mentat-extension-paths
+     (let ((extensions (mapcar (lambda (file)
+                                 (expand-file-name file "~/.pi/agent/extensions/src/"))
+                               '("check-elisp.ts"
+                                 "emacs"
+                                 "web-search"
+                                 "session-scripts.ts"
+                                 "mempalace.ts"
+                                 "resolve-symlinks.ts"))))
+       `((ask . ,extensions)
+         (search . ,extensions)
+         (vibe . ,extensions)
+         (tutorial . ,extensions))))
+    (mentat-prompt-extra-completion-at-point-functions
+     (list #'bob/prose-word-completion-at-point)
+     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
+                                       :thinking "medium")
+                               (vibe :model "openai-codex/gpt-5.5"
+                                     :thinking "high")
+                               (ask :model "openai-codex/gpt-5.5"
+                                    :thinking "high")
+                               (rewrite :model "openai-codex/gpt-5.4-mini"
+                                        :thinking "medium"))))
+     :bind (("C-c C-;" . mentat-menu))
+     :config
+     (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
+                               :host "api.openai.com"
+                               :user "bradwell-codex"))
+     (fnm-use))
 #+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
@@ -1275,21 +716,6 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
       (mcp-server-lib-start))
     (unless (file-exists-p (mcp-server-lib-installed-script-path))
       (mcp-server-lib-install)))
-#+end_src
-** Agent Shell
-*** ACP
-#+begin_src elisp
-  (use-package acp
-    :ensure (:repo "xenodium/acp.el" :fetcher github :files ("*.el")))
-#+end_src
-*** Shell maker (dependency)
-#+begin_src elisp
-  (use-package shell-maker)
-#+end_src
-*** Agent Shell
-#+begin_src elisp
-  (use-package agent-shell
-    :ensure (:repo "xenodium/agent-shell" :fetcher github :files ("*.el")))
 #+end_src
 ** Prose completion
 #+begin_src elisp
@@ -1526,182 +952,18 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
     :ensure nil
     :hook (text-mode . bob/prose-word-completion-setup))
 #+end_src
-** Mentat
-#+begin_src elisp
-  (use-package mentat
-    :ensure nil
-    :load-path "~/source/mentat"
-    :after fnm
-    :commands (mentat-menu)
-    :custom
-    (mentat-pi-log-level 'summary)
-    (mentat-extension-paths
-     (let ((extensions (mapcar (lambda (file)
-                                 (expand-file-name file "~/.pi/agent/extensions/src/"))
-                               '("check-elisp.ts"
-                                 "emacs"
-                                 "web-search"
-                                 "session-scripts.ts"
-                                 "mempalace.ts"
-                                 "resolve-symlinks.ts"))))
-       `((ask . ,extensions)
-         (search . ,extensions)
-         (vibe . ,extensions)
-         (tutorial . ,extensions))))
-    (mentat-prompt-extra-completion-at-point-functions
-     (list #'bob/prose-word-completion-at-point)
-     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
-                                       :thinking "medium")
-                               (vibe :model "openai-codex/gpt-5.5"
-                                     :thinking "high")
-                               (ask :model "openai-codex/gpt-5.5"
-                                    :thinking "high")
-                               (rewrite :model "openai-codex/gpt-5.4-mini"
-                                        :thinking "medium")))
-     :bind (("C-c C-;" . mentat-menu))
-     :config
-     (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
-                               :host "api.openai.com"
-                               :user "bradwell-codex"))
-     (fnm-use)))
-#+end_src
-** mevedel
-#+begin_src elisp
-  (use-package mevedel
-    :ensure (:repo "FrauH0lle/mevedel" :fetcher github :files ("*.el"))
-    :custom
-    (mevedel-show-chat-buffer t)
-    :bind (("C-c m r" . mevedel-create-reference)
-           ("C-c m d" . mevedel-create-directive)
-           ("C-c m i" . mevedel-implement-directive)
-           ("C-c m v" . mevedel-preview-directive-prompt)
-           ("C-c m n" . mevedel-next-instruction)
-           ("C-c m p" . mevedel-previous-instruction)
-           ("C-c m s" . mevedel-save-instructions)
-           ("C-c m l" . mevedel-load-instructions))
-    :config
-    (mevedel-install)
-    ;; Remove gptel-agent tools since mevedel supersedes them
-    ;; (setf (alist-get "gptel-agent" gptel--known-tools nil 'remove #'equal) nil)
-    ;; Make mevede;; l tools always available in gptel
-    ;; (setq gptel-tools
-    ;;       (cl-loop for (_ . tools) in gptel--known-tools
-    ;;                append (mapcar #'cdr tools)))
-    )
-#+end_src
-** Copilot
-#+begin_src elisp
-  (use-package copilot
-    ;; :hook (prog-mode . copilot-mode)
-    :custom (copilot-indent-offset-warning-disable t)
-    :bind (:map copilot-completion-map
-                ("<tab>" . copilot-accept-completion)
-                ("TAB" . copilot-accept-completion)
-                ("C-<tab>" . copilot-accept-completion-by-word)
-                ("C-TAB" . copilot-accept-completion-by-word)
-                ("C-n" . copilot-next-completion)
-                ("C-p" . copilot-previous-completion)))
-#+end_src
 ** PI
-*** pi-coding-agent
 #+begin_src elisp
   (use-package pi-emacs
     :ensure nil
-    :demand t
-    :after project)
-
-  (use-package pi-coding-agent
-    :config
-    (defun bob/pi-cycle-solveit-mode ()
-      "Cycle the solveit extension mode for the current Pi session."
-      (interactive)
-      (pi-coding-agent-run-command "cycle-mode"))
-
-    (defun bob/pi-coding-agent-send-region-context (prompt)
-      "Send the active region and PROMPT to the current project Pi chat.
-  Return non-nil when a matching Pi chat buffer handled the message."
-      (when-let* (((use-region-p))
-                  (chat-buf (car (pi-coding-agent-project-buffers))))
-        (let* ((file (buffer-file-name))
-               (line (line-number-at-pos (region-beginning)))
-               (lang (replace-regexp-in-string
-                      "-ts-mode\\|-mode" "" (symbol-name major-mode)))
-               (selection (buffer-substring-no-properties
-                           (region-beginning) (region-end)))
-               (message (format "%s%s%s\n```%s\n%s\n```"
-                                (if (string-empty-p prompt) "" (concat prompt "\n\n"))
-                                (if file (format "%s:%s\n" file line) "")
-                                (if file "" (format "%s\n" (buffer-name)))
-                                lang
-                                selection)))
-          (with-current-buffer chat-buf
-            (pi-coding-agent--prepare-and-send message))
-          t)))
-
-    (defun bob/pi-send-buffer-context (prompt)
-      "Send current buffer context to the matching Pi socket."
-      (interactive "sMessage for Pi: ")
-      (pi/send-buffer-context prompt))
-
-    (defun bob/pi-hide-before-navigation (orig &rest args)
-      "Hide an active Pi session before running navigation command ORIG."
-      (when (derived-mode-p 'pi-coding-agent-chat-mode 'pi-coding-agent-input-mode)
-        (pi-coding-agent-toggle))
-      (apply orig args))
-    :init (defalias 'pi 'pi-coding-agent)
-    :bind (("C-c C-." . pi-coding-agent-toggle)
-           :map pi-coding-agent-chat-mode-map
-           ("C-c m" . bob/pi-cycle-solveit-mode)
-           ("S-<tab>" . pi-coding-agent-cycle-thinking)
-           :map pi-coding-agent-input-mode-map
-           ("C-c m" . bob/pi-cycle-solveit-mode)
-           ("S-<tab>" . pi-coding-agent-cycle-thinking))
-
-    :custom
-    (pi-coding-agent-input-window-height 5)
-    (pi-coding-agent-tool-preview-lines 0)
-    (pi-coding-agent-bash-preview-lines 0)
-    (pi-coding-agent-context-warning-threshold 70)
-    (pi-coding-agent-context-error-threshold 90)
-    (pi-coding-agent-visit-file-other-window t)
-    (pi-coding-agent-hot-tail-turn-count 3)
-    (pi-coding-agent-copy-raw-markdown t)
-    (pi-coding-agent-extension-status-faces
-     '(("solveit-mode" . (:foreground "#eed49f" :weight bold))
-       ("mempalace" . (:foreground "#c6a0f6" :weight bold))))
-    (pi-coding-agent-image-preview-max-width 900)
-    (pi-coding-agent-input-markdown-highlighting t)
-    :config
-    (advice-add 'consult-buffer :around #'bob/pi-hide-before-navigation)
-    (advice-add 'consult-project-buffer :around #'bob/pi-hide-before-navigation)
-    (advice-add 'project-switch-project :around #'bob/pi-hide-before-navigation)
-
-    ;; Workaround: Emacs 31 `bash-ts-mode' has :around advice that
-    ;; redirects to `sh-mode' in buffers without a filename.  This
-    ;; breaks `md-ts-mode' grammar harvesting for bash code blocks.
-    ;; Binding `delay-mode-hooks' bypasses the advice.
-    (with-eval-after-load 'md-ts-mode
-      (defun md-ts--harvest-treesit-configs (mode)
-        "Harvest tree-sitter configs from MODE.
-    Return a plist with :font-lock, :simple-indent, and :range keys,
-    or nil if MODE fails to activate (e.g. missing grammar dependencies)."
-        (condition-case err
-            (with-temp-buffer
-              (delay-mode-hooks (funcall mode))
-              (list :font-lock treesit-font-lock-settings
-                    :simple-indent treesit-simple-indent-rules
-                    :range treesit-range-settings))
-          (error
-           (message "md-ts-mode: failed to harvest configs from %s: %s"
-                    mode (error-message-string err))
-           nil)))))
+    :demand t)
 #+end_src
-
 *** Kitty + pi launcher
 #+begin_src elisp
   (use-package kitty-pi
     :ensure nil
-    :demand t)
+    :demand t
+    :after pi-emacs)
 #+end_src
 
 * Ediff
@@ -1850,6 +1112,7 @@ ECA (Editor Code Assistant) Emacs is an AI-powered pair-programming client for E
                                    :predicate #'buffer-file-name))))
     "Project buffer source for `consult-buffer'.")
   (use-package consult
+    :demand t
     :init
     (setq consult--tofu-char #x100000
           consult--tofu-range #x00fffe)
@@ -2436,7 +1699,9 @@ just org files in a directory + ripgrep.
   (use-package grove
     :after (org)
     :demand t
-    :ensure (:repo "bobrowadam/grove" :fetcher github :branch "fix-icloud-cache-timeouts" :files ("*.el"))
+    :ensure (:repo "bobrowadam/grove" :fetcher github
+             :remotes (("origin" :repo "bobrowadam/grove"))
+             :branch "fix-icloud-cache-timeouts" :files ("*.el"))
     :bind (:prefix-map grove-command-map
                        :prefix "C-c n"
                        ("v" . grove-open)
@@ -2499,11 +1764,6 @@ just org files in a directory + ripgrep.
     (global-grove-mode 1))
 #+end_src
 
-* EKG
-#+begin_src elisp
-  (use-package ekg
-    :bind (([f11] . ekg-capture)))
-#+end_src
 * Verb: Rest api interface
 #+begin_src elisp
   (use-package verb
@@ -3113,6 +2373,28 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
     (add-hook 'completion-at-point-functions #'cape-elisp-block))
 #+end_src
 * Programming
+** sly
+#+begin_src elisp
+  (use-package sly
+    :custom
+    (inferior-lisp-program "sbcl")
+    :config
+    (setq sly-lisp-implementations
+          '((nyxt ("sbcl" "--dynamic-space-size 3072")
+                  :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//")))))
+#+end_src
+
+#+end_src
+** common-lisp
+** Sly
+#+begin_src elisp
+  (use-package sly-repl-ansi-color
+    :after (sly)
+    :init (push 'sly-repl-ansi-color sly-contribs))
+  (use-package sly-asdf)
+  (use-package sly-macrostep)
+#+end_src
+
 ** General Settings
 #+begin_src elisp
   (use-package repeat
@@ -4400,18 +3682,6 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     (advice-add 'start-file-process :filter-return
                 #'bob/kubed-colorize-started-log-process))
 #+end_src
-* Combobulate
-#+begin_src elisp
-  (use-package combobulate
-    :ensure (:repo "mickeynp/combobulate" :fetcher github :files ("*.el"))
-    :disabled t
-    :custom
-    (combobulate-key-prefix "C-c o")
-    :bind
-    (:map typescript-ts-mode-map ("C-M-SPC" . combobulate-mark-node-dwim))
-    (:map tsx-ts-mode-map ("C-M-SPC" . combobulate-mark-node-dwim)) :hook (typescript-ts-mode))
-
-#+end_src
 * macrostep
 #+begin_src elisp
   (use-package macrostep
@@ -4419,22 +3689,6 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
 
 #+end_src
 
-* org-linear
-#+begin_src elisp
-  (use-package org-linear
-    :ensure (org-linear
-             :host github
-             :repo "bobrowadam/org-linear"
-             :main "org-linear.el"
-             :files ("org-linear.el"
-                     "index.ts"
-                     "package.json"
-                     "tsconfig.json")
-             :build (:not elpaca--compile-info)
-             :pre-build (("bun" "install"))))
-#+end_src
-
-#+end_src
 * linear-emacs
 #+begin_src elisp
   (use-package linear-emacs
@@ -4523,45 +3777,10 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
 #+end_src
 
 #+end_src
-* p-search
-#+begin_src elisp
-  (use-package p-search
-    :commands p-search
-    :ensure (:repo "zkry/p-search" :fetcher github :files ("*.el")))
-#+end_src
-
-#+end_src
-* sly
-#+begin_src elisp
-  (use-package sly
-    :custom
-    (inferior-lisp-program "sbcl")
-    :config
-    (setq sly-lisp-implementations
-          '((nyxt ("sbcl" "--dynamic-space-size 3072")
-                  :env ("CL_SOURCE_REGISTRY=~/common-lisp//:~/common-lisp/nyxt/_build//")))))
-#+end_src
-
-#+end_src
-* common-lisp
-** Sly
-#+begin_src elisp
-  (use-package sly-repl-ansi-color
-    :after (sly)
-    :init (push 'sly-repl-ansi-color sly-contribs))
-  (use-package sly-asdf)
-  (use-package sly-macrostep)
-#+end_src
 * Enabled commands that are disabled by default
 #+begin_src elisp
   (put 'narrow-to-region 'disabled nil)
   (put 'upcase-region 'disabled nil)
   (put 'set-goal-column 'disabled nil)
   (put 'narrow-to-region 'disabled nil)
-#+end_src
-* Whats App
-#+begin_src elisp
-  (use-package wasabi
-    :ensure (:repo "xenodium/wasabi" :fetcher github :files ("*.el")))
-
 #+end_src
