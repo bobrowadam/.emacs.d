@@ -39,9 +39,13 @@
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
-(elpaca elpaca-use-package
-  (elpaca-use-package-mode)
-  (setq elpaca-use-package-by-default t))
+;; Avoid Elpaca's startup log tripping over Emacs 31 time values.
+;; Interactive `elpaca-log' / command logs still work.
+(defvar elpaca-log-functions)
+(setq elpaca-log-functions '(elpaca-log-command-query))
+
+(elpaca (elpaca-use-package :wait t)
+  (elpaca-use-package-mode))
 
 (defvar bob/generated-init-file
   (expand-file-name "init-generated.el" user-emacs-directory)
