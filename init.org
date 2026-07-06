@@ -655,12 +655,15 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (use-package isearch
     :ensure nil
     :custom
-    (isearch-lazy-count t))
+    (isearch-lazy-count t)
+    :bind
+    ("M-g o" . occur))
   (use-package flx)
   (use-package swiper
     :config
     (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
-    :bind ("C-c C-s" . swiper))
+    :bind
+    ("C-c C-s" . swiper))
 #+end_src
 
 * AI and LLM integrations
