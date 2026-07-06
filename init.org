@@ -2761,10 +2761,18 @@ LSP/DAP servers manager
 #+begin_src elisp
   (use-package typescript-ts-mode
     :ensure nil
-    :mode ("\\.ts\\'")
+    :mode (("\\.ts\\'" . typescript-ts-mode)
+           ("\\.tsx\\'" . tsx-ts-mode)
+           ("\\.jsx\\'" . tsx-ts-mode))
+    :hook
+    (tsx-ts-mode . hs-minor-mode)
     :bind
     ("C-c C-b" . npm-run-build)
     (:map typescript-ts-mode-map
+          ("C-M-f" . sp-forward-sexp)
+          ("C-M-b" . sp-backward-sexp)
+          ("C-M-SPC" . sp-mark-sexp))
+    (:map tsx-ts-mode-map
           ("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-SPC" . sp-mark-sexp))
@@ -2780,11 +2788,13 @@ LSP/DAP servers manager
     ;;                         (setq tab-width 2)
     ;;                         (setq indent-tabs-mode nil)))
     :config
+    ;; Remove stale jtsx associations when reloading this config in an
+    ;; existing Emacs session so React buffers keep using `tsx-ts-mode'.
+    (dolist (mode '(jtsx-jsx-mode jtsx-tsx-mode jtsx-typescript-mode))
+      (setq auto-mode-alist (rassq-delete-all mode auto-mode-alist)))
     (setq typescript-ts-mode-indent-offset 2))
 
   (use-package jtsx
-    :mode (("\\.jsx?\\'" . jtsx-jsx-mode)
-           ("\\.tsx\\'" . jtsx-tsx-mode))
     :commands jtsx-install-treesit-language
     :hook ((jtsx-jsx-mode . hs-minor-mode)
            (jtsx-tsx-mode . hs-minor-mode)
