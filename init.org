@@ -2538,18 +2538,18 @@ LSP/DAP servers manager
           (goto-char (point-min))
           (re-search-forward "\"@effect/language-service\"" nil t))))
 
+    (setq eglot-server-programs
+          (cl-remove-if (lambda (entry)
+                          (equal (car entry) '(js2-mode js-mode js-ts-mode typescript-ts-mode tsx-ts-mode)))
+                        eglot-server-programs))
     (add-to-list 'eglot-server-programs
                  `((js2-mode js-mode js-ts-mode typescript-ts-mode tsx-ts-mode)
                    . ,(lambda (&rest _)
                         (let* ((nm-dir (bob/monorepo-root))
-                               (biome (and nm-dir (expand-file-name "node_modules/.bin/biome" nm-dir)))
                                (tsserver-path (and nm-dir (expand-file-name "node_modules/typescript/lib" nm-dir)))
                                (effect-ls-path (and nm-dir (expand-file-name "node_modules/@effect/language-service" nm-dir)))
                                (init-options nil)
-                               (command (if (and biome (file-executable-p biome))
-                                            (list "rass" "--" "typescript-language-server" "--stdio"
-                                                  "--" biome "lsp-proxy")
-                                          '("typescript-language-server" "--stdio"))))
+                               (command '("typescript-language-server" "--stdio")))
                           (when (and tsserver-path (file-directory-p tsserver-path))
                             (setq init-options (plist-put init-options :tsserver `(:path ,tsserver-path))))
                           (when (and effect-ls-path
