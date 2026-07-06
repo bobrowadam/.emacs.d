@@ -2452,13 +2452,25 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
 ** Flymake
 *** Basic settings
 #+begin_src elisp
+  (defun bob/flymake-show-buffer-diagnostics--first (orig &optional diagnostic &rest _extra)
+    "Pass only one DIAGNOSTIC to ORIG.
+`flymake-show-buffer-diagnostics' can receive multiple diagnostics
+interactively when several diagnostics overlap at point, but this Emacs
+build only accepts one optional diagnostic argument."
+    (funcall orig diagnostic))
+
   (use-package flymake
     :ensure t
+    :demand t
     :custom
     (flymake-show-diagnostics-at-end-of-line nil)
     ;; (flymake-show-diagnostics-at-end-of-line 'fancy)
     :config
     (setq elisp-flymake-byte-compile-load-path load-path)
+    (unless (advice-member-p #'bob/flymake-show-buffer-diagnostics--first
+                             'flymake-show-buffer-diagnostics)
+      (advice-add 'flymake-show-buffer-diagnostics
+                  :around #'bob/flymake-show-buffer-diagnostics--first))
     :bind
     (:map flymake-mode-map
           ("C-c ! l" . flymake-show-buffer-diagnostics)
@@ -2972,12 +2984,112 @@ and `:test-name'."
         (revert-buffer t t t)
         (goto-char pt))))
 
+  (defvar-local bob/biome-flymake-process nil)
+
+  (defun bob/biome-flymake--pos (line column)
+    "Return buffer position for 1-based Biome LINE and COLUMN."
+    (save-excursion
+      (goto-char (point-min))
+      (forward-line (1- line))
+      (move-to-column (max 0 (1- column)))
+      (point)))
+
+  (defun bob/biome-flymake--type (severity)
+    "Convert Biome SEVERITY to a Flymake diagnostic type."
+    (pcase severity
+      ("error" :error)
+      ("warning" :warning)
+      (_ :note)))
+
+  (defun bob/biome-flymake (report-fn &rest _args)
+    "Flymake backend for Biome diagnostics."
+    (require 'json)
+    (when (process-live-p bob/biome-flymake-process)
+      (kill-process bob/biome-flymake-process))
+    (if-let* ((root (bob/biome-root))
+              (biome (expand-file-name "node_modules/.bin/biome" root))
+              ((file-executable-p biome))
+              (source (current-buffer))
+              (file (buffer-file-name source)))
+        (let* ((default-directory root)
+               (extension (file-name-extension file t))
+               (temp-file (make-temp-file
+                           (expand-file-name
+                            (format ".flymake-biome-%s-" (file-name-base file))
+                            (file-name-directory file))
+                           nil extension))
+               (stdout (generate-new-buffer " *bob-biome-flymake*"))
+               (stderr (generate-new-buffer " *bob-biome-flymake-stderr*")))
+          (write-region (point-min) (point-max) temp-file nil 'silent)
+          (let ((proc (make-process
+                       :name "bob-biome-flymake"
+                       :buffer stdout
+                       :stderr stderr
+                       :noquery t
+                       :connection-type 'pipe
+                       :command (list biome "check" "--reporter=json" temp-file))))
+            (setq-local bob/biome-flymake-process proc)
+            (set-process-sentinel
+             proc
+             (lambda (process _event)
+               (when (memq (process-status process) '(exit signal))
+                 (unwind-protect
+                     (when (buffer-live-p source)
+                       (with-current-buffer source
+                         (when (eq process bob/biome-flymake-process)
+                           (setq-local bob/biome-flymake-process nil)
+                           (let (diags)
+                             (condition-case nil
+                                 (let* ((json-object-type 'plist)
+                                        (json-array-type 'list)
+                                        (json-false nil)
+                                        (payload (with-current-buffer stdout
+                                                   (goto-char (point-min))
+                                                   (json-read)))
+                                        (items (plist-get payload :diagnostics)))
+                                   (dolist (item items)
+                                     (when-let* ((loc (plist-get item :location))
+                                                 (start (plist-get loc :start))
+                                                 (finish (plist-get loc :end))
+                                                 (line (plist-get start :line))
+                                                 (column (plist-get start :column))
+                                                 (end-line (plist-get finish :line))
+                                                 (end-column (plist-get finish :column)))
+                                       (push (flymake-make-diagnostic
+                                              source
+                                              (bob/biome-flymake--pos line column)
+                                              (bob/biome-flymake--pos end-line end-column)
+                                              (bob/biome-flymake--type
+                                               (plist-get item :severity))
+                                              (list "biome"
+                                                    (plist-get item :category)
+                                                    (plist-get item :message)))
+                                             diags))))
+                               (error nil))
+                             (funcall report-fn (nreverse diags))))))
+                   (when (file-exists-p temp-file)
+                     (delete-file temp-file))
+                   (when (buffer-live-p stdout)
+                     (kill-buffer stdout))
+                   (when (buffer-live-p stderr)
+                     (kill-buffer stderr))))))))
+      (funcall report-fn nil)))
+
   (defun bob/setup-ts-formatter ()
-    "Use biome for formatting if available in the project, otherwise fall back to prettier."
+    "Use Biome for formatting and diagnostics when available."
     (when-let* ((root  (bob/biome-root))
                 (biome (expand-file-name "node_modules/.bin/biome" root))
                 ((file-executable-p biome)))
-      (add-hook 'after-save-hook #'bob/biome-format-on-save nil t)))
+      (add-hook 'after-save-hook #'bob/biome-format-on-save nil t)
+      (add-hook 'flymake-diagnostic-functions #'bob/biome-flymake nil t)))
+
+  (defun bob/ensure-biome-flymake-with-eglot ()
+    "Re-add Biome Flymake backend after Eglot adjusts buffer locals."
+    (when (and (eglot-managed-p)
+               (memq major-mode '(typescript-ts-mode tsx-ts-mode js2-mode js-ts-mode)))
+      (bob/setup-ts-formatter)))
+
+  (add-hook 'eglot-managed-mode-hook #'bob/ensure-biome-flymake-with-eglot)
 
   (dolist (hook '(typescript-ts-mode-hook tsx-ts-mode-hook js2-mode-hook js-ts-mode-hook))
     (add-hook hook #'bob/setup-ts-formatter))
