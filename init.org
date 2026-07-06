@@ -690,21 +690,22 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
          (vibe . ,extensions)
          (tutorial . ,extensions))))
     (mentat-prompt-extra-completion-at-point-functions
-     (list #'bob/prose-word-completion-at-point)
-     (mentat-command-options '((search :model "openai-codex/gpt-5.5"
-                                       :thinking "medium")
-                               (vibe :model "openai-codex/gpt-5.5"
-                                     :thinking "high")
-                               (ask :model "openai-codex/gpt-5.5"
-                                    :thinking "high")
-                               (rewrite :model "openai-codex/gpt-5.4-mini"
-                                        :thinking "medium"))))
-     :bind (("C-c C-;" . mentat-menu))
-     :config
-     (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
+     (list #'bob/prose-word-completion-at-point))
+    (mentat-command-options
+     '((search :model "openai-codex/gpt-5.5"
+               :thinking "medium")
+       (vibe :model "openai-codex/gpt-5.5"
+             :thinking "high")
+       (ask :model "openai-codex/gpt-5.5"
+            :thinking "high")
+       (rewrite :model "openai-codex/gpt-5.4-mini"
+                :thinking "medium")))
+    :bind (("C-c C-;" . mentat-menu))
+    :config
+    (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
                                :host "api.openai.com"
                                :user "bradwell-codex"))
-     (fnm-use))
+    (fnm-use))
 #+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
