@@ -182,23 +182,107 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
 
 ;;; --- Agent-facing Elisp inspection helpers ---
 
+(defvar pi/--named-elisp-scripts (make-hash-table :test 'equal)
+  "Named Elisp snippets kept in the live Emacs server runtime.")
+
+(defun pi/--eval-elisp-code (code)
+  "Evaluate Elisp CODE and return the last form's raw result."
+  (let (form result)
+    (with-temp-buffer
+      (insert code)
+      (goto-char (point-min))
+      (while (progn
+               (skip-chars-forward " \t\n\r")
+               (not (eobp)))
+        (setq form (read (current-buffer)))
+        (setq result (eval form t))))
+    result))
+
+(defun pi/--check-elisp-code (name code)
+  "Byte-compile check named Elisp CODE for NAME and return warning text."
+  (let* ((raw-safe-name (replace-regexp-in-string "[^[:alnum:]_.-]" "-" name))
+         (safe-name (if (> (length raw-safe-name) 48)
+                        (substring raw-safe-name 0 48)
+                      raw-safe-name))
+         (source-file (make-temp-file (concat "pi-named-elisp-" safe-name "-") nil ".el"))
+         (compiled-file (concat source-file "c"))
+         (log-name (generate-new-buffer-name " *pi-named-elisp-check*"))
+         (byte-compile-log-buffer log-name)
+         (byte-compile-dest-file-function (lambda (_source) compiled-file))
+         (byte-compile-error-on-warn nil)
+         (byte-compile-warnings t))
+    (unwind-protect
+        (condition-case err
+            (progn
+              (with-temp-file source-file
+                (insert ";;; pi named elisp check -*- lexical-binding: t; -*-\n")
+                (insert code)
+                (unless (string-suffix-p "\n" code)
+                  (insert "\n")))
+              (unless (byte-compile-file source-file)
+                (user-error "byte-compile-file returned nil"))
+              (let ((log-buffer (get-buffer log-name))
+                    (warning-lines nil))
+                (when (buffer-live-p log-buffer)
+                  (with-current-buffer log-buffer
+                    (dolist (line (split-string (buffer-string) "\n"))
+                      (let ((trimmed-line (string-trim line)))
+                        (unless (or (string-empty-p trimmed-line)
+                                    (string= trimmed-line "")
+                                    (string-prefix-p "Compiling file " trimmed-line)
+                                    (string-prefix-p "Entering directory " trimmed-line)
+                                    (string-prefix-p "Leaving directory " trimmed-line))
+                          (push line warning-lines))))))
+                (string-trim (string-join (nreverse warning-lines) "\n"))))
+          (error
+           (user-error "Named Elisp check failed: %s" (error-message-string err))))
+      (when (file-exists-p source-file)
+        (delete-file source-file))
+      (when (file-exists-p compiled-file)
+        (delete-file compiled-file))
+      (let ((log-buffer (get-buffer log-name)))
+        (when (buffer-live-p log-buffer)
+          (kill-buffer log-buffer))))))
+
 (defun pi/eval-elisp (code)
   "Evaluate Elisp CODE in the running Emacs and return base64 result text."
   (pi/with-tool-safety
     (unless (stringp code)
       (user-error "Invalid Elisp code"))
     (pi/encode-result
-     (prin1-to-string
-      (let (form result)
-        (with-temp-buffer
-          (insert code)
-          (goto-char (point-min))
-          (while (progn
-                   (skip-chars-forward " \t\n\r")
-                   (not (eobp)))
-            (setq form (read (current-buffer)))
-            (setq result (eval form t))))
-        result)))))
+     (prin1-to-string (pi/--eval-elisp-code code)))))
+
+(defun pi/eval-named-elisp (name code)
+  "Define or rerun named Elisp snippet NAME and return base64 result text.
+When CODE is non-empty, store it under NAME before executing it.
+When CODE is empty, rerun the existing snippet stored under NAME."
+  (pi/with-tool-safety
+    (unless (stringp name)
+      (user-error "Invalid named Elisp name"))
+    (unless (stringp code)
+      (user-error "Invalid named Elisp code"))
+    (let* ((trimmed-name (string-trim name))
+           (has-code (not (string-empty-p (string-trim code)))))
+      (when (string-empty-p trimmed-name)
+        (user-error "Named Elisp name cannot be empty"))
+      (let ((check-warnings ""))
+        (when has-code
+          (setq check-warnings (pi/--check-elisp-code trimmed-name code))
+          (puthash trimmed-name code pi/--named-elisp-scripts))
+        (let* ((stored-code (gethash trimmed-name pi/--named-elisp-scripts))
+               (result-text nil))
+          (unless stored-code
+            (user-error "No named Elisp snippet stored as %s" trimmed-name))
+          (setq result-text
+                (format "%s %s%s => %s"
+                        (if has-code "Defined and executed" "Executed")
+                        trimmed-name
+                        (if has-code " (checked)" "")
+                        (prin1-to-string (pi/--eval-elisp-code stored-code))))
+          (pi/encode-result
+           (if (and has-code (not (string-empty-p check-warnings)))
+               (format "%s\n\nElisp check warnings:\n%s" result-text check-warnings)
+             result-text)))))))
 
 (defun pi/eval-elisp-file (path)
   "Load Elisp file PATH in the running Emacs and return base64 result text."
