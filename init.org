@@ -179,14 +179,14 @@
                (bob/drop-buffer
                 (set-last-shell-buffer-as-first
                  (seq-filter
-                  (lambda (b) (or (equal (with-current-buffer b major-mode) 'vterm-mode)
-                             (equal (with-current-buffer b major-mode) 'eshell-mode)
-                             (with-current-buffer b (derived-mode-p 'comint-mode))
-                             (with-current-buffer b (derived-mode-p 'compilation-mode))
-                             (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
-                             (equal (with-current-buffer b major-mode) 'ghostel-mode)
-                             (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
-                             (equal (with-current-buffer b major-mode) 'pgmacs-mode)))
+                  (lambda (b)
+                    (or (equal (with-current-buffer b major-mode) 'eshell-mode)
+                        (with-current-buffer b (derived-mode-p 'comint-mode))
+                        (with-current-buffer b (derived-mode-p 'compilation-mode))
+                        (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
+                        (equal (with-current-buffer b major-mode) 'ghostel-mode)
+                        (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
+                        (equal (with-current-buffer b major-mode) 'pgmacs-mode)))
                   (mapcar (function buffer-name)
                           (buffer-list))))))
               (shell-buffer (consult--read shell-buffers
@@ -3650,8 +3650,6 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
     ("C-c s j" . bob/jump-to-shell)
     ("C-x p s" . ghostel-project)
     ("C-x p S" . bob/ghostel-top-project))
-
-  (use-package vterm)
 
   (use-package xterm-color
     ;; :demand t
