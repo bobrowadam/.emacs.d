@@ -684,7 +684,10 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                                  "web-search"
                                  "session-scripts.ts"
                                  "mempalace.ts"
-                                 "resolve-symlinks.ts"))))
+                                 "resolve-symlinks.ts")))
+           (subagents (expand-file-name "~/.pi/agent-private/npm/node_modules/@gotgenes/pi-subagents/src/index.ts"))
+           (observational-memory "git:github.com/elpapi42/pi-observational-memory"))
+       (setq extensions (append extensions (list subagents observational-memory)))
        `((ask . ,extensions)
          (search . ,extensions)
          (vibe . ,extensions)
