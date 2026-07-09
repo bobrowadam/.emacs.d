@@ -686,7 +686,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                                  "mempalace.ts"
                                  "resolve-symlinks.ts")))
            (subagents (expand-file-name "~/.pi/agent-private/npm/node_modules/@gotgenes/pi-subagents/src/index.ts"))
-           (observational-memory "git:github.com/elpapi42/pi-observational-memory"))
+           (observational-memory (expand-file-name "~/.pi/agent/git/github.com/elpapi42/pi-observational-memory")))
        (setq extensions (append extensions (list subagents observational-memory)))
        `((ask . ,extensions)
          (search . ,extensions)
@@ -2323,8 +2323,10 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
     (defun bob/embark-forget-project (dir)
       "Forget DIR as a known project."
       (interactive "DForget project: ")
-      (project-forget-project (file-name-as-directory (expand-file-name dir))))
-    (keymap-set embark-file-map "P" #'bob/embark-forget-project))
+      (project-forget-project
+       (abbreviate-file-name (file-name-as-directory (expand-file-name dir)))))
+    (keymap-set embark-file-map "P" #'bob/embark-forget-project)
+    (add-to-list 'embark-keymap-alist '(project-file . embark-file-map)))
 
 
   (use-package embark-consult
@@ -3107,7 +3109,6 @@ and `:test-name'."
 **** FNM - node version manager (like nvm replacement)
 #+begin_src elisp
   (use-package fnm
-    :demand t
     :ensure
     (:fetcher github
               :repo "bobrowadam/fnm.el"
