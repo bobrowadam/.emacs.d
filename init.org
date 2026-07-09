@@ -676,15 +676,19 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :commands (mentat-menu)
     :custom
     (mentat-pi-log-level 'summary)
+    (mentat-pi-command-bindings
+     '(("M-S-<tab>" . "/cycle-mode")))
     (mentat-extension-paths
      (let ((extensions (mapcar (lambda (file)
                                  (expand-file-name file "~/.pi/agent/extensions/src/"))
                                '("check-elisp.ts"
+                                 "codex/index.ts"
                                  "emacs"
                                  "web-search"
                                  "session-scripts.ts"
                                  "mempalace.ts"
-                                 "resolve-symlinks.ts")))
+                                 "resolve-symlinks.ts"
+                                 "solveit.ts")))
            (subagents (expand-file-name "~/.pi/agent-private/npm/node_modules/@gotgenes/pi-subagents/src/index.ts"))
            (observational-memory (expand-file-name "~/.pi/agent/git/github.com/elpapi42/pi-observational-memory")))
        (setq extensions (append extensions (list subagents observational-memory)))
