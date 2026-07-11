@@ -443,6 +443,56 @@ Does not expose the variable's value."
               (symbol . ,symbol)
               (message . ,(format "Symbol '%s' not found in Elisp Info documentation" symbol)))))))))
 
+(defconst pi/--read-buffer-max-lines 500
+  "Maximum number of lines pi/read-buffer-context may return.")
+
+(defun pi/read-buffer-context (buffer-name &optional start-line max-lines)
+  "Return base64 JSON for a bounded, read-only view of BUFFER-NAME.
+
+START-LINE defaults to 1.  MAX-LINES defaults to 200 and cannot exceed
+`pi/--read-buffer-max-lines'.  Does not select, display, or move point in
+BUFFER-NAME."
+  (pi/with-tool-safety
+    (unless (and (stringp buffer-name) (not (string-empty-p buffer-name)))
+      (user-error "BUFFER-NAME must be a non-empty string"))
+    (let ((start-line (or start-line 1))
+          (max-lines (or max-lines 200)))
+      (unless (and (integerp start-line) (> start-line 0))
+        (user-error "START-LINE must be a positive integer, got %S" start-line))
+      (unless (and (integerp max-lines)
+                   (> max-lines 0)
+                   (<= max-lines pi/--read-buffer-max-lines))
+        (user-error "MAX-LINES must be an integer from 1 to %d, got %S"
+                    pi/--read-buffer-max-lines max-lines))
+      (let ((buffer (get-buffer buffer-name)))
+        (unless (buffer-live-p buffer)
+          (user-error "No live Emacs buffer named %S" buffer-name))
+        (with-current-buffer buffer
+          (let ((total-lines (line-number-at-pos (point-max))))
+            (when (> start-line total-lines)
+              (user-error "START-LINE %d is beyond buffer %S (%d total lines)"
+                          start-line buffer-name total-lines))
+            (let* ((returned-end-line
+                    (min total-lines (+ start-line max-lines -1)))
+                   (returned-line-count
+                    (1+ (- returned-end-line start-line)))
+                   (text
+                    (save-excursion
+                      (goto-char (point-min))
+                      (forward-line (1- start-line))
+                      (let ((start (point)))
+                        (forward-line returned-line-count)
+                        (buffer-substring-no-properties start (point))))))
+              (pi/encode-result
+               (json-encode
+                `((bufferName . ,(buffer-name buffer))
+                  (file . ,(buffer-file-name buffer))
+                  (mode . ,(symbol-name major-mode))
+                  (totalLines . ,total-lines)
+                  (returnedStartLine . ,start-line)
+                  (returnedEndLine . ,returned-end-line)
+                  (text . ,text)))))))))))
+
 (defun pi/get-context ()
   "Return base64-encoded context for the current buffer."
   (with-current-buffer (window-buffer (selected-window))
