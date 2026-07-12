@@ -15,6 +15,7 @@
 (require 'info-look)
 
 (declare-function magit-commit-create "magit-commit" (&optional args))
+(declare-function magit-git-dir "magit-git" (&optional path))
 (declare-function magit-process-error-summary "magit-process" (process-buf section))
 (declare-function magit-refresh-all "magit-mode" ())
 
@@ -31,9 +32,54 @@
   "Fail instead of blocking Emacs on an interactive prompt."
   (user-error "Pi Emacs tool blocked an interactive prompt"))
 
+(defvar pi/--tool-elisp-source nil
+  "Elisp source currently being evaluated by a Pi tool, if any.")
+
+(defun pi/--elisp-structure-diagnostic (source)
+  "Return an unmatched-paren diagnostic for Elisp SOURCE, or nil."
+  (when (stringp source)
+    (with-temp-buffer
+      (insert source)
+      (set-syntax-table emacs-lisp-mode-syntax-table)
+      (condition-case nil
+          (progn
+            (check-parens)
+            nil)
+        ((user-error scan-error error)
+         (let* ((error-line (line-number-at-pos))
+                (context-start (save-excursion
+                                 (forward-line -3)
+                                 (line-beginning-position)))
+                (context-end (save-excursion
+                               (forward-line 4)
+                               (point)))
+                context-lines)
+           (save-excursion
+             (goto-char context-start)
+             (while (< (point) context-end)
+               (let ((line-number (line-number-at-pos))
+                     (text (buffer-substring-no-properties
+                            (line-beginning-position) (line-end-position))))
+                 (push (format "%s %4d: %s"
+                               (if (= line-number error-line) ">>>" "   ")
+                               line-number text)
+                       context-lines))
+               (forward-line 1)))
+           (format "Unbalanced expression near line %d:\n%s"
+                   error-line
+                   (string-join (nreverse context-lines) "\n"))))))))
+
 (defun pi/--format-tool-error (err backtrace messages)
   "Format ERR with BACKTRACE and captured MESSAGES."
-  (let ((sections (list (format "Error: %s" (error-message-string err)))))
+  (let ((sections (list (format "Error: %s" (error-message-string err))))
+        (structure-diagnostic
+         (pi/--elisp-structure-diagnostic pi/--tool-elisp-source)))
+    (when structure-diagnostic
+      (setq sections
+            (append sections
+                    (list (concat "Elisp structure diagnostic:\n"
+                                  structure-diagnostic
+                                  "\nUse this location to construct a minimal patch.")))))
     (when messages
       (setq sections
             (append sections
@@ -51,6 +97,7 @@
          (debug-on-quit nil)
          (pi/--captured-backtrace nil)
          (pi/--tool-messages nil)
+         (pi/--tool-elisp-source nil)
          (pi/--original-signal (symbol-function 'signal))
          (pi/--original-message (symbol-function 'message))
          (pi/--original-display-warning (symbol-function 'display-warning)))
@@ -185,6 +232,32 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
 (defvar pi/--named-elisp-scripts (make-hash-table :test 'equal)
   "Named Elisp snippets kept in the live Emacs server runtime.")
 
+(defconst pi/--named-elisp-draft-suffix "@draft"
+  "Suffix that identifies a named Elisp draft.")
+
+(defun pi/--named-elisp-draft-name (name)
+  "Return the draft name associated with named snippet NAME."
+  (if (string-suffix-p pi/--named-elisp-draft-suffix name)
+      name
+    (concat name pi/--named-elisp-draft-suffix)))
+
+(defun pi/--named-elisp-live-name (name)
+  "Return the live snippet name associated with NAME or its draft."
+  (if (string-suffix-p pi/--named-elisp-draft-suffix name)
+      (substring name 0 (- (length pi/--named-elisp-draft-suffix)))
+    name))
+
+(defun pi/--save-named-elisp-draft-and-signal (name code error)
+  "Save rejected CODE under NAME's draft and signal ERROR with retry guidance."
+  (let ((draft-name (pi/--named-elisp-draft-name name)))
+    (puthash draft-name code pi/--named-elisp-scripts)
+    (user-error
+     (concat "Named Elisp was rejected: " (error-message-string error)
+             "\n\nDraft saved as " draft-name
+             ". Continue by calling emacs_apply_named_elisp_patch with name "
+             draft-name
+             " and a unified diff against that draft; do not rewrite the full snippet."))))
+
 (defun pi/--eval-elisp-code (code)
   "Evaluate Elisp CODE and return the last form's raw result."
   (let (form result)
@@ -249,46 +322,181 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
   (pi/with-tool-safety
     (unless (stringp code)
       (user-error "Invalid Elisp code"))
+    (setq pi/--tool-elisp-source code)
     (pi/encode-result
      (prin1-to-string (pi/--eval-elisp-code code)))))
 
 (defun pi/eval-named-elisp (name code)
   "Define or rerun named Elisp snippet NAME and return base64 result text.
-When CODE is non-empty, store it under NAME before executing it.
-When CODE is empty, rerun the existing snippet stored under NAME."
+Rejected code is retained as NAME@draft for patch-based correction."
   (pi/with-tool-safety
     (unless (stringp name)
       (user-error "Invalid named Elisp name"))
     (unless (stringp code)
       (user-error "Invalid named Elisp code"))
     (let* ((trimmed-name (string-trim name))
-           (has-code (not (string-empty-p (string-trim code)))))
+           (has-code (not (string-empty-p (string-trim code))))
+           (live-name (pi/--named-elisp-live-name trimmed-name)))
       (when (string-empty-p trimmed-name)
         (user-error "Named Elisp name cannot be empty"))
-      (let ((check-warnings ""))
-        (when has-code
-          (setq check-warnings (pi/--check-elisp-code trimmed-name code))
-          (puthash trimmed-name code pi/--named-elisp-scripts))
-        (let* ((stored-code (gethash trimmed-name pi/--named-elisp-scripts))
-               (result-text nil))
+      (setq pi/--tool-elisp-source
+            (if has-code code (gethash trimmed-name pi/--named-elisp-scripts)))
+      (if has-code
+          (condition-case err
+              (let* ((check-warnings (pi/--check-elisp-code live-name code))
+                     (result (pi/--eval-elisp-code code)))
+                (puthash live-name code pi/--named-elisp-scripts)
+                (remhash (pi/--named-elisp-draft-name trimmed-name)
+                         pi/--named-elisp-scripts)
+                (pi/encode-result
+                 (format "Defined and executed %s (checked) => %s%s"
+                         live-name
+                         (prin1-to-string result)
+                         (if (string-empty-p check-warnings)
+                             ""
+                           (format "\n\nElisp check warnings:\n%s" check-warnings)))))
+            (error
+             (pi/--save-named-elisp-draft-and-signal trimmed-name code err)))
+        (let ((stored-code (gethash trimmed-name pi/--named-elisp-scripts)))
           (unless stored-code
             (user-error "No named Elisp snippet stored as %s" trimmed-name))
-          (setq result-text
-                (format "%s %s%s => %s"
-                        (if has-code "Defined and executed" "Executed")
-                        trimmed-name
-                        (if has-code " (checked)" "")
-                        (prin1-to-string (pi/--eval-elisp-code stored-code))))
           (pi/encode-result
-           (if (and has-code (not (string-empty-p check-warnings)))
-               (format "%s\n\nElisp check warnings:\n%s" result-text check-warnings)
-             result-text)))))))
+           (format "Executed %s => %s"
+                   trimmed-name
+                   (prin1-to-string (pi/--eval-elisp-code stored-code)))))))))
+
+(defun pi/list-named-elisp ()
+  "Return base64 JSON for all stored named Elisp snippets."
+  (pi/with-tool-safety
+    (let (snippets)
+      (maphash
+       (lambda (name code)
+         (push `((name . ,name) (code . ,code)) snippets))
+       pi/--named-elisp-scripts)
+      (pi/encode-result
+       (json-encode
+        (sort snippets
+              (lambda (left right)
+                (string< (alist-get 'name left)
+                         (alist-get 'name right)))))))))
+
+(defun pi/--apply-unified-diff (source patch)
+  "Apply unified PATCH to SOURCE and return the patched text.
+Only standard line-based hunks are supported; malformed or mismatched
+patches signal an error without modifying the stored snippet."
+  (unless (stringp patch)
+    (user-error "Named Elisp patch must be a string"))
+  (let* ((source-ends-in-newline (string-suffix-p "\n" source))
+         (source-lines (if (string-empty-p source)
+                           nil
+                         (split-string source "\n" nil)))
+         (patch-lines (split-string patch "\n" t))
+         (source-index 0)
+         (hunk-count 0)
+         result)
+    (when source-ends-in-newline
+      (setq source-lines (butlast source-lines)))
+    (while patch-lines
+      (let ((line (pop patch-lines)))
+        (cond
+         ((or (string-prefix-p "--- " line)
+              (string-prefix-p "+++ " line)))
+         ((string-match
+           "\\`@@ -\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? [+]\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? @@.*\\'"
+           line)
+          (setq hunk-count (1+ hunk-count))
+          (let* ((old-start (string-to-number (match-string 1 line)))
+                 (old-total (string-to-number (or (match-string 2 line) "1")))
+                 (new-total (string-to-number (or (match-string 4 line) "1")))
+                 (target-index (if (= old-start 0) 0 (1- old-start)))
+                 (old-seen 0)
+                 (new-seen 0))
+            (when (or (< target-index source-index)
+                      (> target-index (length source-lines)))
+              (user-error "Named Elisp patch hunk is out of order"))
+            (while (< source-index target-index)
+              (push (nth source-index source-lines) result)
+              (setq source-index (1+ source-index)))
+            (while (and patch-lines
+                        (not (string-prefix-p "@@ " (car patch-lines))))
+              (let ((hunk-line (pop patch-lines)))
+                (when (or (string-empty-p hunk-line)
+                          (string-prefix-p "\\" hunk-line))
+                  (user-error "Named Elisp patch has unsupported no-newline marker"))
+                (let ((kind (substring hunk-line 0 1))
+                      (text (substring hunk-line 1)))
+                  (pcase kind
+                    (" "
+                     (unless (and (< source-index (length source-lines))
+                                  (string= (nth source-index source-lines) text))
+                       (user-error "Named Elisp patch context does not match"))
+                     (push text result)
+                     (setq source-index (1+ source-index)
+                           old-seen (1+ old-seen)
+                           new-seen (1+ new-seen)))
+                    ("-"
+                     (unless (and (< source-index (length source-lines))
+                                  (string= (nth source-index source-lines) text))
+                       (user-error "Named Elisp patch deletion does not match"))
+                     (setq source-index (1+ source-index)
+                           old-seen (1+ old-seen)))
+                    ("+"
+                     (push text result)
+                     (setq new-seen (1+ new-seen)))
+                    (_ (user-error "Named Elisp patch has invalid hunk line"))))))
+            (unless (and (= old-seen old-total) (= new-seen new-total))
+              (user-error "Named Elisp patch hunk line counts do not match"))))
+         (t (user-error "Named Elisp patch must use unified diff hunks")))))
+    (when (= hunk-count 0)
+      (user-error "Named Elisp patch has no hunks"))
+    (while (< source-index (length source-lines))
+      (push (nth source-index source-lines) result)
+      (setq source-index (1+ source-index)))
+    (let ((patched (string-join (nreverse result) "\n")))
+      (if source-ends-in-newline
+          (concat patched "\n")
+        patched))))
+
+(defun pi/apply-named-elisp-patch (name patch)
+  "Patch named Elisp NAME with unified PATCH and promote valid drafts."
+  (pi/with-tool-safety
+    (unless (stringp name)
+      (user-error "Invalid named Elisp name"))
+    (let* ((trimmed-name (string-trim name))
+           (live-name (pi/--named-elisp-live-name trimmed-name))
+           (stored-code (gethash trimmed-name pi/--named-elisp-scripts)))
+      (when (string-empty-p trimmed-name)
+        (user-error "Named Elisp name cannot be empty"))
+      (unless stored-code
+        (user-error "No named Elisp snippet stored as %s" trimmed-name))
+      (let ((patched-code (pi/--apply-unified-diff stored-code patch)))
+        (setq pi/--tool-elisp-source patched-code)
+        (condition-case err
+            (let* ((check-warnings (pi/--check-elisp-code live-name patched-code))
+                   (result (pi/--eval-elisp-code patched-code)))
+              (puthash live-name patched-code pi/--named-elisp-scripts)
+              (remhash (pi/--named-elisp-draft-name trimmed-name)
+                       pi/--named-elisp-scripts)
+              (pi/encode-result
+               (format "Patched and executed %s (checked) => %s%s"
+                       live-name
+                       (prin1-to-string result)
+                       (if (string-empty-p check-warnings)
+                           ""
+                         (format "\n\nElisp check warnings:\n%s" check-warnings)))))
+          (error
+           (pi/--save-named-elisp-draft-and-signal
+            trimmed-name patched-code err)))))))
 
 (defun pi/eval-elisp-file (path)
   "Load Elisp file PATH in the running Emacs and return base64 result text."
   (pi/with-tool-safety
     (unless (and (stringp path) (file-readable-p path))
       (user-error "Elisp file is not readable: %s" path))
+    (setq pi/--tool-elisp-source
+          (with-temp-buffer
+            (insert-file-contents path)
+            (buffer-string)))
     (pi/encode-result
      (format "Loaded %s => %S" path (load-file path)))))
 
@@ -874,6 +1082,9 @@ Optional CWD overrides the project root for socket discovery."
 (defconst pi/magit-commit-running-threshold-seconds 120
   "Seconds before Pi reports that a Magit commit is still running.")
 
+(defconst pi/magit-commit-editor-wait-seconds 25
+  "Seconds a commit tool call waits for Magit to open the editor or fail.")
+
 (when (and (fboundp 'pi/magit--commit-process-finish-advice)
            (advice-member-p #'pi/magit--commit-process-finish-advice
                             'magit-process-finish))
@@ -1024,8 +1235,8 @@ Optional CWD overrides the project root for socket discovery."
                        :submit t)
                  callback-cwd)))))
 
-(defun pi/magit--notify-commit-failure (process root callback-cwd event)
-  "Notify Pi if Magit commit PROCESS failed in ROOT.
+(defun pi/magit--commit-failure-report (process root event)
+  "Return a detailed failure report for Magit commit PROCESS in ROOT.
 EVENT is the process sentinel event string."
   (when (and (processp process)
              (memq (process-status process) '(exit signal))
@@ -1037,7 +1248,7 @@ EVENT is the process sentinel event string."
            (tail (plist-get report :tail))
            (hints (plist-get report :hints))
            (status-diagnostic (pi/magit--run-git-diagnostic root "status" "--short"))
-           (dry-run-diagnostic (pi/magit--run-git-diagnostic root "commit" "--dry-run" "--verbose"))
+           (dry-run-diagnostic (pi/magit--run-git-diagnostic root "commit" "--dry-run"))
            (sections
             (delq nil
                   (list
@@ -1058,11 +1269,15 @@ EVENT is the process sentinel event string."
                            (pi/magit--format-git-diagnostic status-diagnostic 80)
                            "\n\n"
                            (pi/magit--format-git-diagnostic dry-run-diagnostic 120))))))
+      (string-join sections "\n\n"))))
+
+(defun pi/magit--notify-commit-failure (process root callback-cwd event)
+  "Notify Pi if Magit commit PROCESS failed in ROOT.
+EVENT is the process sentinel event string."
+  (when-let* ((report (pi/magit--commit-failure-report process root event)))
+    (unless (process-get process 'pi-magit-awaiting-tool-result)
       (ignore-errors
-        (pi/send (list :type "input"
-                       :text (string-join sections "\n\n")
-                       :submit t)
-                 callback-cwd)))))
+        (pi/send (list :type "input" :text report :submit t) callback-cwd)))))
 
 (defun pi/magit--refresh-after-commit (process root)
   "Refresh Magit buffers for ROOT after successful commit PROCESS."
@@ -1072,6 +1287,28 @@ EVENT is the process sentinel event string."
     (let ((default-directory (file-name-as-directory (expand-file-name root))))
       (ignore-errors
         (magit-refresh-all)))))
+
+(defun pi/magit--commit-editor-open-p (root)
+  "Return non-nil when ROOT's Magit commit message buffer is visible."
+  (let ((default-directory (file-name-as-directory (expand-file-name root))))
+    (let ((commit-file (expand-file-name (magit-git-dir "COMMIT_EDITMSG"))))
+      (seq-some (lambda (buffer)
+                  (equal (buffer-file-name buffer) commit-file))
+                (buffer-list)))))
+
+(defun pi/magit--wait-for-commit-start (process root)
+  "Wait for PROCESS to open ROOT's editor, fail, or remain pending."
+  (let ((deadline (+ (float-time) pi/magit-commit-editor-wait-seconds)))
+    (while (and (process-live-p process)
+                (not (pi/magit--commit-editor-open-p root))
+                (< (float-time) deadline))
+      (accept-process-output process 0.1))
+    (cond
+     ((pi/magit--commit-editor-open-p root) "opened")
+     ((process-live-p process) "pending")
+     (t (concat "failed\n"
+                (or (pi/magit--commit-failure-report process root "")
+                    "Magit commit exited before opening its editor."))))))
 
 (defun pi/magit--watch-commit-process (process root callback-cwd)
   "Attach Pi status reporting to Magit commit PROCESS."
@@ -1110,13 +1347,19 @@ Optional MESSAGE-BASE64 is decoded and passed to git as the initial message."
     (require 'magit)
     (require 'magit-commit)
     (require 'magit-process)
-    (pi/magit--watch-commit-process
-     (magit-commit-create
-      (when message
-        (list "--edit" (concat "--message=" message))))
-     pi-commit-root
-     callback-cwd)
-    (delete-other-windows)))
+    (let ((process
+           (magit-commit-create
+            (when message
+              (list "--edit" (concat "--message=" message))))))
+      (pi/magit--watch-commit-process process pi-commit-root callback-cwd)
+      (if (not (processp process))
+          (user-error "Magit did not start a commit process")
+        (process-put process 'pi-magit-awaiting-tool-result t)
+        (unwind-protect
+            (pi/encode-result (pi/magit--wait-for-commit-start
+                               process pi-commit-root))
+          (process-put process 'pi-magit-awaiting-tool-result nil)))
+      (delete-other-windows))))
 
 (defun pi/--language-from-mode ()
   "Return a short language tag for the current buffer's major mode, or nil.
