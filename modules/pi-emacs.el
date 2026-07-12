@@ -291,7 +291,15 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
                 (insert code)
                 (unless (string-suffix-p "\n" code)
                   (insert "\n")))
-              (unless (byte-compile-file source-file)
+              (unless (let ((original-display-buffer (symbol-function 'display-buffer)))
+                        (cl-letf (((symbol-function 'display-buffer)
+                                   (lambda (buffer-or-name &optional action frame)
+                                     (let ((buffer (get-buffer buffer-or-name)))
+                                       (unless (and buffer
+                                                    (string= (buffer-name buffer) log-name))
+                                         (funcall original-display-buffer
+                                                  buffer-or-name action frame))))))
+                          (byte-compile-file source-file)))
                 (user-error "byte-compile-file returned nil"))
               (let ((log-buffer (get-buffer log-name))
                     (warning-lines nil))
