@@ -678,6 +678,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (mentat-pi-log-level 'summary)
     (mentat-pi-command-bindings
      '(("M-S-<tab>" . "/cycle-mode")))
+    (mentat-status-footer-status-faces
+     '(("solveit-mode" . (:foreground "#eed49f" :weight bold))
+       ("mempalace" . (:foreground "#c6a0f6" :weight bold))))
     (mentat-extension-paths
      (let ((extensions (mapcar (lambda (file)
                                  (expand-file-name file "~/.pi/agent/extensions/src/"))
@@ -687,6 +690,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                                  "web-search"
                                  "session-scripts.ts"
                                  "mempalace.ts"
+                                 "profile-indicator.ts"
                                  "resolve-symlinks.ts"
                                  "solveit.ts")))
            (subagents (expand-file-name "~/.pi/agent-private/npm/node_modules/@gotgenes/pi-subagents/src/index.ts"))
@@ -699,13 +703,13 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (mentat-prompt-extra-completion-at-point-functions
      (list #'bob/prose-word-completion-at-point))
     (mentat-command-options
-     '((search :model "openai-codex/gpt-5.5"
+     '((search :model "openai-codex/gpt-5.6-sol"
                :thinking "medium")
-       (vibe :model "openai-codex/gpt-5.5"
+       (vibe :model "openai-codex/gpt-5.6-terra"
              :thinking "high")
-       (ask :model "openai-codex/gpt-5.5"
+       (ask :model "openai-codex/gpt-5.6-terra"
             :thinking "high")
-       (rewrite :model "openai-codex/gpt-5.4-mini"
+       (rewrite :model "openai-codex/gpt-5.6-luna"
                 :thinking "medium")))
     :bind (("C-c C-;" . mentat-menu))
     :config
