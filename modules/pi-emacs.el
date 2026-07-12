@@ -15,7 +15,6 @@
 (require 'info-look)
 
 (declare-function magit-commit-create "magit-commit" (&optional args))
-(declare-function magit-git-dir "magit-git" (&optional path))
 (declare-function magit-process-error-summary "magit-process" (process-buf section))
 (declare-function magit-refresh-all "magit-mode" ())
 
@@ -1082,9 +1081,6 @@ Optional CWD overrides the project root for socket discovery."
 (defconst pi/magit-commit-running-threshold-seconds 120
   "Seconds before Pi reports that a Magit commit is still running.")
 
-(defconst pi/magit-commit-editor-wait-seconds 25
-  "Seconds a commit tool call waits for Magit to open the editor or fail.")
-
 (when (and (fboundp 'pi/magit--commit-process-finish-advice)
            (advice-member-p #'pi/magit--commit-process-finish-advice
                             'magit-process-finish))
@@ -1275,9 +1271,8 @@ EVENT is the process sentinel event string."
   "Notify Pi if Magit commit PROCESS failed in ROOT.
 EVENT is the process sentinel event string."
   (when-let* ((report (pi/magit--commit-failure-report process root event)))
-    (unless (process-get process 'pi-magit-awaiting-tool-result)
-      (ignore-errors
-        (pi/send (list :type "input" :text report :submit t) callback-cwd)))))
+    (ignore-errors
+      (pi/send (list :type "input" :text report :submit t) callback-cwd))))
 
 (defun pi/magit--refresh-after-commit (process root)
   "Refresh Magit buffers for ROOT after successful commit PROCESS."
@@ -1287,28 +1282,6 @@ EVENT is the process sentinel event string."
     (let ((default-directory (file-name-as-directory (expand-file-name root))))
       (ignore-errors
         (magit-refresh-all)))))
-
-(defun pi/magit--commit-editor-open-p (root)
-  "Return non-nil when ROOT's Magit commit message buffer is visible."
-  (let ((default-directory (file-name-as-directory (expand-file-name root))))
-    (let ((commit-file (expand-file-name (magit-git-dir "COMMIT_EDITMSG"))))
-      (seq-some (lambda (buffer)
-                  (equal (buffer-file-name buffer) commit-file))
-                (buffer-list)))))
-
-(defun pi/magit--wait-for-commit-start (process root)
-  "Wait for PROCESS to open ROOT's editor, fail, or remain pending."
-  (let ((deadline (+ (float-time) pi/magit-commit-editor-wait-seconds)))
-    (while (and (process-live-p process)
-                (not (pi/magit--commit-editor-open-p root))
-                (< (float-time) deadline))
-      (accept-process-output process 0.1))
-    (cond
-     ((pi/magit--commit-editor-open-p root) "opened")
-     ((process-live-p process) "pending")
-     (t (concat "failed\n"
-                (or (pi/magit--commit-failure-report process root "")
-                    "Magit commit exited before opening its editor."))))))
 
 (defun pi/magit--watch-commit-process (process root callback-cwd)
   "Attach Pi status reporting to Magit commit PROCESS."
@@ -1347,19 +1320,19 @@ Optional MESSAGE-BASE64 is decoded and passed to git as the initial message."
     (require 'magit)
     (require 'magit-commit)
     (require 'magit-process)
-    (let ((process
-           (magit-commit-create
-            (when message
-              (list "--edit" (concat "--message=" message))))))
-      (pi/magit--watch-commit-process process pi-commit-root callback-cwd)
-      (if (not (processp process))
-          (user-error "Magit did not start a commit process")
-        (process-put process 'pi-magit-awaiting-tool-result t)
-        (unwind-protect
-            (pi/encode-result (pi/magit--wait-for-commit-start
-                               process pi-commit-root))
-          (process-put process 'pi-magit-awaiting-tool-result nil)))
-      (delete-other-windows))))
+    (if (zerop (process-file "git" nil nil nil "diff" "--cached" "--quiet"))
+        (pi/encode-result
+         (format "failed\nNo staged changes in %s. Stage the intended files before committing."
+                 pi-commit-root))
+      (let ((process
+             (magit-commit-create
+              (when message
+                (list "--edit" (concat "--message=" message))))))
+        (if (not (processp process))
+            (pi/encode-result "failed\nMagit did not start a commit process.")
+          (pi/magit--watch-commit-process process pi-commit-root callback-cwd)
+          (delete-other-windows)
+          (pi/encode-result "started"))))))
 
 (defun pi/--language-from-mode ()
   "Return a short language tag for the current buffer's major mode, or nil.
