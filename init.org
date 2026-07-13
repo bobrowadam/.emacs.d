@@ -682,24 +682,24 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
      '(("solveit-mode" . (:foreground "#eed49f" :weight bold))
        ("mempalace" . (:foreground "#c6a0f6" :weight bold))))
     (mentat-extension-paths
-     (let ((extensions (mapcar (lambda (file)
-                                 (expand-file-name file "~/.pi/agent/extensions/src/"))
-                               '("check-elisp.ts"
-                                 "codex/index.ts"
-                                 "emacs"
-                                 "web-search"
-                                 "session-scripts.ts"
-                                 "mempalace.ts"
-                                 "profile-indicator.ts"
-                                 "resolve-symlinks.ts"
-                                 "solveit.ts")))
-           (subagents (expand-file-name "~/.pi/agent-private/npm/node_modules/@gotgenes/pi-subagents/src/index.ts"))
-           (observational-memory (expand-file-name "~/.pi/agent/git/github.com/elpapi42/pi-observational-memory")))
-       (setq extensions (append extensions (list subagents observational-memory)))
-       `((ask . ,extensions)
-         (search . ,extensions)
-         (vibe . ,extensions)
-         (tutorial . ,extensions))))
+     `((search
+        ,@(mapcar (lambda (file)
+                    (expand-file-name file "~/.pi/agent/extensions/src/"))
+                  '("emacs"
+                    "web-search"
+                    "mempalace.ts"
+                    "resolve-symlinks.ts"))
+        "npm:pi-agent-browser-native")))
+    (mentat-operation-tools
+     '((search
+        "read" "grep" "find" "ls"
+        "emacs_get_snapshot" "emacs_get_context" "emacs_read_buffer"
+        "emacs_capture_screenshot" "emacs_elisp_describe_function"
+        "emacs_elisp_get_function_definition" "emacs_elisp_describe_variable"
+        "emacs_elisp_info_lookup_symbol" "emacs_get_diagnostics"
+        "exa_search" "jina_reader" "agent_browser"
+        "mempalace_search" "mempalace_wake_up" "mempalace_status"
+        "mempalace_diary_read")))
     (mentat-prompt-extra-completion-at-point-functions
      (list #'bob/prose-word-completion-at-point))
     (mentat-command-options
@@ -2751,10 +2751,10 @@ LSP/DAP servers manager
 
 ** Snippets
 #+begin_src elisp
-  (use-package yasnippet-snippets
-    :defer t)
+  (use-package yasnippet-snippets)
   (use-package yasnippet
     :commands (yas-expand yas-global-mode yas-minor-mode-on)
+    :defer 5
     :custom
     (yas-wrap-around-region t)
     (yas-also-auto-indent-first-line t)
