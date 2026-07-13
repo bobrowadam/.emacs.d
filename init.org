@@ -1802,6 +1802,12 @@ just org files in a directory + ripgrep.
     (setq verb-post-response-hook 'parse-verb-response-to-alist)
     (define-key org-mode-map (kbd "C-c C-r") verb-command-map))
 #+end_src
+* AWS
+#+begin_src elisp
+  (use-package bob-aws
+    :ensure nil
+    :demand t)
+#+end_src
 * Git
 ** Ghub
 #+begin_src elisp
