@@ -2104,6 +2104,12 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
                pr-review-show-file-diff
                pr-review-set-base-branch
                pr-review-clear))
+  (use-package generic-review
+    :ensure nil
+    :commands (generic-review-mode
+               generic-review-start
+               generic-review-add-comment
+               generic-review-open))
   (use-package github-review)
   (use-package code-review
     :demand t
