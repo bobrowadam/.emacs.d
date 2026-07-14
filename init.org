@@ -709,6 +709,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
              :thinking "high")
        (ask :model "openai-codex/gpt-5.6-terra"
             :thinking "high")
+       (name :model "openai/gpt-5.6-luna"
+             :thinking "medium")
        (rewrite :model "openai-codex/gpt-5.6-luna"
                 :thinking "medium")))
     :bind (("C-c C-;" . mentat-menu))
