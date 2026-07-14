@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Pi auto load
+# key: pi-load
+# --
+;;; pi-load-after-edit: t
