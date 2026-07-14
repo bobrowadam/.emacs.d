@@ -3332,7 +3332,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
                (message "Loaded %s" theme)))
            "Cycle through registered themes.")))
 
-    (bob/register-and-load-themes kusanagi kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
+    (bob/register-and-load-themes pi-dark kusanagi kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
     :bind ("C-c t" . bob/cycle-themes))
 #+end_src
 *** bob-kanagawa-wave
@@ -3389,7 +3389,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
   (use-package kanagawa-themes :demand t)
 #+end_src
-*** modus-flexoki
 *** kusanagi-theme
 #+begin_src elisp
   (use-package kusanagi-theme
@@ -3398,6 +3397,12 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
 (use-package modus-flexoki
   :ensure (:repo "dpassen/modus-flexoki" :fetcher github))
+#+end_src
+*** Pi Theme
+#+begin_src elisp
+  ;; Load after the theme packages, some of which enable themselves.
+  (mapc #'disable-theme custom-enabled-themes)
+  (load-theme 'pi-dark t)
 #+end_src
 ** Spacious padding
 #+begin_src elisp

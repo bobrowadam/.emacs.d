@@ -3,7 +3,7 @@
 (setq package-enable-at-startup nil)
 
 ;; Match theme color early on (smoother transition).
-(add-to-list 'default-frame-alist '(background-color . "#212121"))
+(add-to-list 'default-frame-alist '(background-color . "#1f1f28"))
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
 
