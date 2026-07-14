@@ -1,4 +1,5 @@
 ;;; pi-emacs.el --- Emacs helpers for Pi -*- lexical-binding: t; -*-
+;;; pi-load-after-edit: t
 
 ;;; Commentary:
 ;; Elisp helpers used by the pi-coding-agent Emacs extension.
