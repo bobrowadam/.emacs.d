@@ -176,8 +176,9 @@ When CREATE is non-nil, create a new session if none is live."
 
 ;;;###autoload
 (defun generic-review-start ()
-  "Create or select the current project's Org review session."
+  "Enable review capture and select the current project's Org session."
   (interactive)
+  (generic-review-mode 1)
   (pop-to-buffer (generic-review--session-buffer t)))
 
 ;;;###autoload

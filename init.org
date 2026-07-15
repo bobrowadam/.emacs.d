@@ -2106,6 +2106,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
                pr-review-clear))
   (use-package generic-review
     :ensure nil
+    :bind ("C-c v s" . generic-review-start)
     :commands (generic-review-mode
                generic-review-start
                generic-review-add-comment
@@ -3400,6 +3401,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** Pi Theme
 #+begin_src elisp
+  ;; Mentat bundles the Pi-inspired theme alongside its package.
+  (add-to-list 'custom-theme-load-path "~/source/mentat")
   ;; Load after the theme packages, some of which enable themselves.
   (mapc #'disable-theme custom-enabled-themes)
   (load-theme 'pi-dark t)
