@@ -256,7 +256,7 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
              "\n\nDraft saved as " draft-name
              ". Continue by calling emacs_apply_named_elisp_patch with name "
              draft-name
-             " and a unified diff against that draft; do not rewrite the full snippet."))))
+             " and exact oldText/newText edits against that draft; do not rewrite the full snippet."))))
 
 (defun pi/--eval-elisp-code (code)
   "Evaluate Elisp CODE and return the last form's raw result."
@@ -336,7 +336,7 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
 
 (defun pi/eval-named-elisp (name code)
   "Define or rerun named Elisp snippet NAME and return base64 result text.
-Rejected code is retained as NAME@draft for patch-based correction."
+Rejected code is retained as NAME@draft for exact-edit correction."
   (pi/with-tool-safety
     (unless (stringp name)
       (user-error "Invalid named Elisp name"))
@@ -388,96 +388,95 @@ Rejected code is retained as NAME@draft for patch-based correction."
                 (string< (alist-get 'name left)
                          (alist-get 'name right)))))))))
 
-(defun pi/--apply-unified-diff (source patch)
-  "Apply unified PATCH to SOURCE and return the patched text.
-Only standard line-based hunks are supported; malformed or mismatched
-patches signal an error without modifying the stored snippet."
-  (unless (stringp patch)
-    (user-error "Named Elisp patch must be a string"))
-  (let* ((source-ends-in-newline (string-suffix-p "\n" source))
-         (source-lines (if (string-empty-p source)
-                           nil
-                         (split-string source "\n" nil)))
-         (patch-lines (split-string patch "\n" t))
-         (source-index 0)
-         (hunk-count 0)
-         result)
-    (when source-ends-in-newline
-      (setq source-lines (butlast source-lines)))
-    (while patch-lines
-      (let ((line (pop patch-lines)))
-        (cond
-         ((or (string-prefix-p "--- " line)
-              (string-prefix-p "+++ " line)))
-         ((string-match
-           "\\`@@ -\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? [+]\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? @@.*\\'"
-           line)
-          (setq hunk-count (1+ hunk-count))
-          (let* ((old-start (string-to-number (match-string 1 line)))
-                 (old-total (string-to-number (or (match-string 2 line) "1")))
-                 (new-total (string-to-number (or (match-string 4 line) "1")))
-                 (target-index (if (= old-start 0) 0 (1- old-start)))
-                 (old-seen 0)
-                 (new-seen 0))
-            (when (or (< target-index source-index)
-                      (> target-index (length source-lines)))
-              (user-error "Named Elisp patch hunk is out of order"))
-            (while (< source-index target-index)
-              (push (nth source-index source-lines) result)
-              (setq source-index (1+ source-index)))
-            (while (and patch-lines
-                        (not (string-prefix-p "@@ " (car patch-lines))))
-              (let ((hunk-line (pop patch-lines)))
-                (when (or (string-empty-p hunk-line)
-                          (string-prefix-p "\\" hunk-line))
-                  (user-error "Named Elisp patch has unsupported no-newline marker"))
-                (let ((kind (substring hunk-line 0 1))
-                      (text (substring hunk-line 1)))
-                  (pcase kind
-                    (" "
-                     (unless (and (< source-index (length source-lines))
-                                  (string= (nth source-index source-lines) text))
-                       (user-error "Named Elisp patch context does not match"))
-                     (push text result)
-                     (setq source-index (1+ source-index)
-                           old-seen (1+ old-seen)
-                           new-seen (1+ new-seen)))
-                    ("-"
-                     (unless (and (< source-index (length source-lines))
-                                  (string= (nth source-index source-lines) text))
-                       (user-error "Named Elisp patch deletion does not match"))
-                     (setq source-index (1+ source-index)
-                           old-seen (1+ old-seen)))
-                    ("+"
-                     (push text result)
-                     (setq new-seen (1+ new-seen)))
-                    (_ (user-error "Named Elisp patch has invalid hunk line"))))))
-            (unless (and (= old-seen old-total) (= new-seen new-total))
-              (user-error "Named Elisp patch hunk line counts do not match"))))
-         (t (user-error "Named Elisp patch must use unified diff hunks")))))
-    (when (= hunk-count 0)
-      (user-error "Named Elisp patch has no hunks"))
-    (while (< source-index (length source-lines))
-      (push (nth source-index source-lines) result)
-      (setq source-index (1+ source-index)))
-    (let ((patched (string-join (nreverse result) "\n")))
-      (if source-ends-in-newline
-          (concat patched "\n")
-        patched))))
+(defun pi/--named-elisp-edit-preview (text)
+  "Return a short one-line preview of exact edit TEXT."
+  (let ((preview (replace-regexp-in-string "[ \t\n\r]+" " " text)))
+    (if (> (length preview) 100)
+        (concat (substring preview 0 97) "...")
+      preview)))
 
-(defun pi/apply-named-elisp-patch (name patch)
-  "Patch named Elisp NAME with unified PATCH and promote valid drafts."
+(defun pi/--named-elisp-match-positions (source old-text)
+  "Return all exact match positions for OLD-TEXT in SOURCE."
+  (let ((case-fold-search nil)
+        (start 0)
+        positions)
+    (while (string-match (regexp-quote old-text) source start)
+      (push (cons (match-beginning 0) (match-end 0)) positions)
+      (setq start (1+ (match-beginning 0))))
+    (nreverse positions)))
+
+(defun pi/--apply-exact-edits (source edits)
+  "Apply non-overlapping EDITS to SOURCE against its original contents.
+Each edit is a two-element list of old text and new text.  Every old text
+must be non-empty and match SOURCE exactly once."
+  (unless (and (listp edits) edits)
+    (user-error "Named Elisp patch requires at least one edit"))
+  (let ((edit-index 0)
+        matches)
+    (dolist (edit edits)
+      (setq edit-index (1+ edit-index))
+      (unless (and (listp edit)
+                   (= (length edit) 2)
+                   (stringp (nth 0 edit))
+                   (stringp (nth 1 edit)))
+        (user-error "Edit %d must contain string oldText and newText" edit-index))
+      (let ((old-text (nth 0 edit))
+            (new-text (nth 1 edit)))
+        (when (string-empty-p old-text)
+          (user-error "Edit %d oldText cannot be empty" edit-index))
+        (let ((positions (pi/--named-elisp-match-positions source old-text)))
+          (cond
+           ((null positions)
+            (user-error
+             (concat "Edit %d oldText did not match exactly: %S. "
+                     "Re-read the snippet and copy oldText exactly")
+             edit-index (pi/--named-elisp-edit-preview old-text)))
+           ((cdr positions)
+            (user-error
+             (concat "Edit %d oldText matched %d times: %S. "
+                     "Include more surrounding text to make it unique")
+             edit-index (length positions)
+             (pi/--named-elisp-edit-preview old-text)))
+           (t
+            (push (list (caar positions) (cdar positions) new-text edit-index)
+                  matches))))))
+    (setq matches
+          (sort matches (lambda (left right) (< (nth 0 left) (nth 0 right)))))
+    (let ((previous nil))
+      (dolist (match matches)
+        (when (and previous (< (nth 0 match) (nth 1 previous)))
+          (user-error "Edits %d and %d overlap; merge them into one edit"
+                      (nth 3 previous) (nth 3 match)))
+        (setq previous match)))
+    (let ((cursor 0)
+          pieces)
+      (dolist (match matches)
+        (push (substring source cursor (nth 0 match)) pieces)
+        (push (nth 2 match) pieces)
+        (setq cursor (nth 1 match)))
+      (push (substring source cursor) pieces)
+      (string-join (nreverse pieces) ""))))
+
+(defun pi/apply-named-elisp-patch (name &rest replacements)
+  "Apply exact REPLACEMENTS to named Elisp NAME and promote valid drafts.
+REPLACEMENTS is an alternating sequence of old and new text strings."
   (pi/with-tool-safety
     (unless (stringp name)
       (user-error "Invalid named Elisp name"))
+    (unless (zerop (% (length replacements) 2))
+      (user-error "Named Elisp edits must contain oldText/newText pairs"))
     (let* ((trimmed-name (string-trim name))
            (live-name (pi/--named-elisp-live-name trimmed-name))
-           (stored-code (gethash trimmed-name pi/--named-elisp-scripts)))
+           (stored-code (gethash trimmed-name pi/--named-elisp-scripts))
+           edits)
       (when (string-empty-p trimmed-name)
         (user-error "Named Elisp name cannot be empty"))
       (unless stored-code
         (user-error "No named Elisp snippet stored as %s" trimmed-name))
-      (let ((patched-code (pi/--apply-unified-diff stored-code patch)))
+      (while replacements
+        (push (list (pop replacements) (pop replacements)) edits))
+      (let ((patched-code
+             (pi/--apply-exact-edits stored-code (nreverse edits))))
         (setq pi/--tool-elisp-source patched-code)
         (condition-case err
             (let* ((check-warnings (pi/--check-elisp-code live-name patched-code))
