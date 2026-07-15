@@ -17,9 +17,12 @@
 (require 'org)
 (require 'org-capture)
 (require 'ol)
+(require 'diff-mode)
 (require 'project)
 (require 'seq)
 (require 'url-util)
+
+(declare-function magit-diff-visit-file--noselect "magit-diff" (&optional goto-file))
 
 (defgroup generic-review nil
   "Capture annotated source links in an Org review buffer."
@@ -30,6 +33,11 @@
 
 A nil value retains the entire point or region selection."
   :type '(choice (const :tag "No limit" nil) integer)
+  :group 'generic-review)
+
+(defcustom generic-review-default-file-name "review.org"
+  "Project-relative file name used for newly created review sessions."
+  :type 'string
   :group 'generic-review)
 
 (defvar-local generic-review--session-buffer nil
@@ -72,14 +80,15 @@ A nil value retains the entire point or region selection."
 
 (defun generic-review--create-session (root)
   "Create and return a new Org review buffer for project ROOT."
-  (let ((buffer (generate-new-buffer
-                 (format "*Review: %s*" (generic-review--project-name root)))))
+  (let ((buffer (find-file-noselect
+                 (expand-file-name generic-review-default-file-name root))))
     (with-current-buffer buffer
       (setq-local default-directory root)
       (org-mode)
       (setq-local generic-review--session-root root)
-      (insert (format "#+title: Review — %s\n\n"
-                      (generic-review--project-name root))))
+      (when (= (buffer-size) 0)
+        (insert (format "#+title: Review — %s\n\n"
+                        (generic-review--project-name root)))))
     buffer))
 
 (defun generic-review--session-buffer (&optional create)
@@ -124,22 +133,67 @@ When CREATE is non-nil, create a new session if none is live."
     (let ((case-fold-search t))
       (replace-regexp-in-string "^#\\+end_src\\b" ",#+end_src" excerpt))))
 
+(defun generic-review--buffer-context (buffer start end)
+  "Collect review metadata for START through END in BUFFER."
+  (with-current-buffer buffer
+    (pcase-let ((`(,begin-line . ,end-line)
+                 (cons (line-number-at-pos start)
+                       (line-number-at-pos end))))
+      (list :source (or buffer-file-name (buffer-name))
+            :begin begin-line
+            :end end-line
+            :link (generic-review--source-link start)
+            :language (string-remove-suffix "-mode" (symbol-name major-mode))
+            :excerpt (generic-review--excerpt start end)))))
+
+(defun generic-review--diff-location (position)
+  "Return the worktree buffer and position corresponding to diff POSITION."
+  (save-excursion
+    (goto-char position)
+    (let ((diff-jump-to-old-file nil))
+      (pcase-let ((`(,buffer ,_ (,start . ,_) (,text . ,offset) . ,_)
+                   (diff-find-source-location nil nil t)))
+        (ignore text)
+        (cons buffer (+ start offset))))))
+
+(defun generic-review--magit-diff-location (position)
+  "Return the worktree buffer and position corresponding to Magit POSITION."
+  (save-excursion
+    (goto-char position)
+    (let ((mark-active nil))
+      (pcase-let ((`(,buffer ,source-position)
+                   (funcall 'magit-diff-visit-file--noselect t)))
+        (unless source-position
+          (user-error "No source location at this Magit diff position"))
+        (cons buffer source-position)))))
+
+(defun generic-review--diff-source-bounds ()
+  "Return the source buffer and bounds corresponding to the active diff region."
+  (pcase-let* ((`(,start . ,end) (generic-review--source-bounds))
+               (end-position (max start (1- end)))
+               (locator (if (derived-mode-p 'magit-diff-mode)
+                            #'generic-review--magit-diff-location
+                          #'generic-review--diff-location))
+               (`(,start-buffer . ,source-start) (funcall locator start))
+               (`(,end-buffer . ,source-end) (funcall locator end-position)))
+    (unless (eq start-buffer end-buffer)
+      (user-error "A review region cannot span multiple diff files"))
+    (list start-buffer source-start
+          (with-current-buffer start-buffer
+            (min (point-max) (1+ (max source-start source-end)))))))
+
 (defun generic-review--source-context ()
   "Collect metadata for a comment at point or over the active region."
-  (pcase-let* ((`(,start . ,end) (generic-review--source-bounds))
-               (`(,begin-line . ,end-line)
-                (cons (line-number-at-pos start)
-                      (line-number-at-pos end))))
-    (list :source (or buffer-file-name (buffer-name))
-          :begin begin-line
-          :end end-line
-          :link (generic-review--source-link start)
-          :language (string-remove-suffix "-mode" (symbol-name major-mode))
-          :excerpt (generic-review--excerpt start end))))
+  (if (derived-mode-p 'magit-diff-mode 'diff-mode)
+      (pcase-let ((`(,buffer ,start ,end) (generic-review--diff-source-bounds)))
+        (generic-review--buffer-context buffer start end))
+    (pcase-let ((`(,start . ,end) (generic-review--source-bounds)))
+      (generic-review--buffer-context (current-buffer) start end))))
 
 (defun generic-review--capture-property (property)
-  "Return PROPERTY from the active generic-review capture context."
-  (or (plist-get generic-review--capture-context property) ""))
+  "Return PROPERTY from the active generic-review capture context as a string."
+  (let ((value (plist-get generic-review--capture-context property)))
+    (if value (format "%s" value) "")))
 
 (defun generic-review--capture-link ()
   "Return a formatted Org link for the active generic-review capture."

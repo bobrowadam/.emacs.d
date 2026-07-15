@@ -11,3 +11,7 @@
 - Custom functions prefixed with `bob/`.
 - Tangle `init.org` instead of editing `init-generated.el` directly.
 - Reload: `emacsclient --eval "(bob/compile-and-load-init-file)"` after editing.
+
+## Commits
+- Commit changes directly when asked; do not defer commit acceptance to the user.
+- Use command-line Git by default. Use Magit only when explicitly requested.
