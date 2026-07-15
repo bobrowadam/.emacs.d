@@ -2106,6 +2106,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
                pr-review-clear))
   (use-package generic-review
     :ensure nil
+    :demand t
     :bind ("C-c v s" . generic-review-start)
     :commands (generic-review-mode
                generic-review-start
