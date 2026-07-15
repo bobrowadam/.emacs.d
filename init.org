@@ -1145,6 +1145,12 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     ("M-y" . consult-yank-from-kill-ring))
 #+end_src
 
+* CSV
+#+begin_src elisp
+  ;; Keep CSV support installed independently of Casual.
+  (use-package csv-mode)
+#+end_src
+
 * Casual packages
 #+begin_src elisp
   (use-package casual)
@@ -1435,6 +1441,8 @@ Align tables in markdown and org-mode
                    :branch "main"))
 
   (use-package org
+    ;; Activate Elpaca's Org build before any local module can require Org.
+    :ensure (:wait t)
     :init (setq org-directory
                 (expand-file-name
                  "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
@@ -2106,7 +2114,6 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
                pr-review-clear))
   (use-package generic-review
     :ensure nil
-    :demand t
     :bind ("C-c v s" . generic-review-start)
     :commands (generic-review-mode
                generic-review-start
@@ -2513,15 +2520,6 @@ build only accepts one optional diagnostic argument."
                             (-some-> (buffer-file-name) (file-name-nondirectory)))
       (flymake-mode t)))
 #+end_src
-*** Flymake Posframe
-#+begin_src elisp
-  (use-package flymake-posframe
-    :custom (flymake-posframe-max-height 200)
-    :ensure (:repo "Ladicle/flymake-posframe" :fetcher github :files ("*.el"))
-    :custom
-    (flymake-posframe-error-prefix "⮾")
-    :hook (flymake-mode . flymake-posframe-mode))
-#+end_src
 *** Flyover
 A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover is a full featured package with tons of features for you to customize.
 #+begin_src elisp
@@ -2563,6 +2561,35 @@ LSP/DAP servers manager
     (eglot-booster-mode)
     (setq-default eglot-workspace-configuration
                   '(:biome (:enabled t)))
+
+    (defconst bob/eglot-hover-validated-modes
+      '(python-mode python-ts-mode
+        js-mode js-ts-mode js2-mode typescript-ts-mode tsx-ts-mode
+        c-mode c-ts-mode c++-mode c++-ts-mode
+        json-mode haskell-mode roc-ts-mode clojure-ts-mode)
+      "Programming modes whose built-in Eglot hover rendering is validated.")
+
+    (defvar bob/eglot-hover-warned-modes nil
+      "Modes already reported as having unvalidated Eglot hover rendering.")
+
+    (defun bob/eglot-warn-unvalidated-hover-mode ()
+      "Warn once when Eglot manages a mode with unvalidated hover rendering."
+      (when (and (eglot-managed-p)
+                 (derived-mode-p 'prog-mode)
+                 (not (memq major-mode bob/eglot-hover-validated-modes))
+                 (not (memq major-mode bob/eglot-hover-warned-modes)))
+        (push major-mode bob/eglot-hover-warned-modes)
+        (display-warning
+         'bob/eglot
+         (format (concat "Built-in Eglot hover rendering is not validated for `%s'; "
+                         "check its output before adding the mode to "
+                         "`bob/eglot-hover-validated-modes'.")
+                 major-mode)
+         :warning)))
+
+    (add-hook 'eglot-managed-mode-hook
+              #'bob/eglot-warn-unvalidated-hover-mode)
+
     (defun bob/eglot-events-buffer-config-toggle ()
       (interactive)
       (let* ((current-size (plist-get eglot-events-buffer-config :size))
@@ -2634,13 +2661,6 @@ LSP/DAP servers manager
     ;;                          (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
     ;;                            (flymake-jsts-eslint-enable))))
     )
-#+end_src
-**** Eglot hover
-#+begin_src elisp
-  (use-package eglot-hover
-    :ensure nil
-    :after (eglot)
-    :demand t)
 #+end_src
 *** Dape
 #+begin_src elisp
@@ -3524,10 +3544,6 @@ Falls back to `default-directory' when not in a git repo."
     :config
     (bob/logview-update-faces)
     (add-hook 'enable-theme-functions #'bob/logview-update-faces))
-#+end_src
-* CSV
-#+begin_src elisp
-  (use-package csv-mode)
 #+end_src
 * Bash mode
 #+begin_src elisp
