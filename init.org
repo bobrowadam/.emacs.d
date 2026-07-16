@@ -2302,6 +2302,44 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
 #+end_src
 ** HotFuzz
 #+begin_src elisp
+  (defun bob/elpaca-hotfuzz--run-cmake (e name arguments success-message)
+    "Run CMake for Hotfuzz's Elpaca order E."
+    (if-let* ((cmake (executable-find "cmake")))
+        (elpaca--make-process e
+          :name name
+          :command (cons cmake arguments)
+          :sentinel (lambda (process event)
+                      (elpaca--process-sentinel success-message nil process event)))
+      (error "CMake is required to build the Hotfuzz module")))
+
+  (defun bob/elpaca-hotfuzz-configure (e)
+    "Configure Hotfuzz's native module for Elpaca order E."
+    (let ((repo (elpaca<-repo-dir e)))
+      (bob/elpaca-hotfuzz--run-cmake
+       e "hotfuzz-configure"
+       (list "-S" repo "-B" (expand-file-name "build" repo)
+             "-DCMAKE_BUILD_TYPE=Release" "-DCMAKE_C_FLAGS=-march=native")
+       "Hotfuzz module configured")))
+
+  (defun bob/elpaca-hotfuzz-build (e)
+    "Build Hotfuzz's native module for Elpaca order E."
+    (let ((repo (elpaca<-repo-dir e)))
+      (bob/elpaca-hotfuzz--run-cmake
+       e "hotfuzz-build"
+       (list "--build" (expand-file-name "build" repo) "--config" "Release"
+             "--target" "hotfuzz-module")
+       "Hotfuzz module built")))
+
+  (defun bob/elpaca-hotfuzz-rename-module (e)
+    "Give Hotfuzz's native module the suffix expected by Emacs."
+    (let ((repo (elpaca<-repo-dir e)))
+      (bob/elpaca-hotfuzz--run-cmake
+       e "hotfuzz-rename-module"
+       (list "-E" "rename"
+             (expand-file-name "hotfuzz-module.so" repo)
+             (expand-file-name (concat "hotfuzz-module" module-file-suffix) repo))
+       "Hotfuzz module renamed")))
+
   (use-package hotfuzz
     :demand t
     :ensure ( :package "hotfuzz"
@@ -2310,7 +2348,11 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
               :inherit t
               :protocol https
               ;; Inherited from elpaca-menu-item.
-              :files (:defaults)
+              :files (:defaults "hotfuzz-module.*")
+              :build (:before elpaca-build-link
+                              bob/elpaca-hotfuzz-configure
+                              bob/elpaca-hotfuzz-build
+                              bob/elpaca-hotfuzz-rename-module)
               :fetcher github
               :repo "axelf4/hotfuzz")
     :config
