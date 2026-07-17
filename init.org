@@ -677,6 +677,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :custom
     (mentat-pi-log-level 'summary)
     (mentat-auto-name-ask-sessions t)
+    (mentat-credential-profiles
+     '(("work" . "~/.pi/agent")
+       ("private" . "~/.pi/agent-private")))
     (mentat-pi-command-bindings
      '(("M-S-<tab>" . "/cycle-mode")))
     (mentat-status-footer-status-faces
@@ -688,6 +691,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                     (expand-file-name file "~/.pi/agent/extensions/src/"))
                   '("emacs"
                     "web-search"
+                    "profile-indicator.ts"
                     "mempalace.ts"
                     "resolve-symlinks.ts"))
         "npm:pi-agent-browser-native")))
