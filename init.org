@@ -74,7 +74,7 @@
 * Which key
 #+begin_src elisp
   (use-package which-key
-    :defer 0.5
+    :defer 20
     :config
     (which-key-mode 1))
 #+end_src
@@ -973,14 +973,21 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 #+begin_src elisp
   (use-package pi-emacs
     :ensure nil
-    :demand t)
+    :commands (pi/ask bob/pi-send-buffer-context pi/paste-image)
+    :init
+    (defvar pi-coding-agent-input-mode-map)
+    (with-eval-after-load 'pi-coding-agent-input
+      (define-key pi-coding-agent-input-mode-map (kbd "C-c i") #'pi/paste-image)))
 #+end_src
 *** Kitty + pi launcher
 #+begin_src elisp
   (use-package kitty-pi
     :ensure nil
-    :demand t
-    :after pi-emacs)
+    :commands bob/open-pi-in-kitty
+    :init
+    (global-set-key (kbd "C-c p p") #'bob/open-pi-in-kitty)
+    (global-set-key (kbd "C-c p s") #'bob/pi-send-buffer-context)
+    (global-set-key (kbd "C-c p a") #'pi/ask))
 #+end_src
 
 * Ediff
@@ -1441,8 +1448,8 @@ Align tables in markdown and org-mode
                    :branch "main"))
 
   (use-package org
-    ;; Activate Elpaca's Org build before any local module can require Org.
-    :ensure (:wait t)
+    ;; Queue Elpaca's Org build; Org-dependent packages load via `:after org'.
+    :ensure t
     :init (setq org-directory
                 (expand-file-name
                  "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/"))
@@ -2309,12 +2316,12 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
           :name name
           :command (cons cmake arguments)
           :sentinel (lambda (process event)
-                      (elpaca--process-sentinel success-message nil process event)))
+                      (elpaca--process-sentinel success-message process event)))
       (error "CMake is required to build the Hotfuzz module")))
 
   (defun bob/elpaca-hotfuzz-configure (e)
     "Configure Hotfuzz's native module for Elpaca order E."
-    (let ((repo (elpaca<-repo-dir e)))
+    (let ((repo (elpaca<-source-dir e)))
       (bob/elpaca-hotfuzz--run-cmake
        e "hotfuzz-configure"
        (list "-S" repo "-B" (expand-file-name "build" repo)
@@ -2323,26 +2330,16 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
 
   (defun bob/elpaca-hotfuzz-build (e)
     "Build Hotfuzz's native module for Elpaca order E."
-    (let ((repo (elpaca<-repo-dir e)))
+    (let ((repo (elpaca<-source-dir e)))
       (bob/elpaca-hotfuzz--run-cmake
        e "hotfuzz-build"
        (list "--build" (expand-file-name "build" repo) "--config" "Release"
              "--target" "hotfuzz-module")
        "Hotfuzz module built")))
 
-  (defun bob/elpaca-hotfuzz-rename-module (e)
-    "Give Hotfuzz's native module the suffix expected by Emacs."
-    (let ((repo (elpaca<-repo-dir e)))
-      (bob/elpaca-hotfuzz--run-cmake
-       e "hotfuzz-rename-module"
-       (list "-E" "rename"
-             (expand-file-name "hotfuzz-module.so" repo)
-             (expand-file-name (concat "hotfuzz-module" module-file-suffix) repo))
-       "Hotfuzz module renamed")))
-
   (use-package hotfuzz
     :demand t
-    :ensure ( :package "hotfuzz"
+    :ensure (:package "hotfuzz"
               ;; Inherited from elpaca-order-functions.
               :depth treeless
               :inherit t
@@ -2351,8 +2348,7 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
               :files (:defaults "hotfuzz-module.*")
               :build (:before elpaca-build-link
                               bob/elpaca-hotfuzz-configure
-                              bob/elpaca-hotfuzz-build
-                              bob/elpaca-hotfuzz-rename-module)
+                              bob/elpaca-hotfuzz-build)
               :fetcher github
               :repo "axelf4/hotfuzz")
     :config
@@ -2375,6 +2371,7 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
 ** Orderless
 #+begin_src elisp
   (use-package orderless
+    :after hotfuzz
     :demand t
     :init
     (setq completion-ignore-case t)
@@ -2825,15 +2822,12 @@ LSP/DAP servers manager
 #+begin_src elisp
   (use-package yasnippet-snippets)
   (use-package yasnippet
+    :after prog-mode
+    :defer 20
     :commands (yas-expand yas-global-mode yas-minor-mode-on)
-    :defer 5
     :custom
     (yas-wrap-around-region t)
     (yas-also-auto-indent-first-line t)
-    :init
-    (add-hook 'emacs-startup-hook
-              (lambda ()
-                (run-with-idle-timer 1 nil #'yas-global-mode)))
     :bind (:map yas-minor-mode-map
                 ("C-<tab>" . yas-expand))
     :config
@@ -2841,7 +2835,8 @@ LSP/DAP servers manager
       (when (require 'yasnippet-snippets nil t)
         (push yasnippet-snippets-dir dirs))
       (setq yas-snippet-dirs (nreverse dirs)))
-    (yas-reload-all))
+    (yas-reload-all)
+    (yas-global-mode 1))
 #+end_src
 ** Highlight indent guides
 #+begin_src elisp
