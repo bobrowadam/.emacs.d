@@ -723,8 +723,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :config
     (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
                                :host "api.openai.com"
-                               :user "bradwell-codex"))
-    (fnm-use))
+                               :user "bradwell-codex")))
 #+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
@@ -3202,6 +3201,9 @@ and `:test-name'."
               :branch "main"
               :files ("fnm.el"))
     :config
+    ;; Establish the default Node environment once during startup so commands
+    ;; such as Pi are available before any project-specific switching occurs.
+    (fnm-use)
     (fnm-enable-auto-use))
 #+end_src
 
