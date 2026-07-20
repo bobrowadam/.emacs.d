@@ -711,8 +711,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (mentat-command-options
      '((search :model "openai-codex/gpt-5.6-sol"
                :thinking "medium")
-       (vibe :model "openai-codex/gpt-5.6-terra"
-             :thinking "high")
+       (vibe :model "openai-codex/gpt-5.6-sol"
+             :thinking "low")
        (ask :model "openai-codex/gpt-5.6-terra"
             :thinking "high")
        (name :model "openai/gpt-5.6-luna"
@@ -3204,7 +3204,7 @@ and `:test-name'."
     ;; Establish the default Node environment once during startup so commands
     ;; such as Pi are available before any project-specific switching occurs.
     (fnm-use)
-    (fnm-enable-auto-use))
+    (fnm-auto-use-mode 1))
 #+end_src
 
 *** Roc
