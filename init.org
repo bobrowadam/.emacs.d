@@ -419,8 +419,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
         dictionary-server "dict.org"
         tab-always-indent 'complete
         text-mode-ispell-word-completion nil
-        frame-resize-pixelwise t
-        menu-bar-mode -1)
+        frame-resize-pixelwise t)
 
   (setq read-extended-command-predicate #'command-completion-default-include-p)
   (setq minibuffer-prompt-properties
@@ -451,6 +450,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (auto-compression-mode t)
   (auto-image-file-mode 1)
   (global-word-wrap-whitespace-mode t)
+  (menu-bar-mode -1)
 
   ;; delete char and delte word with "C-h" "C-M-h"
   (define-key key-translation-map [?\C-h] [?\C-?])
