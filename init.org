@@ -3265,23 +3265,26 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** OCaml
 #+begin_src elisp
-(use-package tuareg
-  :mode (("\\.ocamlinit\\'" . tuareg-mode))
-  :custom-face
-  (tuareg-font-lock-constructor-face ((t (:inherit font-lock-type-face))))
-  :bind (:map tuareg-mode-map
-              ("C-c C-N" . xref-find-references-and-replace)
-              ("C-c C-e" . tuareg-eval-phrase)
-              ("C-c C-R" . tuareg-eval-region)))
+  (use-package tuareg
+    :disabled t
+    :mode (("\\.ocamlinit\\'" . tuareg-mode))
+    :custom-face
+    (tuareg-font-lock-constructor-face ((t (:inherit font-lock-type-face))))
+    :bind (:map tuareg-mode-map
+                ("C-c C-N" . xref-find-references-and-replace)
+                ("C-c C-e" . tuareg-eval-phrase)
+                ("C-c C-R" . tuareg-eval-region)))
 
-(use-package merlin
-  :config
-  (exec-path-from-shell-initialize)
-  (setq merlin-error-after-save nil)
-  :hook (tuareg-mode))
+  (use-package merlin
+    :disabled t
+    :config
+    (exec-path-from-shell-initialize)
+    (setq merlin-error-after-save nil)
+    :hook (tuareg-mode))
 
-(use-package merlin-eldoc
-  :hook (tuareg-mode . merlin-eldoc-setup))
+  (use-package merlin-eldoc
+    :disabled t
+    :hook (tuareg-mode . merlin-eldoc-setup))
 #+end_src
 *** Clojure
 **** Clojure TS mode
