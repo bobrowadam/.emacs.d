@@ -1876,11 +1876,19 @@ just org files in a directory + ripgrep.
                                      current-branch
                                      current-branch))))
 
+    (defun bob/update-graphify-worktree (directory)
+      "Asynchronously update an existing Graphify graph for DIRECTORY."
+      (when-let* ((program (executable-find "graphify-worktree-update")))
+        (let ((process-connection-type nil))
+          (start-process "graphify-worktree-update" nil
+                         program (expand-file-name directory)))))
+
     (defun bob/remember-worktree-project-advice (orig-fun directory &rest args)
-      "Remember new worktree DIRECTORY in Emacs' project list."
+      "Remember and prepare new worktree DIRECTORY after ORIG-FUN succeeds."
       (prog1 (apply orig-fun directory args)
         (when-let* ((project (project-current nil directory)))
-          (project-remember-project project))))
+          (project-remember-project project))
+        (bob/update-graphify-worktree directory)))
 
     (defun bob/remove-project-roots-advice (orig-fun worktree)
       "Remove project roots and associated branches when deleting git worktrees."
