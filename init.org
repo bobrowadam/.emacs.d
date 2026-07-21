@@ -2542,10 +2542,17 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
 #+begin_src elisp
   (defun bob/flymake-show-buffer-diagnostics--first (orig &optional diagnostic &rest _extra)
     "Pass only one DIAGNOSTIC to ORIG.
-`flymake-show-buffer-diagnostics' can receive multiple diagnostics
-interactively when several diagnostics overlap at point, but this Emacs
-build only accepts one optional diagnostic argument."
+  `flymake-show-buffer-diagnostics' can receive multiple diagnostics
+  interactively when several diagnostics overlap at point, but this Emacs
+  build only accepts one optional diagnostic argument."
     (funcall orig diagnostic))
+
+  (defun bob/elisp-flymake-setup ()
+    "Setup flymake in `emacs-lisp-mode'."
+    ;; (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention nil t)
+    (unless (seq-contains-p '("init.el" "init-literate.el")
+                            (-some-> (buffer-file-name) (file-name-nondirectory)))
+      (flymake-mode t)))
 
   (use-package flymake
     :ensure t
@@ -2563,14 +2570,8 @@ build only accepts one optional diagnostic argument."
     (:map flymake-mode-map
           ("C-c ! l" . flymake-show-buffer-diagnostics)
           ("C-c ! n" . flymake-goto-next-error)
-          ("C-c ! p" . flymake-goto-prev-error)))
-
-  (defun bob/elisp-flymake-setup ()
-    "Setup flymake in `emacs-lisp-mode'."
-    ;; (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention nil t)
-    (unless (seq-contains-p '("init.el" "init-literate.el")
-                            (-some-> (buffer-file-name) (file-name-nondirectory)))
-      (flymake-mode t)))
+          ("C-c ! p" . flymake-goto-prev-error))
+    :hook (emacs-lisp-mode . bob/elisp-flymake-setup))
 #+end_src
 *** Flyover
 A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover is a full featured package with tons of features for you to customize.
