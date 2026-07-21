@@ -2551,7 +2551,8 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
     "Setup flymake in `emacs-lisp-mode'."
     ;; (add-hook 'flymake-diagnostic-functions #'bob/elisp-function-naming-convention nil t)
     (unless (seq-contains-p '("init.el" "init-literate.el")
-                            (-some-> (buffer-file-name) (file-name-nondirectory)))
+                            (and (buffer-file-name)
+                                 (file-name-nondirectory (buffer-file-name))))
       (flymake-mode t)))
 
   (use-package flymake
