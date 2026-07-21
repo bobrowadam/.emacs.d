@@ -2561,7 +2561,7 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
     (flymake-show-diagnostics-at-end-of-line nil)
     ;; (flymake-show-diagnostics-at-end-of-line 'fancy)
     :config
-    (setq elisp-flymake-byte-compile-load-path load-path)
+    (setq elisp-flymake-byte-compile-load-path (cons "./" load-path))
     (unless (advice-member-p #'bob/flymake-show-buffer-diagnostics--first
                              'flymake-show-buffer-diagnostics)
       (advice-add 'flymake-show-buffer-diagnostics
