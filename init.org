@@ -1880,6 +1880,7 @@ just org files in a directory + ripgrep.
       "Asynchronously update an existing Graphify graph for DIRECTORY."
       (when-let* ((program (executable-find "graphify-worktree-update")))
         (let ((process-connection-type nil))
+          (message "Updating graphify on dir %s" directory)
           (start-process "graphify-worktree-update" nil
                          program (expand-file-name directory)))))
 
@@ -2605,7 +2606,7 @@ LSP/DAP servers manager
 #+begin_src elisp
   (use-package eglot
     :ensure nil
-    :after (fnm exec-path-from-shell)
+    :after fnm
     :custom-face (eglot-highlight-symbol-face ((t (:inherit bold :underline t :slant italic))))
     :commands (eglot eglot-ensure eglot-shutdown-all)
     :custom
