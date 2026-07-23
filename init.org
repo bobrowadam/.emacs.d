@@ -725,6 +725,30 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                                :host "api.openai.com"
                                :user "bradwell-codex")))
 #+end_src
+** Next Mentat rebuild
+#+begin_src elisp
+  (defface bob/next-mentat-solveit-status-face
+    '((t :foreground "#eed49f" :weight bold))
+    "Face for Solveit mode status in Next Mentat."
+    :group 'faces)
+
+  (defun bob/next-mentat-solveit-status ()
+    "Return the active Solveit mode for Next Mentat's mode line."
+    (when-let* ((status (next-mentat-extension-status "solveit-mode")))
+      (propertize status 'face 'bob/next-mentat-solveit-status-face)))
+
+  (use-package next-mentat
+    :ensure nil
+    :load-path "~/source/mentat/.worktrees/mentat-rebuild"
+    :commands (next-mentat)
+    :custom
+    (next-mentat-pi-directory "~/.pi/agent-private")
+    (next-mentat-model-providers '("openai" "openai-codex"))
+    (next-mentat-extension-command-bindings
+     '(("C-M-i" . "/cycle-mode")))
+    (next-mentat-mode-line-extra-functions
+     '(bob/next-mentat-solveit-status)))
+#+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
   (use-package elisp-dev-mcp

@@ -97,3 +97,4 @@ agent/
 /.mentat/state
 /.mentat/prompt-history
 /mentat/
+/next-mentat/
