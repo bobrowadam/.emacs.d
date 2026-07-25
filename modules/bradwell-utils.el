@@ -27,7 +27,6 @@
 
 (defun bob/setup-bradwell-project-for-worktree (path)
   "Setup Bradwell worktree in PATH."
-  (bob/bradwell--ensure-shared-worktree-file path ".pi")
   (bob/bradwell--ensure-shared-worktree-file path ".venv")
   (bob/bradwell--ensure-shared-worktree-file path "pyrightconfig.json")
   (let ((default-directory (file-name-as-directory path)))
