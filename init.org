@@ -680,6 +680,36 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (when-let* ((status (mentat-extension-status "solveit-mode")))
       (propertize status 'face 'bob/mentat-solveit-status-face)))
 
+  (defun bob/mentat-observational-memory-compaction-presentation (result)
+    "Describe Observational Memory metadata in compaction RESULT."
+    (let ((details (alist-get 'details result)))
+      (when (equal "om.folded" (alist-get 'type details))
+        (let ((observations (length (alist-get 'observations details)))
+              (reflections (length (alist-get 'reflections details)))
+              (full-fold (eq t (alist-get 'fullFold details))))
+          (list
+           :label "Observational memory compacted"
+           :heading "Observational memory compaction"
+           :inline-details
+           (delq nil
+                 (list (and (> observations 0)
+                            (format "%d observation%s"
+                                    observations
+                                    (if (= observations 1) "" "s")))
+                       (and (> reflections 0)
+                            (format "%d reflection%s"
+                                    reflections
+                                    (if (= reflections 1) "" "s")))
+                       (and full-fold "full fold")))
+           :inspection-details
+           (delq nil
+                 (list (cons "Observations" (number-to-string observations))
+                       (cons "Reflections" (number-to-string reflections))
+                       (cons "Full fold" (if full-fold "yes" "no"))
+                       (and (eq t (alist-get 'retainedBeyondRequestedCut details))
+                            (cons "Unobserved history retained beyond requested cut"
+                                  "yes")))))))))
+
   (use-package mentat
     :ensure nil
     :load-path "~/source/mentat/.worktrees/mentat-rebuild"
@@ -687,6 +717,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :custom
     (mentat-pi-directory "~/.pi/agent-private")
     (mentat-model-providers '("openai" "openai-codex"))
+    (mentat-compaction-presentation-function
+     #'bob/mentat-observational-memory-compaction-presentation)
     (mentat-extension-command-bindings
      '(("C-M-i" . "/cycle-mode")))
     (mentat-mode-line-extra-functions
