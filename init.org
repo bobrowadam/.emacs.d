@@ -712,7 +712,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 
   (use-package mentat
     :ensure nil
-    :load-path "~/source/mentat/.worktrees/mentat-rebuild"
+    :load-path "~/source/mentat"
     :commands (mentat mentat-menu mentat-open mentat-prompt)
     :custom
     (mentat-pi-directory "~/.pi/agent-private")
