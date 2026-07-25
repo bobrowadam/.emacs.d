@@ -716,7 +716,6 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :commands (mentat mentat-menu mentat-open mentat-prompt)
     :custom
     (mentat-pi-directory "~/.pi/agent-private")
-    (mentat-model-providers '("openai" "openai-codex"))
     (mentat-compaction-presentation-function
      #'bob/mentat-observational-memory-compaction-presentation)
     (mentat-extension-command-bindings
