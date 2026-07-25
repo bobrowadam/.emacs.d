@@ -670,84 +670,30 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 * AI and LLM integrations
 ** Mentat
 #+begin_src elisp
-  (use-package mentat
-    :ensure nil
-    :after consult
-    :load-path "~/source/mentat"
-    :commands (mentat-menu)
-    :custom
-    (mentat-pi-log-level 'summary)
-    (mentat-auto-name-ask-sessions t)
-    (mentat-credential-profiles
-     '(("work" . "~/.pi/agent")
-       ("private" . "~/.pi/agent-private")))
-    (mentat-pi-command-bindings
-     '(("M-S-<tab>" . "/cycle-mode")))
-    (mentat-status-footer-status-faces
-     '(("solveit-mode" . (:foreground "#eed49f" :weight bold))
-       ("mempalace" . (:foreground "#c6a0f6" :weight bold))))
-    (mentat-extension-paths
-     `((search
-        ,@(mapcar (lambda (file)
-                    (expand-file-name file "~/.pi/agent/extensions/src/"))
-                  '("emacs"
-                    "web-search"
-                    "profile-indicator.ts"
-                    "mempalace.ts"
-                    "resolve-symlinks.ts"))
-        "npm:pi-agent-browser-native")))
-    (mentat-operation-tools
-     '((search
-        "read" "grep" "find" "ls"
-        "emacs_get_snapshot" "emacs_get_context" "emacs_read_buffer"
-        "emacs_capture_screenshot" "emacs_elisp_describe_function"
-        "emacs_elisp_get_function_definition" "emacs_elisp_describe_variable"
-        "emacs_elisp_info_lookup_symbol" "emacs_get_diagnostics"
-        "exa_search" "jina_reader" "agent_browser"
-        "mempalace_search" "mempalace_wake_up" "mempalace_status"
-        "mempalace_diary_read")))
-    (mentat-prompt-extra-completion-at-point-functions
-     (list #'bob/prose-word-completion-at-point))
-    (mentat-command-options
-     '((search :model "openai-codex/gpt-5.6-sol"
-               :thinking "medium")
-       (vibe :model "openai-codex/gpt-5.6-sol"
-             :thinking "low")
-       (ask :model "openai-codex/gpt-5.6-terra"
-            :thinking "high")
-       (name :model "openai/gpt-5.6-luna"
-             :thinking "medium")
-       (rewrite :model "openai-codex/gpt-5.6-luna"
-                :thinking "medium")))
-    :bind (("C-c C-;" . mentat-menu))
-    :config
-    (setenv "OPENAI_API_KEY" (auth-source-pick-first-password
-                               :host "api.openai.com"
-                               :user "bradwell-codex")))
-#+end_src
-** Next Mentat rebuild
-#+begin_src elisp
-  (defface bob/next-mentat-solveit-status-face
+  (defface bob/mentat-solveit-status-face
     '((t :foreground "#eed49f" :weight bold))
-    "Face for Solveit mode status in Next Mentat."
+    "Face for Solveit mode status in Mentat."
     :group 'faces)
 
-  (defun bob/next-mentat-solveit-status ()
-    "Return the active Solveit mode for Next Mentat's mode line."
-    (when-let* ((status (next-mentat-extension-status "solveit-mode")))
-      (propertize status 'face 'bob/next-mentat-solveit-status-face)))
+  (defun bob/mentat-solveit-status ()
+    "Return the active Solveit mode for Mentat's mode line."
+    (when-let* ((status (mentat-extension-status "solveit-mode")))
+      (propertize status 'face 'bob/mentat-solveit-status-face)))
 
-  (use-package next-mentat
+  (use-package mentat
     :ensure nil
     :load-path "~/source/mentat/.worktrees/mentat-rebuild"
-    :commands (next-mentat)
+    :commands (mentat mentat-menu mentat-open mentat-prompt)
     :custom
-    (next-mentat-pi-directory "~/.pi/agent-private")
-    (next-mentat-model-providers '("openai" "openai-codex"))
-    (next-mentat-extension-command-bindings
+    (mentat-pi-directory "~/.pi/agent-private")
+    (mentat-model-providers '("openai" "openai-codex"))
+    (mentat-extension-command-bindings
      '(("C-M-i" . "/cycle-mode")))
-    (next-mentat-mode-line-extra-functions
-     '(bob/next-mentat-solveit-status)))
+    (mentat-mode-line-extra-functions
+     '(bob/mentat-solveit-status))
+    (mentat-prompt-extra-completion-at-point-functions
+     '(bob/prose-word-completion-at-point))
+    :bind (("C-c C-;" . mentat-menu)))
 #+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
@@ -939,16 +885,11 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
        bob/prose-word-completion-project-buffer-max-chars)))
 
   (defun bob/prose-word-completion--mentat-history-text ()
-    "Return Mentat prompt history when the current buffer has Mentat context."
-    (when (and (boundp 'mentat-prompt-root) mentat-prompt-root
-               (boundp 'mentat-prompt-kind) mentat-prompt-kind
-               (fboundp 'mentat--prompt-history-for)
-               (fboundp 'mentat--request-prompt-history-for))
-      (string-join
-       (append (mentat--prompt-history-for mentat-prompt-root mentat-prompt-kind)
-               (mentat--request-prompt-history-for mentat-prompt-root
-                                                   mentat-prompt-kind))
-       "\n")))
+    "Return prompt history for the active Mentat prompt."
+    (when (and (boundp 'mentat--prompt-root)
+               mentat--prompt-root
+               (fboundp 'mentat-prompt-history-text))
+      (mentat-prompt-history-text)))
 
   (defun bob/prose-word-completion-at-point ()
     "Ranked prose word CAPF for natural-language buffers."
