@@ -1,5 +1,7 @@
 ;;; bradwell-utils.el --- Bradwell worktree helpers -*- lexical-binding: t; -*-
 
+(declare-function magit-get-current-branch "magit-git")
+
 (defconst bob/bradwell-main-worktree-directory
   (expand-file-name "~/source/gist/bradwell-monorepo")
   "Path to the main Bradwell checkout.")
@@ -47,6 +49,17 @@
     (funcall orig-fun path worktree))
   (when (bob/is-bradwell-project path)
     (bob/setup-bradwell-project-for-worktree path)))
+
+(defun bob/bradwell-open-preview-environment ()
+  "Open the preview environment for the current Git branch."
+  (interactive)
+  (let ((branch (magit-get-current-branch)))
+    (unless branch
+      (user-error "Cannot determine the current Git branch"))
+    (browse-url
+     (format "https://%s.dev.gist.legal/"
+             (substring (replace-regexp-in-string "/" "-" branch)
+                        0 (min 20 (length branch)))))))
 
 (advice-add 'magit-worktree-checkout :around #'bob/setup-bradwell-worktree-checkout)
 (advice-add 'magit-worktree-branch :around #'bob/setup-bradwell-worktree-branch)
