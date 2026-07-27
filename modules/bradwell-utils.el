@@ -1,5 +1,6 @@
 ;;; bradwell-utils.el --- Bradwell worktree helpers -*- lexical-binding: t; -*-
 
+(declare-function bob/npm--project-name nil)
 (declare-function magit-get-current-branch "magit-git")
 
 (defconst bob/bradwell-main-worktree-directory
@@ -68,6 +69,7 @@
               (funcall orig-fun worktree path)
               (when (bob/is-bradwell-project path)
                 (bob/setup-bradwell-project-for-worktree path))))
+
 
 (provide 'bradwell-utils)
 
