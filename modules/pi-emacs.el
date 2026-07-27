@@ -19,9 +19,20 @@
 (declare-function magit-process-error-summary "magit-process" (process-buf section))
 (declare-function magit-refresh-all "magit-mode" ())
 
+(defun pi/--encode-tool-response (kind text)
+  "Encode a tool response of KIND containing TEXT as JSON."
+  (json-serialize
+   (list (cons kind
+               (base64-encode-string
+                (encode-coding-string text 'utf-8) t)))))
+
 (defun pi/encode-result (text)
-  "Encode TEXT as base64 UTF-8 for transport."
-  (base64-encode-string (encode-coding-string text 'utf-8) t))
+  "Encode successful TEXT for structured tool transport."
+  (pi/--encode-tool-response 'result text))
+
+(defun pi/encode-error (text)
+  "Encode failed TEXT for structured tool transport."
+  (pi/--encode-tool-response 'error text))
 
 (defun pi/--backtrace-string ()
   "Return the current backtrace as a string."
@@ -128,7 +139,7 @@
        (condition-case err
            (progn ,@body)
          ((error quit)
-          (pi/encode-result
+          (pi/encode-error
            (pi/--format-tool-error
             err
             (or pi/--captured-backtrace (pi/--backtrace-string))
