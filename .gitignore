@@ -98,3 +98,4 @@ agent/
 /.mentat/prompt-history
 /mentat/
 /next-mentat/
+/abbrev_defs
