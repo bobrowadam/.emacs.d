@@ -11,6 +11,7 @@
 (require 'json)
 (require 'subr-x)
 (require 'cl-lib)
+(require 'cl-print)
 (require 'help-fns)
 (require 'find-func)
 (require 'info-look)
@@ -45,6 +46,14 @@
 
 (defvar pi/--tool-elisp-source nil
   "Elisp source currently being evaluated by a Pi tool, if any.")
+
+(defconst pi/--elisp-result-print-limit (* 64 1024)
+  "Target maximum size of a printed Elisp tool result, in characters.")
+
+(defun pi/--print-elisp-result (result)
+  "Return a size-limited printed representation of RESULT."
+  (cl-print-to-string-with-limit
+   #'cl-prin1 result pi/--elisp-result-print-limit))
 
 (defun pi/--elisp-structure-diagnostic (source)
   "Return an unmatched-paren diagnostic for Elisp SOURCE, or nil."
@@ -343,7 +352,7 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
       (user-error "Invalid Elisp code"))
     (setq pi/--tool-elisp-source code)
     (pi/encode-result
-     (prin1-to-string (pi/--eval-elisp-code code)))))
+     (pi/--print-elisp-result (pi/--eval-elisp-code code)))))
 
 (defun pi/eval-named-elisp (name code)
   "Define or rerun named Elisp snippet NAME and return base64 result text.
@@ -370,7 +379,7 @@ Rejected code is retained as NAME@draft for exact-edit correction."
                 (pi/encode-result
                  (format "Defined and executed %s (checked) => %s%s"
                          live-name
-                         (prin1-to-string result)
+                         (pi/--print-elisp-result result)
                          (if (string-empty-p check-warnings)
                              ""
                            (format "\n\nElisp check warnings:\n%s" check-warnings)))))
@@ -382,7 +391,7 @@ Rejected code is retained as NAME@draft for exact-edit correction."
           (pi/encode-result
            (format "Executed %s => %s"
                    trimmed-name
-                   (prin1-to-string (pi/--eval-elisp-code stored-code)))))))))
+                   (pi/--print-elisp-result (pi/--eval-elisp-code stored-code)))))))))
 
 (defun pi/list-named-elisp ()
   "Return base64 JSON for all stored named Elisp snippets."
@@ -498,7 +507,7 @@ REPLACEMENTS is an alternating sequence of old and new text strings."
               (pi/encode-result
                (format "Patched and executed %s (checked) => %s%s"
                        live-name
-                       (prin1-to-string result)
+                       (pi/--print-elisp-result result)
                        (if (string-empty-p check-warnings)
                            ""
                          (format "\n\nElisp check warnings:\n%s" check-warnings)))))
@@ -516,7 +525,8 @@ REPLACEMENTS is an alternating sequence of old and new text strings."
             (insert-file-contents path)
             (buffer-string)))
     (pi/encode-result
-     (format "Loaded %s => %S" path (load-file path)))))
+     (format "Loaded %s => %s"
+             path (pi/--print-elisp-result (load-file path))))))
 
 (defun pi/--json-bool (value)
   "Return VALUE as an Emacs JSON boolean."
