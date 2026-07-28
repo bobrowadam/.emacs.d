@@ -51,9 +51,33 @@
   "Target maximum size of a printed Elisp tool result, in characters.")
 
 (defun pi/--print-elisp-result (result)
-  "Return a size-limited printed representation of RESULT."
-  (cl-print-to-string-with-limit
-   #'cl-prin1 result pi/--elisp-result-print-limit))
+  "Return a work- and size-bounded printed representation of RESULT.
+
+Stop the printer at the output budget rather than first traversing RESULT to
+choose print settings.  Keep `cl-prin1' for useful CL structure rendering and
+cycle detection, but disable its whole-graph circularity preprocessing."
+  (let* ((truncation-marker "… [result truncated]")
+         (remaining (- pi/--elisp-result-print-limit
+                       (length truncation-marker)))
+         (print-circle nil)
+         (print-level 8)
+         (print-length 100)
+         (print-escape-newlines t)
+         (cl-print-string-length pi/--elisp-result-print-limit)
+         truncated)
+    (with-temp-buffer
+      (catch 'pi/--elisp-print-limit
+        (cl-prin1 result
+                  (lambda (character)
+                    (if (> remaining 0)
+                        (progn
+                          (insert-char character)
+                          (setq remaining (1- remaining)))
+                      (setq truncated t)
+                      (throw 'pi/--elisp-print-limit nil)))))
+      (when truncated
+        (insert truncation-marker))
+      (buffer-string))))
 
 (defun pi/--elisp-structure-diagnostic (source)
   "Return an unmatched-paren diagnostic for Elisp SOURCE, or nil."
