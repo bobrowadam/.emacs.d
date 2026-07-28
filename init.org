@@ -670,15 +670,15 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 * AI and LLM integrations
 ** Mentat
 #+begin_src elisp
-  (defface bob/mentat-solveit-status-face
+  (defface bob/mentat-behavior-status-face
     '((t :foreground "#eed49f" :weight bold))
-    "Face for Solveit mode status in Mentat."
+    "Face for the active behavior in Mentat's mode line."
     :group 'faces)
 
-  (defun bob/mentat-solveit-status ()
-    "Return the active Solveit mode for Mentat's mode line."
-    (when-let* ((status (mentat-extension-status "solveit-mode")))
-      (propertize status 'face 'bob/mentat-solveit-status-face)))
+  (defun bob/mentat-behavior-status ()
+    "Return the active behavior for Mentat's mode line."
+    (when-let* ((status (mentat-extension-status "behaviors-mode")))
+      (propertize status 'face 'bob/mentat-behavior-status-face)))
 
   (defun bob/mentat-observational-memory-compaction-presentation (result)
     "Describe Observational Memory metadata in compaction RESULT."
@@ -725,8 +725,10 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
        "openai/gpt-5.6-sol"))
     (mentat-extension-command-bindings
      '(("C-M-i" . "/cycle-mode")))
+    (mentat-extension-progress-presentations
+     '(("behaviors-rewrite" "running" "Rewriting")))
     (mentat-mode-line-extra-functions
-     '(bob/mentat-solveit-status))
+     '(bob/mentat-behavior-status))
     (mentat-prompt-extra-completion-at-point-functions
      '(bob/prose-word-completion-at-point))
     :bind (("C-c C-;" . mentat-menu)))
