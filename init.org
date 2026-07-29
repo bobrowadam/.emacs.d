@@ -680,6 +680,26 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (when-let* ((status (mentat-extension-status "behaviors-mode")))
       (propertize status 'face 'bob/mentat-behavior-status-face)))
 
+  (defun bob/mentat-codex-weekly-usage ()
+    "Return the Codex weekly allowance remaining for Mentat's mode line."
+    (when (equal mentat--buffer-model-provider "openai-codex")
+      (when-let* ((status (mentat-extension-status "codex"))
+                  (plain (ansi-color-filter-apply status)))
+        (cond
+         ((string-match
+           "\\([0-9]+\\)% \\(?:7d\\|1w\\|wk\\)\\b" plain)
+          (let* ((remaining (string-to-number (match-string 1 plain)))
+                 (face (cond ((<= remaining 10) 'error)
+                             ((<= remaining 30) 'warning)
+                             (t 'success))))
+            (propertize (format "%d%%%% wk" remaining)
+                        'face face
+                        'help-echo plain)))
+         ((string-match "blocked \\(?:7d\\|1w\\|wk\\) until [^|]+" plain)
+          (propertize (match-string 0 plain)
+                      'face 'error
+                      'help-echo plain))))))
+
   (defun bob/mentat-observational-memory-compaction-presentation (result)
     "Describe Observational Memory metadata in compaction RESULT."
     (let ((details (alist-get 'details result)))
@@ -715,7 +735,10 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :load-path "~/source/mentat"
     :commands (mentat mentat-menu mentat-open mentat-prompt)
     :custom
-    (mentat-pi-directory "~/.pi/agent-private")
+    (mentat-pi-directory nil)
+    (mentat-pi-profiles
+    '(("Work" . "~/.pi/agent")
+      ("Private" . "~/.pi/agent-private")))
     (mentat-compaction-presentation-function
      #'bob/mentat-observational-memory-compaction-presentation)
     (mentat-enabled-models
@@ -728,7 +751,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (mentat-extension-progress-presentations
      '(("behaviors-rewrite" "running" "Rewriting")))
     (mentat-mode-line-extra-functions
-     '(bob/mentat-behavior-status))
+     '(bob/mentat-codex-weekly-usage
+       bob/mentat-behavior-status))
     (mentat-prompt-extra-completion-at-point-functions
      '(bob/prose-word-completion-at-point))
     :bind (("C-c C-;" . mentat-menu)))
@@ -2526,6 +2550,7 @@ making paredit's `check-parens' blow up on non-Lisp syntax."
             (project-dired "Root Directory" "d")
             (ghostel-project "Ghostel" "s")
             (bob/ghostel-top-project "Ghostel Top" "S")
+            (mentat-open "Mentat" "m")
             (magit-project-status "Magit" "g")
             (consult-ripgrep "RipGrep" "r")
             (consult-project-buffer "Buffers" "b")
