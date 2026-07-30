@@ -753,8 +753,11 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (mentat-mode-line-extra-functions
      '(bob/mentat-codex-weekly-usage
        bob/mentat-behavior-status))
-    (mentat-prompt-extra-completion-at-point-functions
-     '(bob/prose-word-completion-at-point))
+    (mentat-prompt-extra-completion-at-point-functions nil)
+    (mentat-prompt-extra-word-candidate-functions
+     '(bob/mentat-prose-word-candidates))
+    (mentat-prompt-word-candidate-score-function
+     #'bob/mentat-prose-word-candidate-score)
     :bind (("C-c C-;" . mentat-menu)))
 #+end_src
 ** Elisp Dev MCP
@@ -783,6 +786,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (defvar bob/prose-word-completion-project-buffer-max-chars 60000)
   (defvar bob/prose-word-completion-prefix-index-length 4)
   (defvar bob/prose-word-completion-candidate-limit 200)
+  (defvar bob/mentat-prose-word-project-score 80)
+  (defvar bob/mentat-prose-word-known-project-bonus 5)
 
   (defvar bob/prose-word-completion--cache nil)
   (defvar bob/prose-word-completion--cache-file nil)
@@ -844,16 +849,19 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                    (not (memq (char-before start) '(?/ ?@ ?# ?$ ?. ?:))))
           (cons start end)))))
 
-  (defun bob/prose-word-completion--score (word prefix source-score)
+  (defun bob/prose-word-completion--frequency-score (word)
     (let* ((data (bob/prose-word-completion--frequency-data))
            (frequencies (plist-get data :frequencies))
-           (frequency (and frequencies (gethash (downcase word) frequencies)))
-           (frequency-score (if frequency
-                                (* 30 (max 0 (min 1 (/ (- frequency -13.7)
-                                                       (- -2.8 -13.7)))))
-                              0)))
-      (+ source-score frequency-score
-         (- (- (length word) (length prefix))))))
+           (frequency (and frequencies (gethash (downcase word) frequencies))))
+      (if frequency
+          (* 30 (max 0 (min 1 (/ (- frequency -13.7)
+                                  (- -2.8 -13.7)))))
+        0)))
+
+  (defun bob/prose-word-completion--score (word prefix source-score)
+    (+ source-score
+       (bob/prose-word-completion--frequency-score word)
+       (- (- (length word) (length prefix)))))
 
   (defun bob/prose-word-completion--add-candidate (table word prefix score)
     (let ((normalized (downcase word)))
@@ -925,9 +933,10 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (when-let* ((project (project-current nil)))
       (expand-file-name (project-root project))))
 
-  (defun bob/prose-word-completion--project-file-buffers ()
-    "Return open file buffers under the current project root."
-    (when-let* ((root (bob/prose-word-completion--project-root)))
+  (defun bob/prose-word-completion--project-file-buffers (&optional project-root)
+    "Return open file buffers under PROJECT-ROOT or the current project."
+    (when-let* ((root (or project-root
+                          (bob/prose-word-completion--project-root))))
       (let ((buffers nil)
             (count 0))
         (dolist (buffer (buffer-list) (nreverse buffers))
@@ -946,12 +955,59 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
        table buffer prefix score
        bob/prose-word-completion-project-buffer-max-chars)))
 
-  (defun bob/prose-word-completion--mentat-history-text ()
-    "Return prompt history for the active Mentat prompt."
-    (when (and (boundp 'mentat--prompt-root)
-               mentat--prompt-root
-               (fboundp 'mentat-prompt-history-text))
-      (mentat-prompt-history-text)))
+  (defun bob/mentat-prose-word-candidates (prefix context)
+    "Add frequency and project candidates for Mentat PREFIX and CONTEXT."
+    (let* ((project-words (make-hash-table :test #'equal))
+           (data (bob/prose-word-completion--frequency-data))
+           (frequencies (and data (plist-get data :frequencies)))
+           candidates)
+      (dolist (buffer
+               (bob/prose-word-completion--project-file-buffers
+                (plist-get context :project-root)))
+        (with-current-buffer buffer
+          (dolist (word
+                   (bob/prose-word-completion--bucket-words-in-buffer
+                    prefix bob/prose-word-completion-project-buffer-max-chars))
+            (puthash (downcase word) word project-words))))
+      (maphash
+       (lambda (normalized word)
+         (push (list :word word
+                     :score (if (and frequencies
+                                     (gethash normalized frequencies))
+                                bob/mentat-prose-word-known-project-bonus
+                              bob/mentat-prose-word-project-score)
+                     :source 'project
+                     :annotation " project")
+               candidates))
+       project-words)
+      (when data
+        (let ((added 0))
+          (catch 'done
+            (dolist (word
+                     (bob/prose-word-completion--bucket-words
+                      (plist-get data :buckets) prefix))
+              (push (list :word word
+                          :score (+ 60
+                                    (bob/prose-word-completion--frequency-score
+                                     word))
+                          :source 'frequency
+                          :annotation " word")
+                    candidates)
+              (setq added (1+ added))
+              (when (>= added 200)
+                (throw 'done nil)))))
+        (when (and (not (string-suffix-p "s" prefix t))
+                   (gethash (downcase prefix) frequencies))
+          (push (list :word (concat prefix "s") :score 40 :source 'plural
+                      :annotation " plural")
+                candidates)))
+      candidates))
+
+  (defun bob/mentat-prose-word-candidate-score (candidate prefix)
+    "Score merged Mentat CANDIDATE for PREFIX with a mild length cost."
+    (- (plist-get candidate :score)
+       (max 0 (- (length (plist-get candidate :word))
+                 (length prefix)))))
 
   (defun bob/prose-word-completion-at-point ()
     "Ranked prose word CAPF for natural-language buffers."
@@ -960,8 +1016,6 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
       (let ((table (make-hash-table :test #'equal)))
         (bob/prose-word-completion--add-buffer table (current-buffer) prefix 300)
         (bob/prose-word-completion--add-project-buffers table prefix 180)
-        (when-let* ((history (bob/prose-word-completion--mentat-history-text)))
-          (bob/prose-word-completion--add-text table history prefix 200))
         (when-let* ((data (bob/prose-word-completion--frequency-data)))
           (let ((added 0))
             (catch 'done
