@@ -1410,6 +1410,18 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :ensure nil
     :defer t
     :config
+    (defun bob/markdown-ts-update-strikethrough-face (&rest _)
+      "Set strikethrough colors from the active theme."
+      (set-face-attribute
+       'markdown-ts-strikethrough nil
+       :inherit 'shadow
+       :foreground 'unspecified
+       :strike-through (or (face-foreground 'error nil t) t)))
+    (bob/markdown-ts-update-strikethrough-face)
+    (add-hook 'enable-theme-functions
+              #'bob/markdown-ts-update-strikethrough-face)
+    (add-hook 'disable-theme-functions
+              #'bob/markdown-ts-update-strikethrough-face)
     (define-key markdown-ts-mode-map (kbd "C-c C-v") #'bob/toggle-markdown-view-mode))
 #+end_src
 ** edit-indirect (a markdown mode dependency for editing code blocks)
