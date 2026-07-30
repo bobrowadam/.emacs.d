@@ -758,6 +758,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
      '(bob/mentat-prose-word-candidates))
     (mentat-prompt-word-candidate-score-function
      #'bob/mentat-prose-word-candidate-score)
+    :config
+    (remove-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines)
+    (add-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines t)
     :bind (("C-c C-;" . mentat-menu)))
 #+end_src
 ** Elisp Dev MCP
