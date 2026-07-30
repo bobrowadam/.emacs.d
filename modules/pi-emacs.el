@@ -19,6 +19,7 @@
 (declare-function magit-commit-create "magit-commit" (&optional args))
 (declare-function magit-process-error-summary "magit-process" (process-buf section))
 (declare-function magit-refresh-all "magit-mode" ())
+(declare-function ediff-files "ediff" (file-a file-b &optional startup-hooks job-name))
 
 (defun pi/--encode-tool-response (kind text)
   "Encode a tool response of KIND containing TEXT as JSON."
@@ -270,6 +271,17 @@ Optional MODE is a major mode function (symbol) to enable in the buffer."
         (funcall mode))
       (set-buffer-modified-p nil))
     (buffer-name buffer)))
+
+(defun pi/ediff-rewrite-files (original-file rewritten-file)
+  "Compare ORIGINAL-FILE and REWRITTEN-FILE with Ediff."
+  (unless (file-readable-p original-file)
+    (user-error "Original response file is not readable: %s" original-file))
+  (unless (file-readable-p rewritten-file)
+    (user-error "Rewritten response file is not readable: %s" rewritten-file))
+  (require 'ediff)
+  (select-frame-set-input-focus (selected-frame))
+  (ediff-files original-file rewritten-file)
+  t)
 
 ;;; --- Agent-facing Elisp inspection helpers ---
 
