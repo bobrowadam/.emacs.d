@@ -748,6 +748,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
        "openai/gpt-5.6-sol"))
     (mentat-extension-command-bindings
      '(("C-M-i" . "/cycle-mode")))
+    (mentat-extension-menu-commands
+     '(("D" "Compare rewrite" "/mode-debug")
+       ("A" "Annotate last response" "/plannotator-last")))
     (mentat-extension-progress-presentations
      '(("behaviors-rewrite" "running" "Rewriting")))
     (mentat-mode-line-extra-functions
