@@ -4133,3 +4133,6 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
   (put 'set-goal-column 'disabled nil)
   (put 'narrow-to-region 'disabled nil)
 #+end_src
+    (mentat-default-provider "openai")
+    (mentat-default-model "gpt-5.6-luna")
+    (mentat-default-effort "high")
