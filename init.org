@@ -2242,7 +2242,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
                generic-review-open))
   (use-package github-review)
   (use-package code-review
-    :demand t
+    :disabled t
     :after magit
     :ensure (:repo "ag91/code-review"  :fetcher github :files ("*.el" "./docs/*"))
     :bind (:map magit-status-mode-map
@@ -2917,7 +2917,7 @@ LSP/DAP servers manager
     (typescript-ts-base-mode . treesit-fold-mode)
     (js-ts-mode . treesit-fold-mode)
     (clojure-ts-mode . treesit-fold-mode)
-    (swift-ts-mode . treesit-fold-mode)
+    ;; (swift-ts-mode . treesit-fold-mode)
     :config
     (defun bob/treesit-fold-indicators-safe-render-window (orig-fn window)
       (with-current-buffer (window-buffer window)
@@ -3338,6 +3338,7 @@ and `:test-name'."
 *** Swift
 #+begin_src elisp
   (use-package swift-ts-mode
+    :disabled
     :mode ("\\.swift\\'" "\\.swiftinterface\\'")
     :hook 'eglot-ensure)
 #+end_src
@@ -3521,16 +3522,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     (bob/register-and-load-themes mentat-dark kusanagi kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
     :bind ("C-c t" . bob/cycle-themes))
 #+end_src
-*** bob-kanagawa-wave
-#+begin_src elisp
-  (use-package bob-kanagawa-wave-theme
-    :disabled t
-    :ensure nil
-    :init
-
-    (load-theme 'bob-kanagawa-wave))
-#+end_src
-
 *** Modus Themes
 #+begin_src elisp
     (use-package modus-themes
