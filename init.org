@@ -1102,7 +1102,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (ediff-diff-options "-w")
     (ediff-ignore-similar-regions t)
     (ediff-split-window-function 'split-window-horizontally)
-    (ediff-window-setup-function 'ediff-setup-windows-plain))
+    (ediff-window-setup-function 'ediff-setup-windows-plain)
+    :config
+    (add-hook 'ediff-prepare-buffer-hook #'visual-line-mode))
 
   (defvar cc/ediff-revision-session-p nil
     "If t then `cc/ediff-revision-actual' has been called.
