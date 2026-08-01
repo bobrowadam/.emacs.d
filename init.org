@@ -3583,16 +3583,22 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 ** Spacious padding
 #+begin_src elisp
   (use-package spacious-padding
+    :demand t
     :init
     (defun bob/fix-mode-line-active-bg (&rest _)
-      "Set mode-line-active background to mode-line background if not explicitly set."
+      "Set the active mode-line background when it is unspecified."
       (when-let* ((mode-line-bg (face-background 'mode-line nil 'default))
-                  (mode-line-active-bg (face-attribute 'mode-line-active :background nil t))
+                  (mode-line-active-bg
+                   (face-attribute 'mode-line-active :background nil t))
                   ((eq mode-line-active-bg 'unspecified)))
-        (set-face-attribute 'mode-line-active nil :background mode-line-bg)))
-    (advice-add 'spacious-padding-set-faces :after #'bob/fix-mode-line-active-bg)
-    (spacious-padding-mode 1))
+        (set-face-attribute
+         'mode-line-active nil :background mode-line-bg)))
 
+    :config
+    (advice-add 'spacious-padding-set-faces
+                :after #'bob/fix-mode-line-active-bg)
+    (setf (plist-get spacious-padding-widths :mode-line-width) 18)
+    (spacious-padding-mode 1))
 #+end_src
 * Grep
 #+begin_src elisp
