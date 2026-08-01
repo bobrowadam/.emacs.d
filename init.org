@@ -736,6 +736,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :commands (mentat mentat-menu mentat-open mentat-prompt)
     :custom
     (mentat-pi-directory nil)
+    (mentat-default-provider "openai")
+    (mentat-default-model "gpt-5.6-luna")
+    (mentat-default-effort "high")
     (mentat-pi-profiles
     '(("Work" . "~/.pi/agent")
       ("Private" . "~/.pi/agent-private")))
@@ -743,9 +746,11 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
      #'bob/mentat-observational-memory-compaction-presentation)
     (mentat-enabled-models
      '("openai-codex/gpt-5.6-sol"
-       "openai/gpt-5.6-terra"
        "openai-codex/gpt-5.6-terra"
-       "openai/gpt-5.6-sol"))
+       "openai-codex/gpt-5.6-luna"
+       "openai/gpt-5.6-terra"
+       "openai/gpt-5.6-sol"
+       "openai/gpt-5.6-luna"))
     (mentat-extension-command-bindings
      '(("C-M-i" . "/cycle-mode")))
     (mentat-extension-menu-commands
@@ -4134,6 +4139,3 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
   (put 'set-goal-column 'disabled nil)
   (put 'narrow-to-region 'disabled nil)
 #+end_src
-    (mentat-default-provider "openai")
-    (mentat-default-model "gpt-5.6-luna")
-    (mentat-default-effort "high")
