@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: mentat-user-comment
+# key: /c
+# expand-env: ((yas-indent-line 'fixed) (yas-also-indent-empty-lines t))
+# --
+<!-- BOB COMMENT
+$0
+END BOB COMMENT -->
