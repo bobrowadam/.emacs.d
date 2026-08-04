@@ -736,7 +736,6 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :commands (mentat mentat-menu mentat-open mentat-prompt)
     :custom
     (mentat-pi-directory nil)
-    (mentat-default-provider "openai")
     (mentat-default-provider "openai-codex")
     (mentat-default-model "gpt-5.6-luna")
     (mentat-default-effort "high")
@@ -2199,8 +2198,16 @@ just org files in a directory + ripgrep.
 ** Magit Prime
 A Magit extension that primes the magit cache in parallel before refresh, reducing refresh times
 #+begin_src elisp
-(use-package magit-prime
-  :hook (magit-pre-refresh . magit-prime-refresh-cache))
+  (use-package magit-prime
+    :disabled t
+    :config
+    (defun bob/magit-prime-refresh-cache ()
+      "Prime Magit's cache outside recursive edits only."
+      (when (and (zerop (recursion-depth))
+                 magit--refresh-cache)
+        (magit-prime-refresh-cache)))
+    (remove-hook 'magit-pre-refresh-hook #'magit-prime-refresh-cache)
+    (add-hook 'magit-pre-refresh-hook #'bob/magit-prime-refresh-cache))
 #+end_src
 
 ** Forge
@@ -2270,6 +2277,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     :config (difftastic-bindings-mode))
 #+end_src
 * Diff
+** Diff-Mode
 #+begin_src elisp
   (use-package diff-mode
     :ensure nil
@@ -2289,39 +2297,29 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
           (unless (equal (point-max)
                          (cadr (diff-bounds-of-hunk)))
             (bob/diff-kill-other-hunks))))))
-
+#+end_src
+** Diff-hl
+#+begin_src elisp
   (use-package diff-hl
     ;; :after magit
+    :custom
+    (diff-hl-disable-on-remote t)
     :hook
-    (prog-mode . #'turn-on-diff-hl-mode)
-    (vc-dir-mode . (lambda () (diff-hl-dir-mode 1)))
     (dired-mode . diff-hl-dired-mode)
     (magit-post-refresh . #'diff-hl-magit-post-refresh)
-    :bind (:map diff-hl-mode-map ("C-x v A" . diff-hl-set-reference-rev))
+    ;; :bind (:map diff-hl-mode-map ("C-x v A" . diff-hl-set-reference-rev))
     :config
-    ;; Automatically set reference revision to develop, main, or master if they exist
-    (defun bob/diff-hl-set-default-reference-revision ()
-      "Set `diff-hl-reference-revision' to develop, main, or master if available, else nil."
-      (when (and (buffer-file-name) (vc-backend (buffer-file-name)))
-        (setq-local diff-hl-reference-revision
-                    (let ((branches (vc-git-branches)))
-                      (cond
-                       ((member "develop" branches) "develop")
-                       ((member "main" branches) "main")
-                       ((member "master" branches) "master")
-                       (t nil))))))
-    (add-hook 'find-file-hook #'bob/diff-hl-set-default-reference-revision)
-    ;; Fix diff-hl visibility with treesit-fold-indicators
-    (advice-add 'diff-hl-add-highlighting :filter-return
-                (lambda (ovl)
-                  (when ovl (overlay-put ovl 'priority 50))
-                  ovl)))
-
+    (global-diff-hl-mode 1))
+#+end_src
+** Abridge-diff
+#+begin_src elisp
   (use-package abridge-diff
     :demand t
     :after magit
     :config (abridge-diff-mode 1))
-
+#+end_src
+** Topsy
+#+begin_src elisp
   (use-package topsy
     :ensure t
     :after magit
@@ -2330,8 +2328,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     (setf (alist-get 'magit-diff-mode topsy-mode-functions)
           #'topsy--magit-section))
 #+end_src
-
-* Handle parentesis editing
+* Handle parenthesis editing
 ** Paredit
 #+begin_src elisp
   (use-package paredit
