@@ -69,11 +69,11 @@
  (position . 1)
  (last-modified 26598 43369 827485 0))
 ("org-capture-last-stored"
- (filename . "~/source/gist/bradwell-monorepo/.worktrees/fischer-net-hamishpat-service/review.org")
- (front-context-string . "* Doesn this API")
- (rear-context-string . "    )\n#+end_src\n")
- (position . 1791)
- (last-modified 27223 23670 799577 0))
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/inbox.org")
+ (front-context-string . "* Add a private ")
+ (rear-context-string . "gs:   :project:\n")
+ (position . 45)
+ (last-modified 27247 11388 83688 0))
 ("basic-settings.el"
  (filename . "~/.emacs.d/modules/basic-settings.el")
  (front-context-string . ";; Default was t")
