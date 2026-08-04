@@ -737,11 +737,12 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :custom
     (mentat-pi-directory nil)
     (mentat-default-provider "openai")
+    (mentat-default-provider "openai-codex")
     (mentat-default-model "gpt-5.6-luna")
     (mentat-default-effort "high")
     (mentat-pi-profiles
-    '(("Work" . "~/.pi/agent")
-      ("Private" . "~/.pi/agent-private")))
+     '(("Work" . "~/.pi/agent")
+       ("Private" . "~/.pi/agent-private")))
     (mentat-compaction-presentation-function
      #'bob/mentat-observational-memory-compaction-presentation)
     (mentat-enabled-models
