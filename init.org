@@ -772,28 +772,28 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (mentat-define-subagent explorer
       :description "Read-only project investigation"
       :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code, explain behavior, and report precise evidence with file locations."
-      :model "openai-codex/gpt-5.6-luna"
+      :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
       :thinking high
       :tools (read grep find ls))
 
     (mentat-define-subagent reviewer
       :description "Read-only code review with validation commands"
       :instructions "Review the requested code change for correctness, security, performance, maintainability, and important test gaps. Do not modify files. Use Bash only for non-mutating inspection and validation commands. Return only actionable findings, or state that there are no findings."
-      :model "openai-codex/gpt-5.6-sol"
+      :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
       :thinking high
       :tools (read bash grep find ls))
 
     (mentat-define-subagent ci-check
       :description "Run local CI checks and report failures"
       :instructions "Run the repository's applicable validation commands. Do not modify source files, install dependencies, or repair failures. Report each command, its result, and concise failure evidence."
-      :model "openai-codex/gpt-5.6-luna"
+      :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
       :thinking medium
       :tools (read bash grep find ls))
 
     (mentat-define-subagent worker
       :description "Implement focused changes and validate them"
       :instructions "Implement the delegated change in the current worktree. Keep edits focused, follow repository instructions, run applicable checks, and report changed files and verification results."
-      :model "openai-codex/gpt-5.6-luna"
+      :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
       :thinking xhigh
       :tools (read bash edit write grep find ls))
 
