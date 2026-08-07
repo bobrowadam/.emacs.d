@@ -1481,7 +1481,7 @@ Align tables in markdown and org-mode
     (org-enforce-todo-dependencies t)
     (org-use-fast-todo-selection 'expert)
     (org-todo-keywords
-     '((sequence "TODO(t)" "NEXT(n)" "WAITING(w)" "BACKLOG(b)" "|" "DONE(d)" "CANCELED(c)")))
+     '((sequence "NEXT(n)"  "TODO(t)" "WAITING(w)" "BACKLOG(b)" "|" "DONE(d)" "CANCELED(c)")))
     (org-stuck-projects
      '("+LEVEL=1+PROJECT" ("NEXT" "WAITING") ("@IGNORE" "@REMINDER") ""))
     (org-tags-exclude-from-inheritance '("project"))
