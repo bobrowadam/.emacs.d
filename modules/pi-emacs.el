@@ -578,17 +578,20 @@ When INTERN-P is non-nil, return the interned symbol."
   (when intern-p
     (intern name)))
 
+(defun pi/--describe-function-text (sym)
+  "Return documentation text for function symbol SYM."
+  (with-temp-buffer
+    (let ((standard-output (current-buffer)))
+      (describe-function-1 sym)
+      (buffer-string))))
+
 (defun pi/elisp-describe-function (function)
   "Return base64-encoded documentation for Emacs Lisp FUNCTION."
   (pi/with-tool-safety
     (let ((sym (pi/--validate-symbol-name function "function" t)))
       (unless (fboundp sym)
         (user-error "Function %s is void" function))
-      (pi/encode-result
-       (with-temp-buffer
-         (let ((standard-output (current-buffer)))
-           (describe-function-1 sym)
-           (buffer-string)))))))
+      (pi/encode-result (pi/--describe-function-text sym)))))
 
 (defun pi/--function-definition-bounds ()
   "Return source bounds around the function definition at point."
@@ -600,58 +603,92 @@ When INTERN-P is non-nil, return the interned symbol."
         (end-of-defun)
         (cons start (point))))))
 
+(defun pi/--function-definition-data (sym function)
+  "Return JSON-ready source data for function symbol SYM named FUNCTION."
+  (condition-case err
+      (pcase-let* ((`(,buffer . ,pos) (find-function-noselect sym))
+                   (file (or (buffer-file-name buffer) "<interactively defined>")))
+        (with-current-buffer buffer
+          (save-excursion
+            (goto-char pos)
+            (pcase-let* ((`(,start . ,end) (pi/--function-definition-bounds))
+                         (source (buffer-substring-no-properties start end)))
+              `((source . ,source)
+                (file-path . ,file)
+                (start-line . ,(line-number-at-pos start))
+                (end-line . ,(line-number-at-pos end)))))))
+    (error
+     `((found . :json-false)
+       (function . ,function)
+       (message . ,(error-message-string err))
+       (backtrace . ,(pi/--backtrace-string))))))
+
 (defun pi/elisp-get-function-definition (function)
   "Return base64-encoded JSON source location for Emacs Lisp FUNCTION."
   (pi/with-tool-safety
     (let ((sym (pi/--validate-symbol-name function "function" t)))
       (unless (fboundp sym)
         (user-error "Function %s is not found" function))
-      (condition-case err
-          (pcase-let* ((`(,buffer . ,pos) (find-function-noselect sym))
-                       (file (or (buffer-file-name buffer) "<interactively defined>")))
-            (with-current-buffer buffer
-              (save-excursion
-                (goto-char pos)
-                (pcase-let* ((`(,start . ,end) (pi/--function-definition-bounds))
-                             (source (buffer-substring-no-properties start end)))
-                  (pi/encode-result
-                   (json-encode
-                    `((source . ,source)
-                      (file-path . ,file)
-                      (start-line . ,(line-number-at-pos start))
-                      (end-line . ,(line-number-at-pos end)))))))))
-        (error
-         (pi/encode-result
-          (json-encode
-           `((found . :json-false)
-             (function . ,function)
-             (message . ,(error-message-string err))
-             (backtrace . ,(pi/--backtrace-string))))))))))
+      (pi/encode-result
+       (json-encode (pi/--function-definition-data sym function))))))
+
+(defun pi/--variable-metadata-data (sym variable)
+  "Return JSON-ready safe metadata for variable symbol SYM named VARIABLE."
+  (let* ((doc (documentation-property sym 'variable-documentation t))
+         (file (find-lisp-object-file-name sym 'defvar))
+         (custom-p (custom-variable-p sym))
+         (custom-group (get sym 'custom-group))
+         (obsolete (get sym 'byte-obsolete-variable)))
+    (when (or (boundp sym) doc file custom-p obsolete)
+      `((name . ,variable)
+        (bound . ,(pi/--json-bool (boundp sym)))
+        (value-type . ,(when (boundp sym) (symbol-name (type-of (symbol-value sym)))))
+        (documentation . ,doc)
+        (source-file . ,(cond
+                          ((stringp file) file)
+                          (file (format "%S" file))
+                          (t "<interactively defined>")))
+        (is-custom . ,(pi/--json-bool custom-p))
+        (custom-group . ,(when custom-group (symbol-name custom-group)))
+        (custom-type . ,(when custom-p (format "%S" (get sym 'custom-type))))
+        (is-obsolete . ,(pi/--json-bool obsolete))
+        (obsolete-info . ,(when obsolete (format "%S" obsolete)))))))
 
 (defun pi/elisp-describe-variable (variable)
   "Return base64-encoded JSON metadata for Emacs Lisp VARIABLE.
 Does not expose the variable's value."
   (pi/with-tool-safety
-    (let* ((sym (pi/--validate-symbol-name variable "variable" t))
-           (doc (documentation-property sym 'variable-documentation t))
-           (file (find-lisp-object-file-name sym 'defvar))
-           (custom-p (custom-variable-p sym))
-           (custom-group (get sym 'custom-group))
-           (obsolete (get sym 'byte-obsolete-variable)))
-      (unless (or (boundp sym) doc file custom-p obsolete)
+    (let* ((name (pi/--validate-symbol-name variable "variable" t))
+           (sym name)
+           (metadata (pi/--variable-metadata-data sym name)))
+      (unless metadata
         (user-error "Variable %s is not defined" variable))
+      (pi/encode-result (json-encode metadata)))))
+
+(defun pi/elisp-get-symbol-data (symbol)
+  "Return base64-encoded merged function and variable data for SYMBOL."
+  (pi/with-tool-safety
+    (let* ((name (pi/--validate-symbol-name symbol "symbol" t))
+           (sym name)
+           (results nil)
+           (variable-data (pi/--variable-metadata-data sym name)))
+      (when (fboundp sym)
+        (push `((type . "function-documentation")
+                (documentation . ,(pi/--describe-function-text sym)))
+              results)
+        (push `((type . "function-definition")
+                ,@(pi/--function-definition-data sym name))
+              results))
+      (when variable-data
+        (push `((type . "variable-metadata")
+                ,@variable-data)
+              results))
+      (unless results
+        (user-error "Symbol %s is not defined as a function or variable" symbol))
       (pi/encode-result
        (json-encode
-        `((name . ,variable)
-          (bound . ,(pi/--json-bool (boundp sym)))
-          (value-type . ,(when (boundp sym) (symbol-name (type-of (symbol-value sym)))))
-          (documentation . ,doc)
-          (source-file . ,(or file "<interactively defined>"))
-          (is-custom . ,(pi/--json-bool custom-p))
-          (custom-group . ,(when custom-group (symbol-name custom-group)))
-          (custom-type . ,(when custom-p (format "%S" (get sym 'custom-type))))
-          (is-obsolete . ,(pi/--json-bool obsolete))
-          (obsolete-info . ,(when obsolete (format "%S" obsolete)))))))))
+        `((symbol . ,name)
+          (results . ,(nreverse results))))))))
 
 (defun pi/--clean-info-content (content)
   "Clean Info navigation markup from CONTENT while preserving prose."
