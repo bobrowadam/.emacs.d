@@ -132,7 +132,8 @@
     :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code, explain behavior, and report precise evidence with file locations."
     :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
     :thinking medium
-    :tools (read grep find ls))
+    :tools (read grep find ls)
+    :concurrency 4)
 
   (mentat-define-subagent reviewer
     :description "Read-only code review with validation commands"
@@ -143,7 +144,8 @@ Avoid overly defensive, over engineered, or unnecessarily complex suggestions.
 For each suggestion, weigh the risk it prevents against the complexity it adds."
     :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
     :thinking high
-    :tools (read bash grep find ls))
+    :tools (read bash grep find ls)
+    :concurrency 4)
 
   (mentat-define-subagent ci-check
     :description "Run local CI checks and report failures"
