@@ -94,9 +94,9 @@
   :custom
   (mentat-pi-directory nil)
   (mentat-enabled-extensions
-   '(behaviors check-elisp emacs codex resolve-symlinks session-scripts
-     web-search worktree-skills observational-memory chrome-profile-bridge
-     plannotator agent-browser))
+   '(behaviors check-elisp codex resolve-symlinks session-scripts web-search
+     worktree-skills observational-memory chrome-profile-bridge plannotator
+     agent-browser))
   (mentat-pi-disabled-tools
    '("agent_browser" "agent_browser_web_search"))
   (mentat-default-provider "openai-codex")
@@ -135,8 +135,6 @@
     :source "/Users/bob/.pi/agent/extensions/src/behaviors/index.ts")
   (mentat-define-extension check-elisp
     :source "/Users/bob/.pi/agent/extensions/src/check-elisp.ts")
-  (mentat-define-extension emacs
-    :source "/Users/bob/.pi/agent/extensions/src/emacs/index.ts")
   (mentat-define-extension codex
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
   (mentat-define-extension resolve-symlinks
