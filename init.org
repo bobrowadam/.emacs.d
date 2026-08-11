@@ -1488,6 +1488,7 @@ Align tables in markdown and org-mode
     (org-refile-targets '((org-agenda-files :maxlevel . 3)))
     (org-refile-use-outline-path 'file)
     (org-deadline-warning-days 1)
+    (setq org-link-search-must-match-exact-headline nil)
     :config
     (setq org-capture-templates
           `(("t" "entry" entry
