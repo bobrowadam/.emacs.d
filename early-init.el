@@ -2,6 +2,18 @@
 
 (setq package-enable-at-startup nil)
 
+;; GUI applications do not inherit Homebrew's PATH from the login shell.
+;; Native compilation needs Homebrew's GCC driver, and FNM is installed here.
+(let* ((homebrew-bin "/opt/homebrew/bin")
+       (separator (if (characterp path-separator)
+                      (char-to-string path-separator)
+                    path-separator))
+       (path (or (getenv "PATH") "")))
+  (when (file-directory-p homebrew-bin)
+    (add-to-list 'exec-path homebrew-bin)
+    (unless (member homebrew-bin (split-string path separator t))
+      (setenv "PATH" (concat homebrew-bin separator path)))))
+
 ;; Match theme color early on (smoother transition).
 (add-to-list 'default-frame-alist '(background-color . "#1f1f28"))
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))

@@ -8,10 +8,24 @@
 (require 'ansi-color)
 
 (defvar mentat--buffer-model-provider)
+(declare-function bob/elpaca-package-dir "init-generated" (package))
+(declare-function fnm-auto-use-mode "fnm" (&optional arg))
 (declare-function mentat-extension-status "mentat" (extension))
+(declare-function mentat--register-extension "mentat-extensions" (name source tools))
+(declare-function mentat-reset-extensions "mentat-extensions" ())
 (declare-function mentat-reset-subagent-definitions "mentat" ())
 (declare-function mentat--register-subagent "mentat" (&rest args))
 (declare-function mentat-refresh-mode-lines "mentat" ())
+
+(defun bob/mentat-initialize-fnm ()
+  "Load FNM and select the Node environment used by Mentat."
+  (unless (featurep 'fnm)
+    (when-let* ((directory (bob/elpaca-package-dir "fnm")))
+      (add-to-list 'load-path directory))
+    (require 'fnm))
+  (fnm-auto-use-mode 1))
+
+(bob/mentat-initialize-fnm)
 
 (defface bob/mentat-behavior-status-face
   '((t :inherit mentat-mode-line-profile-face))
@@ -76,22 +90,13 @@
 (use-package mentat
   :ensure nil
   :load-path "~/source/mentat"
-  :commands (mentat mentat-menu mentat-open mentat-prompt)
+  :demand t
   :custom
   (mentat-pi-directory nil)
-  (mentat-pi-extensions
-   '("/Users/bob/.pi/agent/extensions/src/behaviors/index.ts"
-     "/Users/bob/.pi/agent/extensions/src/check-elisp.ts"
-     "/Users/bob/.pi/agent/extensions/src/emacs/index.ts"
-     "/Users/bob/.pi/agent/extensions/src/codex/index.ts"
-     "/Users/bob/.pi/agent/extensions/src/resolve-symlinks.ts"
-     "/Users/bob/.pi/agent/extensions/src/session-scripts.ts"
-     "/Users/bob/.pi/agent/extensions/src/web-search/index.ts"
-     "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts"
-     "/Users/bob/source/pi-observational-memory/src/index.ts"
-     "/Users/bob/.pi/agent-private/npm/node_modules/pi-chrome/extensions/chrome-profile-bridge/index.ts"
-     "/Users/bob/.pi/agent-private/npm/node_modules/@plannotator/pi-extension/index.ts"
-     "/Users/bob/.pi/agent-private/npm/node_modules/pi-agent-browser-native/dist/extensions/agent-browser/index.js"))
+  (mentat-enabled-extensions
+   '(behaviors check-elisp emacs codex resolve-symlinks session-scripts
+     web-search worktree-skills observational-memory chrome-profile-bridge
+     plannotator agent-browser))
   (mentat-pi-disabled-tools
    '("agent_browser" "agent_browser_web_search"))
   (mentat-default-provider "openai-codex")
@@ -125,13 +130,40 @@
   (mentat-prompt-word-candidate-score-function
    #'bob/mentat-prose-word-candidate-score)
   :config
+  (mentat-reset-extensions)
+  (mentat-define-extension behaviors
+    :source "/Users/bob/.pi/agent/extensions/src/behaviors/index.ts")
+  (mentat-define-extension check-elisp
+    :source "/Users/bob/.pi/agent/extensions/src/check-elisp.ts")
+  (mentat-define-extension emacs
+    :source "/Users/bob/.pi/agent/extensions/src/emacs/index.ts")
+  (mentat-define-extension codex
+    :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
+  (mentat-define-extension resolve-symlinks
+    :source "/Users/bob/.pi/agent/extensions/src/resolve-symlinks.ts")
+  (mentat-define-extension session-scripts
+    :source "/Users/bob/.pi/agent/extensions/src/session-scripts.ts")
+  (mentat-define-extension web-search
+    :source "/Users/bob/.pi/agent/extensions/src/web-search/index.ts")
+  (mentat-define-extension worktree-skills
+    :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
+  (mentat-define-extension observational-memory
+    :source "/Users/bob/source/pi-observational-memory/src/index.ts")
+  (mentat-define-extension chrome-profile-bridge
+    :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-chrome/extensions/chrome-profile-bridge/index.ts")
+  (mentat-define-extension plannotator
+    :source "/Users/bob/.pi/agent-private/npm/node_modules/@plannotator/pi-extension/index.ts")
+  (mentat-define-extension agent-browser
+    :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-agent-browser-native/dist/extensions/agent-browser/index.js"
+    :tools (agent_browser))
+
   (mentat-reset-subagent-definitions)
 
   (mentat-define-subagent explorer
     :description "Read-only project investigation"
     :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code, explain behavior, and report precise evidence with file locations."
-    :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
-    :thinking medium
+    :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
+    :thinking low
     :tools (read grep find ls)
     :concurrency 4)
 
@@ -151,19 +183,26 @@ For each suggestion, weigh the risk it prevents against the complexity it adds."
     :description "Run local CI checks and report failures"
     :instructions "Run the repository's applicable validation commands. Do not modify source files, install dependencies, or repair failures. Report each command, its result, and concise failure evidence."
     :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
-    :thinking medium
+    :thinking low
     :tools (read bash grep find ls))
 
   (mentat-define-subagent worker
-    :description "Implement focused changes and validate them"
+    :description "Implement one focused, verifiable change after the problem is understood; split broader work into separate runs."
     :instructions "Implement the delegated change in the current worktree. Keep edits focused, follow repository instructions, run applicable checks, and report changed files and verification results."
     :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
     :thinking high
     :tools (read bash edit write grep find ls))
 
+  (mentat-define-subagent ui-manual-qa
+    :description "Test UI features in a web browser"
+    :instructions "Perform end-to-end manual UI testing with agent_browser. Exercise the requested user flows, record the observed behavior and any errors, and return a concise report with reproduction steps and recommended fixes. Do not modify project files."
+    :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
+    :thinking low
+    :extensions (agent-browser)
+    :tools (read grep find ls agent_browser))
+
   (remove-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines)
-  (add-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines t)
-  :bind (("C-c C-;" . mentat-menu)))
+  (add-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines t))
 
 (provide 'bob-mentat)
 

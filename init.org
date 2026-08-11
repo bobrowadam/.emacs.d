@@ -101,7 +101,6 @@
     :config (defalias '𝝺 'llama))
   (use-package uuid)
   (use-package transient)
-  (use-package exec-path-from-shell)
   (use-package xref)
   (use-package buff-menu :ensure nil)
   (use-package jsonrpc)
@@ -672,7 +671,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 #+begin_src elisp
   (use-package bob-mentat
     :ensure nil
-    :demand t)
+    :commands (mentat mentat-menu mentat-open mentat-prompt)
+    :bind (("C-c C-;" . mentat-menu)))
 #+end_src
 ** Elisp Dev MCP
 #+begin_src elisp
@@ -1488,8 +1488,8 @@ Align tables in markdown and org-mode
     (org-refile-targets '((org-agenda-files :maxlevel . 3)))
     (org-refile-use-outline-path 'file)
     (org-deadline-warning-days 1)
-    (setq org-link-search-must-match-exact-headline nil)
     :config
+    (setq org-link-search-must-match-exact-headline nil)
     (setq org-capture-templates
           `(("t" "entry" entry
              (file ,(concat org-directory "inbox.org"))
@@ -3223,11 +3223,7 @@ and `:test-name'."
               :repo "bobrowadam/fnm.el"
               :branch "main"
               :files ("fnm.el"))
-    :config
-    ;; Establish the default Node environment once during startup so commands
-    ;; such as Pi are available before any project-specific switching occurs.
-    (fnm-use)
-    (fnm-auto-use-mode 1))
+    :commands (fnm-use fnm-use-version fnm-auto-use-mode))
 #+end_src
 
 *** Roc
@@ -3294,7 +3290,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package merlin
     :disabled t
     :config
-    (exec-path-from-shell-initialize)
     (setq merlin-error-after-save nil)
     :hook (tuareg-mode))
 
@@ -3464,10 +3459,9 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** Pi Theme
 #+begin_src elisp
-  ;; Mentat bundles the Pi-inspired theme alongside its active package.
-  (when-let* ((mentat-library (locate-library "mentat")))
-    (add-to-list 'custom-theme-load-path
-                 (file-name-directory mentat-library)))
+  ;; Mentat bundles the Pi-inspired theme in its source directory.
+  (add-to-list 'custom-theme-load-path
+               (expand-file-name "~/source/mentat"))
 #+end_src
 *** Register and load themes
 #+begin_src elisp
@@ -3489,7 +3483,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
              (message "Loaded %s" theme)))
          "Cycle through registered themes.")))
 
-  (bob/register-and-load-themes mentat-dark kusanagi kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
+  (bob/register-and-load-themes mentat-dark kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material kusanagi)
 #+end_src
 ** Spacious padding
 #+begin_src elisp
