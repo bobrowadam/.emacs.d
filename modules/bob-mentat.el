@@ -95,8 +95,8 @@
   (mentat-pi-directory nil)
   (mentat-enabled-extensions
    '(behaviors check-elisp codex resolve-symlinks session-scripts web-search
-     worktree-skills observational-memory chrome-profile-bridge plannotator
-     agent-browser))
+               worktree-skills observational-memory chrome-profile-bridge plannotator
+               agent-browser))
   (mentat-pi-disabled-tools
    '("agent_browser" "agent_browser_web_search"))
   (mentat-default-provider "openai-codex")
@@ -162,7 +162,7 @@
   (mentat-define-subagent explorer
     :description "Read-only project investigation"
     :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code, explain behavior, and report precise evidence with file locations."
-    :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
+    :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking low
     :extensions (web-search)
     :tools (read grep find ls exa_search jina_reader)
@@ -176,7 +176,7 @@ Do not modify files. Use Bash only for non-mutating inspection and validation co
 Return only actionable findings, or state that there are no findings.
 Avoid overly defensive, over-engineered, or unnecessarily complex suggestions.
 For each finding, weigh the risk it prevents against the complexity it adds."
-    :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
+    :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
     :extensions (web-search)
     :tools (read bash grep find ls exa_search jina_reader)
@@ -185,21 +185,21 @@ For each finding, weigh the risk it prevents against the complexity it adds."
   (mentat-define-subagent ci-check
     :description "Run local CI checks and report failures"
     :instructions "Run the repository's applicable validation commands. Do not modify source files, install dependencies, or repair failures. Report each command, its result, and concise failure evidence."
-    :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
+    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking low
     :tools (read bash grep find ls))
 
   (mentat-define-subagent worker
     :description "Implement one focused, verifiable change after the problem is understood; split broader work into separate runs."
     :instructions "Implement the delegated change in the current worktree. Keep edits focused, follow repository instructions, run applicable checks, and report changed files and verification results."
-    :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna" "openai-codex/gpt-5.6-terra")
+    :model ("openai/gpt-5.6-luna""openai/gpt-5.6-terra" "openai-codex/gpt-5.6-luna" "openai-codex/gpt-5.6-terra")
     :thinking high
     :tools (read bash edit write grep find ls))
 
   (mentat-define-subagent ui-manual-qa
     :description "Test UI features in a web browser"
     :instructions "Perform end-to-end manual UI testing with agent_browser. Exercise the requested user flows, record the observed behavior and any errors, and return a concise report with reproduction steps and recommended fixes. Do not modify project files."
-    :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
+    :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking low
     :extensions (agent-browser)
     :tools (read grep find ls agent_browser))
