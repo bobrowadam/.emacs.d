@@ -118,7 +118,8 @@
    '(("C-M-i" . "/cycle-mode")))
   (mentat-extension-menu-commands
    '(("D" "Compare rewrite" "/mode-debug")
-     ("A" "Annotate last response" "/plannotator-last")))
+     ("A" "Annotate last response" "/plannotator-last")
+     ("C" "Chrome controls" "/chrome")))
   (mentat-extension-progress-presentations
    '(("behaviors-rewrite" "running" "Rewriting")))
   (mentat-mode-line-extra-functions
@@ -142,7 +143,8 @@
   (mentat-define-extension session-scripts
     :source "/Users/bob/.pi/agent/extensions/src/session-scripts.ts")
   (mentat-define-extension web-search
-    :source "/Users/bob/.pi/agent/extensions/src/web-search/index.ts")
+    :source "/Users/bob/.pi/agent/extensions/src/web-search/index.ts"
+    :tools (exa_search jina_reader))
   (mentat-define-extension worktree-skills
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
@@ -162,7 +164,8 @@
     :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code, explain behavior, and report precise evidence with file locations."
     :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
     :thinking low
-    :tools (read grep find ls)
+    :extensions (web-search)
+    :tools (read grep find ls exa_search jina_reader)
     :concurrency 4)
 
   (mentat-define-subagent reviewer
@@ -174,7 +177,8 @@ Avoid overly defensive, over engineered, or unnecessarily complex suggestions.
 For each suggestion, weigh the risk it prevents against the complexity it adds."
     :model ("openai-codex/gpt-5.6-sol" "openai/gpt-5.6-sol")
     :thinking high
-    :tools (read bash grep find ls)
+    :extensions (web-search)
+    :tools (read bash grep find ls exa_search jina_reader)
     :concurrency 4)
 
   (mentat-define-subagent ci-check
@@ -187,7 +191,7 @@ For each suggestion, weigh the risk it prevents against the complexity it adds."
   (mentat-define-subagent worker
     :description "Implement one focused, verifiable change after the problem is understood; split broader work into separate runs."
     :instructions "Implement the delegated change in the current worktree. Keep edits focused, follow repository instructions, run applicable checks, and report changed files and verification results."
-    :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna")
+    :model ("openai-codex/gpt-5.6-luna" "openai/gpt-5.6-luna" "openai-codex/gpt-5.6-terra")
     :thinking high
     :tools (read bash edit write grep find ls))
 
