@@ -3379,6 +3379,10 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :commands (elisp-autofmt-mode elisp-autofmt-buffer)
     :hook (emacs-lisp-mode . elisp-autofmt-mode))
 #+end_src
+** rainbow-mode
+#+begin_src elisp
+  (use-package rainbow-mode)
+#+end_src
 * Appearance
 ** Prettify symbols
 #+begin_src elisp
