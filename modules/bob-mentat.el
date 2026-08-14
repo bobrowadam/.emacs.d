@@ -107,13 +107,15 @@
      ("Private" . "~/.pi/agent-private")))
   (mentat-compaction-presentation-function
    #'bob/mentat-observational-memory-compaction-presentation)
+
   (mentat-enabled-models
-   '("openai-codex/gpt-5.6-sol"
+   '("openai-codex/gpt-5.6-luna"
      "openai-codex/gpt-5.6-terra"
-     "openai-codex/gpt-5.6-luna"
+     "openai-codex/gpt-5.6-sol"
+     "openai/gpt-5.6-luna"
      "openai/gpt-5.6-terra"
-     "openai/gpt-5.6-sol"
-     "openai/gpt-5.6-luna"))
+     "openai/gpt-5.6-sol"))
+
   (mentat-extension-command-bindings
    '(("C-M-i" . "/cycle-mode")))
   (mentat-extension-menu-commands
@@ -162,7 +164,7 @@
   (mentat-define-subagent explorer
     :description "Read-only project investigation"
     :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code, explain behavior, and report precise evidence with file locations."
-    :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
+    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
     :thinking low
     :extensions (web-search)
     :tools (read grep find ls exa_search jina_reader)
@@ -180,7 +182,7 @@ For each finding, weigh the risk it prevents against the complexity it adds."
     :thinking high
     :extensions (web-search)
     :tools (read bash grep find ls exa_search jina_reader)
-    :concurrency 4)
+    :concurrency 8)
 
   (mentat-define-subagent ci-check
     :description "Run local CI checks and report failures"
