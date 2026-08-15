@@ -100,7 +100,7 @@
   (mentat-pi-disabled-tools
    '("agent_browser" "agent_browser_web_search"))
   (mentat-default-provider "openai-codex")
-  (mentat-default-model "gpt-5.6-luna")
+  (mentat-default-model "gpt-5.6-sol")
   (mentat-default-effort "high")
   (mentat-pi-profiles
    '(("Work" . "~/.pi/agent")
@@ -163,8 +163,8 @@
 
   (mentat-define-subagent explorer
     :description "Read-only project investigation"
-    :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code, explain behavior, and report precise evidence with file locations."
-    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
+    :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code and explain behavior with precise evidence and file locations. End with a concise handoff under Findings, Evidence, Uncertainty and gaps, and Recommended next step. State None when a section has nothing to report."
+    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking low
     :extensions (web-search)
     :tools (read grep find ls exa_search jina_reader)
@@ -177,8 +177,9 @@ When reviewing a system in a monorepo, check for a nested AGENTS.md or CLAUDE.md
 Do not modify files. Use Bash only for non-mutating inspection and validation commands.
 Return only actionable findings, or state that there are no findings.
 Avoid overly defensive, over-engineered, or unnecessarily complex suggestions.
-For each finding, weigh the risk it prevents against the complexity it adds."
-    :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
+For each finding, weigh the risk it prevents against the complexity it adds.
+End with a concise handoff under Findings, Validation, Remaining risks, and Recommended follow-up. State None when a section has nothing to report."
+    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
     :thinking high
     :extensions (web-search)
     :tools (read bash grep find ls exa_search jina_reader)
@@ -186,21 +187,21 @@ For each finding, weigh the risk it prevents against the complexity it adds."
 
   (mentat-define-subagent ci-check
     :description "Run local CI checks and report failures"
-    :instructions "Run the repository's applicable validation commands. Do not modify source files, install dependencies, or repair failures. Report each command, its result, and concise failure evidence."
+    :instructions "Run the repository's applicable validation commands. Do not modify source files, install dependencies, or repair failures. End with a concise handoff under Outcome, Commands, Failures, Unverified, and Recommended follow-up. Include each command and its result, give concise failure evidence, and state None when a section has nothing to report."
     :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking low
     :tools (read bash grep find ls))
 
   (mentat-define-subagent worker
     :description "Implement one focused, verifiable change after the problem is understood; split broader work into separate runs."
-    :instructions "Implement the delegated change in the current worktree. Keep edits focused, follow repository instructions, run applicable checks, and report changed files and verification results."
-    :model ("openai/gpt-5.6-luna""openai/gpt-5.6-terra" "openai-codex/gpt-5.6-luna" "openai-codex/gpt-5.6-terra")
+    :instructions "Implement the delegated change in the current worktree. Keep edits focused, follow repository instructions, and run applicable checks. End with a concise handoff under Outcome, Changes, Validation, Risks and uncertainty, Unverified, and Recommended follow-up. Include changed files and exact validation results. State None when a section has nothing to report."
+    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :tools (read bash edit write grep find ls))
 
   (mentat-define-subagent ui-manual-qa
     :description "Test UI features in a web browser"
-    :instructions "Perform end-to-end manual UI testing with agent_browser. Exercise the requested user flows, record the observed behavior and any errors, and return a concise report with reproduction steps and recommended fixes. Do not modify project files."
+    :instructions "Perform end-to-end manual UI testing with agent_browser. Exercise the requested user flows and do not modify project files. End with a concise handoff under Outcome, Flows tested, Observations and errors, Unverified, and Recommended follow-up. Include reproduction steps for failures and state None when a section has nothing to report."
     :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking low
     :extensions (agent-browser)
