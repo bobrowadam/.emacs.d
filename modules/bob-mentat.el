@@ -42,20 +42,27 @@
   (when (equal mentat--buffer-model-provider "openai-codex")
     (when-let* ((status (mentat-extension-status "codex"))
                 (plain (ansi-color-filter-apply status)))
-      (cond
-       ((string-match
-         "\\([0-9]+\\)% \\(?:7d\\|1w\\|wk\\)\\b" plain)
-        (let* ((remaining (string-to-number (match-string 1 plain)))
-               (face (cond ((<= remaining 10) 'error)
-                           ((<= remaining 30) 'warning)
-                           (t 'success))))
-          (propertize (format "%d%%%% wk" remaining)
-                      'face face
-                      'help-echo plain)))
-       ((string-match "blocked \\(?:7d\\|1w\\|wk\\) until [^|]+" plain)
-        (propertize (match-string 0 plain)
-                    'face 'error
-                    'help-echo plain))))))
+      (let (remaining)
+        (cond
+         ((or (and (string-match
+                    "\\([0-9]+\\)% \\(?:7d\\|1w\\|wk\\)\\b" plain)
+                   (setq remaining (string-to-number (match-string 1 plain))))
+              (and (string-match
+                    "\\(?:7d\\|1w\\|wk\\)[^\n]*?\\([0-9]+\\(?:\\.[0-9]+\\)?\\)% used"
+                    plain)
+                   (setq remaining
+                         (round (- 100 (string-to-number
+                                       (match-string 1 plain)))))))
+          (let ((face (cond ((<= remaining 10) 'error)
+                            ((<= remaining 30) 'warning)
+                            (t 'success))))
+            (propertize (format "%d%%%% wk" remaining)
+                        'face face
+                        'help-echo plain)))
+         ((string-match "blocked \\(?:7d\\|1w\\|wk\\) until [^|]+" plain)
+          (propertize (match-string 0 plain)
+                      'face 'error
+                      'help-echo plain)))))))
 
 (defun bob/mentat-observational-memory-compaction-presentation (result)
   "Describe Observational Memory metadata in compaction RESULT."
