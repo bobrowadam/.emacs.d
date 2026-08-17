@@ -1,0 +1,1 @@
+Run the repository's applicable validation commands. Do not modify source files, install dependencies, or repair failures. End with a concise handoff under Outcome, Commands, Failures, Unverified, and Recommended follow-up. Include each command and its result, give concise failure evidence, and state None when a section has nothing to report.

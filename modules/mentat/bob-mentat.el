@@ -6,6 +6,30 @@
 ;;; Code:
 
 (require 'ansi-color)
+(require 'subr-x)
+
+(defun bob/mentat-load-agent-instructions (agent)
+  "Load and trim the Markdown instructions for Mentat AGENT."
+  (let* ((directory (file-name-directory
+                     (or load-file-name
+                         (symbol-file 'bob/mentat-load-agent-instructions))))
+         (file (expand-file-name (format "agents/%s.md" agent) directory)))
+    (cond
+     ((not (file-exists-p file))
+      (error "Missing Mentat agent instructions file: %s" file))
+     ((not (file-readable-p file))
+      (error "Unreadable Mentat agent instructions file: %s" file))
+     (t
+      (with-temp-buffer
+        (condition-case err
+            (insert-file-contents file)
+          (error
+           (error "Unable to read Mentat agent instructions file %s: %s"
+                  file (error-message-string err))))
+        (let ((instructions (string-trim (buffer-string))))
+          (if (string-empty-p instructions)
+              (error "Empty Mentat agent instructions file: %s" file)
+            instructions)))))))
 
 (defvar mentat--buffer-model-provider)
 (declare-function bob/elpaca-package-dir "init-generated" (package))
@@ -24,6 +48,18 @@
       (add-to-list 'load-path directory))
     (require 'fnm))
   (fnm-auto-use-mode 1))
+
+(defmacro bob/mentat-define-subagent (name &rest properties)
+  "Define Mentat subagent NAME with loaded role instructions.
+
+PROPERTIES are literal Mentat subagent properties; the role-specific
+`:instructions' value is loaded at runtime from NAME."
+  (declare (indent 1) (debug (symbol &rest form)))
+  `(mentat--register-subagent
+    ',name
+    (append ',properties
+            (list :instructions
+                  (bob/mentat-load-agent-instructions ,(symbol-name name))))))
 
 (bob/mentat-initialize-fnm)
 
@@ -144,7 +180,14 @@
   (mentat-define-extension behaviors
     :source "/Users/bob/.pi/agent/extensions/src/behaviors/index.ts")
   (mentat-define-extension check-elisp
-    :source "/Users/bob/.pi/agent/extensions/src/check-elisp.ts")
+    :source "/Users/bob/.pi/agent/extensions/src/check-elisp.ts"
+    :tools (check_elisp))
+  ;; Registered only for child sessions.  Main Mentat sessions load this
+  ;; internally, so it must not be included in `mentat-enabled-extensions'.
+  (mentat-define-extension mentat-emacs
+    :source "/Users/bob/source/mentat/pi-extensions/src/mentat-emacs.ts"
+    :tools (emacs_eval_elisp emacs_eval_named_elisp
+            emacs_elisp_get_symbol_data emacs_elisp_info))
   (mentat-define-extension codex
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
   (mentat-define-extension resolve-symlinks
@@ -168,47 +211,47 @@
 
   (mentat-reset-subagent-definitions)
 
-  (mentat-define-subagent explorer
+  (bob/mentat-define-subagent explorer
     :description "Read-only project investigation"
-    :instructions "Investigate the requested project area. Do not modify files or system state. Find relevant code and explain behavior with precise evidence and file locations. End with a concise handoff under Findings, Evidence, Uncertainty and gaps, and Recommended next step. State None when a section has nothing to report."
     :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking low
     :extensions (web-search)
     :tools (read grep find ls exa_search jina_reader)
     :concurrency 4)
 
-  (mentat-define-subagent reviewer
+  (bob/mentat-define-subagent reviewer
     :description "Read-only code review with validation commands"
-    :instructions "Review the requested code change for correctness, security, performance, maintainability, and significant test gaps.
-When reviewing a system in a monorepo, check for a nested AGENTS.md or CLAUDE.md relevant to that system and follow its instructions.
-Do not modify files. Use Bash only for non-mutating inspection and validation commands.
-Return only actionable findings, or state that there are no findings.
-Avoid overly defensive, over-engineered, or unnecessarily complex suggestions.
-For each finding, weigh the risk it prevents against the complexity it adds.
-End with a concise handoff under Findings, Validation, Remaining risks, and Recommended follow-up. State None when a section has nothing to report."
     :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
     :thinking high
     :extensions (web-search)
     :tools (read bash grep find ls exa_search jina_reader)
     :concurrency 8)
 
-  (mentat-define-subagent ci-check
+  (bob/mentat-define-subagent ci-check
     :description "Run local CI checks and report failures"
-    :instructions "Run the repository's applicable validation commands. Do not modify source files, install dependencies, or repair failures. End with a concise handoff under Outcome, Commands, Failures, Unverified, and Recommended follow-up. Include each command and its result, give concise failure evidence, and state None when a section has nothing to report."
     :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking low
     :tools (read bash grep find ls))
 
-  (mentat-define-subagent worker
+  (bob/mentat-define-subagent worker
     :description "Implement one focused, verifiable change after the problem is understood; split broader work into separate runs."
-    :instructions "Implement the delegated change in the current worktree. Keep edits focused, follow repository instructions, and run applicable checks. End with a concise handoff under Outcome, Changes, Validation, Risks and uncertainty, Unverified, and Recommended follow-up. Include changed files and exact validation results. State None when a section has nothing to report."
     :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :tools (read bash edit write grep find ls))
 
-  (mentat-define-subagent ui-manual-qa
+  (bob/mentat-define-subagent elisp-expert
+    :description "Expert Emacs Lisp implementation, debugging, design, review, and validation"
+    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
+    :thinking high
+    :extensions (check-elisp mentat-emacs)
+    :tools (read bash edit write grep find ls check_elisp
+            emacs_eval_elisp emacs_eval_named_elisp
+            emacs_elisp_get_symbol_data emacs_elisp_info)
+    :concurrency 1
+    :max-turns 50)
+
+  (bob/mentat-define-subagent ui-manual-qa
     :description "Test UI features in a web browser"
-    :instructions "Perform end-to-end manual UI testing with agent_browser. Exercise the requested user flows and do not modify project files. End with a concise handoff under Outcome, Flows tested, Observations and errors, Unverified, and Recommended follow-up. Include reproduction steps for failures and state None when a section has nothing to report."
     :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking low
     :extensions (agent-browser)

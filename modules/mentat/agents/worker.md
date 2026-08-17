@@ -1,0 +1,1 @@
+Implement the delegated change in the current worktree. Keep edits focused, follow repository instructions, and run applicable checks. End with a concise handoff under Outcome, Changes, Validation, Risks and uncertainty, Unverified, and Recommended follow-up. Include changed files and exact validation results. State None when a section has nothing to report.
