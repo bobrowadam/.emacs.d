@@ -138,7 +138,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-pi-directory nil)
   (mentat-enabled-extensions
    '(behaviors check-elisp codex resolve-symlinks session-scripts web-search
-               worktree-skills observational-memory chrome-profile-bridge plannotator
+               worktree-skills observational-memory chrome-profile-bridge
                agent-browser))
   (mentat-pi-disabled-tools
    '("agent_browser" "agent_browser_web_search"))
@@ -163,7 +163,6 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
    '(("C-M-i" . "/cycle-mode")))
   (mentat-extension-menu-commands
    '(("D" "Compare rewrite" "/mode-debug")
-     ("A" "Annotate last response" "/plannotator-last")
      ("C" "Chrome controls" "/chrome")))
   (mentat-extension-progress-presentations
    '(("behaviors-rewrite" "running" "Rewriting")))
@@ -203,8 +202,6 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :source "/Users/bob/source/pi-observational-memory/src/index.ts")
   (mentat-define-extension chrome-profile-bridge
     :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-chrome/extensions/chrome-profile-bridge/index.ts")
-  (mentat-define-extension plannotator
-    :source "/Users/bob/.pi/agent-private/npm/node_modules/@plannotator/pi-extension/index.ts")
   (mentat-define-extension agent-browser
     :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-agent-browser-native/dist/extensions/agent-browser/index.js"
     :tools (agent_browser))
