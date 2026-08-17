@@ -1842,6 +1842,12 @@ just org files in a directory + ripgrep.
     :demand t)
 #+end_src
 * Git
+** VC mode
+#+begin_src elisp
+  (use-package vc-mode
+    :ensure nil
+    :custom (vc-allow-rewriting-published-history t))
+#+end_src
 ** Ghub
 #+begin_src elisp
   (use-package ghub
