@@ -163,7 +163,9 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
    '(("C-M-i" . "/cycle-mode")))
   (mentat-extension-menu-commands
    '(("D" "Compare rewrite" "/mode-debug")
-     ("C" "Chrome controls" "/chrome")))
+     ("C" "Chrome controls" "/chrome")
+     ("H" "Hindsight last recall" "/hindsight-last")
+     ("S" "Hindsight status" "/hindsight-status")))
   (mentat-extension-progress-presentations
    '(("behaviors-rewrite" "running" "Rewriting")))
   (mentat-mode-line-extra-functions
