@@ -2716,6 +2716,16 @@ LSP/DAP servers manager
 
     (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
+    ;; Pyright's watched-file registrations cause problems for python-ts-mode.
+    (cl-defmethod eglot-client-capabilities :around ((server eglot-lsp-server))
+      (let ((capabilities (cl-call-next-method)))
+        (when (memq 'python-ts-mode (eglot--major-modes server))
+          (setf (plist-get (plist-get (plist-get capabilities :workspace)
+                                      :didChangeWatchedFiles)
+                           :dynamicRegistration)
+                :json-false))
+        capabilities))
+
     (cl-defmethod project-root ((project (head eglot-project)))
       (cdr project))
     :bind
