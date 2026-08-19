@@ -249,6 +249,24 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :concurrency 1
     :max-turns 50)
 
+  (bob/mentat-define-subagent effect-ts-backend-expert
+    :description "Expert Effect TypeScript backend implementation, debugging, design, review, and validation"
+    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
+    :thinking high
+    :extensions (web-search)
+    :tools (read bash edit write grep find ls exa_search jina_reader)
+    :concurrency 1
+    :max-turns 50)
+
+  (bob/mentat-define-subagent frontend-react-expert
+    :description "Expert React frontend implementation, debugging, design, review, and validation"
+    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
+    :thinking high
+    :extensions (web-search)
+    :tools (read bash edit write grep find ls exa_search jina_reader)
+    :concurrency 1
+    :max-turns 50)
+
   (bob/mentat-define-subagent ui-manual-qa
     :description "Test UI features in a web browser"
     :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
