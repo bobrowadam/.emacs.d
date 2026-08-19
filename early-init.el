@@ -2,17 +2,24 @@
 
 (setq package-enable-at-startup nil)
 
-;; GUI applications do not inherit Homebrew's PATH from the login shell.
-;; Native compilation needs Homebrew's GCC driver, and FNM is installed here.
-(let* ((homebrew-bin "/opt/homebrew/bin")
+;; GUI Emacs does not inherit Homebrew, Cargo, or Pyenv from the login shell.
+(let* ((directories (delq nil
+                          (mapcar (lambda (directory)
+                                    (when (file-directory-p directory)
+                                      directory))
+                                  (list (expand-file-name "~/.pyenv/shims")
+                                        "/opt/homebrew/bin"
+                                        (expand-file-name "~/.cargo/bin")))))
        (separator (if (characterp path-separator)
                       (char-to-string path-separator)
                     path-separator))
-       (path (or (getenv "PATH") "")))
-  (when (file-directory-p homebrew-bin)
-    (add-to-list 'exec-path homebrew-bin)
-    (unless (member homebrew-bin (split-string path separator t))
-      (setenv "PATH" (concat homebrew-bin separator path)))))
+       (path (split-string (or (getenv "PATH") "") separator t)))
+  ;; Prepend in declared order, removing existing entries first.
+  (dolist (directory (reverse directories))
+    (setq exec-path (cons directory (delete directory exec-path)))
+    (setq path (cons directory (delete directory path))))
+  (when directories
+    (setenv "PATH" (mapconcat #'identity path separator))))
 
 ;; Match theme color early on (smoother transition).
 (add-to-list 'default-frame-alist '(background-color . "#1f1f28"))
