@@ -106,7 +106,10 @@
   (use-package jsonrpc)
   (use-package posframe)
   (use-package vui
-    :ensure (:repo "d12frosted/vui.el" :fetcher github :files ("*.el")))
+    :ensure (:repo "bobrowadam/vui.el"
+             :fetcher github
+             :branch "mentat-stream-open-row"
+             :files ("*.el")))
   (use-package websocket
     :disabled t
     :ensure t)
