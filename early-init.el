@@ -2,12 +2,14 @@
 
 (setq package-enable-at-startup nil)
 
-;; GUI Emacs does not inherit Homebrew, Cargo, or Pyenv from the login shell.
+;; GUI Emacs does not inherit user-local, Homebrew, Cargo, or Pyenv paths
+;; from the login shell.
 (let* ((directories (delq nil
                           (mapcar (lambda (directory)
                                     (when (file-directory-p directory)
                                       directory))
-                                  (list (expand-file-name "~/.pyenv/shims")
+                                  (list (expand-file-name "~/.local/bin")
+                                        (expand-file-name "~/.pyenv/shims")
                                         "/opt/homebrew/bin"
                                         (expand-file-name "~/.cargo/bin")))))
        (separator (if (characterp path-separator)
