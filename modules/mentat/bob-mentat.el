@@ -8,28 +8,35 @@
 (require 'ansi-color)
 (require 'subr-x)
 
+(defun bob/mentat--read-agent-instructions-file (file)
+  "Read and trim Mentat agent instructions FILE."
+  (cond
+   ((not (file-exists-p file))
+    (error "Missing Mentat agent instructions file: %s" file))
+   ((not (file-readable-p file))
+    (error "Unreadable Mentat agent instructions file: %s" file))
+   (t
+    (with-temp-buffer
+      (condition-case err
+          (insert-file-contents file)
+        (error
+         (error "Unable to read Mentat agent instructions file %s: %s"
+                file (error-message-string err))))
+      (let ((instructions (string-trim (buffer-string))))
+        (if (string-empty-p instructions)
+            (error "Empty Mentat agent instructions file: %s" file)
+          instructions))))))
+
 (defun bob/mentat-load-agent-instructions (agent)
-  "Load and trim the Markdown instructions for Mentat AGENT."
+  "Load role-specific and shared instructions for Mentat AGENT."
   (let* ((directory (file-name-directory
                      (or load-file-name
                          (symbol-file 'bob/mentat-load-agent-instructions))))
-         (file (expand-file-name (format "agents/%s.md" agent) directory)))
-    (cond
-     ((not (file-exists-p file))
-      (error "Missing Mentat agent instructions file: %s" file))
-     ((not (file-readable-p file))
-      (error "Unreadable Mentat agent instructions file: %s" file))
-     (t
-      (with-temp-buffer
-        (condition-case err
-            (insert-file-contents file)
-          (error
-           (error "Unable to read Mentat agent instructions file %s: %s"
-                  file (error-message-string err))))
-        (let ((instructions (string-trim (buffer-string))))
-          (if (string-empty-p instructions)
-              (error "Empty Mentat agent instructions file: %s" file)
-            instructions)))))))
+         (files (mapcar (lambda (name)
+                          (expand-file-name (format "agents/%s.md" name)
+                                            directory))
+                        (list agent "common"))))
+    (mapconcat #'bob/mentat--read-agent-instructions-file files "\n\n")))
 
 (defvar mentat--buffer-model-provider)
 (declare-function bob/elpaca-package-dir "init-generated" (package))
@@ -213,14 +220,14 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (bob/mentat-define-subagent explorer
     :description "Read-only project investigation"
     :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
-    :thinking low
+    :thinking medium
     :extensions (web-search)
     :tools (read grep find ls exa_search jina_reader)
     :concurrency 4)
 
   (bob/mentat-define-subagent reviewer
     :description "Read-only code review with validation commands"
-    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
+    :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
     :extensions (web-search)
     :tools (read bash grep find ls exa_search jina_reader)
@@ -240,7 +247,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (bob/mentat-define-subagent elisp-expert
     :description "Expert Emacs Lisp implementation, debugging, design, review, and validation"
-    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
+    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (check-elisp mentat-emacs)
     :tools (read bash edit write grep find ls check_elisp
@@ -251,7 +258,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (bob/mentat-define-subagent effect-ts-backend-expert
     :description "Expert Effect TypeScript backend implementation, debugging, design, review, and validation"
-    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
+    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (web-search)
     :tools (read bash edit write grep find ls exa_search jina_reader)
@@ -260,7 +267,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (bob/mentat-define-subagent frontend-react-expert
     :description "Expert React frontend implementation, debugging, design, review, and validation"
-    :model ("openai/gpt-5.6-terra" "openai-codex/gpt-5.6-terra")
+    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (web-search)
     :tools (read bash edit write grep find ls exa_search jina_reader)
@@ -269,8 +276,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (bob/mentat-define-subagent ui-manual-qa
     :description "Test UI features in a web browser"
-    :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
-    :thinking low
+    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
+    :thinking medium
     :extensions (agent-browser)
     :tools (read grep find ls agent_browser))
 
