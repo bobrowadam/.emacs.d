@@ -784,15 +784,41 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
        (bob/prose-word-completion--frequency-score word)
        (- (- (length word) (length prefix)))))
 
+  (defun bob/prose-word-completion--ordinary-titlecase-p (word)
+    "Return non-nil when WORD has narrow ordinary titlecase."
+    (let ((case-fold-search nil))
+      (string-match-p "\\`[[:upper:]][[:lower:]][[:lower:]'-]+\\'" word)))
+
   (defun bob/prose-word-completion--add-candidate (table word prefix score)
     (let ((normalized (downcase word)))
       (when (and (not (equal normalized (downcase prefix)))
                  (equal (bob/prose-word-completion--bucket-key normalized)
                         (bob/prose-word-completion--bucket-key prefix))
                  (string-match-p "\\`[[:alpha:]][[:alpha:]'-]\\{2,\\}\\'" word))
-        (let ((existing (gethash normalized table)))
-          (when (or (not existing) (> score (cdr existing)))
-            (puthash normalized (cons word score) table))))))
+        (let* ((existing (gethash normalized table))
+               (existing-word (and existing (car existing)))
+               (canonical
+                (cond
+                 ((bob/prose-word-completion--ordinary-titlecase-p word)
+                  word)
+                 ((and existing-word
+                       (bob/prose-word-completion--ordinary-titlecase-p
+                        existing-word))
+                  existing-word)
+                 ((or (not existing) (> score (cdr existing))) word)
+                 (t existing-word))))
+          (puthash normalized
+                   (cons canonical
+                         (if existing
+                             (max score (cdr existing))
+                           score))
+                   table)))))
+
+  (defun bob/prose-word-completion--case-group (word)
+    "Return WORD and its lowercase alternative as one case group."
+    (if (bob/prose-word-completion--ordinary-titlecase-p word)
+        (list word (downcase word))
+      (list word)))
 
   (defun bob/prose-word-completion--words-in-buffer (&optional max-chars)
     "Return cached prose words from current buffer, scanning at most MAX-CHARS."
@@ -815,10 +841,17 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                            (point-max))))
                 (while (re-search-forward "[[:alpha:]][[:alpha:]'-]\\{2,\\}" end t)
                   (let* ((word (match-string-no-properties 0))
-                         (normalized (downcase word)))
-                    (unless (gethash normalized seen)
-                      (puthash normalized t seen)
-                      (push word words)))))))
+                         (normalized (downcase word))
+                         (existing (gethash normalized seen)))
+                    (cond
+                     ((null existing)
+                      (puthash normalized word seen)
+                      (push word words))
+                     ((and (bob/prose-word-completion--ordinary-titlecase-p word)
+                           (not (bob/prose-word-completion--ordinary-titlecase-p
+                                 existing)))
+                      (setcar (member existing words) word)
+                      (puthash normalized word seen))))))))
           (setq words (nreverse words))
           (setq bob/prose-word-completion--buffer-word-cache
                 (list tick limit words
@@ -889,7 +922,13 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
           (dolist (word
                    (bob/prose-word-completion--bucket-words-in-buffer
                     prefix bob/prose-word-completion-project-buffer-max-chars))
-            (puthash (downcase word) word project-words))))
+            (let* ((normalized (downcase word))
+                   (existing (gethash normalized project-words)))
+              (when (or (null existing)
+                        (bob/prose-word-completion--ordinary-titlecase-p word)
+                        (not (bob/prose-word-completion--ordinary-titlecase-p
+                              existing)))
+                (puthash normalized word project-words))))))
       (maphash
        (lambda (normalized word)
          (push (list :word word
@@ -953,17 +992,22 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                      (gethash (downcase prefix) (plist-get data :frequencies)))
             (bob/prose-word-completion--add-candidate table (concat prefix "s")
                                                       prefix 40)))
-        (let ((candidates
-               (mapcar #'car
-                       (sort (hash-table-values table)
-                             (lambda (a b)
-                               (let ((score-diff (- (cdr a) (cdr b))))
-                                 (if (/= score-diff 0)
-                                     (> score-diff 0)
-                                   (string< (car a) (car b)))))))))
+        (let ((semantic-candidates
+               (sort (hash-table-values table)
+                     (lambda (a b)
+                       (let ((score-diff (- (cdr a) (cdr b))))
+                         (if (/= score-diff 0)
+                             (> score-diff 0)
+                           (string< (car a) (car b)))))))
+              candidates)
+          (dolist (word semantic-candidates)
+            (let ((group (bob/prose-word-completion--case-group (car word))))
+              (when (<= (+ (length candidates) (length group))
+                        (max 0 bob/prose-word-completion-candidate-limit))
+                (setq candidates (nconc candidates group)))))
           (when candidates
             (list (car bounds) (cdr bounds)
-                  (seq-take candidates bob/prose-word-completion-candidate-limit)
+                  candidates
                   :exclusive 'no
                   :annotation-function (lambda (_) " word")))))))
 
