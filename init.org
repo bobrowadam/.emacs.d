@@ -631,6 +631,18 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :hook (prog-mode magit-status-mode markdown-mode markdown-view-mode text-mode))
 #+end_src
 
+* Abbrev
+#+begin_src elisp
+  (use-package abbrev
+    :ensure nil
+    :hook ((text-mode . abbrev-mode)
+           (prog-mode . abbrev-mode)
+           (log-edit-mode . abbrev-mode)
+           (org-mode . abbrev-mode)
+           (markdown-mode . abbrev-mode)
+           (markdown-ts-mode . abbrev-mode)))
+#+end_src
+
 * Iedit
 #+begin_src elisp
   (use-package iedit
