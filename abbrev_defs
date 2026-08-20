@@ -8,6 +8,11 @@
   '(
     ("abbrev" "Update abbrev_defs" nil :count 1)
     ("text-mode" "Update todo's" nil :count 0)
-    ("todos" "Update todo's" nil :count 3)
+    ("todos" "Update todo's" nil :count 4)
+   ))
+
+(define-abbrev-table 'vc-git-log-edit-mode-abbrev-table
+  '(
+    ("todos" "Update todo's" nil :count 2)
    ))
 

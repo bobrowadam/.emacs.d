@@ -164,7 +164,10 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
      "openai-codex/gpt-5.6-sol"
      "openai/gpt-5.6-luna"
      "openai/gpt-5.6-terra"
-     "openai/gpt-5.6-sol"))
+     "openai/gpt-5.6-sol"
+     "azure-openai-responses/gpt-5.6-luna"
+     "azure-openai-responses/gpt-5.6-terra"
+     "azure-openai-responses/gpt-5.6-sol"))
 
   (mentat-extension-command-bindings
    '(("C-M-i" . "/cycle-mode")))
