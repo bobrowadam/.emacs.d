@@ -269,8 +269,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :description "Expert React frontend implementation, debugging, design, review, and validation"
     :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
-    :extensions (web-search)
-    :tools (read bash edit write grep find ls exa_search jina_reader)
+    :extensions (web-search agent-browser)
+    :tools (read bash edit write grep find ls exa_search jina_reader agent_browser)
     :concurrency 1
     :max-turns 50)
 
