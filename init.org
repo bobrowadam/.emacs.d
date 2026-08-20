@@ -1852,6 +1852,13 @@ just org files in a directory + ripgrep.
     :ensure nil
     :custom (vc-allow-rewriting-published-history t))
 #+end_src
+*** Consult Vc Modified Files
+#+begin_src elisp
+  (use-package consult-vc-modified-files
+    :bind
+    (("C-x v /" . consult-vc-modified-files)
+     ("C-x v ." . consult-vc-log-select-files)))
+#+end_src
 ** Ghub
 #+begin_src elisp
   (use-package ghub
