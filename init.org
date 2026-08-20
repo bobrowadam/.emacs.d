@@ -481,8 +481,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
           auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
           auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
           tramp-backup-directory-alist `((".*" . ,backup-dir))
-          tramp-auto-save-directory auto-saves-dir)
-    (setq vc-handled-backends '(Git)))
+          tramp-auto-save-directory auto-saves-dir))
 
   (setq backup-by-copying t    ; Don't delink hardlinks
         delete-old-versions t  ; Clean up the backups
@@ -1853,7 +1852,9 @@ just org files in a directory + ripgrep.
 #+begin_src elisp
   (use-package vc-mode
     :ensure nil
-    :custom (vc-allow-rewriting-published-history t))
+    :custom 
+    (vc-handled-backends '(Git))
+    (vc-allow-rewriting-published-history t))
 #+end_src
 *** Consult Vc Modified Files
 #+begin_src elisp
