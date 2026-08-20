@@ -628,7 +628,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 
   (use-package visual-line-mode
     :ensure nil
-    :hook (prog-mode magit-status-mode markdown-ts-mode text-mode))
+    :hook (prog-mode magit-status-mode markdown-mode markdown-view-mode text-mode))
 #+end_src
 
 * Iedit
