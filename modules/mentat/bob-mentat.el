@@ -70,16 +70,6 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
 (bob/mentat-initialize-fnm)
 
-(defface bob/mentat-behavior-status-face
-  '((t :inherit mentat-mode-line-profile-face))
-  "Face for the active behavior in Mentat's mode line."
-  :group 'faces)
-
-(defun bob/mentat-behavior-status ()
-  "Return the active behavior for Mentat's mode line."
-  (when-let* ((status (mentat-extension-status "behaviors-mode")))
-    (propertize status 'face 'bob/mentat-behavior-status-face)))
-
 (defun bob/mentat-codex-weekly-usage ()
   "Return the Codex weekly allowance remaining for Mentat's mode line."
   (when (equal mentat--buffer-model-provider "openai-codex")
@@ -169,18 +159,13 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
      "azure-openai-responses/gpt-5.6-terra"
      "azure-openai-responses/gpt-5.6-sol"))
 
-  (mentat-extension-command-bindings
-   '(("C-M-i" . "/cycle-mode")))
+  (mentat-extension-command-bindings nil)
   (mentat-extension-menu-commands
-   '(("D" "Compare rewrite" "/mode-debug")
-     ("C" "Chrome controls" "/chrome")
+   '(("C" "Chrome controls" "/chrome")
      ("H" "Hindsight last recall" "/hindsight-last")
      ("S" "Hindsight status" "/hindsight-status")))
-  (mentat-extension-progress-presentations
-   '(("behaviors-rewrite" "running" "Rewriting")))
   (mentat-mode-line-extra-functions
-   '(bob/mentat-codex-weekly-usage
-     bob/mentat-behavior-status))
+   '(bob/mentat-codex-weekly-usage))
   (mentat-prompt-extra-completion-at-point-functions nil)
   (mentat-prompt-extra-word-candidate-functions
    '(bob/mentat-prose-word-candidates))
