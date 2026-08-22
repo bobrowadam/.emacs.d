@@ -161,7 +161,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (mentat-extension-command-bindings nil)
   (mentat-extension-menu-commands
-   '(("C" "Chrome controls" "/chrome")
+   '(("B" "Toggle Behaviors" "/behaviors")
+     ("C" "Chrome controls" "/chrome")
      ("H" "Hindsight last recall" "/hindsight-last")
      ("S" "Hindsight status" "/hindsight-status")))
   (mentat-mode-line-extra-functions
