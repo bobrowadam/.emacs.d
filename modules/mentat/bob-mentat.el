@@ -133,10 +133,11 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   :demand t
   :custom
   (mentat-pi-directory nil)
+  (mentat-diagnostic-capture-enabled t)
   (mentat-enabled-extensions
-   '(behaviors check-elisp codex resolve-symlinks session-scripts web-search
-               worktree-skills observational-memory chrome-profile-bridge
-               agent-browser prompt-observability))
+   '(check-elisp codex resolve-symlinks session-scripts web-search
+                 worktree-skills observational-memory chrome-profile-bridge
+                 agent-browser))
   (mentat-pi-disabled-tools
    '("agent_browser" "agent_browser_web_search"))
   (mentat-default-provider "openai-codex")
@@ -152,17 +153,13 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
    '("openai-codex/gpt-5.6-luna"
      "openai-codex/gpt-5.6-terra"
      "openai-codex/gpt-5.6-sol"
-     "openai/gpt-5.6-luna"
-     "openai/gpt-5.6-terra"
-     "openai/gpt-5.6-sol"
      "azure-openai-responses/gpt-5.6-luna"
      "azure-openai-responses/gpt-5.6-terra"
      "azure-openai-responses/gpt-5.6-sol"))
 
   (mentat-extension-command-bindings nil)
   (mentat-extension-menu-commands
-   '(("B" "Toggle Behaviors" "/behaviors")
-     ("C" "Chrome controls" "/chrome")
+   '(("C" "Chrome controls" "/chrome")
      ("H" "Hindsight last recall" "/hindsight-last")
      ("S" "Hindsight status" "/hindsight-status")))
   (mentat-mode-line-extra-functions
@@ -174,8 +171,6 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
    #'bob/mentat-prose-word-candidate-score)
   :config
   (mentat-reset-extensions)
-  (mentat-define-extension behaviors
-    :source "/Users/bob/.pi/agent/extensions/src/behaviors/index.ts")
   (mentat-define-extension check-elisp
     :source "/Users/bob/.pi/agent/extensions/src/check-elisp.ts"
     :tools (check_elisp))
@@ -184,7 +179,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-define-extension mentat-emacs
     :source "/Users/bob/source/mentat/pi-extensions/src/mentat-emacs.ts"
     :tools (emacs_eval_elisp emacs_eval_named_elisp
-            emacs_elisp_get_symbol_data emacs_elisp_info))
+                             emacs_elisp_get_symbol_data emacs_elisp_info))
   (mentat-define-extension codex
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
   (mentat-define-extension resolve-symlinks
@@ -203,16 +198,12 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-define-extension agent-browser
     :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-agent-browser-native/dist/extensions/agent-browser/index.js"
     :tools (agent_browser))
-  ;; Keep prompt observation last among selected extensions so its provider
-  ;; hook sees the final provider request after selected prompt composition.
-  (mentat-define-extension prompt-observability
-    :source "/Users/bob/.pi/agent/extensions/src/prompt-observability/index.ts")
 
   (mentat-reset-subagent-definitions)
 
   (bob/mentat-define-subagent explorer
     :description "Read-only project investigation"
-    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
+    :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking medium
     :extensions (web-search)
     :tools (read grep find ls exa_search jina_reader)
@@ -220,7 +211,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (bob/mentat-define-subagent reviewer
     :description "Read-only code review with validation commands"
-    :model ("openai/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
+    :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
     :extensions (web-search)
     :tools (read bash grep find ls exa_search jina_reader)
@@ -228,30 +219,30 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (bob/mentat-define-subagent ci-check
     :description "Run local CI checks and report failures"
-    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
+    :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking low
     :tools (read bash grep find ls))
 
   (bob/mentat-define-subagent worker
     :description "Implement one focused, verifiable change after the problem is understood; split broader work into separate runs."
-    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
+    :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :tools (read bash edit write grep find ls))
 
   (bob/mentat-define-subagent elisp-expert
     :description "Expert Emacs Lisp implementation, debugging, design, review, and validation"
-    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
+    :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (check-elisp mentat-emacs)
     :tools (read bash edit write grep find ls check_elisp
-            emacs_eval_elisp emacs_eval_named_elisp
-            emacs_elisp_get_symbol_data emacs_elisp_info)
+                 emacs_eval_elisp emacs_eval_named_elisp
+                 emacs_elisp_get_symbol_data emacs_elisp_info)
     :concurrency 1
     :max-turns 50)
 
   (bob/mentat-define-subagent effect-ts-backend-expert
     :description "Expert Effect TypeScript backend implementation, debugging, design, review, and validation"
-    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
+    :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (web-search)
     :tools (read bash edit write grep find ls exa_search jina_reader)
@@ -260,7 +251,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (bob/mentat-define-subagent frontend-react-expert
     :description "Expert React frontend implementation, debugging, design, review, and validation"
-    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
+    :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (web-search agent-browser)
     :tools (read bash edit write grep find ls exa_search jina_reader agent_browser)
@@ -269,7 +260,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
 
   (bob/mentat-define-subagent ui-manual-qa
     :description "Test UI features in a web browser"
-    :model ("openai/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
+    :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking medium
     :extensions (agent-browser)
     :tools (read grep find ls agent_browser))
