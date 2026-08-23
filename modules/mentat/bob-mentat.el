@@ -136,7 +136,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-enabled-extensions
    '(behaviors check-elisp codex resolve-symlinks session-scripts web-search
                worktree-skills observational-memory chrome-profile-bridge
-               agent-browser))
+               agent-browser prompt-observability))
   (mentat-pi-disabled-tools
    '("agent_browser" "agent_browser_web_search"))
   (mentat-default-provider "openai-codex")
@@ -203,6 +203,10 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-define-extension agent-browser
     :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-agent-browser-native/dist/extensions/agent-browser/index.js"
     :tools (agent_browser))
+  ;; Keep prompt observation last among selected extensions so its provider
+  ;; hook sees the final provider request after selected prompt composition.
+  (mentat-define-extension prompt-observability
+    :source "/Users/bob/.pi/agent/extensions/src/prompt-observability/index.ts")
 
   (mentat-reset-subagent-definitions)
 
