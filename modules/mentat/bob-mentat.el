@@ -138,14 +138,33 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
    '(check-elisp codex resolve-symlinks session-scripts web-search
                  worktree-skills observational-memory chrome-profile-bridge
                  agent-browser))
-  (mentat-pi-disabled-tools
-   '("agent_browser" "agent_browser_web_search"))
+  (mentat-pi-disabled-tools nil)
   (mentat-default-provider "openai-codex")
   (mentat-default-model "gpt-5.6-sol")
   (mentat-default-effort "high")
   (mentat-pi-profiles
-   '(("Work" . "~/.pi/agent")
-     ("Private" . "~/.pi/agent-private")))
+   '(("Work"
+      :directory "~/.pi/agent"
+      :disabled-tools ("agent_browser" "agent_browser_web_search"))
+     ("Private"
+      :directory "~/.pi/agent-private"
+      :disabled-tools ("agent_browser" "agent_browser_web_search"))
+     ("Pure Emacs"
+      :directory "~/.pi/agent-pure-emacs"
+      :tools ("emacs_capture_screenshot"
+              "emacs_eval_elisp"
+              "emacs_eval_named_elisp"
+              "emacs_elisp_get_symbol_data"
+              "emacs_elisp_info"
+              "hindsight_recall"
+              "hindsight_remember"
+              "hindsight_reflect"
+              "recall"
+              "exa_search"
+              "jina_reader"
+              "agent_browser")
+      :disabled-tools ("grep" "find" "ls" "show_me"
+                       "agent_browser" "agent_browser_web_search"))))
   (mentat-compaction-presentation-function
    #'bob/mentat-observational-memory-compaction-presentation)
 
