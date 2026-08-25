@@ -230,7 +230,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-define-extension worktree-skills
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
-    :source "/Users/bob/source/pi-observational-memory/src/index.ts")
+    :source "git:github.com/elpapi42/pi-observational-memory@ce9fc982b3a219a7839f07c9f4a3e054e81a2b21")
   (mentat-define-extension chrome-profile-bridge
     :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-chrome/extensions/chrome-profile-bridge/index.ts")
   (mentat-define-extension agent-browser
