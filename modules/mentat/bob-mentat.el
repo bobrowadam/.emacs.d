@@ -175,6 +175,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
       :tools ("emacs_capture_screenshot"
               "emacs_eval_elisp"
               "emacs_eval_named_elisp"
+              "emacs_eval_async"
+              "emacs_run_process"
               "emacs_elisp_get_symbol_data"
               "emacs_elisp_info"
               "hindsight_recall"
@@ -216,8 +218,9 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   ;; internally, so it must not be included in `mentat-enabled-extensions'.
   (mentat-define-extension mentat-emacs
     :source "/Users/bob/source/mentat/pi-extensions/src/mentat-emacs.ts"
-    :tools (emacs_eval_elisp emacs_eval_named_elisp
-                             emacs_elisp_get_symbol_data emacs_elisp_info))
+    :tools (emacs_eval_elisp emacs_eval_named_elisp emacs_eval_async
+                             emacs_run_process emacs_elisp_get_symbol_data
+                             emacs_elisp_info))
   (mentat-define-extension codex
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
   (mentat-define-extension resolve-symlinks
@@ -273,8 +276,9 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :thinking high
     :extensions (check-elisp mentat-emacs)
     :tools (read bash edit write grep find ls check_elisp
-                 emacs_eval_elisp emacs_eval_named_elisp
-                 emacs_elisp_get_symbol_data emacs_elisp_info)
+                 emacs_eval_elisp emacs_eval_named_elisp emacs_eval_async
+                 emacs_run_process emacs_elisp_get_symbol_data
+                 emacs_elisp_info)
     :concurrency 1
     :max-turns 50)
 
