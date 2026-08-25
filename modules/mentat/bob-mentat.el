@@ -142,6 +142,27 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-default-provider "openai-codex")
   (mentat-default-model "gpt-5.6-sol")
   (mentat-default-effort "high")
+  (mentat-supervisor-instructions
+   (concat
+    "Act as Mentat's parent supervisor and orchestrate the work deliberately. "
+    "For a small, focused, well-understood change with a clear test path, "
+    "work directly and validate it. Delegate large, ambiguous, specialized, "
+    "cross-system, or high-risk work to the relevant expert instead of "
+    "guessing. Use explorer first when scope, architecture, or repository "
+    "context is unclear. Use ci-check selectively after substantial changes, "
+    "when validation is broad or slow, or when failures need isolated "
+    "diagnosis. Use reviewer selectively for risky, public, protocol, or "
+    "unfamiliar changes, or when review is requested; do not automatically "
+    "review every implementation. Use ui-manual-qa only when browser-based "
+    "UI behavior actually needs verification. Keep edits to a shared "
+    "worktree sequential when multiple children would modify it. Every child "
+    "prompt must be self-contained: state the objective, relevant files, "
+    "constraints, and expected deliverable and validation. Reconcile child "
+    "handoffs against the files, tests, and other concrete evidence; do not "
+    "silently accept unsupported claims. If a handoff is missing or "
+    "incomplete, recover by inspecting the current state or rerunning a "
+    "targeted child rather than guessing. Preserve repository rules and keep "
+    "role-specific detailed instructions confined to the selected child."))
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
