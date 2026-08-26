@@ -139,6 +139,13 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
                  worktree-skills observational-memory chrome-profile-bridge
                  agent-browser))
   (mentat-pi-disabled-tools nil)
+  (mentat-emacs-advertised-libraries
+   '((dash . "list-processing macros and functions")
+     (s . "string manipulation")
+     (f . "file and path manipulation")
+     (ht . "hash-table helpers")
+     (aio . "cooperative asynchronous workflows")
+     (request . "HTTP requests")))
   (mentat-default-provider "openai-codex")
   (mentat-default-model "gpt-5.6-sol")
   (mentat-default-effort "high")
@@ -172,6 +179,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
                        "emacs_eval_named_elisp"
                        "emacs_eval_async"
                        "emacs_run_process"
+                       "emacs_elisp_search"
                        "emacs_elisp_get_symbol_data"
                        "emacs_elisp_info"))
      ("Private"
@@ -184,6 +192,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
               "emacs_eval_named_elisp"
               "emacs_eval_async"
               "emacs_run_process"
+              "emacs_elisp_search"
               "emacs_elisp_get_symbol_data"
               "emacs_elisp_info"
               "hindsight_recall"
@@ -226,8 +235,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-define-extension mentat-emacs
     :source "/Users/bob/source/mentat/pi-extensions/src/mentat-emacs.ts"
     :tools (emacs_eval_elisp emacs_eval_named_elisp emacs_eval_async
-                             emacs_run_process emacs_elisp_get_symbol_data
-                             emacs_elisp_info))
+                             emacs_run_process emacs_elisp_search
+                             emacs_elisp_get_symbol_data emacs_elisp_info))
   (mentat-define-extension codex
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
   (mentat-define-extension resolve-symlinks
@@ -284,8 +293,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :extensions (check-elisp mentat-emacs)
     :tools (read bash edit write grep find ls check_elisp
                  emacs_eval_elisp emacs_eval_named_elisp emacs_eval_async
-                 emacs_run_process emacs_elisp_get_symbol_data
-                 emacs_elisp_info)
+                 emacs_run_process emacs_elisp_search
+                 emacs_elisp_get_symbol_data emacs_elisp_info)
     :concurrency 1
     :max-turns 50)
 
