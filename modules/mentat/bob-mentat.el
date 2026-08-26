@@ -166,7 +166,14 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
-      :disabled-tools ("agent_browser" "agent_browser_web_search"))
+      :disabled-tools ("agent_browser" "agent_browser_web_search"
+                       "emacs_capture_screenshot"
+                       "emacs_eval_elisp"
+                       "emacs_eval_named_elisp"
+                       "emacs_eval_async"
+                       "emacs_run_process"
+                       "emacs_elisp_get_symbol_data"
+                       "emacs_elisp_info"))
      ("Private"
       :directory "~/.pi/agent-private"
       :disabled-tools ("agent_browser" "agent_browser_web_search"))
