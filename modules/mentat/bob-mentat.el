@@ -146,9 +146,9 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
      (ht . "hash-table helpers")
      (aio . "cooperative asynchronous workflows")
      (request . "HTTP requests")))
-  (mentat-default-provider "openai-codex")
+  (mentat-default-provider "azure-openai-responses")
   (mentat-default-model "gpt-5.6-sol")
-  (mentat-default-effort "high")
+  (mentat-default-effort "low")
   (mentat-supervisor-instructions
    (concat
     "Act as Mentat's parent supervisor and orchestrate the work deliberately. "
