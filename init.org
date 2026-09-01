@@ -1052,7 +1052,26 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (global-set-key (kbd "C-c p s") #'bob/pi-send-buffer-context)
     (global-set-key (kbd "C-c p a") #'pi/ask))
 #+end_src
-
+** ellm
+#+begin_src emacs-lisp
+  (use-package ellm
+    :ensure (:host github :repo "isamert/ellm.el"
+                   :files ("*.el" (:exclude "ellm-test.el")))
+    :config
+    (require 'ellm-tools)
+    (require 'ellm-llm)
+    (require 'ellm-codex)
+    (setq ellm-provider-alist
+          `((codex . (:provider ,(ellm-make-codex-provider :chat-model "gpt-5.6-luna")
+                                :models ("gpt-5.6-terra" "gpt-5.6-sol" "gpt-5.6-luna")))))
+    ;; Set this to not get bombarded by nonfree warnings
+    (setq llm-warn-on-nonfree nil))
+#+end_src
+** Sema
+#+begin_src elisp
+  (use-package sema-mode
+    :mode "\\.sema\\'")
+#+end_src
 * Ediff
 #+begin_src elisp
   (defvar ediff-buffer-A)
@@ -2316,53 +2335,54 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 ** Paredit
 #+begin_src elisp
   (use-package paredit
-    :demand t
-    :init
-    (defun bob/paredit-mode-maybe ()
-      "Enable paredit only in Lisp buffers.
-Guards against `lm-package-version' which temporarily enables
-`emacs-lisp-mode' on arbitrary files, firing mode hooks and
-making paredit's `check-parens' blow up on non-Lisp syntax."
-      (when (or (not buffer-file-name)
-                (string-match-p "\\.\\(el\\|clj[sc]?\\|lisp\\|scm\\|rkt\\)\\(?:\\.gz\\)?\\'"
-                                buffer-file-name))
-        (paredit-mode 1)))
-    :hook ((emacs-lisp-mode . bob/paredit-mode-maybe)
-           (lisp-interaction-mode . bob/paredit-mode-maybe)
-           (lisp-mode . paredit-mode)
-           (lisp-data-mode . paredit-mode)
-           (clojure-ts-mode . paredit-mode)
-           (cider-repl-mode . paredit-mode))
-    :bind (:map paredit-mode-map ("{" . paredit-open-curly))
-    :config
-    (remove-hook 'emacs-lisp-mode-hook #'paredit-mode)
-    (add-hook 'inferior-emacs-lisp-mode-hook #'paredit-mode))
+               :demand t
+               :init
+               (defun bob/paredit-mode-maybe ()
+                      "Enable paredit only in Lisp buffers.
+  Guards against `lm-package-version' which temporarily enables
+  `emacs-lisp-mode' on arbitrary files, firing mode hooks and
+  making paredit's `check-parens' blow up on non-Lisp syntax."
+                      (when (or (not buffer-file-name)
+                                (string-match-p "\\.\\(el\\|clj[sc]?\\|lisp\\|scm\\|rkt\\)\\(?:\\.gz\\)?\\'"
+                                                buffer-file-name))
+                        (paredit-mode 1)))
+               :hook ((emacs-lisp-mode . bob/paredit-mode-maybe)
+                      (lisp-interaction-mode . bob/paredit-mode-maybe)
+                      (sema-mode . paredit-mode)
+                      (lisp-mode . paredit-mode)
+                      (lisp-data-mode . paredit-mode)
+                      (clojure-ts-mode . paredit-mode)
+                      (cider-repl-mode . paredit-mode))
+               :bind (:map paredit-mode-map ("{" . paredit-open-curly))
+               :config
+               (remove-hook 'emacs-lisp-mode-hook #'paredit-mode)
+               (add-hook 'inferior-emacs-lisp-mode-hook #'paredit-mode))
 
   (defun bob/simple-minibuffer-parens ()
-    (require 'paredit)
-    "Add basic paren handling and paredit-style editing in minibuffer."
-    ;; Basic paren insertion
-    (local-set-key (kbd "(") 'paredit-open-round)
-    (local-set-key (kbd "[") 'paredit-open-square)
-    (local-set-key (kbd "{") 'paredit-open-curly)
-    (local-set-key (kbd "RET") #'exit-minibuffer)
+         (require 'paredit)
+         "Add basic paren handling and paredit-style editing in minibuffer."
+         ;; Basic paren insertion
+         (local-set-key (kbd "(") 'paredit-open-round)
+         (local-set-key (kbd "[") 'paredit-open-square)
+         (local-set-key (kbd "{") 'paredit-open-curly)
+         (local-set-key (kbd "RET") #'exit-minibuffer)
 
-    ;; Paredit-style editing commands (using smartparens functions)
-    (local-set-key (kbd "M-(") #'sp-wrap-round)
-    (local-set-key (kbd "M-s") #'sp-unwrap-sexp)
-    (local-set-key (kbd "C-)") #'sp-forward-slurp-sexp)
-    (local-set-key (kbd "C-}") #'sp-forward-barf-sexp)
-    (local-set-key (kbd "C-{") #'sp-backward-barf-sexp)
-    (local-set-key (kbd "C-(") #'sp-backward-slurp-sexp)
-    (local-set-key (kbd "C-'") #'sp-rewrap-sexp)
-    (local-set-key (kbd "M-S") #'sp-split-sexp)
-    (local-set-key (kbd "M-J") #'sp-join-sexp)
-    (local-set-key (kbd "M-W") #'sp-copy-sexp)
+         ;; Paredit-style editing commands (using smartparens functions)
+         (local-set-key (kbd "M-(") #'sp-wrap-round)
+         (local-set-key (kbd "M-s") #'sp-unwrap-sexp)
+         (local-set-key (kbd "C-)") #'sp-forward-slurp-sexp)
+         (local-set-key (kbd "C-}") #'sp-forward-barf-sexp)
+         (local-set-key (kbd "C-{") #'sp-backward-barf-sexp)
+         (local-set-key (kbd "C-(") #'sp-backward-slurp-sexp)
+         (local-set-key (kbd "C-'") #'sp-rewrap-sexp)
+         (local-set-key (kbd "M-S") #'sp-split-sexp)
+         (local-set-key (kbd "M-J") #'sp-join-sexp)
+         (local-set-key (kbd "M-W") #'sp-copy-sexp)
 
-    ;; Navigation commands
-    (local-set-key (kbd "C-M-f") #'sp-forward-sexp)
-    (local-set-key (kbd "C-M-b") #'sp-backward-sexp)
-    (local-set-key (kbd "C-M-SPC") #'sp-mark-sexp))
+         ;; Navigation commands
+         (local-set-key (kbd "C-M-f") #'sp-forward-sexp)
+         (local-set-key (kbd "C-M-b") #'sp-backward-sexp)
+         (local-set-key (kbd "C-M-SPC") #'sp-mark-sexp))
 
   (add-hook 'eval-expression-minibuffer-setup-hook #'bob/simple-minibuffer-parens)
 #+end_src
@@ -2725,7 +2745,7 @@ LSP/DAP servers manager
       '(python-mode python-ts-mode
         js-mode js-ts-mode js2-mode typescript-ts-mode tsx-ts-mode
         c-mode c-ts-mode c++-mode c++-ts-mode
-        json-mode haskell-mode roc-ts-mode clojure-ts-mode)
+        json-mode haskell-mode roc-ts-mode clojure-ts-mode sema-mode)
       "Programming modes whose built-in Eglot hover rendering is validated.")
 
     (defvar bob/eglot-hover-warned-modes nil
@@ -2798,6 +2818,7 @@ LSP/DAP servers manager
     (add-to-list 'eglot-server-programs '((roc-ts-mode) "roc_language_server"))
     (add-to-list 'eglot-server-programs '((zig-mode) "zls"))
     (add-to-list 'eglot-server-programs '(swift-ts-mode . ("sourcekit-lsp")))
+    (add-to-list 'eglot-server-programs '(sema-mode . ("sema" "lsp")))
 
     (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
@@ -2825,7 +2846,7 @@ LSP/DAP servers manager
           ("C-c C-a" . eglot-code-actions))
     :hook
     ;; sql-mode intentionally excluded: ejc-sql provides completion + eldoc.
-    ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode haskell-mode roc-ts-mode clojure-ts-mode) . eglot-ensure)
+    ((python-ts-mode js2-mode c++-mode c++-ts-mode c-mode c-ts-mode typescript-ts-mode tsx-ts-mode python-mode rust-mode json-mode haskell-mode roc-ts-mode clojure-ts-mode sema-mode) . eglot-ensure)
     ;; (eglot-managed-mode .  (lambda ()
     ;;                          (when (derived-mode-p '(typescript-ts-base-mode js-base-mode))
     ;;                            (flymake-jsts-eslint-enable))))
@@ -3585,7 +3606,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
              (message "Loaded %s" theme)))
          "Cycle through registered themes.")))
 
-  (bob/register-and-load-themes mentat-dark kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
+  (bob/register-and-load-themes mentat-dark doom-dracula kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
 #+end_src
 ** Spacious padding
 #+begin_src elisp

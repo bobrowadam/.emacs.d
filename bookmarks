@@ -9,11 +9,11 @@
   (position . 45)
   (last-modified 27264 35098 746061 0))
 ("bob-mentat.el"
- (filename . "~/.emacs.d/modules/bob-mentat.el")
+ (filename . "~/.emacs.d/modules/mentat/bob-mentat.el")
  (front-context-string . ";;; bob-mentat.e")
  (rear-context-string)
  (position . 1)
- (last-modified 27262 4308 46234 0))
+ (last-modified 27277 25178 677654 0))
 ("Mentat TODOS"
  (filename . "~/source/mentat/todo.org")
  (front-context-string)
