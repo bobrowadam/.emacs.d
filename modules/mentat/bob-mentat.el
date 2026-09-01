@@ -158,7 +158,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     "work directly and validate it. Delegate large, ambiguous, specialized, "
     "cross-system, or high-risk work to the relevant expert instead of "
     "guessing. Use explorer first when scope, architecture, or repository "
-    "context is unclear. Use ci-check selectively after substantial changes, "
+    "context is unclear. Use pr-reviewer for focused slices of parallel PR "
+    "reviews. Use ci-watcher selectively after substantial changes, "
     "when validation is broad or slow, or when failures need isolated "
     "diagnosis. Use reviewer selectively for risky, public, protocol, or "
     "unfamiliar changes, or when review is requested; do not automatically "
@@ -172,9 +173,12 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     "incomplete, recover by inspecting the current state or rerunning a "
     "targeted child rather than guessing. Preserve repository rules and keep "
     "role-specific detailed instructions confined to the selected child."))
+
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
+      :subagents (explorer reviewer pr-reviewer ci-watcher worker
+                  effect-ts-backend-expert frontend-react-expert ui-manual-qa)
       :disabled-tools ("agent_browser" "agent_browser_web_search"
                        "emacs_capture_screenshot"
                        "emacs_eval_elisp"
@@ -187,9 +191,13 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
                        "emacs_elisp_info"))
      ("Private"
       :directory "~/.pi/agent-private"
+      :subagents (explorer reviewer pr-reviewer ci-watcher worker
+                  effect-ts-backend-expert frontend-react-expert ui-manual-qa)
       :disabled-tools ("agent_browser" "agent_browser_web_search"))
+
      ("Pure Emacs"
       :directory "~/.pi/agent-pure-emacs"
+      :subagents (explorer pr-reviewer worker ci-watcher)
       :tools ("emacs_capture_screenshot"
               "emacs_eval_elisp"
               "emacs_eval_async"
@@ -202,22 +210,17 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
               "hindsight_recall"
               "hindsight_remember"
               "hindsight_reflect"
-              "recall"
-              "exa_search"
-              "jina_reader"
-              "agent_browser")
-      :disabled-tools ("grep" "find" "ls" "show_me"
-                       "agent_browser" "agent_browser_web_search"))))
+              "show_me"
+              "subagent")
+      :disabled-tools ("grep" "find" "ls"))))
   (mentat-compaction-presentation-function
    #'bob/mentat-observational-memory-compaction-presentation)
 
   (mentat-enabled-models
-   '("openai-codex/gpt-5.6-luna"
-     "openai-codex/gpt-5.6-terra"
-     "openai-codex/gpt-5.6-sol"
-     "azure-openai-responses/gpt-5.6-luna"
-     "azure-openai-responses/gpt-5.6-terra"
-     "azure-openai-responses/gpt-5.6-sol"))
+   '("azure-openai-responses/gpt-5.6-luna"
+     "azure-openai-responses/gpt-5.6-sol"
+     "openai-codex/gpt-5.6-luna"
+     "openai-codex/gpt-5.6-sol"))
 
   (mentat-extension-command-bindings nil)
   (mentat-extension-menu-commands
@@ -267,8 +270,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :description "Read-only project investigation"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking medium
-    :extensions (web-search)
-    :tools (read grep find ls exa_search jina_reader)
+    :extensions (web-search mentat-emacs)
     :concurrency 4)
 
   (bob/mentat-define-subagent reviewer
@@ -279,29 +281,24 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :tools (read bash grep find ls exa_search jina_reader)
     :concurrency 8)
 
-  (bob/mentat-define-subagent ci-check
-    :description "Run local CI checks and report failures"
+  (bob/mentat-define-subagent pr-reviewer
+    :description "Review one PR slice and return only verified actionable findings"
+    :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
+    :thinking high
+    :extensions (web-search mentat-emacs)
+    :concurrency 8)
+
+  (bob/mentat-define-subagent ci-watcher
+    :description "Run and monitor project validation without changing files"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking low
-    :tools (read bash grep find ls))
+    :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent worker
     :description "Implement one focused, verifiable change after the problem is understood; split broader work into separate runs."
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
-    :tools (read bash edit write grep find ls))
-
-  (bob/mentat-define-subagent elisp-expert
-    :description "Expert Emacs Lisp implementation, debugging, design, review, and validation"
-    :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
-    :thinking high
-    :extensions (check-elisp mentat-emacs)
-    :tools (read bash edit write grep find ls check_elisp
-                 emacs_eval_elisp emacs_eval_async emacs_elisp_call
-                 emacs_elisp_library emacs_run_process emacs_elisp_search
-                 emacs_elisp_get_symbol_data emacs_elisp_info)
-    :concurrency 1
-    :max-turns 50)
+    :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent effect-ts-backend-expert
     :description "Expert Effect TypeScript backend implementation, debugging, design, review, and validation"
