@@ -149,6 +149,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-default-provider "azure-openai-responses")
   (mentat-default-model "gpt-5.6-sol")
   (mentat-default-effort "low")
+  (mentat-elisp-library-directory
+        (expand-file-name "modules/mentat/mentat-tools/" user-emacs-directory))
   (mentat-supervisor-instructions
    (concat
     "Act as Mentat's parent supervisor and orchestrate the work deliberately. "
