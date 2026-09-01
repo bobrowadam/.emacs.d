@@ -2768,6 +2768,16 @@ LSP/DAP servers manager
 
     (add-hook 'eglot-managed-mode-hook
               #'bob/eglot-warn-unvalidated-hover-mode)
+    (defun bob/eglot-enable-typescript-visual-features ()
+      "Enable supported TypeScript inlay hints and semantic tokens."
+      (when (derived-mode-p 'typescript-ts-base-mode)
+        (when (eglot-server-capable :inlayHintProvider)
+          (eglot-inlay-hints-mode 1))
+        (when (eglot-server-capable :semanticTokensProvider)
+          (eglot-semantic-tokens-mode 1))))
+
+    (add-hook 'eglot-managed-mode-hook
+              #'bob/eglot-enable-typescript-visual-features)
 
     (defun bob/eglot-events-buffer-config-toggle ()
       (interactive)
@@ -2776,14 +2786,23 @@ LSP/DAP servers manager
                            0
                          (* 2 1024 1024))))
         (setq eglot-events-buffer-config `(:size ,new-size :format full))))
-    (defun bob/typescript-tsconfig-has-effect-plugin-p ()
-      "Return non-nil when the nearest tsconfig enables @effect/language-service."
-      (when-let* ((tsconfig-dir (locate-dominating-file default-directory "tsconfig.json"))
-                  (tsconfig (expand-file-name "tsconfig.json" tsconfig-dir)))
+    (defconst bob/effect-tsgo-directory
+      (expand-file-name "mason/packages/effect-tsgo" user-emacs-directory)
+      "Directory containing the Effect tsgo installation.")
+
+    (defun bob/effect-tsgo-executable ()
+      "Return the native Effect tsgo executable."
+      (let ((default-directory bob/effect-tsgo-directory)
+            (launcher (expand-file-name "node_modules/.bin/effect-tsgo"
+                                        bob/effect-tsgo-directory)))
+        (unless (file-executable-p launcher)
+          (user-error "Effect tsgo is not installed in %s"
+                      bob/effect-tsgo-directory))
         (with-temp-buffer
-          (insert-file-contents tsconfig)
-          (goto-char (point-min))
-          (re-search-forward "\"@effect/language-service\"" nil t))))
+          (unless (zerop (call-process launcher nil t nil "get-exe-path"))
+            (error "Could not locate the Effect tsgo executable: %s"
+                   (string-trim (buffer-string))))
+          (string-trim (buffer-string)))))
 
     (setq eglot-server-programs
           (cl-remove-if (lambda (entry)
@@ -2792,23 +2811,10 @@ LSP/DAP servers manager
     (add-to-list 'eglot-server-programs
                  `((js2-mode js-mode js-ts-mode typescript-ts-mode tsx-ts-mode)
                    . ,(lambda (&rest _)
-                        (let* ((nm-dir (bob/monorepo-root))
-                               (tsserver-path (and nm-dir (expand-file-name "node_modules/typescript/lib" nm-dir)))
-                               (effect-ls-path (and nm-dir (expand-file-name "node_modules/@effect/language-service" nm-dir)))
-                               (init-options nil)
-                               (command '("ts-error-translator-proxy" "typescript-language-server" "--stdio")))
-                          (when (and tsserver-path (file-directory-p tsserver-path))
-                            (setq init-options (plist-put init-options :tsserver `(:path ,tsserver-path))))
-                          (when (and effect-ls-path
-                                     (file-directory-p effect-ls-path)
-                                     (bob/typescript-tsconfig-has-effect-plugin-p))
-                            (setq init-options
-                                  (plist-put init-options :plugins
-                                             (vector (list :name "@effect/language-service"
-                                                           :location effect-ls-path)))))
-                          (if init-options
-                              (append command (list :initializationOptions init-options))
-                            command)))))
+                        (list "ts-error-translator-proxy"
+                              (bob/effect-tsgo-executable)
+                              "--lsp"
+                              "--stdio"))))
     (add-to-list 'eglot-server-programs
                  `((json-mode)
                    . ("vscode-json-languageserver" "--stdio")))
@@ -3251,9 +3257,7 @@ and `:test-name'."
         (let* ((default-directory root)
                (extension (file-name-extension file t))
                (temp-file (make-temp-file
-                           (expand-file-name
-                            (format ".flymake-biome-%s-" (file-name-base file))
-                            (file-name-directory file))
+                           (format "flymake-biome-%s-" (file-name-base file))
                            nil extension))
                (stdout (generate-new-buffer " *bob-biome-flymake*"))
                (stderr (generate-new-buffer " *bob-biome-flymake-stderr*")))
@@ -3264,7 +3268,9 @@ and `:test-name'."
                        :stderr stderr
                        :noquery t
                        :connection-type 'pipe
-                       :command (list biome "check" "--reporter=json" temp-file))))
+                       :command (list biome "check" "--reporter=json"
+                                      (concat "--config-path=" root)
+                                      temp-file))))
             (setq-local bob/biome-flymake-process proc)
             (set-process-sentinel
              proc
