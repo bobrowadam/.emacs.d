@@ -1,6 +1,5 @@
 ;;; web-search.el --- Asynchronous Exa and Jina web search -*- lexical-binding: t; -*-
 
-(require 'auth-source)
 (require 'cl-lib)
 (require 'json)
 (require 'seq)
@@ -8,6 +7,7 @@
 (require 'url)
 (require 'url-http)
 (require 'mentat-elisp-library)
+(require 'mentat-emacs)
 (require 'tool-result)
 
 (defconst mentat-web-search-exa-endpoint "https://api.exa.ai/search"
@@ -18,16 +18,6 @@
 
 (defvar mentat-web-search-exa-auth-hosts '("api.exa.ai")
   "Auth-source hosts checked for an Exa API key.")
-
-(defun mentat-web-search--api-key (provider hosts)
-  "Return PROVIDER's API key from the first matching auth-source HOSTS entry."
-  (or (cl-loop
-       for host in hosts
-       for entry = (car (auth-source-search :host host :max 1
-                                             :require '(:secret)))
-       when entry return (auth-info-password entry))
-      (user-error "No %s credential found in Emacs auth-source (checked %s)"
-                  provider (string-join hosts ", "))))
 
 (defun mentat-web-search--response-body ()
   "Move past HTTP headers and return the current response body."
@@ -119,10 +109,9 @@ PARSER converts the successful response body into the public result."
       (source-url . ,(mentat-web-search--jina-field "URL Source" body))
       ,@(mentat-tool-result-limit-text content :prefix "jina-reader"))))
 
-(defun mentat-web-search--exa-start
-    (query num-results type include-domains start-published-date
-           end-published-date max-age-hours success error)
-  "Start an Exa search and invoke SUCCESS or ERROR when it completes."
+(defun mentat-web-search--validate-exa
+    (query num-results type max-age-hours)
+  "Validate Exa QUERY, NUM-RESULTS, TYPE, and MAX-AGE-HOURS."
   (unless (and (stringp query) (not (string-empty-p (string-trim query))))
     (user-error "Exa search query must not be empty"))
   (unless (and (integerp num-results) (<= 1 num-results 20))
@@ -133,10 +122,13 @@ PARSER converts the successful response body into the public result."
   (when (and max-age-hours
              (not (and (integerp max-age-hours)
                        (<= -1 max-age-hours 720))))
-    (user-error "Exa max-age-hours must be an integer from -1 through 720"))
-  (let* ((api-key (mentat-web-search--api-key
-                   "Exa" mentat-web-search-exa-auth-hosts))
-         (contents `((highlights . ((maxCharacters . 2000)))
+    (user-error "Exa max-age-hours must be an integer from -1 through 720")))
+
+(defun mentat-web-search--exa-start
+    (query api-key num-results type include-domains start-published-date
+           end-published-date max-age-hours success error)
+  "Start an authenticated Exa search and invoke SUCCESS or ERROR."
+  (let* ((contents `((highlights . ((maxCharacters . 2000)))
                      ,@(when max-age-hours
                          `((maxAgeHours . ,max-age-hours)))))
          (payload `((query . ,query)
@@ -156,6 +148,36 @@ PARSER converts the successful response body into the public result."
      (encode-coding-string (json-serialize payload) 'utf-8)
      (apply-partially #'mentat-web-search--parse-exa query)
      success error)))
+
+(defun mentat-web-search--exa-starter
+    (query num-results type include-domains start-published-date
+           end-published-date max-age-hours)
+  "Return an async starter that unlocks credentials before an Exa search."
+  (mentat-web-search--validate-exa query num-results type max-age-hours)
+  (lambda (resolve reject on-cancel)
+    (let ((cancelled nil)
+          request
+          credential-cleanup)
+      (setq credential-cleanup
+            (mentat-auth-source-secret-async
+             "Exa" mentat-web-search-exa-auth-hosts
+             (lambda (api-key)
+               (unless cancelled
+                 (setq request
+                       (mentat-web-search--exa-start
+                        query api-key num-results type include-domains
+                        start-published-date end-published-date max-age-hours
+                        resolve reject))
+                 ;; Cancellation can be delivered while url-retrieve is
+                 ;; starting, before it returns its request buffer.
+                 (when cancelled
+                   (mentat-web-search--cancel-request request))))
+             reject))
+      (funcall on-cancel
+               (lambda ()
+                 (setq cancelled t)
+                 (funcall credential-cleanup)
+                 (mentat-web-search--cancel-request request))))))
 
 (defun mentat-web-search--jina-start (url success error)
   "Start a Jina Reader request for URL and invoke SUCCESS or ERROR."
@@ -184,11 +206,9 @@ restricts results to a list of domains.  START-PUBLISHED-DATE and
 END-PUBLISHED-DATE are ISO 8601 timestamps.  MAX-AGE-HOURS controls Exa's
 content cache; zero requests fresh content and -1 always uses cached content."
   (:execution async :display "Exa web search")
-  (mentat-web-search--starter
-   (lambda (resolve reject)
-     (mentat-web-search--exa-start
-      query num-results type include-domains start-published-date
-      end-published-date max-age-hours resolve reject))))
+  (mentat-web-search--exa-starter
+   query num-results type include-domains start-published-date
+   end-published-date max-age-hours))
 
 (mentat-defun mentat-jina-read (url)
   "Fetch URL through Jina Reader and return clean LLM-ready Markdown.
