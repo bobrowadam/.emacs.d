@@ -2704,6 +2704,20 @@ LSP/DAP servers manager
     (eglot-sync-connect 0)
     :config
     (eglot-booster-mode)
+    ;; Some LSP proxies emit UTF-8 diagnostic text as a unibyte string.
+    ;; Normalize it before Flymake and Eldoc consume the diagnostic.
+    (defun bob/eglot-normalize-diagnostic-message (original diag-spec version region)
+      "Decode unibyte UTF-8 messages before ORIGINAL builds a diagnostic."
+      (let ((message (plist-get diag-spec :message)))
+        (when (and (stringp message)
+                   (not (multibyte-string-p message))
+                   (string-match-p "[\200-\377]" message))
+          (setq diag-spec (plist-put (copy-sequence diag-spec) :message
+                                     (decode-coding-string message 'utf-8))))
+        (funcall original diag-spec version region)))
+
+    (advice-add 'eglot--flymake-make-diag :around
+                #'bob/eglot-normalize-diagnostic-message)
     (setq-default eglot-workspace-configuration
                   '(:biome (:enabled t)))
 
@@ -2762,7 +2776,7 @@ LSP/DAP servers manager
                                (tsserver-path (and nm-dir (expand-file-name "node_modules/typescript/lib" nm-dir)))
                                (effect-ls-path (and nm-dir (expand-file-name "node_modules/@effect/language-service" nm-dir)))
                                (init-options nil)
-                               (command '("typescript-language-server" "--stdio")))
+                               (command '("ts-error-translator-proxy" "typescript-language-server" "--stdio")))
                           (when (and tsserver-path (file-directory-p tsserver-path))
                             (setq init-options (plist-put init-options :tsserver `(:path ,tsserver-path))))
                           (when (and effect-ls-path
