@@ -1,15 +1,15 @@
 ;;; file-read.el --- Bounded Emacs-native file reading -*- lexical-binding: t; -*-
 
+(require 'cl-lib)
 (require 'subr-x)
 (require 'mentat-elisp-library)
 
 (mentat-defun mentat-read-file
     (file &key (start-line 1) end-line (max-chars 50000))
-  "Read bounded text from FILE and return content with location metadata.
+  "Read bounded file text with a compact continuation notice.
 FILE is resolved against `default-directory'.  START-LINE and END-LINE are
 one-based and inclusive.  END-LINE defaults to the end of the file.  MAX-CHARS
-is capped at 200000; when the selected text exceeds it, CONTENT is truncated
-and TRUNCATED is non-nil."
+is capped at 200000."
   (:execution sync :display "Read File")
   (let* ((absolute (expand-file-name file))
          (start (max 1 start-line))
@@ -40,13 +40,25 @@ and TRUNCATED is non-nil."
              (text (if (or (> start total-lines) (= total-lines 0))
                        ""
                      (buffer-substring-no-properties begin finish)))
-             (truncated (> (length text) limit)))
-        `((file . ,absolute)
-          (start_line . ,start)
-          (end_line . ,(and (not (string-empty-p text)) selected-end))
-          (total_lines . ,total-lines)
-          (truncated . ,truncated)
-          (content . ,(if truncated (substring text 0 limit) text)))))))
+             (truncated (> (length text) limit))
+             (content (if truncated (substring text 0 limit) text))
+             (next-line
+              (cond
+               (truncated (+ start (cl-count ?\n content)))
+               ((and selected-end (< selected-end total-lines))
+                (1+ selected-end))))
+             (notice
+              (cond
+               (truncated
+                (format
+                 "[Output truncated at %d characters. Continue with start-line=%d.]"
+                 limit next-line))
+               (next-line
+                (format "[%d more lines. Continue with start-line=%d.]"
+                        (- total-lines selected-end) next-line)))))
+        (if notice
+            (concat (string-remove-suffix "\n" content) "\n\n" notice)
+          content)))))
 
 (provide 'file-read)
 ;;; file-read.el ends here

@@ -14,6 +14,30 @@
         (concat (substring text 0 500) "…")
       text)))
 
+(defun mentat-text-search--format-matches (matches)
+  "Return MATCHES as compact grep-style text."
+  (if (null matches)
+      "No matches."
+    (mapconcat
+     (lambda (match)
+       (let* ((file (alist-get 'file match))
+              (line (alist-get 'line match))
+              (before (alist-get 'before match))
+              (after (alist-get 'after match))
+              (before-start (- line (length before))))
+         (string-join
+          (append
+           (cl-loop for text in before
+                    for number from before-start
+                    collect (format "%s-%d-%s" file number text))
+           (list (format "%s:%d:%s" file line (alist-get 'text match)))
+           (cl-loop for text in after
+                    for number from (1+ line)
+                    collect (format "%s-%d-%s" file number text)))
+          "\n")))
+     matches
+     "\n--\n")))
+
 (defun mentat-text-search--file
     (query file regexp max-results context case-fold display-file)
   "Search FILE for QUERY and return at most MAX-RESULTS structured matches."
@@ -45,14 +69,16 @@
 
 (mentat-defun mentat-text-search-file
     (query file &key regexp (max-results 100) (context 0) case-fold)
-  "Search FILE for QUERY and return bounded matches with line numbers.
+  "Search FILE for QUERY and return compact grep-style matches.
 When REGEXP is nil, treat QUERY literally.  CONTEXT controls how many lines
 appear before and after each match.  CASE-FOLD enables case-insensitive search."
   (:execution sync :display "Search File")
   (let ((limit (min 500 (max 1 max-results)))
         (nearby (min 10 (max 0 context)))
         (absolute (expand-file-name file)))
-    (mentat-text-search--file query absolute regexp limit nearby case-fold file)))
+    (mentat-text-search--format-matches
+     (mentat-text-search--file
+      query absolute regexp limit nearby case-fold file))))
 
 (defconst mentat-text-search--rg-output-limit (* 4 1024 1024)
   "Maximum ripgrep JSON output retained for one project search.")
@@ -173,7 +199,7 @@ appear before and after each match.  CASE-FOLD enables case-insensitive search."
 
 (mentat-defun mentat-text-search-project
     (query &key directory regexp glob (max-results 100) (context 0) case-fold)
-  "Search project files for QUERY and return bounded structured matches.
+  "Search project files for QUERY and return compact grep-style matches.
 DIRECTORY defaults to the current project.  REGEXP selects regular-expression
 matching; otherwise QUERY is literal.  GLOB limits relative file names using
 ripgrep glob syntax.  CONTEXT adds up to ten surrounding lines."
@@ -214,8 +240,9 @@ ripgrep glob syntax.  CONTEXT adds up to ten surrounding lines."
                 (setq completed t)
                 (condition-case err
                     (let ((value
-                           (mentat-text-search--parse-rg-events
-                            (nreverse output-lines) limit nearby)))
+                           (mentat-text-search--format-matches
+                            (mentat-text-search--parse-rg-events
+                             (nreverse output-lines) limit nearby))))
                       (cleanup)
                       (funcall resolve value))
                   (error
