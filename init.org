@@ -1070,7 +1070,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 ** Sema
 #+begin_src elisp
   (use-package sema-mode
-    :mode "\\.sema\\'")
+    :mode "\\.sema\\'"
+    :hook (gaudy-cl-mode))
 #+end_src
 * Ediff
 #+begin_src elisp
@@ -2588,6 +2589,10 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 
 #+end_src
 ** common-lisp
+*** lisp-ts-mode
+#+begin_src emacs-lisp
+  (use-package lisp-ts-mode)
+#+end_src
 *** Sly
 #+begin_src elisp
   (use-package sly-repl-ansi-color
