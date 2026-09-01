@@ -2588,13 +2588,19 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 
 #+end_src
 ** common-lisp
-** Sly
+*** Sly
 #+begin_src elisp
   (use-package sly-repl-ansi-color
     :after (sly)
     :init (push 'sly-repl-ansi-color sly-contribs))
   (use-package sly-asdf)
   (use-package sly-macrostep)
+#+end_src
+***  Gaudy CL
+Colorful semantic highlighting of Common Lisp code
+#+begin_src elisp
+  (use-package gaudy-cl
+    :ensure (:fetcher codeberg :repo "zshaftel/gaudy-cl" :files ("*.el")))
 #+end_src
 
 ** General Settings
