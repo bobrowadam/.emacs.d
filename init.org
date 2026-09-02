@@ -826,10 +826,13 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                            score))
                    table)))))
 
-  (defun bob/prose-word-completion--case-group (word)
-    "Return WORD and its lowercase alternative as one case group."
+  (defun bob/prose-word-completion--case-group (word prefix)
+    "Return WORD's case variants, preferring the case implied by PREFIX."
     (if (bob/prose-word-completion--ordinary-titlecase-p word)
-        (list word (downcase word))
+        (if (let ((case-fold-search nil))
+              (string-match-p "\\`[[:upper:]]" prefix))
+            (list word (downcase word))
+          (list (downcase word) word))
       (list word)))
 
   (defun bob/prose-word-completion--words-in-buffer (&optional max-chars)
@@ -1013,7 +1016,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                            (string< (car a) (car b)))))))
               candidates)
           (dolist (word semantic-candidates)
-            (let ((group (bob/prose-word-completion--case-group (car word))))
+            (let ((group (bob/prose-word-completion--case-group (car word) prefix)))
               (when (<= (+ (length candidates) (length group))
                         (max 0 bob/prose-word-completion-candidate-limit))
                 (setq candidates (nconc candidates group)))))
