@@ -5,6 +5,7 @@
 (require 'seq)
 (require 'url)
 (require 'mentat-elisp-library)
+(require 'mentat-emacs)
 
 (defconst mentat-linear-endpoint "https://api.linear.app/graphql"
   "Linear GraphQL endpoint.")
@@ -14,20 +15,6 @@
 
 (defvar mentat-linear-auth-user "linear_api_key"
   "Auth-source user containing the Linear API key.")
-
-(defun mentat-linear--api-key ()
-  "Return the Linear API key from `auth-source'."
-  (let* ((entry (car (auth-source-search
-                      :host mentat-linear-auth-host
-                      :user mentat-linear-auth-user
-                      :max 1
-                      :require '(:secret))))
-         (stored-secret (and entry (plist-get entry :secret))))
-    (unless stored-secret
-      (user-error "No Linear credential found in Emacs auth-source"))
-    (if (functionp stored-secret)
-        (funcall stored-secret)
-      stored-secret)))
 
 (defun mentat-linear--default-error (text)
   "Report Linear API error TEXT."
@@ -50,10 +37,9 @@
         (error (funcall error (error-message-string err))))
     (kill-buffer (current-buffer))))
 
-(defun mentat-linear--request (query variables success error)
-  "Run asynchronous Linear QUERY with VARIABLES and callbacks."
-  (let* ((api-key (mentat-linear--api-key))
-         (url-request-method "POST")
+(defun mentat-linear--request (api-key query variables success error)
+  "Run asynchronous Linear QUERY with VARIABLES and callbacks using API-KEY."
+  (let* ((url-request-method "POST")
          (url-request-extra-headers
           `(("Authorization" . ,api-key)
             ("Content-Type" . "application/json")))
@@ -75,9 +61,10 @@
         (funcall success result)
       (funcall error (format "Linear mutation %s was unsuccessful" field)))))
 
-(defun mentat-linear--get-issue (identifier success error)
-  "Fetch Linear issue IDENTIFIER using SUCCESS and ERROR callbacks."
+(defun mentat-linear--get-issue (api-key identifier success error)
+  "Fetch Linear issue IDENTIFIER using API-KEY, SUCCESS, and ERROR callbacks."
   (mentat-linear--request
+   api-key
    "query ($id: String!) {
       issue(id: $id) {
         id identifier title description
@@ -89,9 +76,10 @@
    (apply-partially #'mentat-linear--deliver-field 'issue success)
    error))
 
-(defun mentat-linear--add-comment (identifier body success error)
-  "Add BODY to Linear issue IDENTIFIER using SUCCESS and ERROR callbacks."
+(defun mentat-linear--add-comment (api-key identifier body success error)
+  "Add BODY to Linear issue IDENTIFIER using API-KEY and callbacks."
   (mentat-linear--request
+   api-key
    "mutation ($issueId: String!, $body: String!) {
       commentCreate(input: { issueId: $issueId, body: $body }) {
         success
@@ -103,9 +91,10 @@
                     'commentCreate success error)
    error))
 
-(defun mentat-linear--set-state (identifier state-id success error)
-  "Set Linear issue IDENTIFIER to STATE-ID using SUCCESS and ERROR callbacks."
+(defun mentat-linear--set-state (api-key identifier state-id success error)
+  "Set Linear issue IDENTIFIER to STATE-ID using API-KEY and callbacks."
   (mentat-linear--request
+   api-key
    "mutation ($issueId: String!, $stateId: String!) {
       issueUpdate(id: $issueId, input: { stateId: $stateId }) {
         success
@@ -117,8 +106,9 @@
                     'issueUpdate success error)
    error))
 
-(defun mentat-linear--complete-after-fetch (identifier success error issue)
-  "Complete IDENTIFIER after fetching ISSUE, using SUCCESS and ERROR."
+(defun mentat-linear--complete-after-fetch
+    (api-key identifier success error issue)
+  "Complete IDENTIFIER using API-KEY after fetching ISSUE and callbacks."
   (let* ((states (alist-get 'nodes
                             (alist-get 'states
                                        (alist-get 'team issue))))
@@ -127,7 +117,7 @@
                        (equal (alist-get 'type state) "completed"))
                      states)))
     (if completed
-        (mentat-linear--set-state identifier (alist-get 'id completed)
+        (mentat-linear--set-state api-key identifier (alist-get 'id completed)
                                  success error)
       (funcall error "The issue team has no completed workflow state"))))
 
@@ -137,42 +127,57 @@
     (kill-buffer buffer)))
 
 (defun mentat-linear--starter (start)
-  "Return a callback starter that invokes START and supports cancellation."
+  "Return a callback starter that obtains credentials before invoking START."
   (lambda (resolve reject on-cancel)
-    (let ((request (funcall start resolve reject)))
+    (let ((cancelled nil)
+          request
+          credential-cleanup)
+      (setq credential-cleanup
+            (mentat-auth-source-secret-async
+             "Linear" (list mentat-linear-auth-host)
+             (lambda (api-key)
+               (unless cancelled
+                 (setq request (funcall start api-key resolve reject))
+                 (when cancelled
+                   (mentat-linear--cancel-request request))))
+             reject
+             :user mentat-linear-auth-user))
       (funcall on-cancel
-               (lambda () (mentat-linear--cancel-request request))))))
+               (lambda ()
+                 (setq cancelled t)
+                 (funcall credential-cleanup)
+                 (mentat-linear--cancel-request request))))))
 
 (mentat-defun mentat-linear-get-issue (identifier)
   "Fetch Linear issue IDENTIFIER and resolve with its alist."
   (:execution async)
   (mentat-linear--starter
-   (lambda (resolve reject)
-     (mentat-linear--get-issue identifier resolve reject))))
+   (lambda (api-key resolve reject)
+     (mentat-linear--get-issue api-key identifier resolve reject))))
 
 (mentat-defun mentat-linear-add-comment (identifier body)
   "Add BODY to Linear issue IDENTIFIER and resolve with the result."
   (:execution async)
   (mentat-linear--starter
-   (lambda (resolve reject)
-     (mentat-linear--add-comment identifier body resolve reject))))
+   (lambda (api-key resolve reject)
+     (mentat-linear--add-comment api-key identifier body resolve reject))))
 
 (mentat-defun mentat-linear-set-state (identifier state-id)
   "Set Linear issue IDENTIFIER to STATE-ID and resolve with the result."
   (:execution async)
   (mentat-linear--starter
-   (lambda (resolve reject)
-     (mentat-linear--set-state identifier state-id resolve reject))))
+   (lambda (api-key resolve reject)
+     (mentat-linear--set-state api-key identifier state-id resolve reject))))
 
 (mentat-defun mentat-linear-complete-issue (identifier)
   "Move Linear issue IDENTIFIER to its team's completed workflow state."
   (:execution async)
   (mentat-linear--starter
-   (lambda (resolve reject)
+   (lambda (api-key resolve reject)
      (mentat-linear--get-issue
-      identifier
+      api-key identifier
       (apply-partially #'mentat-linear--complete-after-fetch
-                       identifier resolve reject)
+                       api-key identifier resolve reject)
       reject))))
 
 (provide 'linear-api)
