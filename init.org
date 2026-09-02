@@ -2339,6 +2339,8 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 ** Paredit
 #+begin_src elisp
   (use-package paredit
+               :ensure (:provider github
+                        :repo "emacsmirror/paredit")
                :demand t
                :init
                (defun bob/paredit-mode-maybe ()
