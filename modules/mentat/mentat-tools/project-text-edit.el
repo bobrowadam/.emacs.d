@@ -46,7 +46,22 @@ Reject missing or ambiguous OLD text.  Do not write when OLD and NEW are equal."
 REPLACEMENTS is a nonempty JSON array of objects with `old' and `new' strings.
 Every old value must occur exactly once in the original file.  Reject overlap
 and write only after every replacement validates."
-  (:display "Replace Many")
+  (:display "Replace Many"
+   :argument-schema
+   (:type "array"
+    :prefixItems
+    [(:type "string" :description "File path")
+     (:type "array" :minItems 1
+      :description "Nonempty exact replacements"
+      :items
+      (:type "object"
+       :properties
+       (:old (:type "string" :minLength 1)
+        :new (:type "string"))
+       :required ["old" "new"]
+       :additionalProperties :false))]
+    :minItems 2
+    :maxItems 2))
   (unless (and (file-regular-p file) (consp replacements))
     (user-error "FILE must be regular and REPLACEMENTS must be nonempty"))
   (let ((absolute (expand-file-name file)))
