@@ -180,15 +180,9 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
       :subagents (explorer reviewer pr-reviewer ci-watcher worker
                   effect-ts-backend-expert frontend-react-expert ui-manual-qa)
       :disabled-tools ("agent_browser" "agent_browser_web_search"
-                       "emacs_capture_screenshot"
                        "emacs_eval_elisp"
                        "emacs_eval_async"
-                       "emacs_elisp_call"
-                       "emacs_elisp_library"
-                       "emacs_run_process"
-                       "emacs_elisp_search"
-                       "emacs_elisp_get_symbol_data"
-                       "emacs_elisp_info"))
+                       "emacs_elisp_call"))
      ("Private"
       :directory "~/.pi/agent-private"
       :subagents (explorer reviewer pr-reviewer ci-watcher worker
@@ -198,15 +192,9 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
      ("Pure Emacs"
       :directory "~/.pi/agent-pure-emacs"
       :subagents (explorer pr-reviewer worker ci-watcher)
-      :tools ("emacs_capture_screenshot"
-              "emacs_eval_elisp"
+      :tools ("emacs_eval_elisp"
               "emacs_eval_async"
               "emacs_elisp_call"
-              "emacs_elisp_library"
-              "emacs_run_process"
-              "emacs_elisp_search"
-              "emacs_elisp_get_symbol_data"
-              "emacs_elisp_info"
               "hindsight_recall"
               "hindsight_remember"
               "hindsight_reflect"
@@ -241,10 +229,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   ;; internally, so it must not be included in `mentat-enabled-extensions'.
   (mentat-define-extension mentat-emacs
     :source "/Users/bob/source/mentat/pi-extensions/src/mentat-emacs.ts"
-    :tools (emacs_eval_elisp emacs_eval_async emacs_elisp_call
-                             emacs_elisp_library emacs_run_process
-                             emacs_elisp_search emacs_elisp_get_symbol_data
-                             emacs_elisp_info))
+    :tools (emacs_eval_elisp emacs_eval_async emacs_elisp_call))
   (mentat-define-extension codex
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
   (mentat-define-extension resolve-symlinks
