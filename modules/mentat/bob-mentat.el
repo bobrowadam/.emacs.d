@@ -27,11 +27,12 @@
             (error "Empty Mentat agent instructions file: %s" file)
           instructions))))))
 
-(defun bob/mentat-load-agent-instructions (agent)
+(defun bob/mentat-load-agent-and-common-instructions (agent)
   "Load role-specific and shared instructions for Mentat AGENT."
   (let* ((directory (file-name-directory
                      (or load-file-name
-                         (symbol-file 'bob/mentat-load-agent-instructions))))
+                         (symbol-file
+                          'bob/mentat-load-agent-and-common-instructions))))
          (files (mapcar (lambda (name)
                           (expand-file-name (format "agents/%s.md" name)
                                             directory))
@@ -56,17 +57,15 @@
     (require 'fnm))
   (fnm-auto-use-mode 1))
 
-(defmacro bob/mentat-define-subagent (name &rest properties)
-  "Define Mentat subagent NAME with loaded role instructions.
+(defmacro bob/mentat-define-subagent (name instructions &rest properties)
+  "Define Mentat subagent NAME with explicit INSTRUCTIONS and PROPERTIES.
 
-PROPERTIES are literal Mentat subagent properties; the role-specific
-`:instructions' value is loaded at runtime from NAME."
-  (declare (indent 1) (debug (symbol &rest form)))
+INSTRUCTIONS is evaluated when the declaration runs.  PROPERTIES are literal
+Mentat subagent properties."
+  (declare (indent 2) (debug (symbol form &rest form)))
   `(mentat--register-subagent
     ',name
-    (append ',properties
-            (list :instructions
-                  (bob/mentat-load-agent-instructions ,(symbol-name name))))))
+    (append ',properties (list :instructions ,instructions))))
 
 (bob/mentat-initialize-fnm)
 
@@ -248,6 +247,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
   (mentat-reset-subagent-definitions)
 
   (bob/mentat-define-subagent explorer
+      (bob/mentat-load-agent-and-common-instructions "explorer")
     :description "Read-only project investigation"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking medium
@@ -255,6 +255,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :concurrency 4)
 
   (bob/mentat-define-subagent reviewer
+      (bob/mentat-load-agent-and-common-instructions "reviewer")
     :description "Review one code change and optionally run read-only validation"
     :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
@@ -263,6 +264,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :concurrency 8)
 
   (bob/mentat-define-subagent pr-reviewer
+      (bob/mentat-load-agent-and-common-instructions "pr-reviewer")
     :description "Review one assigned PR slice using the parallel-review finding format"
     :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
@@ -270,18 +272,22 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :concurrency 8)
 
   (bob/mentat-define-subagent ci-watcher
+      (bob/mentat-load-agent-and-common-instructions "ci-watcher")
     :description "Run and monitor project validation without changing files"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking low
     :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent worker
+      (bob/mentat-load-agent-and-common-instructions "worker")
     :description "Implement one bounded, well-understood delegated change"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent effect-ts-backend-expert
+      (bob/mentat-load-agent-and-common-instructions
+       "effect-ts-backend-expert")
     :description "Handle one bounded Effect TypeScript task requiring specialist expertise"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
@@ -291,6 +297,8 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :max-turns 50)
 
   (bob/mentat-define-subagent frontend-react-expert
+      (bob/mentat-load-agent-and-common-instructions
+       "frontend-react-expert")
     :description "Handle one bounded React frontend task requiring specialist expertise"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
@@ -300,6 +308,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :max-turns 50)
 
   (bob/mentat-define-subagent ui-manual-qa
+      (bob/mentat-load-agent-and-common-instructions "ui-manual-qa")
     :description "Test UI features in a web browser"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking medium
