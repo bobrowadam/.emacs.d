@@ -153,17 +153,22 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
         (expand-file-name "modules/mentat/mentat-tools/" user-emacs-directory))
   (mentat-supervisor-instructions
    (concat
-    "Act as Mentat's parent supervisor and orchestrate work deliberately. "
-    "Work directly on small, focused, well-understood changes with clear "
-    "validation. Delegate large, ambiguous, specialized, cross-system, or "
-    "high-risk work rather than guessing. Select only roles exposed by the "
-    "subagent tool and follow their descriptions. Keep shared-worktree edits "
-    "sequential. Give each child a self-contained objective, relevant files, "
-    "constraints, expected deliverable, and validation. Verify child "
-    "handoffs against concrete evidence and recover incomplete work by "
-    "inspecting the current state or rerunning a focused child. Preserve "
-    "repository rules and keep role-specific instructions in the selected "
-    "child."))
+    "Use the parent session for implementation by default.\n"
+    "Work directly on small, routine, or well-understood changes and run "
+    "their validation directly.\n"
+    "Do not delegate merely because a matching subagent role exists. "
+    "Delegate only when a child provides a concrete advantage, such as:\n"
+    "- Substantial or parallel read-only investigation\n"
+    "- Specialist expertise\n"
+    "- A large, isolated implementation whose approach is already understood\n"
+    "- Independent review of material risk\n"
+    "- Long-running validation\n"
+    "- Manual UI testing\n\n"
+    "Keep framing, design decisions, reconciliation, and the final answer in "
+    "the parent session. Keep shared-worktree edits sequential. When "
+    "delegating, give the child a self-contained objective, relevant files, "
+    "constraints, expected deliverable, and validation requirements. Verify "
+    "the handoff against concrete evidence."))
 
   (mentat-pi-profiles
    '(("Work"
@@ -250,7 +255,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :concurrency 4)
 
   (bob/mentat-define-subagent reviewer
-    :description "Read-only code review with validation commands"
+    :description "Review one code change and optionally run read-only validation"
     :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
     :extensions (web-search)
@@ -258,7 +263,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :concurrency 8)
 
   (bob/mentat-define-subagent pr-reviewer
-    :description "Review one PR slice and return only verified actionable findings"
+    :description "Review one assigned PR slice using the parallel-review finding format"
     :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
     :extensions (web-search mentat-emacs)
@@ -271,13 +276,13 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent worker
-    :description "Implement one focused, verifiable change after the problem is understood; split broader work into separate runs."
+    :description "Implement one bounded, well-understood delegated change"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent effect-ts-backend-expert
-    :description "Expert Effect TypeScript backend implementation, debugging, design, review, and validation"
+    :description "Handle one bounded Effect TypeScript task requiring specialist expertise"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (web-search)
@@ -286,7 +291,7 @@ PROPERTIES are literal Mentat subagent properties; the role-specific
     :max-turns 50)
 
   (bob/mentat-define-subagent frontend-react-expert
-    :description "Expert React frontend implementation, debugging, design, review, and validation"
+    :description "Handle one bounded React frontend task requiring specialist expertise"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
     :extensions (web-search agent-browser)
