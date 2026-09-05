@@ -43,28 +43,34 @@ Reject missing or ambiguous OLD text.  Do not write when OLD and NEW are equal."
 
 (mentat-defun mentat-text-edit-replace-many (file replacements)
   "Apply exact REPLACEMENTS to FILE atomically.
-REPLACEMENTS is a nonempty JSON array of objects with `old' and `new' strings.
-Every old value must occur exactly once in the original file.  Reject overlap
-and write only after every replacement validates."
+REPLACEMENTS is a nonempty JSON array of `[old, new]' string pairs.
+Every old value must be nonempty and occur exactly once in the original file.
+Reject overlap and write only after every replacement validates."
   (:display "Replace Many"
    :arguments
    ((file "File path")
     (replacements
-     "Nonempty array of objects with nonempty old and string new fields")))
-  (unless (and (file-regular-p file) (consp replacements))
-    (user-error "FILE must be regular and REPLACEMENTS must be nonempty"))
+     "Nonempty array of [old, new] string pairs; old must be nonempty")))
+  (unless (file-regular-p file)
+    (user-error "FILE must be a regular file"))
+  (unless (consp replacements)
+    (user-error
+     "Invalid REPLACEMENTS. Try again with [[\"old text\", \"new text\"]]"))
   (let ((absolute (expand-file-name file)))
     (with-temp-buffer
       (insert-file-contents absolute)
       (let ((ranges
              (mapcar
               (lambda (replacement)
-                (let ((old (alist-get 'old replacement))
-                      (new (alist-get 'new replacement)))
-                  (unless (and (stringp old) (not (string-empty-p old))
-                               (stringp new))
-                    (user-error
-                     "Each replacement requires nonempty old and string new"))
+                (unless (and (listp replacement)
+                             (= (length replacement) 2)
+                             (stringp (car replacement))
+                             (not (string-empty-p (car replacement)))
+                             (stringp (cadr replacement)))
+                  (user-error
+                   "Invalid replacement. Try again with [[\"old text\", \"new text\"]]"))
+                (let ((old (car replacement))
+                      (new (cadr replacement)))
                   (pcase-let ((`(,start . ,end)
                                (mentat-text-edit--exact-range old)))
                     (list start end old new))))
