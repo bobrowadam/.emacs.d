@@ -202,8 +202,10 @@ Mentat subagent properties."
   (mentat-enabled-models
    '("azure-openai-responses/gpt-5.6-luna"
      "azure-openai-responses/gpt-5.6-sol"
+     "azure-openai-responses/gpt-6-astra"
      "openai-codex/gpt-5.6-luna"
-     "openai-codex/gpt-5.6-sol"))
+     "openai-codex/gpt-5.6-sol"
+     "openai-codex/gpt-6-astra"))
 
   (mentat-extension-command-bindings nil)
   (mentat-extension-menu-commands
