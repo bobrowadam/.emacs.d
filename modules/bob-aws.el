@@ -26,10 +26,11 @@ Display the command output in a profile-specific buffer."
      :sentinel
      (lambda (process _event)
        (when (memq (process-status process) '(exit signal))
-         (message "AWS SSO login %s for %s (see %s)"
+         (message "AWS SSO login %s for %s"
                   (if (zerop (process-exit-status process)) "completed" "failed")
-                  profile
-                  (buffer-name (process-buffer process))))))
+                  profile)
+         (when-let ((window (get-buffer-window (process-buffer process) t)))
+       (quit-window t window)))))
     (display-buffer buffer)
     (message "Starting AWS SSO login for %s" profile)))
 
