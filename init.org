@@ -1449,10 +1449,10 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
       "Set markdown list bullets with a subtle unicode hierarchy."
       (setq markdown-list-item-bullets
             (list
-             (propertize "·" 'face 'org-level-1)
-             (propertize "⁃" 'face 'org-level-2)
-             (propertize "·" 'face 'org-level-3)
-             (propertize "⁃" 'face 'org-level-4))))
+             (propertize "-" 'face 'org-level-1)
+             (propertize "◦" 'face 'org-level-2)
+             (propertize "▪" 'face 'org-level-3)
+             (propertize "▪" 'face 'org-level-4))))
     (bob/markdown-update-header-faces)
     (bob/markdown-update-list-bullets)
     (add-hook 'markdown-view-mode-hook #'bob/markdown-view-mode-setup)
