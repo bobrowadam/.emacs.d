@@ -3562,9 +3562,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
       (modus-themes-bold-constructs t)
       (modus-themes-mixed-fonts t)
       (modus-themes-prompts '(bold intense))
-      ;; :init
-      ;; (load-theme 'modus-vivendi t)
-  )
+      :init
+      (modus-themes-include-derivatives-mode 1))
 #+end_src
 *** EF Themes
 #+begin_src elisp
@@ -3578,9 +3577,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
   (use-package modus-catppuccin
     :ensure (:repo "magus/modus-catppuccin" :fetcher gitlab :files ("*.el"))
-    :init
-    (modus-catppuccin-take-over-modus-themes-mode)
-    ;; (load-theme 'catppuccin-mocha)
+    ;; :init
+    ;; (modus-catppuccin-take-over-modus-themes-mode)
     )
 #+end_src
 *** John Blow Old Theme
