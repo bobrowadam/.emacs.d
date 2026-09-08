@@ -1,5 +1,6 @@
 ;;; project-text-edit.el --- Exact project text edits -*- lexical-binding: t; -*-
 
+(require 'bytecomp)
 (require 'cl-lib)
 (require 'subr-x)
 (require 'mentat-elisp-library)
@@ -17,15 +18,59 @@
       (user-error "Expected text occurs more than once"))
     range))
 
-(defun mentat-text-edit--result (file status &optional count)
-  "Return a compact edit result for FILE with STATUS and optional COUNT."
-  (if count
-      (format "%s %s (%d replacements)." status file count)
-    (format "%s %s." status file)))
+(defun mentat-text-edit--elisp-diagnostics (file)
+  "Return post-write diagnostics for Elisp FILE in the current buffer."
+  (when (string-equal (file-name-extension file) "el")
+    (condition-case err
+        (progn
+          (save-excursion
+            (goto-char (point-min))
+            (check-parens))
+          (let* ((log-buffer (generate-new-buffer " *mentat-elisp-diagnostics*"))
+                 (destination (make-temp-file "mentat-elisp-diagnostics-"
+                                              nil ".elc"))
+                 (byte-compile-log-buffer (buffer-name log-buffer))
+                 (byte-compile-error-on-warn t)
+                 (byte-compile-dest-file-function
+                  (lambda (_source) destination))
+                 (default-directory (file-name-directory file))
+                 (load-path (cons default-directory load-path)))
+            (unwind-protect
+                (if (byte-compile-file file)
+                    "Elisp diagnostics passed."
+                  (let ((output
+                         (with-current-buffer log-buffer
+                           (string-trim (buffer-string)))))
+                    (format "Elisp diagnostics failed:\n%s"
+                            (truncate-string-to-width output 4000))))
+              (when (file-exists-p destination)
+                (delete-file destination))
+              (kill-buffer log-buffer))))
+      (error
+       (format "Elisp diagnostics failed at line %d, column %d: %s"
+               (line-number-at-pos) (current-column)
+               (error-message-string err))))))
+
+(defun mentat-text-edit--result (file status &optional count diagnostics)
+  "Return an edit result for FILE with STATUS, COUNT, and DIAGNOSTICS."
+  (let ((summary
+         (if count
+             (format "%s %s (%d replacements)." status file count)
+           (format "%s %s." status file))))
+    (if diagnostics
+        (concat summary "\n" diagnostics)
+      summary)))
+
+(defun mentat-text-edit--write-result (absolute file status &optional count)
+  "Write the current buffer to ABSOLUTE and report FILE, STATUS, and COUNT."
+  (write-region (point-min) (point-max) absolute nil 'silent)
+  (mentat-text-edit--result
+   file status count (mentat-text-edit--elisp-diagnostics absolute)))
 
 (mentat-defun mentat-text-edit-replace-once (file old new)
   "Replace the sole exact OLD occurrence in FILE with NEW.
-Reject missing or ambiguous OLD text.  Do not write when OLD and NEW are equal."
+Reject missing or ambiguous OLD text.  Do not write when OLD and NEW are equal.
+Report parse and strict byte-compilation diagnostics after writing Elisp files."
   (:display "Replace Once")
   (unless (and (stringp new) (file-regular-p file))
     (user-error "FILE must be a regular file and NEW must be a string"))
@@ -38,14 +83,14 @@ Reject missing or ambiguous OLD text.  Do not write when OLD and NEW are equal."
           (delete-region start end)
           (goto-char start)
           (insert new)
-          (write-region (point-min) (point-max) absolute nil 'silent)
-          (mentat-text-edit--result file "updated"))))))
+          (mentat-text-edit--write-result absolute file "updated"))))))
 
 (mentat-defun mentat-text-edit-replace-many (file replacements)
   "Apply exact REPLACEMENTS to FILE atomically.
 REPLACEMENTS is a nonempty JSON array of `[old, new]' string pairs.
 Every old value must be nonempty and occur exactly once in the original file.
-Reject overlap and write only after every replacement validates."
+Reject overlap and write only after every replacement validates.  Report parse
+and strict byte-compilation diagnostics after writing Elisp files."
   (:display "Replace Many"
    :arguments
    ((file "File path")
@@ -94,13 +139,14 @@ Reject overlap and write only after every replacement validates."
               (delete-region (car range) (cadr range))
               (goto-char (car range))
               (insert (nth 3 range)))
-            (write-region (point-min) (point-max) absolute nil 'silent)
-            (mentat-text-edit--result file "Updated" (length changed))))))))
+            (mentat-text-edit--write-result
+             absolute file "Updated" (length changed))))))))
 
 (mentat-defun mentat-text-edit-insert-after-once (file anchor text)
   "Insert TEXT after the sole exact ANCHOR occurrence in FILE.
 Reject missing or ambiguous anchors.  Return unchanged when TEXT is already
-present immediately after ANCHOR."
+present immediately after ANCHOR.  Report parse and strict byte-compilation
+diagnostics after writing Elisp files."
   (:display "Insert After Once")
   (unless (and (stringp text) (file-regular-p file))
     (user-error "FILE must be a regular file and TEXT must be a string"))
@@ -116,8 +162,7 @@ present immediately after ANCHOR."
                              (point) (+ (point) (length text))))))
             (mentat-text-edit--result file "unchanged")
           (insert text)
-          (write-region (point-min) (point-max) absolute nil 'silent)
-          (mentat-text-edit--result file "updated"))))))
+          (mentat-text-edit--write-result absolute file "updated"))))))
 
 (provide 'project-text-edit)
 ;;; project-text-edit.el ends here
