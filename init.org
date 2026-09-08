@@ -1994,37 +1994,26 @@ just org files in a directory + ripgrep.
                                      current-branch
                                      current-branch))))
 
-    (defun bob/update-graphify-worktree (directory)
-      "Asynchronously update an existing Graphify graph for DIRECTORY."
-      (when-let* ((program (executable-find "graphify-worktree-update")))
-        (let ((process-connection-type nil))
-          (message "Updating graphify on dir %s" directory)
-          (start-process "graphify-worktree-update" nil
-                         program (expand-file-name directory)))))
+    (require 'bob-worktrees)
 
     (defun bob/remember-worktree-project-advice (orig-fun directory &rest args)
       "Remember and prepare new worktree DIRECTORY after ORIG-FUN succeeds."
       (prog1 (let ((process-environment (cons "LEFTHOOK=0" process-environment)))
                (apply orig-fun directory args))
-        (when-let* ((project (project-current nil directory)))
-          (project-remember-project project))
-        (bob/update-graphify-worktree directory)))
+        (bob/prepare-worktree directory)))
 
     (defun bob/remove-project-roots-advice (orig-fun worktree)
-      "Remove project roots and associated branches when deleting git worktrees."
-      (let ((branch-name (let ((default-directory worktree))
-                           (magit-get-current-branch))))
-        ;; Delete the worktree
-        (funcall orig-fun worktree)
-        ;; Remove project roots
-        (project-forget-projects-under worktree t)
-        ;; Delete local branch
-        (when branch-name
-          (magit-run-git "branch" "-D" branch-name)
-          ;; Optionally delete remote branch
-          (when (and (magit-get "remote" "origin" "url")
-                     (yes-or-no-p (format "Delete remote branch origin/%s? " branch-name)))
-            (magit-run-git "push" "origin" "--delete" branch-name)))))
+      "Clean WORKTREE and ask about an existing origin branch."
+      (bob/clean-worktree
+       worktree
+       (lambda (branch)
+         (yes-or-no-p (format "Delete remote branch origin/%s? " branch)))
+       (lambda (result)
+         (message "Cleaned worktree %s" (alist-get 'directory result)))
+       (lambda (reason)
+         (message "Worktree cleanup failed: %s" reason))
+       (lambda (directory)
+         (funcall orig-fun directory))))
 
     (advice-add 'magit-worktree-checkout :around #'bob/remember-worktree-project-advice)
     (advice-add 'magit-worktree-branch :around #'bob/remember-worktree-project-advice)

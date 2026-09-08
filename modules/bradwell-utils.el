@@ -1,5 +1,7 @@
 ;;; bradwell-utils.el --- Bradwell worktree helpers -*- lexical-binding: t; -*-
 
+(require 'bob-worktrees)
+
 (declare-function bob/npm--project-name nil)
 (declare-function magit-get-current-branch "magit-git")
 
@@ -33,21 +35,18 @@
   (bob/bradwell--ensure-shared-worktree-file path ".venv")
   (bob/bradwell--ensure-shared-worktree-file path "pyrightconfig.json")
   (let ((default-directory (file-name-as-directory path)))
-    (async-shell-command
-     "npm install && npm run build:services-common"
-     (format "*bradwell-worktree-setup<%s>*" (file-name-nondirectory (directory-file-name path))))))
+    (make-process
+     :name "bradwell-worktree-setup"
+     :buffer (get-buffer-create
+              (format "*bradwell-worktree-setup<%s>*"
+                      (file-name-nondirectory (directory-file-name path))))
+     :command (list shell-file-name shell-command-switch
+                    "npm install && npm run build:services-common")
+     :connection-type 'pipe
+     :noquery t)))
 
-(defun bob/setup-bradwell-worktree-checkout (orig-fun path worktree)
-  "Setup Bradwell worktree after checking out WORKTREE to PATH."
-  (funcall orig-fun path worktree)
-  (when (bob/is-bradwell-project path)
-    (bob/setup-bradwell-project-for-worktree path)))
-
-(defun bob/setup-bradwell-worktree-branch (orig-fun path worktree &optional starting-point)
-  "Setup Bradwell worktree after creating WORKTREE at PATH."
-  (if starting-point
-      (funcall orig-fun path worktree starting-point)
-    (funcall orig-fun path worktree))
+(defun bob/setup-bradwell-worktree (path)
+  "Start Bradwell setup when PATH is a Bradwell worktree."
   (when (bob/is-bradwell-project path)
     (bob/setup-bradwell-project-for-worktree path)))
 
@@ -62,8 +61,7 @@
              (substring (replace-regexp-in-string "/" "-" branch)
                         0 (min 20 (length branch)))))))
 
-(advice-add 'magit-worktree-checkout :around #'bob/setup-bradwell-worktree-checkout)
-(advice-add 'magit-worktree-branch :around #'bob/setup-bradwell-worktree-branch)
+(add-hook 'bob/worktree-setup-functions #'bob/setup-bradwell-worktree)
 (advice-add 'magit-worktree-move :around
             (lambda (orig-fun worktree path)
               (funcall orig-fun worktree path)

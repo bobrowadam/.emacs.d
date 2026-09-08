@@ -76,6 +76,75 @@
    (apply-partially #'mentat-linear--deliver-field 'issue success)
    error))
 
+(defun mentat-linear--create-issue-with-context
+    (api-key title description team-key project-name success error context)
+  "Create a Linear issue using resolved CONTEXT and callbacks.
+API-KEY authorizes the request.  TITLE, DESCRIPTION, TEAM-KEY, and PROJECT-NAME
+are confirmed user inputs."
+  (let* ((teams (alist-get 'nodes (alist-get 'teams context)))
+         (team (and (= (length teams) 1) (car teams)))
+         (team-id (alist-get 'id team))
+         (projects
+          (seq-filter
+           (lambda (project)
+             (seq-some
+              (lambda (project-team)
+                (equal team-id (alist-get 'id project-team)))
+              (alist-get 'nodes (alist-get 'teams project))))
+           (alist-get 'nodes (alist-get 'projects context))))
+         (project (and (= (length projects) 1) (car projects)))
+         (viewer (alist-get 'viewer context)))
+    (cond
+     ((not team)
+      (funcall error (format "Expected one Linear team with key %s, found %d"
+                             team-key (length teams))))
+     ((not project)
+      (funcall error
+               (format "Expected one %s project named %s, found %d"
+                       team-key project-name (length projects))))
+     (t
+      (mentat-linear--request
+       api-key
+       "mutation ($title: String!, $description: String!, $teamId: String!,
+                  $projectId: String!, $assigneeId: String!) {
+          issueCreate(input: { title: $title, description: $description,
+                               teamId: $teamId, projectId: $projectId,
+                               assigneeId: $assigneeId }) {
+            success
+            issue {
+              id identifier title description url
+              state { id name type }
+              team { id name states { nodes { id name type position } } }
+            }
+          }
+        }"
+       `((title . ,title) (description . ,description)
+         (teamId . ,team-id) (projectId . ,(alist-get 'id project))
+         (assigneeId . ,(alist-get 'id viewer)))
+       (apply-partially #'mentat-linear--deliver-mutation
+                        'issueCreate success error)
+       error)))))
+
+(defun mentat-linear--create-issue
+    (api-key title description team-key project-name success error)
+  "Create a Linear issue from confirmed fields using API-KEY and callbacks."
+  (mentat-linear--request
+   api-key
+   "query ($teamKey: String!, $projectName: String!) {
+      viewer { id }
+      teams(first: 2, filter: { key: { eq: $teamKey } }) {
+        nodes { id key name }
+      }
+      projects(first: 20, filter: { name: { eq: $projectName } }) {
+        nodes { id name teams { nodes { id key } } }
+      }
+    }"
+   `((teamKey . ,team-key) (projectName . ,project-name))
+   (apply-partially #'mentat-linear--create-issue-with-context
+                    api-key title description team-key project-name
+                    success error)
+   error))
+
 (defun mentat-linear--add-comment (api-key identifier body success error)
   "Add BODY to Linear issue IDENTIFIER using API-KEY and callbacks."
   (mentat-linear--request
