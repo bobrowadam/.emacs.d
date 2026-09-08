@@ -3630,25 +3630,14 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 
   (bob/register-and-load-themes modus-nibelung-dark modus-nibelung-light mentat-dark doom-dracula kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
 #+end_src
-** Spacious padding
+** Padding
 #+begin_src elisp
-  (use-package spacious-padding
+  (use-package bob-padding
+    :ensure nil
+    :load-path "modules"
     :demand t
-    :init
-    (defun bob/fix-mode-line-active-bg (&rest _)
-      "Set the active mode-line background when it is unspecified."
-      (when-let* ((mode-line-bg (face-background 'mode-line nil 'default))
-                  (mode-line-active-bg
-                   (face-attribute 'mode-line-active :background nil t))
-                  ((eq mode-line-active-bg 'unspecified)))
-        (set-face-attribute
-         'mode-line-active nil :background mode-line-bg)))
-
     :config
-    (advice-add 'spacious-padding-set-faces
-                :after #'bob/fix-mode-line-active-bg)
-    (setf (plist-get spacious-padding-widths :mode-line-width) 18)
-    (spacious-padding-mode 1))
+    (bob/padding-enable))
 #+end_src
 * Grep
 #+begin_src elisp
