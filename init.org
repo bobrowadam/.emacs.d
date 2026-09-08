@@ -2023,10 +2023,14 @@ just org files in a directory + ripgrep.
     (advice-add 'magit-worktree-delete :around #'bob/remove-project-roots-advice)
 
     (defun bob/magit-read-worktree-directory (prompt branch)
-      "Read worktree directory defaulting to .worktree/<branch> inside repo root."
-      (read-directory-name prompt nil nil nil
-                           (concat ".worktrees/"
-                                   (and branch (string-replace "/" "-" branch)))))
+      "Read worktree directory under the main repository's .worktrees directory."
+      (let ((main-directory
+             (file-name-directory
+              (directory-file-name (magit-gitdir nil t)))))
+        (read-directory-name
+         prompt main-directory nil nil
+         (concat ".worktrees/"
+                 (and branch (string-replace "/" "-" branch))))))
 
     (require 'bradwell-utils)
     (require 'magit-diff-review)
