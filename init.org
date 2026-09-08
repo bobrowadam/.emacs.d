@@ -628,7 +628,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 
   (use-package visual-line-mode
     :ensure nil
-    :hook (prog-mode magit-status-mode markdown-mode markdown-view-mode text-mode magit-diff-mode))
+    :hook (prog-mode magit-status-mode markdown-mode markdown-view-mode text-mode magit-diff-mode diff-mode))
 #+end_src
 
 * Abbrev
@@ -1073,8 +1073,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 ** Sema
 #+begin_src elisp
   (use-package sema-mode
-    :mode "\\.sema\\'"
-    :hook (gaudy-cl-mode))
+    :mode "\\.sema\\'")
 #+end_src
 * Ediff
 #+begin_src elisp
@@ -2343,7 +2342,6 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
                         :type git
                         :depth treeless
                         :inherit nil)
-               :demand t
                :init
                (defun bob/paredit-mode-maybe ()
                       "Enable paredit only in Lisp buffers.
