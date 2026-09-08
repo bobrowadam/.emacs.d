@@ -61,9 +61,7 @@ Return at most MAX-RESULTS paths while respecting ignore files."
               (unless (or limited (string-empty-p line))
                 (push line paths)
                 (when (>= (length paths) limit)
-                  (setq limited t)
-                  (when (process-live-p process)
-                    (delete-process process)))))
+                  (setq limited t))))
              (filter-output
               (_process chunk)
               (unless completed
@@ -78,7 +76,9 @@ Return at most MAX-RESULTS paths while respecting ignore files."
                       (consume-line
                        (substring pending start (match-beginning 0)))
                       (setq start (match-end 0)))
-                    (setq pending (substring pending start))))))
+                    (setq pending (substring pending start))
+                    (when (and limited (process-live-p process))
+                      (delete-process process))))))
              (finish-process
               (finished-process _event)
               (unless completed
