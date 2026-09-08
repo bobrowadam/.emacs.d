@@ -3589,11 +3589,11 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
   (use-package jblow-nostalgia-theme
     :ensure (:repo "Prikaz98/jblow-nostalgia" :fetcher github :files ("*.el")))
 #+end_src
-*** nibelung-theme
+*** Nibelung themes
 #+begin_src elisp
-  (use-package nibelung-theme
-    :ensure (:repo "veschin/nibelung-theme" :fetcher github :files ("*.el")))
-
+  ;; Local Modus derivatives live alongside the other custom modules.
+  (add-to-list 'custom-theme-load-path
+               (locate-user-emacs-file "modules/"))
 #+end_src
 *** kanagawa-themes
 #+begin_src elisp
@@ -3630,7 +3630,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
              (message "Loaded %s" theme)))
          "Cycle through registered themes.")))
 
-  (bob/register-and-load-themes mentat-dark doom-dracula kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
+  (bob/register-and-load-themes modus-nibelung-dark modus-nibelung-light mentat-dark doom-dracula kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
 #+end_src
 ** Spacious padding
 #+begin_src elisp
