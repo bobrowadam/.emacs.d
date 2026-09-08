@@ -84,7 +84,7 @@ Mentat subagent properties."
                     plain)
                    (setq remaining
                          (round (- 100 (string-to-number
-                                       (match-string 1 plain)))))))
+                                        (match-string 1 plain)))))))
           (let ((face (cond ((<= remaining 10) 'error)
                             ((<= remaining 30) 'warning)
                             (t 'success))))
@@ -126,17 +126,28 @@ Mentat subagent properties."
                           (cons "Unobserved history retained beyond requested cut"
                                 "yes")))))))))
 
+(transient-define-prefix bob/mentat-codex-menu ()
+  "Open Codex controls."
+  ["Codex"
+   ("s" "Show usage" (lambda ()
+                       (interactive)
+                       (mentat-run-extension-command "/codex")))
+   ("R" "Reset usage" (lambda ()
+                        (interactive)
+                        (mentat-run-extension-command "/codex reset")))])
+
 (use-package mentat
   :ensure nil
   :load-path "~/source/mentat"
   :demand t
   :custom
+  (mentat-tool-default-display-state 'summary)
+  (mentat-streaming-tool-display-state 'expanded)
   (mentat-pi-directory nil)
   (mentat-diagnostic-capture-enabled t)
   (mentat-enabled-extensions
    '(check-elisp codex resolve-symlinks session-scripts web-search
-                 worktree-skills observational-memory chrome-profile-bridge
-                 agent-browser))
+                 worktree-skills observational-memory agent-browser))
   (mentat-pi-disabled-tools nil)
   (mentat-emacs-advertised-libraries
    '((dash . "list-processing macros and functions")
@@ -149,7 +160,7 @@ Mentat subagent properties."
   (mentat-default-model "gpt-5.6-sol")
   (mentat-default-effort "low")
   (mentat-elisp-library-directory
-        (expand-file-name "modules/mentat/mentat-tools/" user-emacs-directory))
+   (expand-file-name "modules/mentat/mentat-tools/" user-emacs-directory))
   (mentat-supervisor-instructions
    (concat
     "Use the parent session for implementation by default.\n"
@@ -173,7 +184,7 @@ Mentat subagent properties."
    '(("Work"
       :directory "~/.pi/agent"
       :subagents (explorer reviewer pr-reviewer ci-watcher worker
-                  effect-ts-backend-expert frontend-react-expert ui-manual-qa)
+                           effect-ts-backend-expert frontend-react-expert ui-manual-qa)
       :disabled-tools ("agent_browser" "agent_browser_web_search"
                        "emacs_eval_elisp"
                        "emacs_eval_async"
@@ -181,7 +192,7 @@ Mentat subagent properties."
      ("Private"
       :directory "~/.pi/agent-private"
       :subagents (explorer reviewer pr-reviewer ci-watcher worker
-                  effect-ts-backend-expert frontend-react-expert ui-manual-qa)
+                           effect-ts-backend-expert frontend-react-expert ui-manual-qa)
       :disabled-tools ("agent_browser" "agent_browser_web_search"))
 
      ("Pure Emacs"
@@ -209,7 +220,7 @@ Mentat subagent properties."
 
   (mentat-extension-command-bindings nil)
   (mentat-extension-menu-commands
-   '(("C" "Chrome controls" "/chrome")))
+ '(("C" "Codex controls" bob/mentat-codex-menu)))
   (mentat-mode-line-extra-functions
    '(bob/mentat-codex-weekly-usage))
   (mentat-prompt-extra-completion-at-point-functions nil)
@@ -240,8 +251,6 @@ Mentat subagent properties."
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
     :source "git:github.com/elpapi42/pi-observational-memory@ce9fc982b3a219a7839f07c9f4a3e054e81a2b21")
-  (mentat-define-extension chrome-profile-bridge
-    :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-chrome/extensions/chrome-profile-bridge/index.ts")
   (mentat-define-extension agent-browser
     :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-agent-browser-native/dist/extensions/agent-browser/index.js"
     :tools (agent_browser))

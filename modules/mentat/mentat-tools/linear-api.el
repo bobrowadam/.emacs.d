@@ -67,7 +67,7 @@
    api-key
    "query ($id: String!) {
       issue(id: $id) {
-        id identifier title description
+        id identifier title description url
         state { id name type }
         team { id name states { nodes { id name type position } } }
       }
