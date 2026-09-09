@@ -36,6 +36,10 @@
   (setq use-package-always-ensure t)
   (setq use-package-always-defer t)
   (setq use-package-compute-statistics t)
+  (use-package bob-elpaca
+    :ensure nil
+    :load-path "modules"
+    :commands (bob/elpaca-native-compile))
   (defun bob/elpaca-package-dir (package)
     "Return PACKAGE dir from current or legacy Elpaca locations."
     (catch 'found
@@ -376,6 +380,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 
 * Basic settings
 #+begin_src elisp
+  (setq native-comp-jit-compilation t)
   (setq read-process-output-max (* 3 1024 1024)) ;; 3mb
   (setq browse-url-chrome-program "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
   (setq browse-url-chromium-program "/Applications/Comet.app/Contents/MacOS/Comet")
