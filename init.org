@@ -3604,9 +3604,9 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** Nibelung themes
 #+begin_src elisp
-  ;; Local Modus derivatives live alongside the other custom modules.
-  (add-to-list 'custom-theme-load-path
-               (locate-user-emacs-file "modules/"))
+  ;; Local themes live in the dedicated theme directory.
+  (setq custom-theme-directory
+        (locate-user-emacs-file "themes/"))
 #+end_src
 *** kanagawa-themes
 #+begin_src elisp
