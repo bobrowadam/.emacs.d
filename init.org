@@ -569,11 +569,22 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
          (calculated-font-size
           (if (>= monitor-width 1920)
               23
-            19)))
-    ;; (set-frame-font (format "Iosevka-%d:weight=medium:width=expanded" calculated-font-size)
-    ;;                 'keep-size t)
-    (set-frame-font (format "Aporetic Sans Mono-%d" calculated-font-size)
-                    'keep-size t))
+            19))
+         ;; Previously: (format "Aporetic Sans Mono-%d" calculated-font-size)
+         (font-ring
+          (list (format "Menlo-%d" calculated-font-size)
+                (format "Aporetic Sans Mono-%d" calculated-font-size)
+                (format "Monaco-%d" calculated-font-size))))
+    (set-frame-font (car font-ring) 'keep-size t)
+    (defalias 'bob/cycle-fonts
+      (lambda ()
+        (interactive)
+        (setq font-ring (append (cdr font-ring) (list (car font-ring))))
+        (set-frame-font (car font-ring) 'keep-size t)
+        (message "Loaded %s" (car font-ring)))
+      "Cycle through favorite fonts."))
+
+  (global-set-key (kbd "C-c f") #'bob/cycle-fonts)
   (setq kill-buffer-query-functions nil)
 
   ;; Trust the ~/source/ file so flymake byte compile will work.
