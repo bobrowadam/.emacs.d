@@ -4,6 +4,7 @@
 (require 'json)
 (require 'seq)
 (require 'url)
+(require 'url-parse)
 (require 'mentat-elisp-library)
 (require 'mentat-emacs)
 
@@ -248,6 +249,72 @@ are confirmed user inputs."
       (apply-partially #'mentat-linear--complete-after-fetch
                        api-key identifier resolve reject)
       reject))))
+
+(defun mentat-linear--validate-attachment-url (url)
+  "Reject URL unless it is an HTTPS Linear upload URL."
+  (let ((parsed (url-generic-parse-url url)))
+    (unless (and (equal (url-type parsed) "https")
+                 (equal (url-host parsed) "uploads.linear.app")
+                 (= (url-port parsed) 443)
+                 (null (url-user parsed))
+                 (null (url-password parsed)))
+      (user-error "Attachment URL must use https://uploads.linear.app"))))
+
+(defun mentat-linear--save-attachment (resolve reject status)
+  "Save a downloaded attachment and call RESOLVE or REJECT using STATUS."
+  (let (file)
+    (unwind-protect
+        (condition-case err
+            (progn
+              (when (plist-get status :error)
+                (error "Linear attachment download failed (HTTP %s)"
+                       url-http-response-status))
+              (unless (and (integerp url-http-response-status)
+                           (<= 200 url-http-response-status 299))
+                (error "Linear attachment download failed (HTTP %s)"
+                       url-http-response-status))
+              (goto-char (point-min))
+              (unless (re-search-forward "\r?\n\r?\n" nil t)
+                (error "Linear attachment response has no header terminator"))
+              (setq file (make-temp-file "mentat-linear-attachment-"))
+              (let ((coding-system-for-write 'no-conversion))
+                (write-region (point) (point-max) file nil 'silent))
+              (funcall resolve
+                       `((path . ,file)
+                         (bytes . ,(file-attribute-size
+                                    (file-attributes file))))))
+          (error
+           (when file (delete-file file))
+           (funcall reject (error-message-string err))))
+      (kill-buffer (current-buffer)))))
+
+(defun mentat-linear--download-attachment (api-key url resolve reject)
+  "Download Linear attachment URL using API-KEY, RESOLVE and REJECT."
+  (let* ((url-request-method "GET")
+         (url-request-extra-headers `(("Authorization" . ,api-key)))
+         (url-max-redirections 0)
+         (buffer
+          (url-retrieve url
+                        (apply-partially #'mentat-linear--save-attachment
+                                         resolve reject)
+                        nil t t)))
+    ;; Redirect processing runs after this dynamic binding has ended.
+    (when (buffer-live-p buffer)
+      (with-current-buffer buffer
+        (setq-local url-max-redirections 0)))
+    buffer))
+
+(mentat-defun mentat-linear-download-attachment (url)
+  "Download a Linear issue attachment at URL to a private temporary file.
+Use an https://uploads.linear.app URL from an issue description or comment.
+Authentication uses the existing Linear auth-source credential.  Redirects
+are rejected.  Resolve with path and byte count, never attachment contents
+or credentials.  Use `mentat-read-image-file' on the path to inspect images."
+  (:execution async)
+  (mentat-linear--validate-attachment-url url)
+  (mentat-linear--starter
+   (lambda (api-key resolve reject)
+     (mentat-linear--download-attachment api-key url resolve reject))))
 
 (provide 'linear-api)
 ;;; linear-api.el ends here
