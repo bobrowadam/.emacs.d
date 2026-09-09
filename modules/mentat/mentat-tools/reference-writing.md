@@ -1,0 +1,97 @@
+<!-- Source: AnswerDotAI/aai-coding@6e98e6937db6ab27c7f770c76e97d92fbbbe8a21, aai_coding/write_docs.py -->
+
+How to write reference prose: read before writing docstrings, READMEs, API docs, PR descriptions, commit messages, or messages to co-workers.
+
+# Writing Reference Prose
+
+These rules cover the prose that ships with code: docstrings, code comments, READMEs, API and reference docs, changelogs, PR descriptions, commit messages, and messages to co-workers. The register is GOV.UK/GDS house style with ASD-STE100's discipline: very plain and very direct. Reference prose puts the contract first. That does not require a formal tone or the removal of the author's voice. For blog posts, essays, and announcements use write-prose. For choosing what a summary says, use write-summary.
+
+Here is a passage from a design doc, written in this register:
+
+> `GatewayKernel` ties the three lower layers together. The ready-wait runs once per kernel, in `start`.[1][3] `watch` polls the process and the heartbeat. A process that dies unexpectedly broadcasts the synthesized `dead` status.[1] Three missed heartbeats[4] mark the kernel `unresponsive` in its model, with the next echo clearing the mark.
+>
+> The gateway never kills an unresponsive kernel.[2] A kernel becomes `dead` only when its process exits.[2] `restart` terminates and respawns with fresh ports in a new process. Clients see `restarting`, then `starting` once the new kernel is ready.[5]
+
+Write like that. Each sentence states one fact and stops. Each guarantee is its own sentence. The negative guarantee is stated too: what the gateway never does. Every status is named by its real identifier. Sentences this uniform would read as monotone in an essay. In reference prose they are correct. Readers scan, take the fact they came for, and leave.
+
+Here is the same passage before editing:
+
+> This section describes how `GatewayKernel` manages the kernel lifecycle.[13] `GatewayKernel` ties the three lower layers together, and its `start` is the only place the ready-wait runs: once per kernel, ever.[1][3] The core mechanism: `watch`.[15] It isn't just a poller - it's the liveness authority.[16] Furthermore,[19] it polls the process and the heartbeat: a process that dies unexpectedly broadcasts the synthesized `dead` status, and three missed beats[4] mark the kernel `unresponsive` in its model.[1] The distinction is worth being precise about.[21] That marking is observational only - only process exit means dead -[2] and it clears itself on the next echo. So what does `restart` actually do?[18] It terminates and respawns; the kernel gains fresh ports, fresh channels, and a fresh interpreter via the new process,[20][23] so the channel set is rebuilt[6] and clients simply[3] see `restarting` then a fresh welcome-backed ready kernel.[5]
+
+Do NOT write like that. Nothing in it is false. In a blog post it might pass. As reference prose it fails. Each sentence carries several facts. The key guarantee is an aside. The final state gets a flourish instead of its name. The opener announces the section instead of starting it. A question delays a fact the reader came for.
+
+The numbers refer to the [bracketed] markers in both passages. Where a number appears in each, the pair is the failing and the working version of the same thing.
+
+1. Splices: clauses joined with em dashes, semicolons, colons, ", and", or ", which". Write one idea per sentence and end it. In narrative prose an occasional join earns its place. Here none does.
+2. Contract by aside: the rule the reader most needs, implied by an aside, a contrast, or a parenthetical. "That marking is observational only" implies the guarantee. "The gateway never kills an unresponsive kernel" states it. Give every guarantee its own sentence. State the negative space too. What the system never does is as much of the contract as what it does.
+3. Emphasis devices: "ever", "simply", "just", "the only place", bold, italics. Position is the only emphasis mechanism in reference prose. Put the key fact first in its sentence. Put the key sentence first in its paragraph. Delete the intensifiers.
+4. Elegant variation: "the heartbeat" becoming "beats" a sentence later. One concept, one name, every time it appears, however repetitive it feels. Never reuse one word for two concepts either. This is STE's "one meaning per term".
+5. Flourish over identifier: "a fresh welcome-backed ready kernel" where the real status is `starting`. Name the actual identifier, state, value, or number. The reader will grep for it, test against it, and see it in logs.
+6. Consequence glue: a clause joined by ", so". The consequence is usually restatement, internal detail the reader does not need (", so the channel set is rebuilt"), or a link that does not hold. Delete it, or give a real consequence its own sentence.
+7. Hedging: "may", "might", "potentially", "in some cases", "should generally". A contract that hedges is not a contract. State what the code does. When behavior is unspecified or untested, say that outright: "behavior with concurrent writers is undefined", "not benchmarked".
+8. Noting fillers: "note that", "it's worth noting", "importantly", "keep in mind". If the fact matters, state it plainly and early. Delete the filler every time.
+9. Restatement: a heading repeated by its section's first line, a lead sentence summarizing the paragraph it starts, a closing line summarizing the section. State each fact once, in its best position, and stop. Summaries earn their place at document scale only. A README's first paragraph is one.
+10. Justification rider: a fact with a benefit clause attached: "kind-sorted so a collector stays legal wherever it came from", "parses bools so flag values test correctly". The rider argues for the fact instead of stating it. Reference prose states the contract. Rationale lives in design docs and narrative prose.
+11. Decorative verbs: a verb chosen for texture instead of the plain word for the event: ids "ride" in rows, a note "lands" in the output. Ask whether you would say the verb at a whiteboard. An artifact subject is fine when the artifact really acts ("`watch` polls the process"). Its verb must still be the plain one.
+12. Audience misjudged, in either direction: explaining what every reader of the doc already knows ("the README documents the package"), or dropping a local coinage without definition ("the carrier"). Name the audience. Cut what they know. Define your own coinages at first use. Established external terms of art may stay. They can be looked up. A coinage cannot.
+13. Throat-clearing: an opener that announces the document instead of starting it: "This section describes...", "The purpose of this document is...", "This README covers...". Delete it. The first sentence states the first fact.
+14. Today's-world opener: "In today's fast-moving AI landscape...". The README form of throat-clearing, with marketing attached. Start with what the package does.
+15. Announce-then-deliver: a label and a colon in place of a sentence: "The core mechanism: `watch`.", "The fix: retry on timeout." The label is scaffolding. Write the sentence: "Retrying on timeout fixes it."
+16. Not-X-but-Y: "isn't just a poller - it's the liveness authority", "not X, but Y". State what the thing is, directly. Restructure every time.
+17. Teaser pivot: "but here's where it gets interesting", "the real story is". A contrast flourish that withholds a fact to build suspense. Reference prose has no suspense. State the facts in order.
+18. Rhetorical questions: "So what does `restart` actually do?". Never ask the reader questions, in headings or in prose. Turn each question into the statement it delays. GDS bans FAQ pages on the same principle.
+19. Filler transitions: "Furthermore", "Moreover", "Additionally", "In conclusion", "When it comes to". Use "and", "also", or start with the subject.
+20. Forced symmetry: three parallel adjectives ("fresh ports, fresh channels, and a fresh interpreter"), three pros and three cons, sections padded to equal length, list items forced into one grammatical mold. Let the material set the count. Treat any list of exactly three as suspect.
+21. Appraisal preamble: a clause that appraises the content it introduces: "the distinction is worth being precise about", "the key point is", "crucially". Deliver the fact. Never advertise it.
+22. Artifact-as-agent: "this PR introduces", "the change enables", "the design lets you". A person did the deed. Name the doer ("I added retry logic"), or state the resulting behavior ("`connect` now retries").
+23. Recipient-as-subject: the beneficiary promoted to subject, with "gets"/"gains"/"receives" and the doer demoted to a "via"/"through" phrase: "the kernel gains fresh ports via the new process". Name the doer and the deed, or state the new state: "the new process listens on fresh ports".
+24. Decoration: emoji, decorative unicode, and ornamental symbols. Use ASCII: "->" not an arrow glyph, words not emoji.
+25. Over-structuring: headers, tables, or bullets imposed on a document that fits on a screen. Headers are navigation. A short document needs none. Bullets carry parallel facts, never prose chopped into fragments.
+26. False depth: restating the problem in fancier words, listing obvious considerations, concluding "it depends". Depth is specifics: identifiers, numbers, edge cases, failure modes.
+
+Entries 7-12, 14, 17, 22, and 24-26 are tells the passage pair is too short to show. When a new tell is added to this skill, add a marked instance to the before passage where a short sample can show it.
+
+Instructions address the reader as "you", in the imperative: "Run the tests", not "The tests should be run". Prefer active voice everywhere. A passive that hides the actor usually hides part of the contract with it.
+
+## Banned words
+
+Always use the plainest word that is still correct:
+
+- use, not "utilize" or "leverage"
+- improve, not "enhance" or "optimize" (unless something is literally being optimized)
+- complete, not "comprehensive"
+- strong, not "robust"
+- help, not "facilitate"
+
+Kill on sight: seamless, streamline, empower, foster, pivotal, "a testament to", realm, landscape (metaphorical), navigate (metaphorical), delve, myriad, plethora, paradigm, synergy, holistic, catalyze, juxtapose, tapestry, embark, endeavor, encompass, multifaceted, elucidate, nuanced (as filler), minted (metaphorical). For "land"/"landed" say what happened: merged, committed, released, appears. For metaphorical "shape"/"shaped" say structure, format, or the actual event. "Invariant" is usually "rule" or "guarantee". Compounds in "-bearing" (load-bearing, text-bearing) have plainer forms.
+
+## Doc types
+
+- Docstrings: the first line states what the function does. For most functions it is the whole docstring. Parameter detail goes in docments, never repeated in prose. State inputs, outputs, errors raised, and guarantees. Never restate the signature.
+- Code comments: only a constraint the code cannot show (see coding-patterns). Almost never.
+- READMEs: read like docstrings, not blogs. First paragraph: what the package does and for whom. Then install, then a minimal example. No journey, no sales language.
+- API docs and changelogs: the contract or the change, one entry per behavior. Rationale goes in design docs.
+- PR descriptions and commit messages: lead with the behavior change, name who did what, and give reviewers what they need to judge the diff. write-summary covers choosing the content.
+- Messages to co-workers: the answer first, support after. No softening preamble, no closing offers of further help.
+
+Don't hard-wrap prose. Write each paragraph as one continuous line and let the display soft-wrap it. Put code symbols in backticks: function names, parameters, file paths, module and package names, and literal syntax.
+
+## Rewriting high-scoring documentation
+
+A high slopometer score means the document needs a fresh explanation, not repairs to individual flagged sentences. Do not mechanically split sentences, replace banned words, or delete clauses until the score falls. Short sentences can still be unreadable. Correctly written documents generally score below 4, but a low score does not establish clarity, accuracy, or completeness.
+
+Rewrite the explanation, not the information content. Preserve technical detail that might matter to a reader. A shorter document is not an improvement if it omits a capability, condition, or explanation the reader needs.
+
+De-slopping does not mean removing character or voice. Preserve the author's existing informality, conversational phrasing, contractions, and humor where they communicate clearly. Informal language is not slop. AI slop is often over-clever: strained metaphors, elaborate phrasing, and invented terminology that make a simple point hard to understand. Judge language by what it communicates, not how formal it sounds. Do not replace a human voice with generic reference prose or invent a new persona for the author.
+
+- **Establish the facts.** Read the implementation and executable examples before drafting. Identify the audience and what they need to understand or do. Make a working inventory of the original's substantive points: capabilities, responsibilities, inputs, outputs, identifiers, defaults, guarantees, exclusions, edge cases, failure behavior, and context. Verify claims against the code. Record incorrect or uncertain claims rather than silently repeating them.
+- **Write from understanding.** Put the old wording aside and draft from the facts. Choose an order that explains the system to the intended reader. Do not preserve the old sentences, paragraph structure, or local coinages merely because they are already there. Name who performs each operation. Introduce concepts before using them. State guarantees directly.
+- **Keep the context.** Explain the problem the code solves and the relationships needed to understand its behavior. Preserve prerequisites, setup, protocol distinctions, and reasons that affect correct use. Do not turn an explanation into disconnected facts or compress it into unexplained identifiers. Remove promotional justification, not the reasoning a reader needs to understand the contract.
+- **Audit technical coverage.** Account for every substantive point in the original and locate it in the rewrite. Repeated facts can share one clear statement. Moving a fact must not make it unavailable where the reader needs it. Preserve details whose relevance is uncertain. Flag proposed omissions for review instead of deciding silently that they do not matter. Correct false claims from evidence and report those corrections.
+- **Review descriptions separately.** In nbdev, the first blockquoted paragraph below the title becomes the description. Module listings and generated documentation reuse it without the surrounding explanation. Preserve its capability coverage and technical scope. For example, replacing a description of NDJSON transport, control routing, and deferred tool results with "Communicate through standard input and output" loses two responsibilities. Check the description on its own, even when the body explains all three.
+- **Verify the finished document.** Read the rewrite top-to-bottom beside its examples. Check accuracy, readability, retained context, technical coverage, and preservation of the author's voice before scoring. For notebooks, follow `nbdev.skill`, edit the source notebook, regenerate exports, and run the affected notebook tests. Keep implementation behavior unchanged unless the user separately requests code changes. Update stale example outputs by execution, not manual editing.
+- **Rescore independently at the end.** Use a fresh scoring process after the rewrite and its coverage audit are complete. Do not use intermediate scores to choose wording or remove information. Report the final score, word count, findings, and test results. If the score remains high, reconsider the explanation as a whole. Do not dismiss the document's problems because some individual findings are false positives.
+
+When the user authorizes delegated rewrites, give each agent a bounded document scope and these instructions. Require the agent to report corrections, any proposed omissions, verification results, and the final independent score. Review the rewritten document against both the original's technical content and the implementation. A score below 4 is not a substitute for that review.
+
+This module also provides `check_docs`, which reviews text against these rules using a separate model. Don't run it unless the user asks for a docs check.
