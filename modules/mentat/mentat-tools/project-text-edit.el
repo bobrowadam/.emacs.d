@@ -1,6 +1,6 @@
 ;;; project-text-edit.el --- Exact project text edits -*- lexical-binding: t; -*-
 
-(require 'bytecomp)
+(require 'lisp-mode)
 (require 'cl-lib)
 (require 'subr-x)
 (require 'mentat-elisp-library)
@@ -19,35 +19,16 @@
     range))
 
 (defun mentat-text-edit--elisp-diagnostics (file)
-  "Return post-write diagnostics for Elisp FILE in the current buffer."
+  "Return post-write parenthesis diagnostics for Elisp FILE in this buffer."
   (when (string-equal (file-name-extension file) "el")
     (condition-case err
         (progn
-          (save-excursion
-            (goto-char (point-min))
-            (check-parens))
-          (let* ((log-buffer (generate-new-buffer " *mentat-elisp-diagnostics*"))
-                 (destination (make-temp-file "mentat-elisp-diagnostics-"
-                                              nil ".elc"))
-                 (byte-compile-log-buffer (buffer-name log-buffer))
-                 (byte-compile-error-on-warn t)
-                 (byte-compile-dest-file-function
-                  (lambda (_source) destination))
-                 (default-directory (file-name-directory file))
-                 (load-path (cons default-directory load-path)))
-            (unwind-protect
-                (if (byte-compile-file file)
-                    "Elisp diagnostics passed."
-                  (let ((output
-                         (with-current-buffer log-buffer
-                           (string-trim (buffer-string)))))
-                    (format "Elisp diagnostics failed:\n%s"
-                            (truncate-string-to-width output 4000))))
-              (when (file-exists-p destination)
-                (delete-file destination))
-              (kill-buffer log-buffer))))
+          (delay-mode-hooks (emacs-lisp-mode))
+          (goto-char (point-min))
+          (check-parens)
+          "Elisp parentheses check passed.")
       (error
-       (format "Elisp diagnostics failed at line %d, column %d: %s"
+       (format "Elisp parentheses check failed at line %d, column %d: %s"
                (line-number-at-pos) (current-column)
                (error-message-string err))))))
 
@@ -70,7 +51,8 @@
 (mentat-defun mentat-text-edit-replace-once (file old new)
   "Replace the sole exact OLD occurrence in FILE with NEW.
 Reject missing or ambiguous OLD text.  Do not write when OLD and NEW are equal.
-Report parse and strict byte-compilation diagnostics after writing Elisp files."
+Check balanced parentheses after writing Elisp files.
+Run compilation and documentation checks separately when the change is complete."
   (:display "Replace Once")
   (unless (and (stringp new) (file-regular-p file))
     (user-error "FILE must be a regular file and NEW must be a string"))
@@ -89,8 +71,9 @@ Report parse and strict byte-compilation diagnostics after writing Elisp files."
   "Apply exact REPLACEMENTS to FILE atomically.
 REPLACEMENTS is a nonempty JSON array of `[old, new]' string pairs.
 Every old value must be nonempty and occur exactly once in the original file.
-Reject overlap and write only after every replacement validates.  Report parse
-and strict byte-compilation diagnostics after writing Elisp files."
+Reject overlap and write only after every replacement validates.
+Check balanced parentheses after writing Elisp files.
+Run compilation and documentation checks separately when the change is complete."
   (:display "Replace Many"
    :arguments
    ((file "File path")
@@ -145,8 +128,9 @@ and strict byte-compilation diagnostics after writing Elisp files."
 (mentat-defun mentat-text-edit-insert-after-once (file anchor text)
   "Insert TEXT after the sole exact ANCHOR occurrence in FILE.
 Reject missing or ambiguous anchors.  Return unchanged when TEXT is already
-present immediately after ANCHOR.  Report parse and strict byte-compilation
-diagnostics after writing Elisp files."
+present immediately after ANCHOR.  Check balanced parentheses after writing
+Elisp files.  Run compilation and documentation checks separately when the
+change is complete."
   (:display "Insert After Once")
   (unless (and (stringp text) (file-regular-p file))
     (user-error "FILE must be a regular file and TEXT must be a string"))
