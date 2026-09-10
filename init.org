@@ -160,12 +160,12 @@
     (dolist (buf ( (buffer-list))
                  (kill-buffer buf))))
 
-  (defun bob/ghostel-top-project ()
-    "Open a Ghostel terminal on the highest project."
+  (defun bob/cooked-top-project ()
+    "Open a Cooked terminal on the highest project."
     (interactive)
     (if-let* ((project--root (bob/monorepo-root))
               (default-directory project--root))
-        (ghostel-project)
+        (cooked-project)
       (error "Not in project")))
 
   (defvar bob/last-shell-buffer nil)
@@ -190,7 +190,7 @@
                         (with-current-buffer b (derived-mode-p 'comint-mode))
                         (with-current-buffer b (derived-mode-p 'compilation-mode))
                         (equal (with-current-buffer b major-mode) 'sly-mrepl-mode)
-                        (equal (with-current-buffer b major-mode) 'ghostel-mode)
+                        (equal (with-current-buffer b major-mode) 'cooked-mode)
                         (equal (with-current-buffer b major-mode) 'sql-interactive-mode)
                         (equal (with-current-buffer b major-mode) 'pgmacs-mode)))
                   (mapcar (function buffer-name)
@@ -2662,8 +2662,8 @@ Colorful semantic highlighting of Common Lisp code
     (setq project-switch-commands
           '((project-find-file "Find file")
             (project-dired "Root Directory" "d")
-            (ghostel-project "Ghostel" "s")
-            (bob/ghostel-top-project "Ghostel Top" "S")
+            (cooked-project "Cooked" "s")
+            (bob/cooked-top-project "Cooked Top" "S")
             (mentat-open "Mentat" "m")
             (magit-project-status "Magit" "g")
             (consult-ripgrep "RipGrep" "r")
@@ -3893,26 +3893,41 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
 #+end_src
 * Terminal emulation
 #+begin_src elisp
-  (use-package ghostel
-    :ensure (:repo "dakra/ghostel"
-                   :fetcher github
-                   :files (:defaults
-                           "lisp/*.el"
-                           "ghostel-module.*"
-                           "etc"))
-    :commands (ghostel ghostel-project bob/ghostel-top-project)
+  (defun bob/cooked-build-load-path (e)
+    "Add Cooked's Lisp directory to the autoloads for Elpaca package E."
+    (let ((file (expand-file-name "cooked-autoloads.el" (elpaca<-build-dir e))))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (goto-char (point-max))
+        (insert "\n")
+        (prin1 '(add-to-list 'load-path
+                             (expand-file-name "lisp" (file-name-directory load-file-name)))
+               (current-buffer))
+        (insert "\n")
+        (write-region (point-min) (point-max) file nil 'silent)))
+    (elpaca-continue e))
+
+  (use-package cooked
+    :ensure (:host github
+                   :repo "vodik/cooked"
+                   ;; Keep the native build inputs and runtime resources beside the Lisp.
+                   :files (("lisp" "lisp/*.el")
+                           "Cargo.toml" "Cargo.lock"
+                           "src" "terminfo" "shell-integration")
+                   :build (:after elpaca-build-autoloads bob/cooked-build-load-path))
+    :commands (cooked cooked-other-window
+                      cooked-project cooked-project-other-window
+                      cooked-here cooked-here-other-window)
     :custom
-    (ghostel-max-scrollback (* 20 1024 1024))
-    (ghostel-module-auto-install 'ask)
-    (ghostel-keymap-exceptions '("C-c" "C-x" "C-u" "C-g" "M-x" "M-o" "M-:" "C-\\"))
+    (cooked-scrollback-lines 10000)
     :hook
-    (ghostel-mode . (lambda ()
-                      (setq-local mode-line-format nil)))
+    (cooked-mode . (lambda ()
+                     (setq-local mode-line-format nil)))
     :bind
-    ("C-!" . ghostel)
+    ("C-!" . cooked)
     ("C-c s j" . bob/jump-to-shell)
-    ("C-x p s" . ghostel-project)
-    ("C-x p S" . bob/ghostel-top-project))
+    ("C-x p s" . cooked-project)
+    ("C-x p S" . bob/cooked-top-project))
 
   (use-package xterm-color
     ;; :demand t
