@@ -7,6 +7,7 @@
 
 (require 'ansi-color)
 (require 'subr-x)
+(require 'transient)
 
 (defun bob/mentat--read-agent-instructions-file (file)
   "Read and trim Mentat agent instructions FILE."
@@ -143,7 +144,7 @@ Mentat subagent properties."
   :custom
   (mentat-tool-default-display-state 'summary)
   (mentat-streaming-tool-display-state 'expanded)
-  (mentat-pi-directory nil)
+  (mentat-pi-directory (expand-file-name "~/.pi/agent-pure-emacs"))
   (mentat-diagnostic-capture-enabled t)
   (mentat-enabled-extensions
    '(check-elisp codex resolve-symlinks session-scripts web-search
@@ -204,17 +205,19 @@ Mentat subagent properties."
               "hindsight_recall"
               "hindsight_remember"
               "hindsight_reflect"
-              "show_me"
-              "subagent")
+              "subagent"
+              "recall")
       :disabled-tools ("grep" "find" "ls"))))
   (mentat-compaction-presentation-function
    #'bob/mentat-observational-memory-compaction-presentation)
 
   (mentat-enabled-models
    '("azure-openai-responses/gpt-5.6-luna"
+     "azure-openai-responses/gpt-5.6-terra"
      "azure-openai-responses/gpt-5.6-sol"
      "azure-openai-responses/gpt-6-astra"
      "openai-codex/gpt-5.6-luna"
+     "openai-codex/gpt-5.6-terra"
      "openai-codex/gpt-5.6-sol"
      "openai-codex/gpt-6-astra"))
 
