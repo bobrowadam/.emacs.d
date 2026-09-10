@@ -1225,6 +1225,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (add-hook 'kill-emacs-hook 'scratch-pop-backup-scratches)
     (scratch-pop-restore-scratches 3)
     :custom
+    (initial-major-mode 'fundamental-mode)
     (scratch-pop-initial-major-mode 'fundamental-mode)
     (scratch-pop-backup-directory (concat user-emacs-directory "scratch-pop")))
 #+end_src
@@ -3572,14 +3573,14 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+end_src
 *** Modus Themes
 #+begin_src elisp
-    (use-package modus-themes
-      :custom
-      (modus-themes-italic-constructs t)
-      (modus-themes-bold-constructs t)
-      (modus-themes-mixed-fonts t)
-      (modus-themes-prompts '(bold intense))
-      :init
-      (modus-themes-include-derivatives-mode 1))
+  (use-package modus-themes
+    :custom
+    (modus-themes-italic-constructs t)
+    (modus-themes-bold-constructs t)
+    (modus-themes-mixed-fonts t)
+    (modus-themes-prompts '(bold intense))
+    :config
+    (modus-themes-include-derivatives-mode 1))
 #+end_src
 *** EF Themes
 #+begin_src elisp
@@ -3643,7 +3644,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
              (message "Loaded %s" theme)))
          "Cycle through registered themes.")))
 
-  (bob/register-and-load-themes modus-nibelung-dark modus-nibelung-light mentat-dark doom-dracula kanagawa-lotus modus-flexoki-dark modus-flexoki-light kanagawa-dragon doom-gruvbox doom-material)
+  (bob/register-and-load-themes mentat-dark doom-dracula kanagawa-lotus modus-flexoki-dark modus-flexoki-light
+                                kanagawa-dragon doom-gruvbox doom-material modus-nibelung-light modus-nibelung-dark)
 #+end_src
 ** Padding
 #+begin_src elisp
