@@ -10,6 +10,9 @@
 (require 'mentat-elisp-library)
 (require 'mentat-buffer)
 (require 'mentat-prompt)
+(require 'mentat-registry)
+(require 'mentat-ui)
+(require 'seq)
 
 (defun mentat-session-manager--result (buffer state directory request-id)
   "Return bounded session metadata for BUFFER and Pi STATE in DIRECTORY.
@@ -140,6 +143,118 @@ prompt."
       (unless (derived-mode-p 'mentat-buffer-mode)
         (user-error "Buffer is not a Mentat conversation: %s" buffer)))
     (mentat-session-manager--reload-starter conversation)))
+
+(defconst mentat-session-manager--list-limit 100
+  "Maximum sessions returned by `mentat-session-list'.")
+
+(defun mentat-session-manager--entry-result (entry)
+  "Return bounded metadata for registered session ENTRY."
+  (let* ((session-id (mentat--registry-entry-session-id entry))
+         (metadata (mentat--open-entry-metadata entry))
+         (view (mentat--open-live-view session-id))
+         (buffer (and view (mentat--buffer-buffer view)))
+         (modified (plist-get metadata :modified))
+         (last-activity
+          (and modified
+               (format-time-string "%Y-%m-%dT%H:%M:%SZ" modified t))))
+    `((session-id . ,session-id)
+      (name . ,(plist-get metadata :name))
+      (directory . ,(mentat--registry-entry-root entry))
+      (status . ,(if view (mentat--buffer-status view) "closed"))
+      (live . ,(and view t))
+      (last-activity . ,last-activity)
+      ,@(when (buffer-live-p buffer)
+          `((buffer . ,(buffer-name buffer)))))))
+
+(mentat-defun mentat-session-list (&optional directory)
+  "List registered Mentat sessions, optionally restricted to DIRECTORY.
+
+Return at most 100 sessions with stable IDs, names, roots, status, activity
+time, and live buffer names.  DIRECTORY must name an existing project root."
+  (when (and directory
+             (or (not (stringp directory))
+                 (not (file-directory-p directory))))
+    (user-error "Mentat session directory does not exist: %S" directory))
+  (let* ((root (and directory
+                    (file-name-as-directory (file-truename directory))))
+         (entries (mentat--registry-list root)))
+    (mapcar #'mentat-session-manager--entry-result
+            (seq-take entries mentat-session-manager--list-limit))))
+
+(defun mentat-session-manager--send-starter (entry prompt)
+  "Return a callback starter that sends PROMPT to registered session ENTRY."
+  (lambda (resolve reject on-cancel)
+    (let ((session-id (mentat--registry-entry-session-id entry))
+          buffer
+          resumed
+          submitted
+          settled)
+      (cl-labels
+          ((succeed (value)
+             (unless settled
+               (setq settled t)
+               (funcall resolve value)))
+           (fail (reason)
+             (unless settled
+               (setq settled t)
+               (funcall reject reason)))
+           (cancel ()
+             (unless settled
+               (setq settled t)
+               (when (and resumed (not submitted) (buffer-live-p buffer))
+                 (kill-buffer buffer))))
+           (send (view)
+             (setq buffer (mentat--buffer-buffer view))
+             (if (not (equal "idle" (mentat--buffer-status view)))
+                 (fail (format "Mentat session is not idle: %s" session-id))
+               (condition-case err
+                   (let ((request-id
+                          (mentat--buffer-submit
+                           view prompt nil
+                           (lambda (_session response)
+                             (succeed
+                              `((session-id . ,session-id)
+                                (request-id . ,(alist-get 'id response))
+                                (buffer . ,(buffer-name buffer))
+                                (resumed . ,resumed))))
+                           (lambda (_session response)
+                             (fail (or (alist-get 'error response)
+                                       "Mentat prompt was rejected"))))))
+                     (setq submitted (and request-id t)))
+                 (error (fail (error-message-string err)))))))
+        (funcall on-cancel #'cancel)
+        (condition-case err
+            (if-let* ((view (mentat--open-live-view session-id)))
+                (send view)
+              (setq resumed t)
+              (mentat--open-entry-view
+               entry
+               (lambda (view _state) (send view))
+               (lambda (_view response)
+                 (fail (or (alist-get 'error response)
+                           "Mentat session resume failed"))))))
+          (error (fail (error-message-string err)))))))
+
+(mentat-defun mentat-session-send (session-id prompt)
+  "Send PROMPT to the idle registered Mentat SESSION-ID.
+
+Reuse a live session or resume a closed session without displaying it.  Reject
+busy sessions instead of steering or queueing.  Resolve after Pi accepts the
+prompt with the session ID, request ID, buffer name, and resume status."
+  (:execution async)
+  (unless (and (stringp session-id) (not (string-blank-p session-id)))
+    (user-error "Mentat session ID must be a nonblank string"))
+  (unless (and (stringp prompt) (not (string-blank-p prompt)))
+    (user-error "Mentat session prompt must be a nonblank string"))
+  (let ((entry
+         (cl-find-if
+          (lambda (candidate)
+            (equal session-id
+                   (mentat--registry-entry-session-id candidate)))
+          (mentat--registry-list))))
+    (unless entry
+      (user-error "No registered Mentat session: %s" session-id))
+    (mentat-session-manager--send-starter entry prompt)))
 
 (provide 'session-manager)
 ;;; session-manager.el ends here
