@@ -267,9 +267,15 @@
                     (s-contains? (buffer-name (current-buffer)) compilation-buffer-name))
                (switch-to-prev-buffer))
               (t
-               (compilation-start local-check-types-command
-                                  t (lambda (_)
-                                      compilation-buffer-name))))
+               (compilation-start
+                local-check-types-command
+                t
+                (lambda (_)
+                  compilation-buffer-name)
+                nil
+                (lambda ()
+                  (add-hook 'compilation-filter-hook
+                            #'xterm-color-filter nil t)))))
       (error "probably not a typescript application")))
 
   (defun read-file (file-name)

@@ -2,12 +2,18 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-capture-last-stored"
-  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/inbox.org")
-  (front-context-string . "* research org r")
-  (rear-context-string . "gs:   :project:\n")
-  (position . 45)
-  (last-modified 27264 35098 746061 0))
+(("org-refile-last-stored"
+  (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/tasks.org")
+  (front-context-string . "* TODO Ask Jerem")
+  (rear-context-string . "Qb1AldDjBbFOmg\n\n")
+  (position . 13222)
+  (last-modified 27297 29560 291217 0))
+("org-capture-last-stored"
+ (filename . "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/inbox.org")
+ (front-context-string . "* Ask Jermey fro")
+ (rear-context-string . "Qb1AldDjBbFOmg\n\n")
+ (position . 323)
+ (last-modified 27297 29488 423231 0))
 ("bob-mentat.el"
  (filename . "~/.emacs.d/modules/mentat/bob-mentat.el")
  (front-context-string . ";;; bob-mentat.e")
