@@ -650,7 +650,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 
   (use-package visual-line-mode
     :ensure nil
-    :hook (prog-mode magit-status-mode markdown-mode markdown-view-mode text-mode magit-diff-mode diff-mode))
+    :hook (prog-mode magit-status-mode markdown-mode markdown-view-mode text-mode magit-diff-mode diff-mode comint-mode))
 #+end_src
 
 * Abbrev
@@ -2626,9 +2626,10 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 #+begin_src elisp
   (use-package sly-repl-ansi-color
     :after (sly)
-    :init (push 'sly-repl-ansi-color sly-contribs))
-  (use-package sly-asdf)
-  (use-package sly-macrostep)
+    :init (push 'sly-repl-ansi-color sly-contribs)
+    :config
+    (use-package sly-macrostep)
+    (use-package sly-asdf))
 #+end_src
 ***  Gaudy CL
 Colorful semantic highlighting of Common Lisp code
@@ -3140,15 +3141,6 @@ LSP/DAP servers manager
     )
 #+end_src
 
-**** Typescript REPL
-#+begin_src elisp
-  (use-package ts-comint
-    :custom
-    (ts-comint-program-command "ts-node"))
-
-  (use-package ts-repl
-    :ensure (:repo "nverno/ts-repl" :fetcher github :files ("*.el")))
-#+end_src
 **** Jest
 #+begin_src elisp
   (defun bob/jest-ts--locate-config ()
@@ -3580,6 +3572,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 *** Modus Themes
 #+begin_src elisp
   (use-package modus-themes
+    :ensure (:wait t)
     :custom
     (modus-themes-italic-constructs t)
     (modus-themes-bold-constructs t)
