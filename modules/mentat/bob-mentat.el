@@ -253,7 +253,7 @@ Mentat subagent properties."
   (mentat-define-extension worktree-skills
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
-    :source "git:github.com/elpapi42/pi-observational-memory@ce9fc982b3a219a7839f07c9f4a3e054e81a2b21")
+    :source "npm:pi-observational-memory@3.1.1")
   (mentat-define-extension agent-browser
     :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-agent-browser-native/dist/extensions/agent-browser/index.js"
     :tools (agent_browser))
