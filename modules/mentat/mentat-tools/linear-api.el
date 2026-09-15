@@ -220,7 +220,7 @@ are confirmed user inputs."
 
 (mentat-defun mentat-linear-get-issue (identifier)
   "Fetch Linear issue IDENTIFIER and resolve with its alist."
-  (:execution async)
+  (:execution async :display "Linear Get Issue")
   (mentat-linear--starter
    (lambda (api-key resolve reject)
      (mentat-linear--get-issue api-key identifier resolve reject))))
