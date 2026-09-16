@@ -150,13 +150,15 @@ Mentat subagent properties."
    '(check-elisp codex resolve-symlinks session-scripts web-search
                  worktree-skills observational-memory agent-browser))
   (mentat-pi-disabled-tools nil)
-  (mentat-emacs-advertised-libraries
-   '((dash . "list-processing macros and functions")
-     (s . "string manipulation")
-     (f . "file and path manipulation")
-     (ht . "hash-table helpers")
-     (aio . "cooperative asynchronous workflows")
-     (request . "HTTP requests")))
+  (mentat-emacs-tool-instructions
+   (concat
+    "Prefer functional Emacs Lisp. Keep transformations explicit and limit "
+    "mutation to stateful boundaries. Use Dash for list processing, s.el for "
+    "strings, f.el for files and paths, and ht.el for hash tables when they "
+    "make the code clearer. Use aio or request for asynchronous work or HTTP "
+    "when appropriate. Prefer an existing helper over reimplementing it. "
+    "Inspect package documentation before use and declare dependencies with "
+    "`require`."))
   (mentat-default-provider "azure-openai-responses")
   (mentat-default-model "gpt-5.6-sol")
   (mentat-default-effort "low")
