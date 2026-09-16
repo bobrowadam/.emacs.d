@@ -140,11 +140,12 @@ Mentat subagent properties."
 (use-package mentat
   :ensure nil
   :load-path "~/source/mentat"
-  :demand t
+  :commands mentat
+  :bind ("C-c C-;" . mentat-menu)
   :custom
   (mentat-tool-default-display-state 'summary)
   (mentat-streaming-tool-display-state 'expanded)
-  (mentat-pi-directory (expand-file-name "~/.pi/agent-pure-emacs"))
+  (mentat-pi-directory (expand-file-name "~/.pi/agent"))
   (mentat-diagnostic-capture-enabled t)
   (mentat-enabled-extensions
    '(check-elisp codex resolve-symlinks session-scripts web-search
@@ -186,21 +187,19 @@ Mentat subagent properties."
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
-      :subagents (explorer reviewer pr-reviewer ci-watcher worker
-                           effect-ts-backend-expert frontend-react-expert ui-manual-qa)
-      :disabled-tools ("agent_browser" "agent_browser_web_search"
-                       "emacs_eval_elisp"
-                       "emacs_eval_async"
-                       "emacs_elisp_call"))
+      :subagents (explorer pr-reviewer worker ci-watcher ui-manual-qa)
+      :tools ("emacs_eval_elisp"
+              "emacs_eval_async"
+              "emacs_elisp_call"
+              "hindsight_recall"
+              "hindsight_remember"
+              "hindsight_reflect"
+              "subagent"
+              "recall")
+      :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
-      :subagents (explorer reviewer pr-reviewer ci-watcher worker
-                           effect-ts-backend-expert frontend-react-expert ui-manual-qa)
-      :disabled-tools ("agent_browser" "agent_browser_web_search"))
-
-     ("Pure Emacs"
-      :directory "~/.pi/agent-pure-emacs"
-      :subagents (explorer pr-reviewer worker ci-watcher)
+      :subagents (explorer pr-reviewer worker ci-watcher ui-manual-qa)
       :tools ("emacs_eval_elisp"
               "emacs_eval_async"
               "emacs_elisp_call"
