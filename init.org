@@ -3638,9 +3638,9 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
          "Cycle through registered themes.")))
 
   (with-eval-after-load 'modus-themes
-    (bob/register-and-load-themes mentat-dark modus-kanagawa-wave doom-dracula
-                                  doom-gruvbox modus-kanagawa-lotus modus-kanagawa-dragon
-                                  modus-flexoki-dark  modus-nibelung-dark))
+    (bob/register-and-load-themes mentat-dark modus-kanagawa-wave modus-kanagawa-lotus
+                                  modus-kanagawa-dragon modus-flexoki-light
+                                  modus-flexoki-dark modus-nibelung-dark))
 #+end_src
 ** Padding
 #+begin_src elisp
