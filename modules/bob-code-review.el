@@ -5,6 +5,7 @@
 ;; symbol highlighting, and posframe tooltips.
 
 (require 'posframe)
+(require 'bob-auth-process)
 (require 'cl-lib)
 (require 'seq)
 
@@ -39,6 +40,11 @@ The review input JSON path is appended as the final argument."
 (defface bob-code-review-symbol-face
   '((t :inherit highlight))
   "Theme-derived face for specific symbols within highlighted regions."
+  :group 'faces)
+
+(defface bob-code-review-narration-face
+  '((t :inherit font-lock-comment-face))
+  "Face for narration displayed inline after a review region."
   :group 'faces)
 
 (defun bob-code-review--theme-color (face attribute fallback)
@@ -167,12 +173,14 @@ The review input JSON path is appended as the final argument."
         "No narration provided for this section."
       trimmed)))
 
-(defun bob-code-review--should-narrate-p (narrate narrations)
-  "Return non-nil when narration should start for NARRATIONS."
-  (or narrate
-      (seq-some (lambda (text)
-                  (not (string-empty-p (string-trim (or text "")))))
-                narrations)))
+(defun bob-code-review--inline-narration (text)
+  "Format the complete narration TEXT for inline display."
+  (let ((trimmed (string-trim (or text ""))))
+    (unless (string-empty-p trimmed)
+      (propertize (concat "\nReview narration:\n"
+                          (bob-code-review--indent-text trimmed "  ")
+                          "\n")
+                  'face 'bob-code-review-narration-face))))
 
 (defun bob-code-review--chunk-overlay ()
   "Return the overlay for the currently active chunk, if any."
@@ -292,8 +300,11 @@ file path      -> store and play if it matches the current position."
          ((string-prefix-p "TMPDIR:" trimmed)
           (setq bob-code-review--audio-tmpdir (substring trimmed 7)))
          ((string-prefix-p "ERROR:" trimmed)
-          (message "Code review TTS error: %s -- narration skipped for this session."
-                   (substring trimmed 6)))
+          (let ((error-text (substring trimmed 6)))
+            (setq bob-code-review--tts-stderr
+                  (concat bob-code-review--tts-stderr error-text "\n"))
+            (message "Code review TTS error: %s -- narration skipped for this session."
+                     error-text)))
          ((and (> (length trimmed) 0) (file-exists-p trimmed))
           (if bob-code-review--global-mode
               (let ((idx bob-code-review--tts-received-count))
@@ -317,11 +328,11 @@ file path      -> store and play if it matches the current position."
   (let* ((input-file (make-temp-file "bob-code-review-tts-input-" nil ".json"))
          (command (bob-code-review--tts-command))
          (_ (with-temp-file input-file (insert (json-encode narrations))))
-         (proc (apply #'start-process
-                      "bob-code-review-tts"
-                      "*bob-code-review-tts*"
-                      (car command)
-                      (append (cdr command) (list input-file)))))
+         (proc (bob/start-process-with-credentials
+                (car command)
+                (append (cdr command) (list input-file))
+                '(("ELEVEN_LABS_API_KEY" "api.elevenlabs.io" "bob"))
+                :buffer "*bob-code-review-tts*")))
     (set-process-filter proc #'bob-code-review--tts-filter)
     (set-process-sentinel proc #'bob-code-review--tts-sentinel)
     (setq bob-code-review--tts-process proc)))
@@ -619,6 +630,7 @@ overlay so feedback can include the original chunk context."
       (overlay-put ov 'bob-code-review-description description)
       (overlay-put ov 'bob-code-review-symbols symbols)
       (overlay-put ov 'bob-code-review-narration narration)
+      (overlay-put ov 'after-string (bob-code-review--inline-narration narration))
       (push ov bob-code-review--overlays)
       (push (cons ov description) bob-code-review--descriptions)
       (when symbols
@@ -677,55 +689,39 @@ NARRATE, when non-nil, launches TTS narration for the chunks."
       (recenter 5))
     (bob-code-review-mode 1)
     (let ((narrations (mapcar (lambda (c) (nth 5 c)) chunks)))
-      (when (bob-code-review--should-narrate-p narrate narrations)
+      (when narrate
         (bob-code-review--start-tts
          (mapcar #'bob-code-review--narration-text narrations)))))))
 
-(defun bob-code-review-load-review (ops-file &optional feedback-target-id narrate)
-  "Load the canonical agent review API from OPS-FILE JSON.
-OPS-FILE must contain a JSON array of operation objects.  Each object
-must have keys: file, line, name, start_line, end_line, description,
-symbols (array of strings), and narration.
-Deletes OPS-FILE after reading.
-FEEDBACK-TARGET-ID, when non-nil, is the feedback target used for feedback.
-If nil, auto-discovers the Kitty window ID for the current project.
-NARRATE, when non-nil, launches TTS narration for the operations."
-
+(defun bob-code-review-present (operations &optional feedback-target-id speak)
+  "Present OPERATIONS as an interactive review.
+OPERATIONS is a nonempty list of plists with file, line, name, start_line,
+end_line, description, symbols, and narration fields.  SPEAK, when non-nil,
+starts audio narration after the review appears."
+  (unless (and (listp operations) operations)
+    (user-error "Expected at least one review operation"))
   (save-current-buffer
     (setq feedback-target-id (or feedback-target-id
                                  (and (fboundp 'bob/kitty-pi-window-id)
                                       (bob/kitty-pi-window-id))))
-    (let* ((raw (json-read-file ops-file))
-         (_ (delete-file ops-file))
-         (ops (mapcar (lambda (obj)
-                        (list :file        (alist-get 'file obj)
-                              :line        (alist-get 'line obj)
-                              :name        (alist-get 'name obj)
-                              :start_line  (alist-get 'start_line obj)
-                              :end_line    (alist-get 'end_line obj)
-                              :description (alist-get 'description obj)
-                              :symbols     (append (alist-get 'symbols obj) nil)
-                              :narration   (alist-get 'narration obj)))
-                      (append raw nil))))
-    ;; Tear down any previous session
     (when bob-code-review--global-mode
       (when (and bob-code-review--active-buffer
                  (buffer-live-p bob-code-review--active-buffer))
         (with-current-buffer bob-code-review--active-buffer
           (when bob-code-review-mode
-            (bob-code-review-mode -1)))))
-    ;; Set up global state
-    (setq bob-code-review--operations ops)
+            (bob-code-review-mode -1))))
+      (bob-code-review--cleanup-session))
+    (setq bob-code-review--operations operations)
     (setq bob-code-review--global-index 0)
     (setq bob-code-review--global-mode t)
-    (setq bob-code-review--global-audio-list (make-list (length ops) nil))
+    (setq bob-code-review--global-audio-list
+          (make-list (length operations) nil))
     (setq bob-code-review--tts-received-count 0)
     (setq bob-code-review--tts-output-buffer "")
     (setq bob-code-review--tts-stderr "")
     (setq bob-code-review--audio-tmpdir nil)
     (setq bob-code-review--session-feedback-target-id feedback-target-id)
-    ;; Open first file and apply its highlights
-    (let* ((first-op (car ops))
+    (let* ((first-op (car operations))
            (file (plist-get first-op :file)))
       (bob-code-review--switch-to-file file feedback-target-id)
       (select-frame-set-input-focus (selected-frame))
@@ -735,11 +731,32 @@ NARRATE, when non-nil, launches TTS narration for the operations."
         (when ov
           (goto-char (overlay-start ov))
           (recenter 5))))
-    ;; Spawn one TTS process for all narrations
-    (let ((narrations (mapcar (lambda (op) (plist-get op :narration)) ops)))
-      (when (bob-code-review--should-narrate-p narrate narrations)
-        (bob-code-review--start-tts
-         (mapcar #'bob-code-review--narration-text narrations)))))))
+    (when speak
+      (bob-code-review--start-tts
+       (mapcar (lambda (operation)
+                 (bob-code-review--narration-text
+                  (plist-get operation :narration)))
+               operations)))))
+
+(defun bob-code-review-load-review (ops-file &optional feedback-target-id narrate)
+  "Load a review from OPS-FILE JSON and present it.
+OPS-FILE must contain a JSON array of operation objects with file, line, name,
+start_line, end_line, description, symbols, and narration keys.  The file is
+deleted after reading.  NARRATE, when non-nil, starts audio narration."
+  (let* ((raw (json-read-file ops-file))
+         (_ (delete-file ops-file))
+         (operations
+          (mapcar (lambda (object)
+                    (list :file        (alist-get 'file object)
+                          :line        (alist-get 'line object)
+                          :name        (alist-get 'name object)
+                          :start_line  (alist-get 'start_line object)
+                          :end_line    (alist-get 'end_line object)
+                          :description (alist-get 'description object)
+                          :symbols     (append (alist-get 'symbols object) nil)
+                          :narration   (alist-get 'narration object)))
+                  (append raw nil))))
+    (bob-code-review-present operations feedback-target-id narrate)))
 
 ;; Deprecated: feedback target is now auto-discovered.  Kept as aliases
 ;; for backward compatibility with older skill invocations.
