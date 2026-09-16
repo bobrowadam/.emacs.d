@@ -140,7 +140,7 @@ Mentat subagent properties."
 (use-package mentat
   :ensure nil
   :load-path "~/source/mentat"
-  :commands mentat
+  :commands (mentat mentat-menu)
   :bind ("C-c C-;" . mentat-menu)
   :custom
   (mentat-tool-default-display-state 'summary)
