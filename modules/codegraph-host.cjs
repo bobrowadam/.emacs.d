@@ -35,7 +35,7 @@ async function start() {
   await graph.waitUntilWatcherReady();
   // Catch changes made before the watch set was installed, including downtime.
   await graph.sync();
-  return status();
+  send({ event: 'ready', freshness: status() });
 }
 let chain = start();
 chain.catch(error => {
@@ -45,6 +45,7 @@ chain.catch(error => {
 const input = readline.createInterface({ input: process.stdin });
 input.on('close', close);
 input.on('line', line => {
+  if (closing) return;
   let request;
   try { request = JSON.parse(line); }
   catch (error) { console.error(error.message); return; }
