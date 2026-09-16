@@ -179,6 +179,7 @@
      (kanagawa-level-5 "#C8C093")
      (kanagawa-level-6 "#DCD7BA")
      (kanagawa-user-bg "#2A2A37")
+     (kanagawa-bold "#FFA066")
      (kanagawa-block-bg "#16161D")
      (kanagawa-string "#98BB6C")
      (kanagawa-number "#D27E99")
@@ -291,6 +292,7 @@
      (kanagawa-level-5 "#C8C093")
      (kanagawa-level-6 "#c5c9c5")
      (kanagawa-user-bg "#282727")
+     (kanagawa-bold "#FFA066")
      (kanagawa-block-bg "#0d0c0c")
      (kanagawa-string "#8a9a7b")
      (kanagawa-number "#a292a3")
@@ -403,6 +405,7 @@
      (kanagawa-level-5 "#545464")
      (kanagawa-level-6 "#43436c")
      (kanagawa-user-bg "#c9cbd1")
+     (kanagawa-bold "#cc6d00")
      (kanagawa-block-bg "#d5cea3")
      (kanagawa-string "#6f894e")
      (kanagawa-number "#b35b79")
@@ -438,8 +441,8 @@
 (defconst modus-kanagawa-custom-faces
   '(
     ;; Kanagawa typography and canonical syntax emphasis.
-    `(bold ((,c :foreground ,kanagawa-identifier :weight bold)))
-    `(bold-italic ((,c :foreground ,kanagawa-identifier :weight bold :slant italic)))
+    `(bold ((,c :foreground ,kanagawa-bold :weight bold)))
+    `(bold-italic ((,c :foreground ,kanagawa-bold :weight bold :slant italic)))
     `(italic ((,c :foreground ,kanagawa-keyword :slant italic)))
     `(font-lock-comment-face ((,c :foreground ,kanagawa-comment :slant italic)))
     `(font-lock-comment-delimiter-face ((,c :foreground ,kanagawa-comment :slant italic)))
@@ -486,7 +489,7 @@
     `(markdown-list-face ((,c :foreground ,kanagawa-punctuation)))
     `(markdown-link-face ((,c :foreground ,kanagawa-function :underline t)))
     `(markdown-table-face ((,c :inherit fixed-pitch)))
-    `(markdown-ts-bold ((,c :inherit markdown-bold-face)))
+    `(markdown-ts-bold ((,c :inherit bold)))
     `(markdown-ts-emphasis ((,c :inherit markdown-italic-face)))
     `(markdown-ts-heading-1 ((,c :inherit markdown-header-face-1)))
     `(markdown-ts-heading-2 ((,c :inherit markdown-header-face-2)))
