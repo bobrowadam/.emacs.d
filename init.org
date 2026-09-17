@@ -3611,12 +3611,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 (use-package modus-flexoki
   :ensure (:repo "dpassen/modus-flexoki" :fetcher github))
 #+end_src
-*** Pi Theme
-#+begin_src elisp
-  ;; Mentat bundles the Pi-inspired theme in its source directory.
-  (add-to-list 'custom-theme-load-path
-               (expand-file-name "~/source/mentat"))
-#+end_src
 *** Register and load themes
 #+begin_src elisp
   ;; This is just for fun. no really needed
