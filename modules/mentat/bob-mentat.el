@@ -138,9 +138,9 @@ Mentat subagent properties."
                         (mentat-run-extension-command "/codex reset")))])
 
 (use-package mentat
-  :ensure (:repo ("bobrowadam/mentat" . "~/source/mentat")
-           :fetcher github
-           :files ("*.el"))
+  :demand t
+  :ensure nil
+  :load-path "~/source/mentat"
   :commands (mentat mentat-menu)
   :bind ("C-c C-;" . mentat-menu)
   :custom

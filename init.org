@@ -719,6 +719,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 #+begin_src elisp
   (use-package bob-mentat
     :ensure nil
+    :bind ("C-c C-;" . mentat-menu)
     :load-path "modules/mentat")
 #+end_src
 ** Elisp Dev MCP
@@ -3604,6 +3605,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
              (message "Loaded %s" theme)))
          "Cycle through registered themes.")))
 
+  (add-to-list 'custom-theme-load-path (expand-file-name "~/source/mentat"))
   (with-eval-after-load 'modus-themes
     (bob/register-and-load-themes modus-kanagawa-wave mentat-dark modus-kanagawa-lotus
                                   modus-kanagawa-dragon modus-flexoki-light
