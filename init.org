@@ -3579,33 +3579,6 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
     :config
     (modus-themes-include-derivatives-mode 1))
 #+end_src
-*** EF Themes
-#+begin_src elisp
-  (use-package ef-themes
-    :disabled t
-    :config
-    ;; (ef-them 'ef-symbiosis)
-    (ef-themes-take-over-modus-themes-mode))
-#+end_src
-*** Modus Catppuccin
-#+begin_src elisp
-  (use-package modus-catppuccin
-    :ensure (:repo "magus/modus-catppuccin" :fetcher gitlab :files ("*.el"))
-    ;; :init
-    ;; (modus-catppuccin-take-over-modus-themes-mode)
-    )
-#+end_src
-*** John Blow Old Theme
-#+begin_src elisp
-  (use-package jblow-nostalgia-theme
-    :ensure (:repo "Prikaz98/jblow-nostalgia" :fetcher github :files ("*.el")))
-#+end_src
-*** Nibelung themes
-#+begin_src elisp
-  ;; Local themes live in the dedicated theme directory.
-  (setq custom-theme-directory
-        (locate-user-emacs-file "themes/"))
-#+end_src
 *** modus-flexoki-theme
 #+begin_src elisp
 (use-package modus-flexoki
@@ -3632,7 +3605,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
          "Cycle through registered themes.")))
 
   (with-eval-after-load 'modus-themes
-    (bob/register-and-load-themes mentat-dark modus-kanagawa-wave modus-kanagawa-lotus
+    (bob/register-and-load-themes modus-kanagawa-wave mentat-dark modus-kanagawa-lotus
                                   modus-kanagawa-dragon modus-flexoki-light
                                   modus-flexoki-dark modus-nibelung-dark))
 #+end_src
