@@ -149,8 +149,7 @@ Mentat subagent properties."
   (mentat-pi-directory (expand-file-name "~/.pi/agent"))
   (mentat-diagnostic-capture-enabled t)
   (mentat-enabled-extensions
-   '(check-elisp codex resolve-symlinks session-scripts web-search
-                 worktree-skills observational-memory agent-browser))
+   '(codex worktree-skills observational-memory))
   (mentat-pi-disabled-tools nil)
   (mentat-emacs-tool-instructions
    (concat
@@ -235,9 +234,6 @@ Mentat subagent properties."
    #'bob/mentat-prose-word-candidate-score)
   :config
   (mentat-reset-extensions)
-  (mentat-define-extension check-elisp
-    :source "/Users/bob/.pi/agent/extensions/src/check-elisp.ts"
-    :tools (check_elisp))
   ;; Registered only for child sessions.  Main Mentat sessions load this
   ;; internally, so it must not be included in `mentat-enabled-extensions'.
   (mentat-define-extension mentat-emacs
@@ -245,20 +241,10 @@ Mentat subagent properties."
     :tools (emacs_eval_elisp emacs_eval_async emacs_elisp_call))
   (mentat-define-extension codex
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
-  (mentat-define-extension resolve-symlinks
-    :source "/Users/bob/.pi/agent/extensions/src/resolve-symlinks.ts")
-  (mentat-define-extension session-scripts
-    :source "/Users/bob/.pi/agent/extensions/src/session-scripts.ts")
-  (mentat-define-extension web-search
-    :source "/Users/bob/.pi/agent/extensions/src/web-search/index.ts"
-    :tools (exa_search jina_reader))
   (mentat-define-extension worktree-skills
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
     :source "npm:pi-observational-memory@3.1.1")
-  (mentat-define-extension agent-browser
-    :source "/Users/bob/.pi/agent-private/npm/node_modules/pi-agent-browser-native/dist/extensions/agent-browser/index.js"
-    :tools (agent_browser))
 
   (mentat-reset-subagent-definitions)
 
@@ -266,8 +252,8 @@ Mentat subagent properties."
       (bob/mentat-load-agent-and-common-instructions "explorer")
     :description "Read-only project investigation"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
-    :thinking medium
-    :extensions (web-search mentat-emacs)
+    :thinking high
+    :extensions (mentat-emacs)
     :concurrency 4)
 
   (bob/mentat-define-subagent reviewer
@@ -275,8 +261,7 @@ Mentat subagent properties."
     :description "Review one code change and optionally run read-only validation"
     :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
-    :extensions (web-search)
-    :tools (read bash grep find ls exa_search jina_reader)
+    :extensions (mentat-emacs)
     :concurrency 8)
 
   (bob/mentat-define-subagent pr-reviewer
@@ -284,7 +269,7 @@ Mentat subagent properties."
     :description "Review one assigned PR slice using the parallel-review finding format"
     :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
     :thinking high
-    :extensions (web-search mentat-emacs)
+    :extensions (mentat-emacs)
     :concurrency 8)
 
   (bob/mentat-define-subagent ci-watcher
@@ -307,8 +292,7 @@ Mentat subagent properties."
     :description "Handle one bounded Effect TypeScript task requiring specialist expertise"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
-    :extensions (web-search)
-    :tools (read bash edit write grep find ls exa_search jina_reader)
+    :extensions (mentat-emacs)
     :concurrency 1
     :max-turns 50)
 
@@ -318,8 +302,7 @@ Mentat subagent properties."
     :description "Handle one bounded React frontend task requiring specialist expertise"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking high
-    :extensions (web-search agent-browser)
-    :tools (read bash edit write grep find ls exa_search jina_reader agent_browser)
+    :extensions (mentat-emacs)
     :concurrency 1
     :max-turns 50)
 
@@ -328,8 +311,7 @@ Mentat subagent properties."
     :description "Test UI features in a web browser"
     :model ("azure-openai-responses/gpt-5.6-luna" "openai-codex/gpt-5.6-luna")
     :thinking medium
-    :extensions (agent-browser)
-    :tools (read grep find ls agent_browser))
+    :extensions (mentat-emacs))
 
   (remove-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines)
   (add-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines t))
