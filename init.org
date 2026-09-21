@@ -3912,17 +3912,17 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
 
     :custom
     (elfeed-feeds
-     `(("https://learncodethehardway.com/feed.rss" programming learning c)
+     '(("https://learncodethehardway.com/feed.rss" programming learning c)
 
        ("https://feeds.transistor.fm/thoughts-on-functional-programming-podcast-by-eric-normand" programming lisp)
-       (,(bob/reddit-rss-url "https://www.reddit.com/r/emacs/.rss") programming emacs reddit)
+       ("https://www.reddit.com/r/emacs/.rss" programming emacs reddit)
 
-       (,(bob/reddit-rss-url "https://www.reddit.com/r/roc_lang/.rss") programming roc reddit)
-       (,(bob/reddit-rss-url "https://www.reddit.com/r/planetemacs/.rss") programming emacs reddit)
+       ("https://www.reddit.com/r/roc_lang/.rss" programming roc reddit)
+       ("https://www.reddit.com/r/planetemacs/.rss" programming emacs reddit)
        ("https://danluu.com/atom.xml" programming blog danluu)
        ("https://protesilaos.com/master.xml" programming blog emacs)
        ("https://eshelyaron.com/rss.xml" programming blog emacs)
-       (,(bob/reddit-rss-url "https://www.reddit.com/r/PiCodingAgent/.rss") programming pi reddit)
+       ("https://www.reddit.com/r/PiCodingAgent/.rss" programming pi reddit)
        ("https://pi.dev/news.xml" programming blog pi)))
     :bind
     ("C-c w" . elfeed)
@@ -3930,6 +3930,15 @@ The full configuration lives in =modules/bob-ejc-sql.el=.
           ("T" . bob/elfeed-search-by-current-entry-tags)
           ("t". bob/elfeed-reset-search-by-current-entry-tags))
     :config
+    (defun bob/elfeed-fetch-reddit (url callback)
+      "Authenticate Reddit RSS requests only when Elfeed fetches them."
+      (when (string-match-p
+             "\\`https://www\\.reddit\\.com/r/[^/?]+/\\.rss\\'" url)
+        (elfeed-fetch-url (bob/reddit-rss-url url) callback)
+        t))
+
+    (add-hook 'elfeed-fetch-functions #'bob/elfeed-fetch-reddit)
+
     (defun bob/elfeed-search-by-current-entry-tags ()
       "Display elfeed entries that have the same tags as the entry under the cursor."
       (interactive)
