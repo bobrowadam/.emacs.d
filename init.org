@@ -719,6 +719,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 #+begin_src elisp
   (use-package bob-mentat
     :ensure nil
+    :init
+    (setq mentat-mode-line-elements
+          '(project status session model warnings))
     :bind ("C-c C-;" . mentat-menu)
     :load-path "modules/mentat")
 #+end_src
