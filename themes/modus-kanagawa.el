@@ -456,7 +456,7 @@
     `(separator-line
       ((default :extend t)
        (((type tty)) :foreground ,border :strike-through t)
-       (t :height 0.1 :background ,border :foreground ,border)))
+       (t :height 0.2 :background ,border :foreground ,border)))
     `(fringe ((,c :background ,bg-main :foreground ,kanagawa-level-3)))
     `(margin ((,c :background ,bg-main)))
     `(line-number ((,c :background ,bg-line-number-inactive :foreground ,fg-line-number-inactive)))
@@ -525,7 +525,7 @@
     `(mentat-assistant-marker-face ((,c :foreground ,green :weight bold)))
     `(mentat-control-face ((,c :inherit fixed-pitch :foreground ,kanagawa-type)))
     `(mentat-queue-face ((,c :foreground ,kanagawa-comment :slant italic)))
-    `(mentat-thinking-summary-face ((,c :foreground ,kanagawa-type :weight semi-bold)))
+    `(mentat-thinking-summary-face ((,c :foreground ,kanagawa-hint :weight semi-bold)))
     `(mentat-thinking-content-face ((,c :foreground ,kanagawa-comment)))
     `(mentat-thinking-aborted-face ((,c :foreground ,kanagawa-error :weight semi-bold)))
     `(mentat-extension-progress-face ((,c :foreground ,kanagawa-warning :weight semi-bold)))
