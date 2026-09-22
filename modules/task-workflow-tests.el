@@ -3,7 +3,12 @@
 (require 'ert)
 (require 'cl-lib)
 (require 'json)
-(require 'task-workflow)
+(require 'mentat)
+
+(let ((default-directory
+       (expand-file-name "~/source/gist/bradwell-monorepo/")))
+  (mentat-org-skill-activate
+   (expand-file-name ".mentat/skills/task-workflow.org")))
 
 (defconst mentat-task-test--issue
   '((id . "issue-id")
@@ -132,7 +137,7 @@
                  (setq directory path policy selected)
                  (funcall success '((confirmation-required . t)))
                  (lambda () (setq cancellation 'called)))))
-      (funcall (mentat-worktree-clean "/tmp/worktree" "check")
+      (funcall (mentat-task--clean-worktree "/tmp/worktree" "check")
                (lambda (value) (setq result value))
                (lambda (reason) (setq failure reason))
                (lambda (cleanup) (setq cancellation cleanup))))
