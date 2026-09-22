@@ -163,6 +163,8 @@ Mentat subagent properties."
   (mentat-default-provider "azure-openai-responses")
   (mentat-default-model "gpt-5.6-sol")
   (mentat-default-effort "low")
+  (mentat-org-skill-global-directory
+   (expand-file-name "modules/mentat/skills/" user-emacs-directory))
   (mentat-elisp-library-directory
    (expand-file-name "modules/mentat/mentat-tools/" user-emacs-directory))
   (mentat-supervisor-instructions

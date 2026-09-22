@@ -1,0 +1,45 @@
+#+TITLE: Track delivery
+#+DESCRIPTION: Create and maintain a minimal Org delivery plan across work sessions, including review waits.
+
+These are instructions only; do not activate this skill.
+
+* Purpose
+
+Keep a small delivery view for the person, not an implementation task list for
+the agent. Use this skill when asked to create a delivery plan or continue work
+tracked by one. Suggest it for work with several delivery slices; do not create
+a plan for every task.
+
+* Create or reuse a plan
+
+Look for an existing suitable plan before creating =delivery-plan.org= in the
+project root. Preserve the person's wording, organization, and edits.
+
+Use a title, the state declaration below, and flat headings. Each heading names
+one agreed delivery slice in a short line. Keep completed slices visible. Avoid
+subtasks, estimates, progress narratives, and implementation details. Brief
+reasons such as =(awaiting review)= or =(rules undecided)= belong in the heading.
+
+#+begin_example
+#+title: Delivery
+#+TODO: TODO WAIT | DONE
+
+* DONE First delivery slice
+* WAIT Second delivery slice (awaiting review)
+* TODO Third delivery slice
+#+end_example
+
+* Maintain the plan
+
+Read the plan when resuming work. Update it when a slice's delivery state changes:
+
+- =TODO=: agreed work remains, including work in progress.
+- =WAIT=: progress depends on review, a decision, or another dependency. Add a
+  short reason. Return to =TODO= when work can resume or review requests changes.
+- =DONE=: the slice meets the agreed verification and review requirements.
+  Completed implementation awaiting required review is =WAIT=, not =DONE=.
+
+A listed slice does not authorize starting it. Change scope only by agreement.
+Keep reasoning and implementation notes in existing discussion records or agent
+context, not in this plan. Do not create competing checklists, Linear issues, or
+personal tasks as a side effect. Do not stage or commit the plan unless asked.

@@ -1,0 +1,564 @@
+#+TITLE: File operations
+#+DESCRIPTION: Read, find, search, create, edit, copy, move, and delete local files safely.
+#+PROPERTY: header-args:emacs-lisp :lexical yes :tangle yes :noweb yes
+
+* Instructions and shared rules
+
+Use these local-only operations with paths resolved against `default-directory`. Inspect before editing or deleting; deletion is permanent. Remote/TRAMP paths, directories where files are required, binary files, and unsaved visiting buffers are rejected as appropriate. All output is bounded.
+
+#+name: mentat-file-shared
+#+begin_src emacs-lisp
+(require 'cl-lib)
+(require 'subr-x)
+(require 'lisp-mode)
+(require 'pcase)
+(require 'mentat-elisp-library)
+
+(defun mentat-file--local-path (path label)
+  "Expand PATH against `default-directory' and reject remote paths."
+  (unless (and (stringp path) (not (string-empty-p path)))
+    (user-error "%s must be a nonempty path" label))
+  (let ((absolute (expand-file-name path default-directory)))
+    (when (file-remote-p absolute)
+      (user-error "Remote/TRAMP paths are not supported: %s" absolute))
+    absolute))
+
+(defun mentat-file--limits (results output result-cap output-cap)
+  (unless (and (integerp results) (> results 0))
+    (user-error "MAX-RESULTS must be a positive integer"))
+  (unless (and (integerp output) (> output 0))
+    (user-error "MAX-OUTPUT must be a positive integer"))
+  (list (min result-cap results)
+        (min output-cap output)))
+
+(defun mentat-file--boolean (value label)
+  "Return VALUE as a validated JSON-compatible boolean named LABEL."
+  (unless (memq value '(nil t :false))
+    (user-error "%s must be true or false" label))
+  (eq value t))
+
+(defun mentat-file--bounded-line (line)
+  (let ((line (string-remove-suffix "\r" line)))
+    (if (> (length line) 1000)
+        (concat (substring line 0 997) "...")
+      line)))
+
+(defun mentat-file--canonical-path (path)
+  "Return a canonical identity for PATH, including nonexistent leaves."
+  (let ((current (expand-file-name path))
+        tail)
+    (while (and (not (file-exists-p current))
+                (not (file-symlink-p current)))
+      (let ((parent (file-name-directory (directory-file-name current))))
+        (when (or (null parent) (equal parent current))
+          (user-error "Cannot resolve path: %s" path))
+        (push (file-name-nondirectory (directory-file-name current)) tail)
+        (setq current (directory-file-name parent))))
+    (setq current (file-truename current))
+    (dolist (part tail current)
+      (setq current (expand-file-name part (file-name-as-directory current))))))
+
+(defun mentat-file--same-file-p (left right)
+  (let ((left (expand-file-name left))
+        (right (expand-file-name right)))
+    (or (string= (mentat-file--canonical-path left)
+                 (mentat-file--canonical-path right))
+        (and (file-exists-p left) (file-exists-p right)
+             (condition-case nil (file-equal-p left right)
+               (error nil))))))
+
+(defun mentat-file--modified-buffer (file)
+  (cl-find-if
+   (lambda (buffer)
+     (and (buffer-modified-p buffer)
+          (buffer-file-name buffer)
+          (not (file-remote-p (buffer-file-name buffer)))
+          (mentat-file--same-file-p file (buffer-file-name buffer))))
+   (buffer-list)))
+
+(defun mentat-file--reject-unsaved (file)
+  (when-let* ((buffer (mentat-file--modified-buffer file)))
+    (user-error "File has unsaved changes in buffer %s" (buffer-name buffer))))
+
+(defun mentat-file--reject-transformed-file (file)
+  "Reject FILE when filename handlers transform its stored contents."
+  (when (or (find-file-name-handler file 'insert-file-contents)
+            (find-file-name-handler file 'write-region))
+    (user-error "Encrypted, compressed, or transformed files are not supported: %s"
+                file)))
+
+(defun mentat-file--write-atomically (file)
+  "Write the current buffer atomically to FILE, preserving symlink semantics."
+  (let* ((target (if (file-symlink-p file) (file-truename file) file))
+         (mode (file-modes target))
+         (temporary (make-temp-file
+                     (expand-file-name ".mentat-write-"
+                                       (file-name-directory target)))))
+    (unwind-protect
+        (progn
+          (write-region (point-min) (point-max) temporary nil 'silent)
+          (when mode (set-file-modes temporary mode))
+          (rename-file temporary target t)
+          (setq temporary nil))
+      (when (and temporary (file-exists-p temporary))
+        (delete-file temporary)))))
+
+(defun mentat-file--make-stderr (name on-close)
+  (let ((text "") (truncated nil))
+    (list
+     (make-pipe-process
+      :name name :buffer nil :coding '(utf-8-unix . utf-8-unix) :noquery t
+      :filter (lambda (_process chunk)
+                (unless truncated
+                  (let ((room (- 16384 (length text))))
+                    (if (> (length chunk) room)
+                        (progn
+                          (setq text (concat text (substring chunk 0 room)))
+                          (setq truncated t))
+                      (setq text (concat text chunk))))))
+      :sentinel (lambda (pipe _event)
+                  (when (and on-close
+                             (memq (process-status pipe) '(closed failed signal exit)))
+                    (funcall on-close))))
+     (lambda () (list text truncated)))))
+
+(defun mentat-file--rg-process (root command kind result-limit output-limit)
+  (lambda (resolve reject on-cancel)
+    (let ((pending "") (lines nil) (bytes 0) (limited nil) (done nil)
+          (main-done nil) (stderr-done nil) (status nil) stderr-info process)
+      (cl-labels
+          ((cleanup ()
+             (when (process-live-p process) (delete-process process))
+             (when (and stderr-info (process-live-p (car stderr-info)))
+               (delete-process (car stderr-info))))
+           (fail (reason)
+             (unless done
+               (setq done t)
+               (cleanup)
+               (funcall reject reason)))
+           (finish ()
+             (unless done
+               (setq done t)
+               (let* ((body (if lines (string-join (nreverse lines) "\n")
+                              (if (eq kind 'find) "No files." "No matches.")))
+                      (notice (when limited
+                                (format "[Showing first %d %s.]" result-limit
+                                        (if (eq kind 'find) "files" "matches")))))
+                 (cleanup)
+                 (funcall resolve (if notice (concat body "\n\n" notice) body)))))
+           (maybe-finish ()
+             (when (and main-done stderr-done (not done))
+               (if (or limited (memq status '(0 1)))
+                   (finish)
+                 (let* ((error-info (funcall (cadr stderr-info)))
+                        (message (string-trim (car error-info)))
+                        (suffix (if (cadr error-info) " [stderr truncated]" "")))
+                   (fail (if (string-empty-p message)
+                             (format "ripgrep failed with exit status %s%s" status suffix)
+                           (format "ripgrep failed: %s%s" message suffix)))))))
+           (line (value)
+             (unless (or limited (string-empty-p value))
+               (push (mentat-file--bounded-line
+                      (string-remove-prefix "./" value))
+                     lines)
+               (when (>= (length lines) result-limit)
+                 (setq limited t))))
+           (filter (_process chunk)
+             (unless done
+               (setq bytes (+ bytes (string-bytes chunk)))
+               (if (> bytes output-limit)
+                   (fail (format "ripgrep output exceeded %d bytes" output-limit))
+                 (setq pending (concat pending chunk))
+                 (let ((start 0))
+                   (while (string-match "\n" pending start)
+                     (line (substring pending start (match-beginning 0)))
+                     (setq start (match-end 0)))
+                   (setq pending (substring pending start)))
+                 (when (and limited (process-live-p process))
+                   (delete-process process)))))
+           (sentinel (finished _event)
+             (unless done
+               (unless (string-empty-p pending) (line pending))
+               (setq main-done t
+                     status (process-exit-status finished))
+               (maybe-finish))))
+        (condition-case err
+            (progn
+              (setq stderr-info
+                    (mentat-file--make-stderr
+                     "mentat-file-rg-error"
+                     (lambda ()
+                       (setq stderr-done t)
+                       (maybe-finish))))
+              (let ((default-directory root))
+                (setq process
+                      (make-process
+                       :name "mentat-file-rg" :command command
+                       :connection-type 'pipe
+                       :coding '(utf-8-unix . utf-8-unix)
+                       :noquery t :buffer nil :stderr (car stderr-info)
+                       :filter #'filter :sentinel #'sentinel))))
+          (error (fail err)))
+        (funcall on-cancel
+                 (lambda ()
+                   (unless done
+                     (setq done t)
+                     (cleanup))))))))
+#+end_src
+
+Use =mentat-read-file= for bounded inspection. Find respects ignore files, searches hidden paths, excludes =.git=, accepts an optional ripgrep glob, and returns bounded relative paths; it requires a directory ROOT. Search accepts a regular-file or directory PATH and is literal by default, with regexp, glob, case-fold, result, and output bounds. Both use asynchronous =make-process=.
+
+#+name: mentat-read-file
+#+begin_src emacs-lisp
+(mentat-defun mentat-read-file
+    (file &key (start-line 1) (start-column 0) end-line (max-chars 50000))
+  "Read bounded FILE text through sed without loading the file into Emacs."
+  (:execution async :display "Read File")
+  (unless (and (integerp start-line) (> start-line 0)) (user-error "START-LINE must be a positive integer"))
+  (unless (and (integerp start-column) (>= start-column 0)) (user-error "START-COLUMN must be a nonnegative integer"))
+  (unless (and (integerp max-chars) (> max-chars 0)) (user-error "MAX-CHARS must be a positive integer"))
+  (when (and end-line (not (and (integerp end-line) (> end-line 0)))) (user-error "END-LINE must be a positive integer"))
+  (let* ((absolute (mentat-file--local-path file "FILE")) (limit (min 200000 max-chars))
+         (sed (or (executable-find "sed") (user-error "sed is required")))
+         (range (format "%d,%sp" start-line (if end-line (number-to-string end-line) "$"))))
+    (unless (file-regular-p absolute) (user-error "Not a regular file: %s" absolute))
+    (unless (file-readable-p absolute) (user-error "File is not readable: %s" absolute))
+    (when (and end-line (< end-line start-line)) (user-error "END-LINE must be at least START-LINE"))
+    (lambda (resolve reject on-cancel)
+      (let ((pieces nil) (kept 0) (skip start-column) (first-line t) (saw-output nil)
+            (truncated nil) (done nil) (main-done nil) (stderr-done nil) (status nil) process stderr-info)
+        (cl-labels
+            ((cleanup () (when (process-live-p process) (delete-process process))
+                       (when (and stderr-info (process-live-p (car stderr-info))) (delete-process (car stderr-info))))
+             (fail (reason) (unless done (setq done t) (cleanup) (funcall reject reason)))
+             (continuation (text) (let ((line start-line) (column start-column) (i 0))
+                              (while (< i (length text)) (if (= (aref text i) ?\n) (setq line (1+ line) column 0) (setq column (1+ column))) (setq i (1+ i)))
+                              (cons line column)))
+             (finish () (unless done (setq done t)
+                        (let* ((text (apply #'concat (nreverse pieces))) (content (if truncated (substring text 0 limit) text)))
+                          (cleanup)
+                          (if truncated (pcase-let ((`(,line . ,column) (continuation content)))
+                                          (funcall resolve (concat (string-remove-suffix "\n" content) "\n\n" (format "[Output truncated at %d chars. Continue with start-line=%d start-column=%d.]" limit line column))))
+                            (funcall resolve content)))))
+             (maybe-finish () (when (and main-done stderr-done)
+                              (if (or truncated (= status 0))
+                                  (if (and saw-output first-line (> skip 0)) (fail "START-COLUMN is beyond START-LINE") (finish))
+                                (let* ((info (funcall (cadr stderr-info))) (message (string-trim (car info)))
+                                       (suffix (if (cadr info) " [stderr truncated]" "")))
+                                  (fail (if (string-empty-p message) (format "sed failed with exit status %s%s" status suffix) (format "sed failed: %s%s" message suffix)))))))
+             (filter (_ chunk) (unless done
+                       (when (string-match-p "\0" chunk) (fail (format "Refusing to read binary file: %s" absolute)))
+                       (setq saw-output t)
+                       (let ((i 0) (n (length chunk)))
+                         (while (and (< i n) (not done) (not truncated))
+                           (let ((c (aref chunk i)))
+                             (if (and first-line (> skip 0))
+                                 (if (= c ?\n) (fail "START-COLUMN is beyond START-LINE") (setq skip (1- skip)))
+                               (when (= c ?\n) (setq first-line nil))
+                               (when (< kept (1+ limit)) (push (char-to-string c) pieces) (setq kept (1+ kept))
+                                     (when (> kept limit) (setq truncated t) (when (process-live-p process) (delete-process process)))))
+                             (setq i (1+ i)))))))
+             (sentinel (finished _event) (unless done (setq main-done t status (process-exit-status finished)) (maybe-finish))))
+          (condition-case err
+              (setq stderr-info (mentat-file--make-stderr "mentat-file-sed-error" (lambda () (setq stderr-done t) (maybe-finish))))
+            (error (fail err)))
+          (unless done
+            (condition-case err
+                (setq process (make-process :name "mentat-file-sed" :command (list sed "-n" range absolute)
+                                             :connection-type 'pipe :coding '(utf-8-unix . utf-8-unix) :noquery t :buffer nil
+                                             :stderr (car stderr-info) :filter #'filter :sentinel #'sentinel))
+              (error (fail err))))
+          (funcall on-cancel (lambda () (setq done t) (cleanup))))))))
+#+end_src
+
+#+name: mentat-file-find
+#+begin_src emacs-lisp
+(mentat-defun mentat-file-find
+    (root &key glob (max-results 200) (max-output 1048576))
+  "Find files below directory ROOT. GLOB is optional; MAX-RESULTS defaults to 200 and is capped at 500, and MAX-OUTPUT defaults to 1048576 bytes and is capped at 4194304. Results are relative, bounded, and never modify files."
+  (:execution async :display "Find Files")
+  (let* ((base (mentat-file--local-path root "ROOT"))
+         (limits (mentat-file--limits max-results max-output 500 4194304))
+         (command (append (list (or (executable-find "rg") (user-error "ripgrep is required"))
+                              "--files" "--hidden" "--glob" "!.git")
+                          (when glob (list "--glob" glob)) (list "."))))
+    (unless (file-directory-p base) (user-error "ROOT is not a directory: %s" base))
+    (mentat-file--rg-process base command 'find (car limits) (cadr limits))))
+#+end_src
+
+#+name: mentat-file-search
+#+begin_src emacs-lisp
+(mentat-defun mentat-file-search
+    (query path &key regexp glob case-fold (max-results 100) (max-output 4194304))
+  "Search PATH for QUERY with asynchronous ripgrep.
+PATH may be a regular file or directory. QUERY is literal unless REGEXP is
+non-nil; MAX-RESULTS defaults to 100 and is capped at 500, and MAX-OUTPUT
+defaults to 4194304 bytes and is capped at 8388608."
+  (:execution async :display "Search Files")
+  (unless (and (stringp query) (not (string-empty-p query))) (user-error "QUERY must be nonempty"))
+  (setq regexp (mentat-file--boolean regexp "REGEXP")
+        case-fold (mentat-file--boolean case-fold "CASE-FOLD"))
+  (let* ((base (mentat-file--local-path path "PATH"))
+         (search-root (if (file-directory-p base) base (file-name-directory base)))
+         (target (if (file-directory-p base) "." (file-name-nondirectory base)))
+         (limits (mentat-file--limits max-results max-output 500 8388608))
+         (command (append (list (or (executable-find "rg") (user-error "ripgrep is required"))
+                              "--no-heading" "--with-filename" "--line-number" "--color" "never"
+                              "--hidden" "--glob" "!.git" "--max-count" (number-to-string (car limits))
+                              "--max-columns" "1000" "--max-columns-preview")
+                          (unless regexp (list "--fixed-strings"))
+                          (when case-fold (list "--ignore-case"))
+                          (when glob (list "--glob" glob)) (list "--" query target))))
+    (unless (or (file-directory-p base) (file-regular-p base))
+      (user-error "PATH must be a regular file or directory: %s" base))
+    (mentat-file--rg-process search-root command 'search (car limits) (cadr limits))))
+#+end_src
+
+* Read live buffers
+
+Use buffer readers when unsaved editor state matters; use =mentat-read-file= for
+the saved file on disk. Buffer reads never save or modify the target buffer.
+Offsets are one-based. Line bounds are one-based and inclusive.
+
+#+name: mentat-read-buffer
+#+begin_src emacs-lisp
+(mentat-defun mentat-read-buffer
+    (buffer &key (offset 1) (max-chars 50000))
+  "Read bounded text from live BUFFER starting at one-based character OFFSET."
+  (:execution sync :display "Read Buffer")
+  (unless (and (stringp buffer) (not (string-empty-p buffer)))
+    (user-error "BUFFER must be a nonempty buffer name"))
+  (unless (and (integerp offset) (> offset 0))
+    (user-error "OFFSET must be a positive integer"))
+  (unless (and (integerp max-chars) (> max-chars 0))
+    (user-error "MAX-CHARS must be a positive integer"))
+  (let ((target (get-buffer buffer))
+        (limit (min 50000 max-chars)))
+    (unless target
+      (user-error "No Emacs buffer named %s" buffer))
+    (with-current-buffer target
+      (save-restriction
+        (widen)
+        (let* ((total (buffer-size))
+               (start (+ (point-min) (1- offset)))
+               (available (<= start (point-max)))
+               (finish (if available
+                           (min (point-max) (+ start limit))
+                         (point-max)))
+               (content (if available
+                            (buffer-substring-no-properties start finish)
+                          ""))
+               (truncated (and available (< finish (point-max)))))
+          `((buffer . ,(buffer-name target))
+            (offset . ,offset)
+            (end_offset . ,(and (not (string-empty-p content))
+                                (+ offset (length content) -1)))
+            (next_offset . ,(and truncated (+ offset (length content))))
+            (total_chars . ,total)
+            (truncated . ,truncated)
+            (content . ,content)))))))
+#+end_src
+
+#+name: mentat-read-buffer-lines
+#+begin_src emacs-lisp
+(mentat-defun mentat-read-buffer-lines
+    (buffer &key (start-line 1) end-line (max-chars 50000))
+  "Read a bounded inclusive line range from live BUFFER.
+START-LINE and END-LINE are one-based. END-LINE defaults to the end of the
+buffer. MAX-CHARS defaults to 50000 and is capped at 50000. The operation never
+saves or modifies BUFFER."
+  (:execution sync :display "Read Buffer Lines")
+  (unless (and (stringp buffer) (not (string-empty-p buffer)))
+    (user-error "BUFFER must be a nonempty buffer name"))
+  (unless (and (integerp start-line) (> start-line 0))
+    (user-error "START-LINE must be a positive integer"))
+  (when (and end-line
+             (not (and (integerp end-line) (>= end-line start-line))))
+    (user-error "END-LINE must be at least START-LINE"))
+  (unless (and (integerp max-chars) (> max-chars 0))
+    (user-error "MAX-CHARS must be a positive integer"))
+  (let ((target (get-buffer buffer))
+        (limit (min 50000 max-chars)))
+    (unless target
+      (user-error "No Emacs buffer named %s" buffer))
+    (with-current-buffer target
+      (save-restriction
+        (widen)
+        (save-excursion
+          (goto-char (point-min))
+          (let* ((remaining (forward-line (1- start-line)))
+                 (available (= remaining 0))
+                 (start (point))
+                 (requested-finish
+                  (if (not available)
+                      start
+                    (if end-line
+                        (save-excursion
+                          (goto-char start)
+                          (forward-line (1+ (- end-line start-line)))
+                          (point))
+                      (point-max))))
+                 (finish (min requested-finish (+ start limit)))
+                 (content (if available
+                              (buffer-substring-no-properties start finish)
+                            ""))
+                 (truncated (and available (< finish requested-finish))))
+            `((buffer . ,(buffer-name target))
+              (start_line . ,start-line)
+              (end_line . ,(and (not (string-empty-p content))
+                                (line-number-at-pos (max start (1- finish)) t)))
+              (truncated . ,truncated)
+              (content . ,content))))))))
+#+end_src
+
+* Create and edit
+
+Create only makes a new regular file with an existing parent and never overwrites. Exact replacement validates all exact unique matches and overlaps before any write, rejects binary files and modified visiting buffers, and checks balanced parentheses in .el files before writing.
+
+#+name: mentat-file-create
+#+begin_src emacs-lisp
+(mentat-defun mentat-file-create (file content)
+  "Create FILE with CONTENT, rejecting NULs, unsaved buffers, and overwrite.
+FILE must have an existing parent; .el CONTENT must have balanced parentheses."
+  (:execution sync :display "Create File")
+  (unless (stringp content) (user-error "CONTENT must be a string"))
+  (when (string-match-p "\0" content) (user-error "CONTENT must not contain NUL"))
+  (let* ((absolute (mentat-file--local-path file "FILE"))
+         (parent (file-name-directory absolute)))
+    (unless (and parent (file-directory-p parent))
+      (user-error "Parent directory does not exist: %s" parent))
+    (mentat-file--reject-unsaved absolute)
+    (mentat-file--reject-transformed-file absolute)
+    (when (or (file-exists-p absolute) (file-symlink-p absolute))
+      (user-error "File already exists: %s" absolute))
+    (with-temp-buffer
+      (insert content)
+      (mentat-file--check-elisp absolute)
+      (write-region (point-min) (point-max) absolute nil 'silent nil 'excl))
+    (format "Created %s." file)))
+#+end_src
+
+#+name: mentat-file-edit-shared
+#+begin_src emacs-lisp
+(defun mentat-file--exact-range (old)
+  (unless (and (stringp old) (not (string-empty-p old))) (user-error "OLD must be nonempty"))
+  (let ((case-fold-search nil))
+    (goto-char (point-min))
+    (unless (search-forward old nil t) (user-error "Expected text was not found"))
+    (let ((start (- (point) (length old))) (end (point)))
+      (goto-char (1+ start))
+      (when (search-forward old nil t) (user-error "Expected text occurs more than once"))
+      (cons start end))))
+
+(defun mentat-file--check-elisp (file)
+  (when (string-equal (downcase (or (file-name-extension file) "")) "el")
+    (delay-mode-hooks (emacs-lisp-mode))
+    (goto-char (point-min)) (check-parens)))
+
+(defun mentat-file--edit-result (file status &optional count)
+  (if count (format "%s %s (%d replacements)." status file count) (format "%s %s." status file)))
+#+end_src
+
+#+name: mentat-file-replace-once
+#+begin_src emacs-lisp
+(mentat-defun mentat-file-replace-once (file old new)
+  "Replace the sole exact OLD in regular FILE with NEW. Rejects binary files and unsaved visiting buffers; .el results must have balanced parentheses."
+  (:execution sync :display "Replace Once")
+  (unless (stringp new) (user-error "NEW must be a string"))
+  (when (string-match-p "\0" new)
+    (user-error "NEW must not contain NUL"))
+  (let ((absolute (mentat-file--local-path file "FILE")))
+    (unless (file-regular-p absolute) (user-error "FILE must be a regular file"))
+    (mentat-file--reject-unsaved absolute)
+    (mentat-file--reject-transformed-file absolute)
+    (with-temp-buffer
+      (insert-file-contents absolute)
+      (when (save-excursion (goto-char (point-min)) (search-forward "\0" nil t)) (user-error "Refusing to edit binary file: %s" absolute))
+      (pcase-let ((`(,start . ,end) (mentat-file--exact-range old)))
+        (if (equal old new) (mentat-file--edit-result file "Unchanged")
+          (delete-region start end) (goto-char start) (insert new)
+          (mentat-file--check-elisp absolute)
+          (mentat-file--write-atomically absolute)
+          (mentat-file--edit-result file "Updated" 1))))))
+#+end_src
+
+#+name: mentat-file-replace-many
+#+begin_src emacs-lisp
+(mentat-defun mentat-file-replace-many (file replacements)
+  "Apply exact REPLACEMENTS to regular FILE after complete validation. Rejects binary files and unsaved visiting buffers; writes no partial result and checks .el parentheses."
+  (:execution sync :display "Replace Many")
+  (unless (and (listp replacements) (consp replacements)) (user-error "REPLACEMENTS must be nonempty"))
+  (let ((absolute (mentat-file--local-path file "FILE")))
+    (unless (file-regular-p absolute) (user-error "FILE must be a regular file"))
+    (mentat-file--reject-unsaved absolute)
+    (mentat-file--reject-transformed-file absolute)
+    (with-temp-buffer
+      (insert-file-contents absolute)
+      (when (save-excursion (goto-char (point-min)) (search-forward "\0" nil t)) (user-error "Refusing to edit binary file: %s" absolute))
+      (let ((ranges (mapcar (lambda (replacement)
+                              (unless (and (listp replacement) (= (length replacement) 2)
+                                           (stringp (car replacement)) (stringp (cadr replacement)))
+                                (user-error "Each replacement must be an [OLD NEW] pair"))
+                              (when (string-match-p "\0" (cadr replacement))
+                                (user-error "Replacement NEW text must not contain NUL"))
+                              (pcase-let ((`(,start . ,end) (mentat-file--exact-range (car replacement))))
+                                (list start end (car replacement) (cadr replacement))))
+                            replacements)))
+        (let ((ordered (sort (copy-sequence ranges) (lambda (a b) (< (car a) (car b))))) previous)
+          (dolist (range ordered)
+            (when (and previous (< (car range) (cadr previous))) (user-error "Replacement ranges overlap"))
+            (setq previous range)))
+        (let ((changed (cl-remove-if (lambda (range) (equal (nth 2 range) (nth 3 range))) ranges)))
+          (if (null changed) (mentat-file--edit-result file "Unchanged")
+            (dolist (range (sort (copy-sequence changed) (lambda (a b) (> (car a) (car b)))))
+              (delete-region (car range) (cadr range)) (goto-char (car range)) (insert (nth 3 range)))
+            (mentat-file--check-elisp absolute)
+            (mentat-file--write-atomically absolute)
+            (mentat-file--edit-result file "Updated" (length changed))))))))
+#+end_src
+
+* Copy, move, and delete
+
+Copy accepts only regular non-symlink files. Move and delete accept regular files or symlinks, never directories. Destination parents must exist and destinations must not exist, including symlinks. Modified visiting buffers are rejected before move or delete. Inspect first; delete is permanent.
+
+#+name: mentat-file-copy
+#+begin_src emacs-lisp
+(mentat-defun mentat-file-copy (source destination)
+  "Copy regular SOURCE to new DESTINATION without overwriting. Rejects symlinks, missing parents, and unsaved source or destination buffers; preserves time and permissions."
+  (:execution sync :display "Copy File")
+  (let* ((from (mentat-file--local-path source "SOURCE")) (to (mentat-file--local-path destination "DESTINATION")) (parent (file-name-directory to)))
+    (when (file-symlink-p from) (user-error "SOURCE must not be a symlink"))
+    (unless (file-regular-p from) (user-error "SOURCE must be a regular file"))
+    (mentat-file--reject-unsaved from)
+    (mentat-file--reject-unsaved to)
+    (unless (and parent (file-directory-p parent)) (user-error "Destination parent does not exist: %s" parent))
+    (when (or (file-exists-p to) (file-symlink-p to)) (user-error "Destination already exists: %s" to))
+    (copy-file from to nil t nil t) (format "Copied %s to %s." source destination)))
+#+end_src
+
+#+name: mentat-file-move
+#+begin_src emacs-lisp
+(mentat-defun mentat-file-move (source destination)
+  "Move regular or symlink SOURCE to new DESTINATION without overwriting. Rejects directories, missing parents, and unsaved source or destination buffers. This is destructive to SOURCE."
+  (:execution sync :display "Move File")
+  (let* ((from (mentat-file--local-path source "SOURCE")) (to (mentat-file--local-path destination "DESTINATION")) (parent (file-name-directory to)))
+    (when (and (file-directory-p from) (not (file-symlink-p from))) (user-error "SOURCE must not be a directory"))
+    (unless (or (file-regular-p from) (file-symlink-p from)) (user-error "SOURCE must be a regular file or symlink"))
+    (mentat-file--reject-unsaved from)
+    (mentat-file--reject-unsaved to)
+    (unless (and parent (file-directory-p parent)) (user-error "Destination parent does not exist: %s" parent))
+    (when (or (file-exists-p to) (file-symlink-p to)) (user-error "Destination already exists: %s" to))
+    (rename-file from to) (format "Moved %s to %s." source destination)))
+#+end_src
+
+#+name: mentat-file-delete
+#+begin_src emacs-lisp
+(mentat-defun mentat-file-delete (file)
+  "Permanently delete regular FILE or symlink FILE, never a directory. Rejects unsaved visiting buffers; deletion is destructive and irreversible."
+  (:execution sync :display "Delete File")
+  (let ((absolute (mentat-file--local-path file "FILE")))
+    (when (and (file-directory-p absolute) (not (file-symlink-p absolute))) (user-error "FILE must not be a directory"))
+    (unless (or (file-regular-p absolute) (file-symlink-p absolute)) (user-error "FILE must be a regular file or symlink"))
+    (mentat-file--reject-unsaved absolute)
+    (delete-file absolute) (format "Deleted %s permanently." file)))
+#+end_src
