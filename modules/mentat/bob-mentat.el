@@ -187,7 +187,7 @@ Mentat subagent properties."
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
-      :subagents (explorer pr-reviewer worker ci-watcher ui-manual-qa)
+      :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
       :tools ("emacs_eval_elisp"
               "emacs_eval_async"
               "emacs_elisp_call"
@@ -199,7 +199,7 @@ Mentat subagent properties."
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
-      :subagents (explorer pr-reviewer worker ci-watcher ui-manual-qa)
+      :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
       :tools ("emacs_eval_elisp"
               "emacs_eval_async"
               "emacs_elisp_call"
@@ -221,10 +221,8 @@ Mentat subagent properties."
      "openai-codex/gpt-5.6-terra"
      "openai-codex/gpt-5.6-sol"
      "openai-codex/gpt-6-astra"))
-
-  (mentat-extension-command-bindings nil)
   (mentat-extension-menu-commands
- '(("C" "Codex controls" bob/mentat-codex-menu)))
+   '(("C" "Codex controls" bob/mentat-codex-menu)))
   (mentat-mode-line-extra-functions
    '(bob/mentat-codex-weekly-usage))
   (mentat-prompt-extra-completion-at-point-functions nil)
@@ -259,7 +257,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent reviewer
       (bob/mentat-load-agent-and-common-instructions "reviewer")
     :description "Review one code change and optionally run read-only validation"
-    :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
+    :model ("azure-openai-responses/gpt-6-astra" "openai-codex/gpt-6-astra")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 8)
@@ -267,7 +265,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent pr-reviewer
       (bob/mentat-load-agent-and-common-instructions "pr-reviewer")
     :description "Review one assigned PR slice using the parallel-review finding format"
-    :model ("azure-openai-responses/gpt-5.6-sol" "openai-codex/gpt-5.6-sol")
+    :model ("azure-openai-responses/gpt-6-astra" "openai-codex/gpt-6-astra")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 8)
