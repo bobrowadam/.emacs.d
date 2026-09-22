@@ -29,7 +29,7 @@ Display the command output in a profile-specific buffer."
          (message "AWS SSO login %s for %s"
                   (if (zerop (process-exit-status process)) "completed" "failed")
                   profile)
-         (when-let ((window (get-buffer-window (process-buffer process) t)))
+         (when-let* ((window (get-buffer-window (process-buffer process) t)))
        (quit-window t window)))))
     (display-buffer buffer)
     (message "Starting AWS SSO login for %s" profile)))
