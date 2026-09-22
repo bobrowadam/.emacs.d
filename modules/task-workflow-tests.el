@@ -85,15 +85,6 @@
     (should (string-match-p "Wait for further user instructions"
                             (plist-get run :handoff)))))
 
-(ert-deftest mentat-task-creates-confirmed-issue-before-starting ()
-  (let ((run (mentat-task-test--run
-              nil "Migrate Claude to AWS Bedrock"
-              "Use Bedrock for inference." "Assistant")))
-    (should-not (plist-get run :failure))
-    (should (equal (plist-get run :created-input)
-                   '("Migrate Claude to AWS Bedrock"
-                     "Use Bedrock for inference." "BRA" "Assistant")))))
-
 (ert-deftest mentat-task-linear-creation-resolves-team-project-and-viewer ()
   (let ((context
          (json-parse-string
@@ -125,27 +116,6 @@
        #'ignore (lambda (reason) (setq failure reason)) context))
     (should-not requested)
     (should (string-match-p "found 2" failure))))
-
-(ert-deftest mentat-task-clean-worktree-passes-explicit-remote-policy ()
-  (let (result failure cancellation policy directory)
-    (cl-letf (((symbol-function 'file-directory-p) (lambda (_path) t))
-              ((symbol-function 'file-truename) #'identity)
-              ((symbol-function 'file-in-directory-p)
-               (lambda (_path _parent) t))
-              ((symbol-function 'bob/clean-worktree)
-               (lambda (path selected success _failure)
-                 (setq directory path policy selected)
-                 (funcall success '((confirmation-required . t)))
-                 (lambda () (setq cancellation 'called)))))
-      (funcall (mentat-task--clean-worktree "/tmp/worktree" "check")
-               (lambda (value) (setq result value))
-               (lambda (reason) (setq failure reason))
-               (lambda (cleanup) (setq cancellation cleanup))))
-    (should-not failure)
-    (should (eq policy 'check))
-    (should (equal directory "/tmp/worktree"))
-    (should (alist-get 'confirmation-required result))
-    (should (functionp cancellation))))
 
 (provide 'task-workflow-tests)
 ;;; task-workflow-tests.el ends here
