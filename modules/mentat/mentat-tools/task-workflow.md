@@ -39,6 +39,12 @@ buffer names when reporting its state.
 
 ## Linear status
 
+If the Bradwell Linear skill is not active, use the Bradwell checkout or returned
+worktree as the `directory` for each discovery call. Find the skill with
+`mentat-skill-search`, read its returned source with `mentat-org-skill-read`,
+then activate that same source with `mentat-org-skill-activate` before using its
+functions.
+
 After task startup succeeds, ask Bob whether to move the issue to **In Progress**.
 Only after confirmation, call `mentat-linear-set-state` with the issue identifier
 and the returned `in-progress-state` ID. Do not change status as part of task

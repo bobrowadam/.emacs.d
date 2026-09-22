@@ -5,7 +5,6 @@
 (require 'seq)
 (require 'url)
 (require 'url-parse)
-(require 'mentat-elisp-library)
 (require 'mentat-emacs)
 
 (defconst mentat-linear-endpoint "https://api.linear.app/graphql"
@@ -75,6 +74,36 @@
     }"
    `((id . ,identifier))
    (apply-partially #'mentat-linear--deliver-field 'issue success)
+   error))
+
+(defun mentat-linear--deliver-next-issues (success data)
+  "Pass the viewer's assigned unstarted issues from DATA to SUCCESS."
+  (funcall success
+           (alist-get 'nodes
+                      (alist-get 'assignedIssues
+                                 (alist-get 'viewer data)))))
+
+(defun mentat-linear--list-next-issues (api-key limit success error)
+  "Fetch up to LIMIT assigned unstarted issues using API-KEY and callbacks."
+  (mentat-linear--request
+   api-key
+   "query ($first: Int!) {
+      viewer {
+        assignedIssues(
+          first: $first
+          filter: { state: { type: { eq: \"unstarted\" } } }
+        ) {
+          nodes {
+            id identifier title description url priority priorityLabel
+            state { id name type }
+            team { id key name }
+            project { id name }
+          }
+        }
+      }
+    }"
+   `((first . ,limit))
+   (apply-partially #'mentat-linear--deliver-next-issues success)
    error))
 
 (defun mentat-linear--create-issue-with-context
@@ -218,38 +247,6 @@ are confirmed user inputs."
                  (funcall credential-cleanup)
                  (mentat-linear--cancel-request request))))))
 
-(mentat-defun mentat-linear-get-issue (identifier)
-  "Fetch Linear issue IDENTIFIER and resolve with its alist."
-  (:execution async :display "Linear Get Issue")
-  (mentat-linear--starter
-   (lambda (api-key resolve reject)
-     (mentat-linear--get-issue api-key identifier resolve reject))))
-
-(mentat-defun mentat-linear-add-comment (identifier body)
-  "Add BODY to Linear issue IDENTIFIER and resolve with the result."
-  (:execution async)
-  (mentat-linear--starter
-   (lambda (api-key resolve reject)
-     (mentat-linear--add-comment api-key identifier body resolve reject))))
-
-(mentat-defun mentat-linear-set-state (identifier state-id)
-  "Set Linear issue IDENTIFIER to STATE-ID and resolve with the result."
-  (:execution async)
-  (mentat-linear--starter
-   (lambda (api-key resolve reject)
-     (mentat-linear--set-state api-key identifier state-id resolve reject))))
-
-(mentat-defun mentat-linear-complete-issue (identifier)
-  "Move Linear issue IDENTIFIER to its team's completed workflow state."
-  (:execution async)
-  (mentat-linear--starter
-   (lambda (api-key resolve reject)
-     (mentat-linear--get-issue
-      api-key identifier
-      (apply-partially #'mentat-linear--complete-after-fetch
-                       api-key identifier resolve reject)
-      reject))))
-
 (defun mentat-linear--validate-attachment-url (url)
   "Reject URL unless it is an HTTPS Linear upload URL."
   (let ((parsed (url-generic-parse-url url)))
@@ -303,18 +300,6 @@ are confirmed user inputs."
       (with-current-buffer buffer
         (setq-local url-max-redirections 0)))
     buffer))
-
-(mentat-defun mentat-linear-download-attachment (url)
-  "Download a Linear issue attachment at URL to a private temporary file.
-Use an https://uploads.linear.app URL from an issue description or comment.
-Authentication uses the existing Linear auth-source credential.  Redirects
-are rejected.  Resolve with path and byte count, never attachment contents
-or credentials.  Use `mentat-read-image-file' on the path to inspect images."
-  (:execution async)
-  (mentat-linear--validate-attachment-url url)
-  (mentat-linear--starter
-   (lambda (api-key resolve reject)
-     (mentat-linear--download-attachment api-key url resolve reject))))
 
 (provide 'linear-api)
 ;;; linear-api.el ends here
