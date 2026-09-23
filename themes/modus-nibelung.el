@@ -201,7 +201,7 @@
       ((,c :inherit fixed-pitch :foreground ,modus-nibelung-level-4)))
     `(mentat-queue-face ((,c :foreground ,modus-nibelung-level-3 :slant italic)))
     `(mentat-thinking-summary-face
-      ((,c :foreground ,modus-nibelung-level-4 :weight semi-bold)))
+      ((,c :foreground ,modus-nibelung-accent-light :slant italic)))
     `(mentat-thinking-content-face ((,c :foreground ,modus-nibelung-level-3)))
     `(mentat-thinking-aborted-face ((,c :foreground ,red :weight semi-bold)))
     `(mentat-extension-progress-face ((,c :foreground ,yellow :weight semi-bold)))
