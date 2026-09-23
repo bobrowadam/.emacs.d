@@ -115,15 +115,18 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
 (defun mentat-session-manager--entry-result (entry)
   "Return bounded metadata for registered session ENTRY."
   (let* ((session-id (mentat--registry-entry-session-id entry))
-         (metadata (mentat--open-entry-metadata entry))
+         (metadata (mentat--open-session-file-metadata
+                    (mentat--registry-entry-session-file entry)))
          (view (mentat--open-live-view session-id))
          (buffer (and view (mentat--buffer-buffer view)))
-         (modified (plist-get metadata :modified))
+         (modified (mentat--open-entry-modified-time entry))
          (last-activity
           (and modified
                (format-time-string "%Y-%m-%dT%H:%M:%SZ" modified t))))
     `((session-id . ,session-id)
-      (name . ,(plist-get metadata :name))
+      (name . ,(or (plist-get metadata :name)
+                    (plist-get metadata :preview)
+                    "Unnamed session"))
       (directory . ,(mentat--registry-entry-root entry))
       (status . ,(if view (mentat--buffer-status view) "closed"))
       (live . ,(and view t))
