@@ -1,17 +1,19 @@
-;;; auth-process.el --- Mentat authenticated process adapter -*- lexical-binding: t; -*-
+#+TITLE: Run authenticated commands
+#+DESCRIPTION: Run approved commands with auth-source credentials without exposing secret values.
+#+PROPERTY: header-args:emacs-lisp :lexical yes :tangle yes
 
-;;; Commentary:
-;; Agent entry point for the independent private bob-auth-process module.
+* Use credentials safely
 
-;;; Code:
+Use =mentat-run-process-with-credentials= only when a project-specific integration does not already exist. Pass credential selectors, never secret values. The child output is not secret-filtered. Ask Bob for approval before any command that writes local state or changes an external service unless his request already authorizes that exact action. Cancellation or failure may leave partial effects; inspect state before retrying.
 
+* Native implementation
+
+#+name: auth-process-operations
+#+begin_src emacs-lisp
 (require 'bob-auth-process)
 (require 'mentat-emacs)
 (require 'mentat-elisp-library)
 
-(mentat--elisp-register-library
- 'auth-process 'user
- "Run commands with auth-source credentials via mentat-run-process-with-credentials; pass environment, host, and user selectors, never secret values.")
 
 (mentat-defun mentat-run-process-with-credentials
     (program args credentials &key directory)
@@ -57,6 +59,4 @@ child output is not secret-filtered.  Project authentication takes precedence."
            (unless finished
              (cancel)
              (funcall reject (error-message-string err)))))))))
-
-(provide 'auth-process)
-;;; auth-process.el ends here
+#+end_src

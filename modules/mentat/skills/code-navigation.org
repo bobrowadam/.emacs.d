@@ -1,10 +1,15 @@
-;;; codegraph.el --- Mentat CodeGraph experiment -*- lexical-binding: t; -*-
+#+TITLE: Navigate code with CodeGraph
+#+DESCRIPTION: Start and query Bob’s local per-worktree CodeGraph index.
+#+PROPERTY: header-args:emacs-lisp :lexical yes :tangle yes
 
-;;; Commentary:
-;; Non-MCP queries backed by one SDK host per worktree.
+* Query code structure
 
-;;; Code:
+Use =mentat-codegraph= for structural search or context when plain text search is insufficient. Inspect the returned freshness state and read affected files directly before drawing conclusions. Starting and stopping changes local index processes; perform those operations only when Bob requests them. Queries are read-only.
 
+* Native implementation
+
+#+name: code-navigation-operations
+#+begin_src emacs-lisp
 (require 'mentat-elisp-library)
 (require 'codegraph
          (expand-file-name "modules/codegraph.el" user-emacs-directory))
@@ -23,6 +28,4 @@ telemetry, agent setup, or automatic session prompts are used."
     (if (equal operation "stop")
         (bob/codegraph-stop root)
       (bob/codegraph-request root operation query))))
-
-(provide 'mentat-codegraph)
-;;; codegraph.el ends here
+#+end_src

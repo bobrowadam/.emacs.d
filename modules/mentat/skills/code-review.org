@@ -1,18 +1,20 @@
-;;; incremental-code-review.el --- Mentat incremental review adapter -*- lexical-binding: t; -*-
+#+TITLE: Present code review
+#+DESCRIPTION: Present validated review comments through Bob’s Emacs review interface.
+#+PROPERTY: header-args:emacs-lisp :lexical yes :tangle yes
 
-;;; Commentary:
-;; Present validated code-review operations through bob-code-review.
+* Present a review
 
-;;; Code:
+Use =mentat-code-review-present= after review findings are complete. It changes only the local Emacs review interface; it does not submit a remote review. Preserve file paths and line numbers from inspected source. Enable speech only when Bob requests it.
 
+* Native implementation
+
+#+name: code-review-operations
+#+begin_src emacs-lisp
 (require 'cl-lib)
 (require 'subr-x)
 (require 'bob-code-review)
 (require 'mentat-elisp-library)
 
-(mentat--elisp-register-library
- 'incremental-code-review 'user
- "Present validated review operations through the Emacs code review interface.")
 
 (defun mentat-code-review--field (operation field index)
   "Return FIELD from OPERATION, or reject review atom INDEX."
@@ -112,6 +114,4 @@ lookup or audio process is started."
                      (speech . ,(if speak-p "started" "disabled")))))
       (error
        (funcall reject (error-message-string err))))))
-
-(provide 'incremental-code-review)
-;;; incremental-code-review.el ends here
+#+end_src
