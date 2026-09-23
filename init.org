@@ -1417,7 +1417,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 ** markdown-mode
 #+begin_src elisp
   (use-package markdown-mode
-    :after nerd-icons
+    :demand t
+    :after (markdown-ts-mode)
     :custom
     (markdown-fontify-code-blocks-natively t)
     (markdown-list-indent-width 2)
