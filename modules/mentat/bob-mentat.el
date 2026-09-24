@@ -245,7 +245,7 @@ Mentat subagent properties."
   (mentat-define-extension worktree-skills
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
-    :source "npm:pi-observational-memory@3.1.1")
+    :source "npm:pi-observational-memory")
 
   (mentat-reset-subagent-definitions)
 
