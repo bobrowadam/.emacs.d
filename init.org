@@ -1097,8 +1097,10 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (require 'ellm-llm)
     (require 'ellm-codex)
     (setq ellm-provider-alist
-          `((codex . (:provider ,(ellm-make-codex-provider :chat-model "gpt-6-sol")
-                                :models ("gpt-6-terra" "gpt-6-sol" "gpt-6-luna" "gpt-6-astra")))))
+          `((codex . (
+                      :provider ,(ellm-make-codex-provider :chat-model "gpt-6-sol")
+                      :models ("gpt-6-sol" "gpt-6-luna" "gpt-6-astra"))))
+          )
     ;; Set this to not get bombarded by nonfree warnings
     (setq llm-warn-on-nonfree nil))
 #+end_src
