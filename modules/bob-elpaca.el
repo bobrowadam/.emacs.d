@@ -1,7 +1,28 @@
 ;;; bob-elpaca.el --- Elpaca maintenance commands -*- lexical-binding: t; -*-
 
 (require 'elpaca)
+(require 'elpaca-ui)
 (require 'seq)
+
+;;;###autoload
+(defun bob/elpaca-ui-mark-merge-all ()
+  "Mark every merge-eligible package in the current Elpaca UI view."
+  (interactive)
+  (unless (derived-mode-p 'elpaca-ui-mode)
+    (user-error "This command requires an Elpaca UI buffer"))
+  (let ((count 0))
+    (save-excursion
+      (goto-char (point-min))
+      (while (< (point) (point-max))
+        (when-let* ((entry (tabulated-list-get-id)))
+          (condition-case nil
+              (progn
+                (elpaca-ui-mark (car entry) 'elpaca-merge
+                                #'elpaca-ui--ensure-installed)
+                (setq count (1+ count)))
+            (user-error nil)))
+        (forward-line 1)))
+    (message "Marked %d packages for merge." count)))
 
 ;;;###autoload
 (defun bob/elpaca-native-compile ()
