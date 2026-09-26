@@ -3064,6 +3064,19 @@ LSP/DAP servers manager
 *** Typescript
 **** General Settings
 #+begin_src elisp
+  (defun bob/typescript-comment-dwim (arg)
+    "Wrap the active region in a block comment, or call `comment-dwim'."
+    (interactive "*P")
+    (if (use-region-p)
+        (let ((beg (region-beginning))
+              (end (region-end)))
+          (save-excursion
+            (goto-char end)
+            (insert " */")
+            (goto-char beg)
+            (insert "/* ")))
+      (comment-dwim arg)))
+
   (use-package typescript-ts-mode
     :ensure nil
     :mode (("\\.ts\\'" . typescript-ts-mode)
@@ -3074,6 +3087,7 @@ LSP/DAP servers manager
     :bind
     ("C-c C-b" . npm-run-build)
     (:map typescript-ts-mode-map
+          ("M-;" . bob/typescript-comment-dwim)
           ("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-SPC" . sp-mark-sexp))
