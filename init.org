@@ -93,8 +93,13 @@
     :ensure nil
     :when window-system
     :config
-    (unless (server-running-p)
-      (server-start)))
+    (let ((bmacs (file-equal-p invocation-directory
+                               (expand-file-name "~/Applications/Bmacs.app/Contents/MacOS/"))))
+      ;; Leave an already running private Bmacs server alone when reloading.
+      (when (and bmacs (not (process-live-p server-process)))
+        (setq server-name "bmacs"))
+      (unless (server-running-p)
+        (server-start))))
 #+end_src
 
 * Global elisp dependencies
