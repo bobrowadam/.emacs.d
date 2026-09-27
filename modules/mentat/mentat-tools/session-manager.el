@@ -185,8 +185,8 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
                (lambda (view _state) (send view))
                (lambda (_view response)
                  (fail (or (alist-get 'error response)
-                           "Mentat session resume failed"))))))
-          (error (fail (error-message-string err)))))))
+                           "Mentat session resume failed")))))
+          (error (fail (error-message-string err))))))))
 
 (provide 'session-manager)
 ;;; session-manager.el ends here
