@@ -1668,7 +1668,9 @@ Align tables in markdown and org-mode
     (org-babel-after-execute . #'bob/babel-ansi)
     (org-babel-after-execute
      . #'bob/org-refresh-inline-images-after-babel)
-    (org-mode . (lambda () (visual-line-mode 1)))
+    (org-mode . (lambda ()
+                  (visual-line-mode 1)
+                  (setq-local line-move-visual nil)))
     (org-archive . org-save-all-org-buffers)
     (org-after-refile-insert . org-save-all-org-buffers)
     :bind
