@@ -1,10 +1,17 @@
 #+TITLE: Manage Mentat sessions
-#+DESCRIPTION: Create, list, reload, and send prompts to native Mentat sessions.
+#+DESCRIPTION: Create, list, kill, reload, and send prompts to native Mentat sessions.
 #+PROPERTY: header-args:emacs-lisp :lexical yes :tangle yes
 
 * Manage sessions deliberately
 
 Use these operations for native Mentat sessions that Bob asks you to create or control. Creating, reloading, or sending a prompt changes session state and can trigger further tool use. Ask Bob before the exact operation unless his request already authorizes it. Listing sessions is read-only. A failed or cancelled operation may have completed partially; inspect session state before retrying.
+
+* Kill a Mentat session
+
+=mentat-session-kill= removes a registered session from Mentat and closes its
+live buffer, as =mentat-kill-session= does. It does not delete the underlying
+Pi transcript. It refuses displayed or busy sessions to avoid disrupting active
+work. Killing requires Bob's authorization.
 
 * Native implementation
 
@@ -62,6 +69,12 @@ time, and live buffer names.  DIRECTORY must name an existing project root."
          (entries (mentat--registry-list root)))
     (mapcar #'mentat-session-manager--entry-result
             (seq-take entries mentat-session-manager--list-limit))))
+
+(mentat-defun mentat-session-kill (session-id)
+  "Remove SESSION-ID from Mentat and close its live buffer.
+Keep the underlying Pi transcript. Refuse displayed or busy sessions."
+  (mentat-session-manager--kill
+   (mentat-session-manager--find-entry session-id)))
 
 (mentat-defun mentat-session-send (session-id prompt)
   "Send PROMPT to the idle registered Mentat SESSION-ID.

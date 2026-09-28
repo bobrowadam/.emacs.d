@@ -109,6 +109,30 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
           (error
            (fail (error-message-string err))))))))
 
+(defun mentat-session-manager--check-killable (entry)
+  "Refuse to kill a displayed or busy registered session ENTRY."
+  (when-let* ((view (mentat--open-live-view
+                    (mentat--registry-entry-session-id entry))))
+    (let ((buffer (mentat--buffer-buffer view)))
+      (when (get-buffer-window buffer t)
+        (user-error "Session is displayed; hide its buffer before killing"))
+      (unless (member (mentat--buffer-status view) '("idle" "closed"))
+        (user-error "Session is busy; close it before killing")))))
+
+(defun mentat-session-manager--kill (entry)
+  "Forget registered session ENTRY and close its buffer, preserving Pi history."
+  (mentat-session-manager--check-killable entry)
+  (let* ((session-id (mentat--registry-entry-session-id entry))
+         (view (mentat--open-live-view session-id))
+         (buffer (and view (mentat--buffer-buffer view))))
+    (unless (mentat--registry-forget session-id)
+      (user-error "Mentat session is no longer registered: %s" session-id))
+    (when (buffer-live-p buffer)
+      (unless (kill-buffer buffer)
+        (user-error "Session registration was removed but its buffer refused to close")))
+    `((session-id . ,session-id) (status . "killed")
+      (pi-transcript-preserved . t))))
+
 (defconst mentat-session-manager--list-limit 100
   "Maximum sessions returned by `mentat-session-list'.")
 
@@ -187,6 +211,15 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
                  (fail (or (alist-get 'error response)
                            "Mentat session resume failed")))))
           (error (fail (error-message-string err))))))))
+
+(defun mentat-session-manager--find-entry (session-id)
+  "Find registered SESSION-ID without opening or resuming it."
+  (unless (and (stringp session-id) (not (string-blank-p session-id)))
+    (user-error "SESSION-ID must be a nonblank string"))
+  (or (seq-find (lambda (entry)
+                  (equal session-id (mentat--registry-entry-session-id entry)))
+                (mentat--registry-list))
+      (user-error "No registered Mentat session: %s" session-id)))
 
 (provide 'session-manager)
 ;;; session-manager.el ends here
