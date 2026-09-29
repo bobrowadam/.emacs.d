@@ -1,0 +1,347 @@
+#+TITLE: Recover local disk space
+#+DESCRIPTION: Diagnose recurring macOS disk pressure and perform approved, targeted local cleanup.
+#+PROPERTY: header-args:emacs-lisp :lexical yes :tangle yes
+
+* Background
+
+On Bob's Mac, Minikube runs inside Docker Desktop. Repeated local builds have left
+many unused Minikube images and tens of gigabytes of BuildKit cache in Docker
+Desktop's virtual disk. The default BuildKit limits follow the virtual disk,
+not macOS free space. When APFS fills, Docker Desktop may fail to start or leave
+its filesystem read-only. In that state, first recover host space and establish
+Docker health before pruning inside Minikube. Prior inspections also found large
+Rust build output under Neomacs =target/= and growing Mentat diagnostic JSONL
+traces. A downloaded Hugging Face model was a separate, removable cache item.
+The proposed Minikube GC/startup guard in the disk-retention worktree is not a
+substitute for checking the live daemon configuration.
+
+* Inspect before acting
+
+Read this skill, then call =mentat-disk-inspect= with a 300-second tool timeout.
+Use a 600-second tool timeout for =mentat-disk-recover=, and select one slow
+prune target per call if Docker is sluggish. Inspection reports macOS free space,
+sizes of known directories, Docker's summary, Minikube's summary and cluster
+status. A command failure is reported as a failed check, not as zero usage.
+Inspect other causes before assuming Minikube is responsible. Docker's
+"reclaimable" estimate can include shared layers or active images and need not
+match the amount released by a prune.
+
+* Recover only approved targets
+
+Ask Bob before permanent deletion or a service restart unless the current
+request explicitly approves that exact action. A request to create this helper
+is not approval to run cleanup. Invoke =mentat-disk-recover= with only the
+approved names from =mentat-diagnostics=, =neomacs-build=, =huggingface-model=,
+=minikube-images=, and =minikube-cache=. Give =model= as an exact =Org/Repo= name
+for =huggingface-model=; do not infer model usage from cache timestamps.
+
+The diagnostics target removes only regular =mentat-diagnostic-v1-*.jsonl=
+files last modified more than 48 hours ago from the configured Mentat capture
+directory, excluding traces attached to live connections in this Emacs.
+The Neomacs target checks the installed app links and retains their existing
+runtime binaries; an installed
+Neomacs Dev app may have a broken link already and then needs rebuilding.
+The model target removes only the explicitly named model cache directory.
+The Minikube targets run =docker image prune -a -f= and
+=docker builder prune -a -f= inside the existing Minikube container. They
+suppress verbose item lists; before-and-after checks show the space recovered.
+The helpers never prune volumes, active images, host Docker, Trash, or personal files.
+A recovery call reports checks before and after its steps and stops on failure.
+Cancellation or a timeout may leave a partial cleanup; inspect again before
+retrying.
+
+If Docker Desktop is unavailable, the Minikube targets refuse to run. Use
+host-side cleanup first, then diagnose Docker's actual state. Restart Docker
+Desktop or Minikube only with specific evidence and approval; this skill does
+not automatically quit apps, kill processes, or restart the cluster. Report
+whether the live daemon has the intended GC budget rather than assuming a
+worktree change is installed.
+
+* Callable helpers
+
+#+name: disk-recovery-operations
+#+begin_src emacs-lisp
+(require 'cl-lib)
+(require 'seq)
+(require 'subr-x)
+(require 'mentat-process)
+(require 'mentat-diagnostics)
+(require 'mentat-elisp-library)
+
+(defun mentat-disk--locations ()
+  "Return configured diagnostics and known local storage directories to measure."
+  (list (expand-file-name mentat-diagnostic-capture-directory)
+        (expand-file-name "source/neomacs/target" "~")
+        (expand-file-name ".cache/huggingface/hub" "~")
+        (expand-file-name "Library/Containers/com.docker.docker" "~")))
+
+(defun mentat-disk--ok-p (result)
+  "Return non-nil when RESULT is a successful process result."
+  (and (eq (plist-get result :status) 'exit)
+       (eql (plist-get result :exit-code) 0)))
+
+(defun mentat-disk--series (steps finish set-cancel &optional stop-on-error)
+  "Run STEPS in order, calling FINISH with results and the failed step.
+Register the active cleanup with SET-CANCEL.  Each step is a list of name,
+executable, arguments and seconds."
+  (let ((remaining steps) (results nil) (cancel nil) (cancelled nil) (finished nil))
+    (funcall set-cancel
+             (lambda ()
+               (setq cancelled t)
+               (when cancel (funcall cancel))))
+    (cl-labels
+        ((advance ()
+           (unless (or cancelled finished)
+             (if (null remaining)
+                 (progn (setq finished t) (funcall finish (nreverse results) nil))
+               (pcase-let ((`(,name ,program ,args ,seconds) (pop remaining)))
+                 (setq cancel
+                       (mentat-process-start
+                        program args
+                        (lambda (result)
+                          (unless (or cancelled finished)
+                            (push (cons name result) results)
+                            (if (and stop-on-error (not (mentat-disk--ok-p result)))
+                                (progn (setq finished t)
+                                       (funcall finish (nreverse results) name))
+                              (advance))))
+                        (lambda (err)
+                          (unless (or cancelled finished)
+                            (push (cons name (list :status 'start-error
+                                                   :stderr (format "%s" err)))
+                                  results)
+                            (if stop-on-error
+                                (progn (setq finished t)
+                                       (funcall finish (nreverse results) name))
+                              (run-at-time 0 nil #'advance))))
+                        :directory (expand-file-name "~") :timeout seconds
+                        :stdout-limit 12288
+                        :stderr-limit 2048)))))))
+      (advance))))
+
+(defun mentat-disk--inspect-steps ()
+  "Return bounded read-only checks for known disk consumers."
+  (let ((paths (seq-filter #'file-exists-p (mentat-disk--locations))))
+    (append
+     (list '("df" "df" ("-Pk" "/System/Volumes/Data") 15))
+     (when paths (list (list "du" "du" (cons "-sk" paths) 90)))
+     (list '("docker-info" "docker" ("info" "--format" "{{.ServerVersion}}") 20)
+           '("docker-usage" "docker" ("system" "df") 25)
+           '("minikube-usage" "docker" ("exec" "minikube" "docker" "system" "df") 35)
+           '("minikube-gc" "docker" ("exec" "minikube" "docker" "buildx" "inspect") 35)
+           '("minikube-status" "minikube" ("status") 35)))))
+
+(defun mentat-disk--available-kib (result)
+  "Read the macOS available KiB column from a successful df RESULT."
+  (when (mentat-disk--ok-p result)
+    (let ((line (cadr (split-string (plist-get result :stdout) "\n" t))))
+      (when line
+        (let ((columns (split-string (string-trim line) "[[:space:]]+" t)))
+          (when (and (>= (length columns) 4)
+                     (string-match-p "\\`[0-9]+\\'" (nth 3 columns)))
+            (string-to-number (nth 3 columns))))))))
+
+(defun mentat-disk--directory-sizes (result)
+  "Parse the bounded du RESULT into path and KiB pairs."
+  (when (mentat-disk--ok-p result)
+    (delq nil
+          (mapcar (lambda (line)
+                    (when (string-match "\\`\\([0-9]+\\)[ \t]+\\(.*\\)\\'" line)
+                      (cons (match-string 2 line)
+                            (string-to-number (match-string 1 line)))))
+                  (split-string (plist-get result :stdout) "\n" t)))))
+
+(defun mentat-disk--snapshot (results)
+  "Shape bounded process RESULTS for a disk inspection."
+  (let ((df (cdr (assoc "df" results)))
+        (du (cdr (assoc "du" results))))
+    (list :available-kib (mentat-disk--available-kib df)
+          :directory-kib (mentat-disk--directory-sizes du)
+          :checks (mapcar (lambda (entry)
+                            (cons (car entry)
+                                  (let ((result (cdr entry)))
+                                    (list :status (plist-get result :status)
+                                          :exit-code (plist-get result :exit-code)
+                                          :stdout (string-trim (or (plist-get result :stdout) ""))
+                                          :stderr (string-trim (or (plist-get result :stderr) ""))))))
+                          results))))
+
+(defun mentat-disk--inspect (finish set-cancel)
+  "Run disk inspection, passing the structured snapshot to FINISH."
+  (mentat-disk--series (mentat-disk--inspect-steps)
+                       (lambda (results _failed)
+                         (funcall finish (mentat-disk--snapshot results)))
+                       set-cancel))
+
+(defun mentat-disk--runtime-steps (&optional target app dev-app)
+  "Return Neomacs deletion steps while retaining installed app binaries.
+Optional paths allow testing against temporary app bundles."
+  (let* ((target (or target (expand-file-name "source/neomacs/target" "~")))
+         (release (expand-file-name "release" target))
+         (binary (expand-file-name "neomacs" release))
+         (app (or app "/Applications/Neomacs.app/Contents/MacOS/neomacs-bin"))
+         (dev-app (or dev-app (expand-file-name "Applications/Neomacs Dev.app/Contents/MacOS/neomacs-bin" "~")))
+         (dev (expand-file-name "fast-dev/neomacs" target)))
+    (unless (and (file-directory-p target) (not (file-symlink-p target))
+                 (file-directory-p release) (not (file-symlink-p release))
+                 (file-regular-p binary) (not (file-symlink-p binary))
+                 (file-executable-p binary)
+                 (file-symlink-p app) (file-exists-p app)
+                 (string= (file-truename app) (file-truename binary)))
+      (user-error "Neomacs release app/runtime cannot be verified; refusing cleanup"))
+    (when (and (file-exists-p dev-app)
+               (not (and (file-symlink-p dev-app)
+                         (string= (file-truename dev-app) (file-truename dev)))))
+      (user-error "Neomacs Dev app points to an unexpected runtime"))
+    (let* ((keep-dev (and (file-exists-p dev) (file-symlink-p dev-app)
+                          (string= (file-truename dev-app) (file-truename dev))))
+           (fast-dev (expand-file-name "fast-dev" target))
+           (keep (if keep-dev (list release fast-dev) (list release)))
+           (top-level (seq-remove (lambda (path) (member path keep))
+                                  (directory-files target t directory-files-no-dot-files-regexp)))
+           (release-contents
+            (seq-remove (lambda (path) (string= path binary))
+                        (directory-files release t directory-files-no-dot-files-regexp)))
+           (dev-contents
+            (when keep-dev
+              (unless (and (file-directory-p fast-dev) (not (file-symlink-p fast-dev))
+                           (file-regular-p dev) (not (file-symlink-p dev)))
+                (user-error "Neomacs Dev runtime cannot be verified"))
+              (seq-remove (lambda (path) (string= path dev))
+                          (directory-files fast-dev t directory-files-no-dot-files-regexp)))))
+      (delq nil
+            (list (when top-level (list "neomacs-other-builds" "rm"
+                                        (append '("-rf" "--") top-level) 300))
+                  (when release-contents (list "neomacs-release-build" "rm"
+                                               (append '("-rf" "--") release-contents) 300))
+                  (when dev-contents (list "neomacs-dev-build" "rm"
+                                           (append '("-rf" "--") dev-contents) 300)))))))
+
+(defun mentat-disk--model-path (model)
+  "Return only the explicit Hugging Face MODEL directory."
+  (unless (and (stringp model)
+               (string-match-p "\\`[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*\\'" model))
+    (user-error "MODEL must be one exact Org/Repo name"))
+  (let* ((hub (expand-file-name ".cache/huggingface/hub" "~"))
+         (path (expand-file-name
+                (concat "models--" (replace-regexp-in-string "/" "--" model)) hub)))
+    (unless (and (file-directory-p hub) (not (file-symlink-p hub))
+                 (file-directory-p path) (not (file-symlink-p path)))
+      (user-error "Specified Hugging Face model cache does not exist: %s" model))
+    path))
+
+(defun mentat-disk--active-diagnostics ()
+  "Return diagnostic files held by live connections in this Emacs."
+  (let (files)
+    (when (boundp 'mentat--diagnostic-recorders)
+      (maphash (lambda (_connection recorder)
+                 (when (and recorder (fboundp 'mentat--diagnostic-recorder-file))
+                   (when-let* ((file (mentat--diagnostic-recorder-file recorder)))
+                     (push file files))))
+               mentat--diagnostic-recorders))
+    files))
+
+(defun mentat-disk--preview (text)
+  "Keep the beginning and outcome of verbose prune output bounded."
+  (if (<= (length text) 2500) text
+    (concat (substring text 0 500) "\n... [output omitted] ...\n"
+            (substring text (- (length text) 1500)))))
+
+(defun mentat-disk--recovery-steps (targets model)
+  "Return only the explicitly selected TARGETS' deletion steps."
+  (apply #'append
+         (mapcar
+          (lambda (target)
+            (pcase target
+              ("mentat-diagnostics"
+               (let ((dir (expand-file-name mentat-diagnostic-capture-directory)))
+                 (unless (and (file-directory-p dir) (not (file-symlink-p dir)))
+                   (user-error "Mentat diagnostics directory is unavailable"))
+                 (list (list "mentat-diagnostics" "find"
+                             (append (list dir "-maxdepth" "1" "-type" "f"
+                                           "-name" "mentat-diagnostic-v1-*.jsonl"
+                                           "-mmin" "+2880")
+                                     (apply #'append
+                                            (mapcar (lambda (file) (list "!" "-path" file))
+                                                    (mentat-disk--active-diagnostics)))
+                                     '("-delete"))
+                             120))))
+              ("neomacs-build" (mentat-disk--runtime-steps))
+              ("huggingface-model"
+               (list (list "huggingface-model" "rm"
+                           (list "-rf" "--" (mentat-disk--model-path model)) 180)))
+              ("minikube-images"
+               (list '("minikube-images" "sh"
+                       ("-c" "exec docker exec minikube docker image prune -a -f >/dev/null") 180)))
+              ("minikube-cache"
+               (list '("minikube-cache" "sh"
+                       ("-c" "exec docker exec minikube docker builder prune -a -f >/dev/null") 300)))))
+          targets)))
+
+(mentat-defun mentat-disk-inspect ()
+  "Inspect macOS space, known consumers, Docker, and Minikube without changes.
+Failures stay visible in :checks and do not become zero usage."
+  (:execution async :display "Inspect Disk Pressure")
+  (unless (eq system-type 'darwin)
+    (user-error "This disk skill only supports macOS"))
+  (lambda (resolve _reject on-cancel)
+    (mentat-disk--inspect resolve on-cancel)))
+
+(mentat-defun mentat-disk-recover (targets &optional model)
+  "Clean only approved TARGETS after inspecting the host and report before/after.
+TARGETS is a nonempty list of names: mentat-diagnostics, neomacs-build,
+huggingface-model, minikube-images, minikube-cache.  MODEL is required only
+for huggingface-model and must name the exact Org/Repo to remove.  Never
+prunes Docker volumes or host Docker.  Approval for the selected irreversible
+actions must precede this call.  Partial effects are possible on failure."
+  (:execution async :display "Recover Disk Space")
+  (unless (eq system-type 'darwin)
+    (user-error "This disk skill only supports macOS"))
+  (unless (and (consp targets) (seq-every-p #'stringp targets)
+               (equal targets (delete-dups (copy-sequence targets)))
+               (seq-every-p (lambda (target)
+                              (member target '("mentat-diagnostics" "neomacs-build"
+                                               "huggingface-model" "minikube-images"
+                                               "minikube-cache")))
+                            targets))
+    (user-error "TARGETS must be distinct supported cleanup names"))
+  (when (not (eq (not (null (member "huggingface-model" targets)))
+                 (not (null model))))
+    (user-error "MODEL is required exactly when huggingface-model is selected"))
+  (lambda (resolve reject on-cancel)
+    (let ((active-cancel #'ignore) (cancelled nil))
+      (funcall on-cancel (lambda () (setq cancelled t) (funcall active-cancel)))
+      (mentat-disk--inspect
+       (lambda (before)
+         (unless cancelled
+           (condition-case err
+               (let* ((needs-docker (or (member "minikube-images" targets)
+                                        (member "minikube-cache" targets)))
+                      (docker (cdr (assoc "docker-info" (plist-get before :checks)))))
+                 (unless (plist-get before :available-kib)
+                   (user-error "Host free-space check failed; refusing cleanup"))
+                 (when (and needs-docker (not (and (eq (plist-get docker :status) 'exit)
+                                                   (eql (plist-get docker :exit-code) 0))))
+                   (user-error "Docker is unavailable; recover host space and Docker first"))
+                 (mentat-disk--series
+                  (mentat-disk--recovery-steps targets model)
+                  (lambda (steps failed)
+                    (unless cancelled
+                      (mentat-disk--inspect
+                       (lambda (after)
+                         (unless cancelled
+                           (funcall resolve
+                                    (list :before before
+                                          :steps (mapcar (lambda (entry)
+                                                           (let ((result (copy-sequence (cdr entry))))
+                                                             (plist-put result :stdout
+                                                                        (mentat-disk--preview
+                                                                         (or (plist-get result :stdout) "")))
+                                                             (cons (car entry) result)))
+                                                         steps)
+                                          :stopped-on failed :after after))))
+                       (lambda (cleanup) (setq active-cancel cleanup)))))
+                  (lambda (cleanup) (setq active-cancel cleanup)) t))
+             (error (funcall reject (error-message-string err))))))
+       (lambda (cleanup) (setq active-cancel cleanup))))))
+#+end_src
