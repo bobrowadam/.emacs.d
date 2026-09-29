@@ -253,7 +253,7 @@ PARSER converts the successful response body into the public result."
     (mentat-web-search--request
      mentat-web-search-exa-endpoint "POST"
      `(("Content-Type" . "application/json")
-       ("x-api-key" . ,api-key))
+       ("x-api-key" . ,(string-as-unibyte api-key)))
      (encode-coding-string (json-serialize payload) 'utf-8)
      (apply-partially #'mentat-web-search--parse-exa query)
      success error)))
@@ -272,11 +272,17 @@ PARSER converts the successful response body into the public result."
              "Exa" mentat-web-search-exa-auth-hosts
              (lambda (api-key)
                (unless cancelled
-                 (setq request
-                       (mentat-web-search--exa-start
-                        query api-key num-results type include-domains
-                        start-published-date end-published-date max-age-hours
-                        resolve reject))
+                 (condition-case err
+                     (setq request
+                           (mentat-web-search--exa-start
+                            query api-key num-results type include-domains
+                            start-published-date end-published-date max-age-hours
+                            resolve reject))
+                   (error
+                    (funcall reject
+                             (replace-regexp-in-string
+                              (regexp-quote api-key) "[REDACTED]"
+                              (error-message-string err) t t))))
                  ;; Cancellation can be delivered while url-retrieve is
                  ;; starting, before it returns its request buffer.
                  (when cancelled
