@@ -295,6 +295,8 @@ UNAVAILABLE counts registered sessions without a readable transcript."
   "Find registered SESSION-ID without opening or resuming it."
   (unless (and (stringp session-id) (not (string-blank-p session-id)))
     (user-error "SESSION-ID must be a nonblank string"))
+  (when (string-match-p "[[:space:]]" session-id)
+    (user-error "Session ID contains whitespace; copy the exact ID from mentat-session-list"))
   (or (seq-find (lambda (entry)
                   (equal session-id (mentat--registry-entry-session-id entry)))
                 (mentat--registry-list))
