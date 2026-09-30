@@ -206,14 +206,24 @@ Use these local-only operations with paths resolved against `default-directory`.
                      (cleanup))))))))
 #+end_src
 
-Use =mentat-read-file= for bounded inspection. Find respects ignore files, searches hidden paths, excludes =.git=, accepts an optional ripgrep glob, and returns bounded relative paths; it requires a directory ROOT. Search accepts a regular-file or directory PATH and is literal by default, with regexp, glob, case-fold, result, and output bounds. Both use asynchronous =make-process=.
+Use =mentat-read-file= for bounded inspection. If a path is not supplied or
+already confirmed, use =mentat-file-find= first. Do not guess file extensions
+or module layouts.
+
+Find respects ignore files, searches hidden paths, excludes =.git=, accepts
+an optional ripgrep glob, and returns bounded relative paths; it requires a
+directory ROOT. Search accepts a regular-file or directory PATH and is literal
+by default, with regexp, glob, case-fold, result, and output bounds. Both use
+asynchronous =make-process=.
 
 #+name: mentat-read-file
 #+begin_src emacs-lisp
 (mentat-defun mentat-read-file
     (file &key (start-line 1) (start-column 0) end-line (max-chars 50000))
-  "Read bounded FILE text through sed without loading the file into Emacs."
-  (:execution async :display "Read File")
+  "Read bounded FILE text through sed without loading the file into Emacs.
+Use an exact path supplied by the user or confirmed with `mentat-file-find'."
+  (:execution async :display "Read File"
+   :arguments ((file "Exact existing file path; use mentat-file-find when the path is not known")))
   (unless (and (integerp start-line) (> start-line 0)) (user-error "START-LINE must be a positive integer"))
   (unless (and (integerp start-column) (>= start-column 0)) (user-error "START-COLUMN must be a nonnegative integer"))
   (unless (and (integerp max-chars) (> max-chars 0)) (user-error "MAX-CHARS must be a positive integer"))
@@ -482,11 +492,29 @@ FILE must have an existing parent; .el CONTENT must have balanced parentheses."
           (mentat-file--edit-result file "Updated" 1))))))
 #+end_src
 
+For =mentat-file-replace-many=, pass a nonempty JSON array of two-string
+arrays. Each pair is =[OLD, NEW]=, not an object with =old= and =new= keys.
+The old text must match exactly once in the file. For example:
+
+#+begin_src json
+{
+  "function": "mentat-file-replace-many",
+  "arguments": ["/path/to/file", [["old text", "new text"]]]
+}
+#+end_src
+
 #+name: mentat-file-replace-many
 #+begin_src emacs-lisp
 (mentat-defun mentat-file-replace-many (file replacements)
-  "Apply exact REPLACEMENTS to regular FILE after complete validation. Rejects binary files and unsaved visiting buffers; writes no partial result and checks .el parentheses."
-  (:execution sync :display "Replace Many")
+  "Apply exact REPLACEMENTS to regular FILE after complete validation.
+REPLACEMENTS is a nonempty JSON array of [OLD, NEW] two-string arrays,
+for example [[\"old text\", \"new text\"]], not objects with old/new keys.
+Each OLD must match exactly once. Reject binary files and unsaved visiting
+buffers; write no partial result and check .el parentheses."
+  (:execution sync :display "Replace Many"
+   :arguments
+   ((file "Exact existing file path")
+    (replacements "Nonempty JSON array of two-string arrays: [[\"old text\", \"new text\"]]. Do not use objects with old/new keys. Each old text must match exactly once.")))
   (unless (and (listp replacements) (consp replacements)) (user-error "REPLACEMENTS must be nonempty"))
   (let ((absolute (mentat-file--local-path file "FILE")))
     (unless (file-regular-p absolute) (user-error "FILE must be a regular file"))
