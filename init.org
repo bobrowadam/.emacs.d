@@ -2258,6 +2258,7 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
   (use-package forge
     :after magit
     :custom
+    (forge-browse-topics-using-forge nil)
     (forge-status-buffer-default-topic-filters
      (forge--topics-spec
       :type 'topic :active nil :state 'open :order 'newest

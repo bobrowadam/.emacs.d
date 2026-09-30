@@ -5,7 +5,13 @@
 
 ;;; Code:
 (require 'ert)
-(require 'bob-customerio)
+(require 'cl-lib)
+(require 'mentat)
+
+(let ((default-directory
+       (expand-file-name "~/source/gist/bradwell-monorepo/")))
+  (mentat-org-skill-activate
+   (expand-file-name ".mentat/skills/customerio.org")))
 
 (ert-deftest bob/customerio-invalid-input ()
   (should-error (bob/customerio-path "send"))

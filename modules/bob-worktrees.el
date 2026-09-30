@@ -189,9 +189,9 @@ cleanup metadata or FAILURE with error text.  Return a cancellation function."
                         (confirmation-required . t))))
             (t
              (setq delete-remote
-                   (if (functionp remote-policy)
-                       (funcall remote-policy branch)
-                     (eq remote-policy 'delete)))
+                   (if (memq remote-policy '(delete keep))
+                       (eq remote-policy 'delete)
+                     (funcall remote-policy branch)))
              (remove-worktree))))
          (remote-checked (_output status)
            (setq remote-exists (zerop status))

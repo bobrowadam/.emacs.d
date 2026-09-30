@@ -1,10 +1,43 @@
 #+TITLE: Manage Mentat sessions
-#+DESCRIPTION: Create, list, kill, reload, and send prompts to native Mentat sessions.
+#+DESCRIPTION: Read and search full session history; create, list, close, kill, reload, and send prompts to Mentat sessions.
 #+PROPERTY: header-args:emacs-lisp :lexical yes :tangle yes
 
 * Manage sessions deliberately
 
-Use these operations for native Mentat sessions that Bob asks you to create or control. Creating, reloading, or sending a prompt changes session state and can trigger further tool use. Ask Bob before the exact operation unless his request already authorizes it. Listing sessions is read-only. A failed or cancelled operation may have completed partially; inspect session state before retrying.
+Use these operations for native Mentat sessions that Bob asks you to create or control. Creating, reloading, or sending a prompt changes session state and can trigger further tool use. Ask Bob before the exact operation unless his request already authorizes it. Listing and searching sessions are read-only. Search matches literal text in persisted transcripts of registered sessions, including tool records. A failed or cancelled state-changing operation may have completed partially; inspect session state before retrying.
+
+* Read and search saved history
+
+=mentat-session-search= finds sessions containing literal text, as before.
+Use =mentat-session-read= to page through one session's saved transcript and
+=mentat-session-search-history= to get matching excerpts within that session.
+Neither operation opens or resumes a session, and both work for closed sessions.
+
+These tools read persisted records across all branches, including messages
+before compaction, tool calls/results, summaries, and metadata. They do not
+claim that every record belongs to the currently active branch. Results include
+record IDs, parent IDs, and one-based transcript line numbers. Image payloads
+are omitted. Text still streaming in Pi may not have been saved yet.
+
+Follow =next= using =start-line= and, for reads, =start-column=. Columns are
+zero-based offsets into the returned record text, not raw JSON. A search returns
+one excerpt per matching record; read that line for its full text, or start a few
+lines earlier for context. Searches are literal and case-insensitive. A cursor
+at a page boundary can lead to an empty final page. An =incomplete-tail= result
+means the last record is still incomplete; retry its cursor after writing ends.
+Records over 16 MiB are rejected rather than silently skipped.
+
+* Close without deleting history
+
+=mentat-session-close= closes by stable session ID. It uses normal Mentat
+shutdown hooks and waits for the Pi process to exit. Saved history and registry
+entries remain available; an already-closed session is a successful no-op.
+
+Closing needs Bob's authorization. Busy sessions are refused unless he explicitly
+asks to stop their work and the call uses =interrupt=true=. Queued prompts are
+cleared before aborting active work and shutting down. The tool refuses displayed buffers to avoid replacing
+Bob's active view. It does not hide buffers or force-kill processes. A timeout or
+cancellation can occur after shutdown begins; inspect state before retrying.
 
 * Kill a Mentat session
 
@@ -69,6 +102,79 @@ time, and live buffer names.  DIRECTORY must name an existing project root."
          (entries (mentat--registry-list root)))
     (mapcar #'mentat-session-manager--entry-result
             (seq-take entries mentat-session-manager--list-limit))))
+
+(mentat-defun mentat-session-search (query &key directory (max-results 30))
+  "Find registered Mentat sessions whose persisted transcripts contain QUERY.
+
+Match case-insensitively and literally, including messages and tool records.
+DIRECTORY optionally restricts the search to an existing project root.
+Return up to MAX-RESULTS matching sessions in registry order, their transcript
+paths, the number searched, and the number with unavailable transcripts."
+  (:execution async)
+  (unless (and (stringp query) (not (string-blank-p query)))
+    (user-error "QUERY must be a nonblank string"))
+  (when (and directory
+             (or (not (stringp directory))
+                 (not (file-directory-p directory))))
+    (user-error "Mentat session directory does not exist: %S" directory))
+  (unless (and (integerp max-results) (> max-results 0))
+    (user-error "MAX-RESULTS must be a positive integer"))
+  (let* ((root (and directory
+                    (file-name-as-directory (file-truename directory))))
+         (registered (mentat--registry-list root))
+         (entries (seq-filter
+                   (lambda (entry)
+                     (let ((file (mentat--registry-entry-session-file entry)))
+                       (and (file-regular-p file) (file-readable-p file))))
+                   registered)))
+    (mentat-session-manager--search-starter
+     entries query (min 100 max-results) (- (length registered) (length entries)))))
+
+(mentat-defun mentat-session-read
+    (session-id &key (start-line 1) (start-column 0) (max-records 20) (max-chars 20000))
+  "Read a page of saved SESSION-ID history, including closed sessions.
+START-LINE is one-based; START-COLUMN is zero-based in rendered record text.
+Return records with IDs, roles, text, and a NEXT cursor. Read all persisted
+branches, not just current context. Omit images. MAX-RECORDS is capped at 50
+and MAX-CHARS at 50000. Neither open nor resume the session."
+  (:execution async)
+  (unless (and (integerp start-line) (> start-line 0)
+               (integerp start-column) (>= start-column 0)
+               (integerp max-records) (> max-records 0)
+               (integerp max-chars) (> max-chars 0))
+    (user-error "Invalid history page bounds"))
+  (mentat-session-manager--history-starter
+   (mentat-session-manager--find-entry session-id)
+   start-line start-column (min 50 max-records) (min 50000 max-chars)))
+
+(mentat-defun mentat-session-search-history
+    (session-id query &key (start-line 1) (max-results 20))
+  "Search all saved SESSION-ID history for literal case-insensitive QUERY.
+Return one excerpt per matching record, with transcript line, record ID, role,
+and text offsets for mentat-session-read. Follow NEXT with START-LINE to page.
+Include closed sessions and pre-compaction history without resuming them.
+QUERY must be 1 to 500 characters; MAX-RESULTS is capped at 50."
+  (:execution async)
+  (unless (and (stringp query) (not (string-blank-p query))
+               (<= (length query) 500))
+    (user-error "QUERY must be a nonblank string of at most 500 characters"))
+  (unless (and (integerp start-line) (> start-line 0)
+               (integerp max-results) (> max-results 0))
+    (user-error "Invalid history search bounds"))
+  (mentat-session-manager--history-starter
+   (mentat-session-manager--find-entry session-id)
+   start-line 0 (min 50 max-results) 50000 query))
+
+(mentat-defun mentat-session-close (session-id &key interrupt)
+  "Close SESSION-ID and wait for Pi to exit, preserving saved history.
+Refuse busy sessions unless INTERRUPT is true and Bob approved stopping work.
+Refuse displayed buffers. Already-closed sessions are successful no-ops.
+Cancellation or timeout does not undo shutdown already started."
+  (:execution async)
+  (unless (memq interrupt '(nil t :false))
+    (user-error "INTERRUPT must be a boolean"))
+  (mentat-session-manager--close-starter
+   (mentat-session-manager--find-entry session-id) (eq interrupt t)))
 
 (mentat-defun mentat-session-kill (session-id)
   "Remove SESSION-ID from Mentat and close its live buffer.

@@ -174,5 +174,24 @@
       (should (string-match-p "Do not recreate" (cdr result)))
       (should (file-exists-p (expand-file-name ".worktrees/setup-error/.git" root))))))
 
+(ert-deftest bob/worktree-clean-delete-removes-existing-remote-branch ()
+  (bob/with-worktree-test-repo
+    (let ((remote (expand-file-name "remote.git" root)))
+      (bob/worktree-test-git "init" "--bare" remote)
+      (bob/worktree-test-git "remote" "add" "origin" remote)
+      (let* ((created (bob/worktree-test-create root "published-delete" "main"))
+             (path (alist-get 'directory (cdr created))))
+        (let ((default-directory (file-name-as-directory path)))
+          (bob/worktree-test-git "push" "origin" "published-delete"))
+        (let ((result (bob/worktree-test-clean path 'delete)))
+          (should (eq (car result) 'ok))
+          (should (alist-get 'remote-branch-deleted (cdr result)))
+          (should-not (file-exists-p path))
+          (with-temp-buffer
+            (should (= (process-file
+                        "git" nil t nil "ls-remote" "--exit-code" "--heads"
+                        "origin" "refs/heads/published-delete")
+                       2))))))))
+
 (provide 'bob-worktrees-tests)
 ;;; bob-worktrees-tests.el ends here

@@ -6,19 +6,25 @@
 
 ;;;###autoload
 (defun bob/elpaca-ui-mark-merge-all ()
-  "Mark every merge-eligible package in the current Elpaca UI view."
+  "Mark every merge-eligible package in the current Elpaca UI view.
+Leave existing merge marks set and count each package once."
   (interactive)
   (unless (derived-mode-p 'elpaca-ui-mode)
     (user-error "This command requires an Elpaca UI buffer"))
-  (let ((count 0))
+  (let ((count 0) seen)
     (save-excursion
       (goto-char (point-min))
       (while (< (point) (point-max))
-        (when-let* ((entry (tabulated-list-get-id)))
+        (when-let* ((entry (tabulated-list-get-id))
+                    (id (car entry))
+                    ((not (memq id seen))))
           (condition-case nil
               (progn
-                (elpaca-ui-mark (car entry) 'elpaca-merge
-                                #'elpaca-ui--ensure-installed)
+                (elpaca-ui--ensure-installed id)
+                (push id seen)
+                (unless (eq (car (alist-get id elpaca-ui--marked-packages))
+                            'elpaca-merge)
+                  (elpaca-ui-mark id 'elpaca-merge))
                 (setq count (1+ count)))
             (user-error nil)))
         (forward-line 1)))
