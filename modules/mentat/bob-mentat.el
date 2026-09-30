@@ -49,6 +49,11 @@
 (declare-function mentat-reset-subagent-definitions "mentat" ())
 (declare-function mentat--register-subagent "mentat" (&rest args))
 (declare-function mentat-refresh-mode-lines "mentat" ())
+(declare-function mentat-footer-mode "mentat-footer" (&optional arg))
+
+(defun bob/mentat-enable-footer ()
+  "Enable the atomic footer in a Mentat conversation buffer."
+  (mentat-footer-mode 1))
 
 (defun bob/mentat-initialize-fnm ()
   "Load FNM and select the Node environment used by Mentat."
@@ -142,7 +147,9 @@ Mentat subagent properties."
   :ensure nil
   :load-path "~/source/mentat"
   :commands mentat
+  :hook (mentat-buffer-mode . bob/mentat-enable-footer)
   :custom
+  (mentat-show-injected-reminders nil)
   (mentat-tool-default-display-state 'summary)
   (mentat-streaming-tool-display-state 'expanded)
   (mentat-pi-directory (expand-file-name "~/.pi/agent"))
@@ -161,7 +168,7 @@ Mentat subagent properties."
     "`require`."))
   (mentat-default-provider "azure-openai-responses")
   (mentat-default-model "gpt-6.1-sol")
-  (mentat-default-effort "low")
+  (mentat-default-effort "high")
   (mentat-org-skill-global-directory
    (expand-file-name "modules/mentat/skills/" user-emacs-directory))
   (mentat-supervisor-instructions
@@ -221,11 +228,9 @@ Mentat subagent properties."
    '("azure-openai-responses/gpt-6.1-sol"
      "azure-openai-responses/gpt-6-astra"
      "azure-openai-responses/gpt-6-luna"
-     "azure-openai-responses/gpt-6-sol"
      "openai-codex/gpt-6.1-sol"
      "openai-codex/gpt-6-astra"
-     "openai-codex/gpt-6-luna"
-     "openai-codex/gpt-6-sol"))
+     "openai-codex/gpt-6-luna"))
 
   (mentat-extension-menu-commands
    '(("C" "Codex controls" bob/mentat-codex-menu)))
@@ -242,6 +247,7 @@ Mentat subagent properties."
    #'bob/mentat-prose-word-candidate-score)
 
   :config
+  (require 'mentat-footer)
   (mentat-reset-extensions)
   ;; Registered only for child sessions.  Main Mentat sessions load this
   ;; internally, so it must not be included in `mentat-enabled-extensions'.
@@ -260,7 +266,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent explorer
       (bob/mentat-load-agent-and-common-instructions "explorer")
     :description "Read-only project investigation"
-    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
+    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 4)
@@ -291,7 +297,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent worker
       (bob/mentat-load-agent-and-common-instructions "worker")
     :description "Implement one bounded, well-understood delegated change"
-    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
+    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking high
     :extensions (mentat-emacs))
 
@@ -299,7 +305,7 @@ Mentat subagent properties."
       (bob/mentat-load-agent-and-common-instructions
        "effect-ts-backend-expert")
     :description "Handle one bounded Effect TypeScript task requiring specialist expertise"
-    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
+    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -309,7 +315,7 @@ Mentat subagent properties."
       (bob/mentat-load-agent-and-common-instructions
        "frontend-react-expert")
     :description "Handle one bounded React frontend task requiring specialist expertise"
-    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
+    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -318,7 +324,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent ui-manual-qa
       (bob/mentat-load-agent-and-common-instructions "ui-manual-qa")
     :description "Test UI features in a web browser"
-    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
+    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking medium
     :extensions (mentat-emacs))
 
