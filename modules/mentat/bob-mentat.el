@@ -213,7 +213,13 @@ Mentat subagent properties."
 
   (mentat-enabled-models
    '("azure-openai-responses/gpt-6.1-sol"
-     "openai-codex/gpt-6.1-sol"))
+     "azure-openai-responses/gpt-6-astra"
+     "azure-openai-responses/gpt-6-luna"
+     "azure-openai-responses/gpt-6-sol"
+     "openai-codex/gpt-6.1-sol"
+     "openai-codex/gpt-6-astra"
+     "openai-codex/gpt-6-luna"
+     "openai-codex/gpt-6-sol"))
 
   (mentat-extension-menu-commands
    '(("C" "Codex controls" bob/mentat-codex-menu)))
@@ -248,7 +254,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent explorer
       (bob/mentat-load-agent-and-common-instructions "explorer")
     :description "Read-only project investigation"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 4)
@@ -256,7 +262,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent reviewer
       (bob/mentat-load-agent-and-common-instructions "reviewer")
     :description "Review one code change and optionally run read-only validation"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure-openai-responses/gpt-6-astra" "openai-codex/gpt-6-astra")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 8)
@@ -264,7 +270,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent pr-reviewer
       (bob/mentat-load-agent-and-common-instructions "pr-reviewer")
     :description "Review one assigned PR slice using the parallel-review finding format"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure-openai-responses/gpt-6-astra" "openai-codex/gpt-6-astra")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 8)
@@ -272,14 +278,14 @@ Mentat subagent properties."
   (bob/mentat-define-subagent ci-watcher
       (bob/mentat-load-agent-and-common-instructions "ci-watcher")
     :description "Run and monitor project validation without changing files"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
     :thinking low
     :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent worker
       (bob/mentat-load-agent-and-common-instructions "worker")
     :description "Implement one bounded, well-understood delegated change"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
     :thinking high
     :extensions (mentat-emacs))
 
@@ -287,7 +293,7 @@ Mentat subagent properties."
       (bob/mentat-load-agent-and-common-instructions
        "effect-ts-backend-expert")
     :description "Handle one bounded Effect TypeScript task requiring specialist expertise"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -297,7 +303,7 @@ Mentat subagent properties."
       (bob/mentat-load-agent-and-common-instructions
        "frontend-react-expert")
     :description "Handle one bounded React frontend task requiring specialist expertise"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -306,7 +312,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent ui-manual-qa
       (bob/mentat-load-agent-and-common-instructions "ui-manual-qa")
     :description "Test UI features in a web browser"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
     :thinking medium
     :extensions (mentat-emacs))
 
