@@ -214,7 +214,13 @@ Mentat subagent properties."
               "hindsight_reflect"
               "subagent"
               "recall")
-      :disabled-tools ("grep" "find" "ls"))))
+      :disabled-tools ("grep" "find" "ls"))
+     ("basic"
+      :directory "~/.pi/agent-basic"
+      :arguments ("--no-context-files" "--no-skills")
+      :agent-features nil
+      :extensions nil
+      :tools ("read" "bash" "edit" "write" "grep"))))
   (mentat-compaction-presentation-function
    #'bob/mentat-observational-memory-compaction-presentation)
 
@@ -260,6 +266,9 @@ Mentat subagent properties."
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
     :source "npm:pi-observational-memory")
+  (mentat-define-extension web-search
+    :source "/Users/bob/.pi/agent/extensions/src/web-search/index.ts"
+    :tools (exa_search jina_reader))
 
   (mentat-reset-subagent-definitions)
 
