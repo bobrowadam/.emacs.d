@@ -26,6 +26,7 @@
                      (lambda (_id) (and live view)))
                     ((symbol-function 'mentat--open-entry-view)
                      (lambda (_entry on-ready _on-error)
+                       (should (<= (length mentat-pi-profiles) 1))
                        (setq ready on-ready)))
                     ((symbol-function 'mentat--buffer-submit)
                      (lambda (_view _prompt _attachments on-accepted _on-error)

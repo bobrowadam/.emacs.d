@@ -13,6 +13,8 @@
 
 (require 'mentat-registry)
 
+(require 'mentat-profile)
+
 (require 'mentat-ui)
 
 (require 'seq)
@@ -283,12 +285,19 @@ UNAVAILABLE counts registered sessions without a readable transcript."
             (if-let* ((view (mentat--open-live-view session-id)))
                 (send view)
               (setq resumed t)
-              (mentat--open-entry-view
-               entry
-               (lambda (view _state) (send view))
-               (lambda (_view response)
-                 (fail (or (alist-get 'error response)
-                           "Mentat session resume failed")))))
+              ;; Offer only the recorded profile during this undisplayed resume.
+              ;; Keep its options intact while suppressing the profile chooser.
+              (let* ((directory (or (mentat--registry-entry-pi-directory entry)
+                                    (mentat--profile-default-directory)))
+                     (profile (mentat--profile-for-directory directory))
+                     (mentat-pi-directory directory)
+                     (mentat-pi-profiles (and profile (list profile))))
+                (mentat--open-entry-view
+                 entry
+                 (lambda (view _state) (send view))
+                 (lambda (_view response)
+                   (fail (or (alist-get 'error response)
+                             "Mentat session resume failed"))))))
           (error (fail (error-message-string err))))))))
 
 (defun mentat-session-manager--find-entry (session-id)
