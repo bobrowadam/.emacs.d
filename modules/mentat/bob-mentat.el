@@ -75,32 +75,42 @@ Mentat subagent properties."
 
 (bob/mentat-initialize-fnm)
 
-(defun bob/mentat-codex-weekly-usage ()
-  "Return the Codex weekly allowance remaining for Mentat's mode line."
+(defun bob/mentat-codex-window-usage (plain labels label)
+  "Format allowance remaining in PLAIN for LABELS under visible LABEL."
+  (let ((window (regexp-opt labels t))
+        remaining)
+    (cond
+     ((or (and (string-match
+                (concat "\\([0-9]+\\(?:\\.[0-9]+\\)?\\)% " window "\\b") plain)
+               (setq remaining (round (string-to-number (match-string 1 plain)))))
+          (and (string-match
+                (concat "^" window "[^\n]*?\\([0-9]+\\(?:\\.[0-9]+\\)?\\)% used")
+                plain)
+               (setq remaining
+                     (round (- 100 (string-to-number (match-string 2 plain)))))))
+      (let* ((remaining (max 0 (min 100 remaining)))
+             (face (cond ((<= remaining 10) 'error)
+                         ((<= remaining 30) 'warning)
+                         (t 'success))))
+        (propertize (format "%s %d%%%% left" label remaining)
+                    'face face 'help-echo plain)))
+     ((string-match (concat "blocked " window " until [^|\n]+") plain)
+      (propertize (string-trim (match-string 0 plain))
+                  'face 'error 'help-echo plain)))))
+
+(defun bob/mentat-codex-usage ()
+  "Return Codex five-hour and weekly allowances for the footer and mode line."
   (when (equal mentat--buffer-model-provider "openai-codex")
     (when-let* ((status (mentat-extension-status "codex"))
                 (plain (ansi-color-filter-apply status)))
-      (let (remaining)
-        (cond
-         ((or (and (string-match
-                    "\\([0-9]+\\)% \\(?:7d\\|1w\\|wk\\)\\b" plain)
-                   (setq remaining (string-to-number (match-string 1 plain))))
-              (and (string-match
-                    "\\(?:7d\\|1w\\|wk\\)[^\n]*?\\([0-9]+\\(?:\\.[0-9]+\\)?\\)% used"
-                    plain)
-                   (setq remaining
-                         (round (- 100 (string-to-number
-                                        (match-string 1 plain)))))))
-          (let ((face (cond ((<= remaining 10) 'error)
-                            ((<= remaining 30) 'warning)
-                            (t 'success))))
-            (propertize (format "%d%%%% wk" remaining)
-                        'face face
-                        'help-echo plain)))
-         ((string-match "blocked \\(?:7d\\|1w\\|wk\\) until [^|]+" plain)
-          (propertize (match-string 0 plain)
-                      'face 'error
-                      'help-echo plain)))))))
+      (let ((windows (delq nil
+                           (list (bob/mentat-codex-window-usage plain '("5h") "5h")
+                                 (bob/mentat-codex-window-usage
+                                  plain '("7d" "1w" "wk") "wk")))))
+        (if windows
+            (concat "Codex " (string-join windows " · "))
+          (propertize "Codex usage unavailable" 'face 'shadow
+                      'help-echo plain))))))
 
 (defun bob/mentat-observational-memory-compaction-presentation (result)
   "Describe Observational Memory metadata in compaction RESULT."
@@ -219,7 +229,7 @@ Mentat subagent properties."
       :directory "~/.pi/agent-basic"
       :arguments ("--no-context-files" "--no-skills")
       :agent-features nil
-      :extensions nil
+      :extensions (codex)
       :tools ("read" "bash" "edit" "write" "grep"))))
   (mentat-compaction-presentation-function
    #'bob/mentat-observational-memory-compaction-presentation)
@@ -242,7 +252,7 @@ Mentat subagent properties."
    '(("C" "Codex controls" bob/mentat-codex-menu)))
 
   (mentat-mode-line-extra-functions
-   '(bob/mentat-codex-weekly-usage))
+   '(bob/mentat-codex-usage))
 
   (mentat-prompt-extra-completion-at-point-functions nil)
 
