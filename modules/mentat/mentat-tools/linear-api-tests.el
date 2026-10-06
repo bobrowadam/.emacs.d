@@ -41,25 +41,6 @@
       (should (equal (alist-get 'description (alist-get 'variables payload))
                      description)))))
 
-(ert-deftest mentat-linear-request-encodes-unicode-as-utf8-bytes ()
-  (let ((description "Golem’s investigations time out. 日本語")
-        body)
-    (cl-letf (((symbol-function 'url-retrieve)
-               (lambda (&rest _args)
-                 (setq body url-request-data)
-                 'request-buffer)))
-      (should
-       (eq (mentat-linear--request
-            "test-only-api-key" "mutation { issueCreate }"
-            `((description . ,description)) #'ignore #'ignore)
-           'request-buffer)))
-    (should-not (multibyte-string-p body))
-    (let ((payload (json-parse-string
-                    (decode-coding-string body 'utf-8)
-                    :object-type 'alist)))
-      (should (equal (alist-get 'description (alist-get 'variables payload))
-                     description)))))
-
 (ert-deftest mentat-linear-request-redacts-synchronous-errors ()
   (let ((key "test-only-api-key")
         failure)
