@@ -56,7 +56,7 @@
                        (replace-regexp-in-string "%%" "%" segment t t))))
             (should (string-match-p "Codex 5h 72% left · wk 20% left"
                                     (nth 2 (mentat--footer-lines nil)))))
-          (setq mentat--buffer-model-provider "azure-openai-responses")
+          (setq mentat--buffer-model-provider "azure")
           (should-not (bob/mentat-codex-usage))
           (setq mentat--buffer-model-provider "openai-codex")
           (mentat--buffer-handle-event

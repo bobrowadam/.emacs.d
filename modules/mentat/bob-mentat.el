@@ -50,6 +50,24 @@
 (declare-function mentat--register-subagent "mentat" (&rest args))
 (declare-function mentat-refresh-mode-lines "mentat" ())
 (declare-function mentat-footer-mode "mentat-footer" (&optional arg))
+(declare-function mentat-gpu-cards-mode "mentat-gpu-cards" (&optional arg))
+(declare-function gpu-decoration-supported-p "mtlfns.m" (&optional frame))
+(declare-function gpu-enable-for-frame "mtlfns.m" (frame))
+
+(defun bob/mentat-enable-gpu-frame (frame)
+  "Enable card-capable Metal rendering on graphical NS FRAME."
+  (when (and (eq (framep frame) 'ns)
+             (fboundp 'gpu-decoration-supported-p)
+             (not (gpu-decoration-supported-p frame)))
+    (condition-case err
+        (gpu-enable-for-frame frame)
+      (error (message "Mentat GPU rendering unavailable: %s"
+                      (error-message-string err))))))
+
+(defun bob/mentat-enable-gpu-cards ()
+  "Enable quiet GPU cards, retaining normal borders on other backends."
+  (when (fboundp 'gpu-decoration-supported-p)
+    (mentat-gpu-cards-mode 1)))
 
 (defun bob/mentat-enable-footer ()
   "Enable the atomic footer in a Mentat conversation buffer."
@@ -155,9 +173,10 @@ Mentat subagent properties."
 (use-package mentat
   :demand t
   :ensure nil
-  :load-path "~/source/mentat"
+  :load-path "/Users/bob/source/mentat"
   :commands mentat
-  :hook (mentat-buffer-mode . bob/mentat-enable-footer)
+  :hook ((mentat-buffer-mode . bob/mentat-enable-footer)
+         (mentat-buffer-mode . bob/mentat-enable-gpu-cards))
   :custom
   (mentat-show-injected-reminders nil)
   (mentat-tool-default-display-state 'summary)
@@ -176,7 +195,7 @@ Mentat subagent properties."
     "when appropriate. Prefer an existing helper over reimplementing it. "
     "Inspect package documentation before use and declare dependencies with "
     "`require`."))
-  (mentat-default-provider "azure-openai-responses")
+  (mentat-default-provider "azure")
   (mentat-default-model "gpt-6.1-sol")
   (mentat-default-effort "high")
   (mentat-org-skill-global-directory
@@ -227,23 +246,24 @@ Mentat subagent properties."
       :disabled-tools ("grep" "find" "ls"))
      ("basic"
       :directory "~/.pi/agent-basic"
-      :arguments ("--no-context-files" "--no-skills")
+      :arguments ("--no-context-files" "--no-skills"
+                  "--extension" "builtin:codemode")
       :agent-features nil
-      :extensions (codex)
-      :tools ("read" "bash" "edit" "write" "grep"))))
+      :extensions (pi-update observational-memory codex)
+      :tools ("read" "bash" "edit" "write" "grep" "recall" "codemode"))))
   (mentat-compaction-presentation-function
    #'bob/mentat-observational-memory-compaction-presentation)
 
   (mentat-enabled-models
-   '("azure-openai-responses/gpt-6.1-sol"
-     "azure-openai-responses/gpt-6-astra"
+   '("azure/gpt-6.1-sol"
+     "azure/gpt-6-astra"
      "openai-codex/gpt-6.1-sol"
      "openai-codex/gpt-6-astra"))
 
   (mentat-subagent-enabled-models
-   '("azure-openai-responses/gpt-6.1-sol"
-     "azure-openai-responses/gpt-6-astra"
-     "azure-openai-responses/gpt-6-luna"
+   '("azure/gpt-6.1-sol"
+     "azure/gpt-6-astra"
+     "azure/gpt-6-luna"
      "openai-codex/gpt-6.1-sol"
      "openai-codex/gpt-6-astra"
      "openai-codex/gpt-6-luna"))
@@ -264,12 +284,17 @@ Mentat subagent properties."
 
   :config
   (require 'mentat-footer)
+  (add-hook 'after-make-frame-functions #'bob/mentat-enable-gpu-frame)
+  (mapc #'bob/mentat-enable-gpu-frame (frame-list))
   (mentat-reset-extensions)
   ;; Registered only for child sessions.  Main Mentat sessions load this
   ;; internally, so it must not be included in `mentat-enabled-extensions'.
   (mentat-define-extension mentat-emacs
     :source "/Users/bob/source/mentat/pi-extensions/src/mentat-emacs.ts"
     :tools (emacs_eval_elisp emacs_eval_async emacs_elisp_call))
+  ;; Opt basic into notices only; ordinary profiles already load this internally.
+  (mentat-define-extension pi-update
+    :source mentat--pi-update-file)
   (mentat-define-extension codex
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
   (mentat-define-extension worktree-skills
@@ -285,7 +310,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent explorer
       (bob/mentat-load-agent-and-common-instructions "explorer")
     :description "Read-only project investigation"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 4)
@@ -293,7 +318,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent reviewer
       (bob/mentat-load-agent-and-common-instructions "reviewer")
     :description "Review one code change and optionally run read-only validation"
-    :model ("azure-openai-responses/gpt-6-astra" "openai-codex/gpt-6-astra")
+    :model ("azure/gpt-6-astra" "openai-codex/gpt-6-astra")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 8)
@@ -301,7 +326,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent pr-reviewer
       (bob/mentat-load-agent-and-common-instructions "pr-reviewer")
     :description "Review one assigned PR slice using the parallel-review finding format"
-    :model ("azure-openai-responses/gpt-6-astra" "openai-codex/gpt-6-astra")
+    :model ("azure/gpt-6-astra" "openai-codex/gpt-6-astra")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 8)
@@ -309,14 +334,14 @@ Mentat subagent properties."
   (bob/mentat-define-subagent ci-watcher
       (bob/mentat-load-agent-and-common-instructions "ci-watcher")
     :description "Run and monitor project validation without changing files"
-    :model ("azure-openai-responses/gpt-6-luna" "openai-codex/gpt-6-luna")
+    :model ("azure/gpt-6-luna" "openai-codex/gpt-6-luna")
     :thinking low
     :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent worker
       (bob/mentat-load-agent-and-common-instructions "worker")
     :description "Implement one bounded, well-understood delegated change"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking high
     :extensions (mentat-emacs))
 
@@ -324,7 +349,7 @@ Mentat subagent properties."
       (bob/mentat-load-agent-and-common-instructions
        "effect-ts-backend-expert")
     :description "Handle one bounded Effect TypeScript task requiring specialist expertise"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -334,7 +359,7 @@ Mentat subagent properties."
       (bob/mentat-load-agent-and-common-instructions
        "frontend-react-expert")
     :description "Handle one bounded React frontend task requiring specialist expertise"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -343,7 +368,7 @@ Mentat subagent properties."
   (bob/mentat-define-subagent ui-manual-qa
       (bob/mentat-load-agent-and-common-instructions "ui-manual-qa")
     :description "Test UI features in a web browser"
-    :model ("azure-openai-responses/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking medium
     :extensions (mentat-emacs))
 
