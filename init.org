@@ -1093,23 +1093,6 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (global-set-key (kbd "C-c p s") #'bob/pi-send-buffer-context)
     (global-set-key (kbd "C-c p a") #'pi/ask))
 #+end_src
-** ellm
-#+begin_src emacs-lisp
-  (use-package ellm
-    :ensure (:host github :repo "isamert/ellm.el"
-                   :files ("*.el" (:exclude "ellm-test.el")))
-    :config
-    (require 'ellm-tools)
-    (require 'ellm-llm)
-    (require 'ellm-codex)
-    (setq ellm-provider-alist
-          `((codex . (
-                      :provider ,(ellm-make-codex-provider :chat-model "gpt-6-sol")
-                      :models ("gpt-6-sol" "gpt-6-luna" "gpt-6-astra"))))
-          )
-    ;; Set this to not get bombarded by nonfree warnings
-    (setq llm-warn-on-nonfree nil))
-#+end_src
 ** Sema
 #+begin_src elisp
   (use-package sema-mode
@@ -2266,7 +2249,6 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
       :limit 10))
     :init (setq forge-bug-reference-hooks nil))
 #+end_src
-** Pr Reviews
 ** PR Review
 #+begin_src elisp
   (use-package bob-code-review
@@ -2299,15 +2281,6 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
                generic-review-start
                generic-review-add-comment
                generic-review-open))
-  (use-package github-review)
-  (use-package code-review
-    :disabled t
-    :after magit
-    :ensure (:repo "ag91/code-review"  :fetcher github :files ("*.el" "./docs/*"))
-    :bind (:map magit-status-mode-map
-                ("C-c C-p" . code-review-forge-pr-at-point))
-    :custom
-    (code-review-auth-login-marker 'forge))
 #+end_src
 ** Git Time Machine
 #+begin_src elisp
@@ -2459,14 +2432,14 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
 #+end_src
 
 * Auto Completion and Minibuffer actions
-** Compatibility shims
+** COMMENT Compatibility shims
 #+begin_src elisp
-  ;; Vertico 2.8 requires `set-local' via compat 31, but Emacs 31's bundled
-  ;; compat library can be loaded instead of the GNU ELPA compat package.
-  (unless (fboundp 'set-local)
-    (defun set-local (variable value)
-      "Set VARIABLE buffer-locally to VALUE."
-      (set (make-local-variable variable) value)))
+  ;; ;; Vertico 2.8 requires `set-local' via compat 31, but Emacs 31's bundled
+  ;; ;; compat library can be loaded instead of the GNU ELPA compat package.
+  ;; (unless (fboundp 'set-local)
+  ;;   (defun set-local (variable value)
+  ;;     "Set VARIABLE buffer-locally to VALUE."
+  ;;     (set (make-local-variable variable) value)))
 #+end_src
 ** Vertico
 #+begin_src elisp
@@ -2693,10 +2666,7 @@ Colorful semantic highlighting of Common Lisp code
             (browse-current-project "Browse" "B")))
     (unless (project-known-project-roots)
       (message "No project file found, indexing projects")
-      (progn
-        (project-remember-projects-under user-emacs-directory)
-        ;; (project-remember-projects-under (format "~/source/%s/packages/" current-workplace) t)
-        ))
+      (project-remember-projects-under user-emacs-directory))
 
     :bind
     ("C-x p C-m"  . project-dired)
@@ -3780,43 +3750,6 @@ Falls back to `default-directory' when not in a git repo."
     :hook (sql-interactive-mode . (lambda ()
                                     (face-remap-add-relative 'default :family "Monospace")
                                     (toggle-truncate-lines t))))
-#+end_src
-* ejc-sql — JDBC-backed SQL client
-Emacs SQL client backed by Clojure/JDBC. Gives async queries, autocomplete of
-table/column names pulled live from the DB, ElDoc for tables, pretty result
-buffers. Requires =leiningen= on =$PATH= and Java (already installed).
-
-Install once: =brew install leiningen= and drop the Postgres JDBC driver at
-=~/.emacs.d/jdbc/postgresql.jar=.
-
-Local uses hardcoded =postgres/postgres= credentials on =localhost:5432=.
-Remote dev/prod connections ensure AWS SSO is logged in, fetch the database
-password from SSM, start an SSM tunnel, and then connect via per-environment
-local ports: dev uses =localhost:15432= and prod uses =localhost:25432=.
-
-=~/.authinfo.gpg= entries are optional overrides/fallbacks for remote
-connections:
-
-#+begin_example
-  machine bradwell-dev   login bradwell password <pw> port 5432
-  machine bradwell-prod  login bradwell password <pw> port 5432
-#+end_example
-
-The full configuration lives in =modules/bob-ejc-sql.el=.
-#+begin_src elisp
-  (use-package clomacs)
-  (use-package ejc-sql
-    :config
-    (ejc-set-column-width-limit 0))
-
-  (use-package bob-ejc-sql
-    :ensure nil
-    :after ejc-sql
-    :demand t
-    :commands (bob/ejc-open
-               bob/ejc-refresh-connections
-               bob/ejc-connect-dev
-               bob/ejc-connect-prod))
 #+end_src
 
 * SQLite
