@@ -41,14 +41,22 @@
   "Run asynchronous Linear QUERY with VARIABLES and callbacks using API-KEY."
   (let* ((url-request-method "POST")
          (url-request-extra-headers
-          `(("Authorization" . ,api-key)
+          `(("Authorization" . ,(encode-coding-string api-key 'utf-8))
             ("Content-Type" . "application/json")))
          (url-request-data
-          (json-serialize `((query . ,query) (variables . ,variables)))))
-    (url-retrieve mentat-linear-endpoint
-                  (apply-partially #'mentat-linear--handle-response
-                                   success error)
-                  nil t t)))
+          (encode-coding-string
+           (json-serialize `((query . ,query) (variables . ,variables)))
+           'utf-8)))
+    (condition-case err
+        (url-retrieve mentat-linear-endpoint
+                      (apply-partially #'mentat-linear--handle-response
+                                       success error)
+                      nil t t)
+      (error
+       (funcall error
+                (replace-regexp-in-string
+                 (regexp-quote api-key) "[REDACTED]"
+                 (error-message-string err) t t))))))
 
 (defun mentat-linear--deliver-field (field success data)
   "Pass FIELD from DATA to SUCCESS."
