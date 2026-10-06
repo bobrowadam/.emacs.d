@@ -1,0 +1,216 @@
+#+TITLE: Update Pi
+#+DESCRIPTION: Review and update Pi and its extensions while keeping Node, Pi profiles, Mentat dependencies, live Emacs configuration, and running sessions consistent.
+
+Review and update Pi and its configured extensions while preserving credentials,
+session history, memory, and unrelated edits. This skill contains instructions
+only. Reading it does not authorize an update or run any workflow.
+
+* Scope
+
+Treat these as separate operations:
+- Update Pi itself.
+- Update configured extension packages.
+- Upgrade Node.
+- Migrate provider or extension configuration.
+- Align Mentat's workspace dependencies.
+- Activate changes in live Emacs.
+- Reload running conversations.
+- Commit repository changes.
+
+Perform only the requested operations. A compatibility review does not authorize
+an update, migration, reload, or commit.
+
+* Locate Mentat
+
+Locate the Mentat repository from the current project context. If absent, check
+=/Users/bob/source/mentat=. Separately identify the worktree loaded by live Emacs;
+it may differ from the current checkout.
+
+Read the relevant repository instructions and discover required file, process,
+authentication, validation, and session-management tools before using them.
+Resolve repository-relative references below against the identified worktree,
+not the conversation's working directory when those differ.
+
+* Environment and dependencies
+
+** Runtime installation
+
+Mentat resolves =mentat-pi-program= through Emacs's executable search path. A
+terminal and live Emacs can therefore select different installations.
+
+Inspect:
+- Live Emacs resolution of =node=, =pi=, and =corepack=.
+- Pi's installation method and installed version.
+- Node requirements for Pi and relevant extension packages.
+- =fnm= installations and default version.
+- Executable resolution and child environment construction in =mentat-rpc.el=.
+
+Changing the =fnm= default does not update live Emacs's environment. Node
+installations have separate global packages. Preserve existing tools and
+Corepack's =pnpm= shim when changing runtimes.
+
+** Pi profiles
+
+Known profile locations are:
+- Work: =~/.pi/agent/=
+- Private: =~/.pi/agent-private/=
+- Basic: =~/.pi/agent-basic/=
+
+Inspect each affected profile's =auth.json=, =settings.json=, and =models.json=.
+Check project-local =.pi/settings.json= for overrides. Determine the profile
+actually selected by each process; Mentat supplies =PI_CODING_AGENT_DIR=.
+
+Resolve symlinks and deduplicate canonical targets before writing. Do not assume
+profiles are independent or that their sharing remains unchanged.
+
+Inspect credential presence and provider keys without returning credential
+values. Preserve file permissions, links, session history, and memory records.
+
+** Private Mentat configuration
+
+[[file:/Users/bob/.emacs.d/modules/mentat/bob-mentat.el][Private Mentat configuration]] defines profiles, model defaults, model allowlists,
+extension sources, and subagent models. [[file:/Users/bob/.emacs.d/init.org][Emacs initialization]] wires the configuration.
+
+Mentat can pass explicit provider, model, thinking, tool, and extension arguments
+that override Pi settings. Inspect both saved configuration and live Lisp values.
+Inspect =mentat-session.el= and =mentat-profile.el= for startup and profile rules.
+
+Search configuration and source for identifiers affected by breaking changes.
+Distinguish provider identifiers from API identifiers; do not perform blanket
+replacements.
+
+** Mentat source and workspace dependencies
+
+Do not assume the current checkout supplies live Emacs or every child session.
+Identify:
+- Available Git worktrees.
+- Loaded Lisp source locations using =symbol-file=.
+- Bundled extension paths.
+- Explicit private extension paths, including child-session definitions.
+
+Each affected worktree has separate dependency declarations and installed
+packages. Inspect:
+- =pi-extensions/package.json=
+- =pi-extensions/pnpm-lock.yaml=
+- =pi-extensions/pnpm-workspace.yaml=
+
+Global Pi updates do not change workspace dependency pins. Preserve the declared
+Effect, TypeScript, and patched compiler versions unless their update is
+separately required and approved.
+
+** Extension selection and resolution
+
+Distinguish three sets:
+1. Packages configured in Pi.
+2. Extensions selected by Mentat.
+3. Extension sources actually loaded by a running process.
+
+Mentat disables automatic extension discovery and supplies explicit sources.
+Profile overrides and package entry-point filters can further change selection.
+
+Inspect private registrations, =mentat-extensions.el=, and extension construction
+in =mentat-session.el=. Use runtime command metadata or loader results to confirm
+resolved paths. Package references can resolve to temporary installation
+directories; do not assume the user-level installation is the loaded copy.
+
+Use the selected profile's package configuration to locate installed Git and npm
+packages. Private extension registrations may point into =~/.pi/agent/extensions/=;
+bundled sources normally live under the supplying worktree's =pi-extensions/src/=.
+Confirm paths before reading them.
+
+Audit selected extensions for affected Pi APIs and lifecycle behavior, especially
+observational memory, private provider integrations, and Mentat's bundled
+extensions. Use the installed Pi package's documentation and declarations as the
+API reference.
+
+** Transport and persistence
+
+Mentat depends on Pi RPC and on =emacsclient= access to the configured Emacs server.
+Inspect =mentat-rpc.el= and the relevant Emacs extension for endpoint and transport
+configuration.
+
+Classify transport failures separately from upgrade incompatibilities. Do not
+restart Emacs or retry potentially state-changing evaluations without evidence
+that supports doing so.
+
+Observational memory and Hindsight are separate systems. Check their
+configuration, authentication requirements, persistence, and lifecycle
+independently when a release affects them.
+
+* Procedure
+
+** Establish the baseline
+
+- Record relevant executable, package, and Node versions.
+- Identify selected profiles, loaded worktrees, and resolved extensions.
+- Inspect Git status and preserve unrelated edits.
+- Identify running sessions without reloading them.
+
+** Review compatibility
+
+Read the current official changelog across every intervening release and the
+installed package documentation relevant to the change. Start with the official
+[[https://github.com/earendil-works/pi/blob/main/packages/coding-agent/CHANGELOG.md][Pi changelog]].
+
+Check:
+- Runtime requirements.
+- CLI and RPC changes.
+- Provider, model, and authentication changes.
+- Extension API and lifecycle changes.
+- Configuration and persistence formats.
+
+Separate upgrade regressions from pre-existing defects. Report blockers before
+applying changes outside the agreed scope.
+
+** Apply the approved update
+
+Confirm the installed CLI's update semantics. Pi provides separate self and
+extension updates:
+- =pi update=
+- =pi update --extensions=
+- =pi update --all=
+
+Do not infer the installed version from command success alone. Verify it
+independently. Do not change installation methods merely to perform an update.
+
+Apply required configuration and workspace changes without modifying Pi core.
+Use credential-aware helpers for authenticated operations.
+
+** Verify affected boundaries
+
+Follow =.mentat/skills/mentat-checks.org= in each affected worktree. Run checks
+after the final relevant edit; do not repeat passing suites without a reason.
+
+Distinguish:
+- Compilation and typechecking.
+- Extension registration.
+- Fresh no-model startup.
+- Exercised provider and extension workflows.
+
+For memory API or persistence changes, use isolated synthetic tests for
+observation, reflection, compaction, reopening, and recall. Isolate profile and
+resource discovery as well as sessions and model calls. Do not use live memory
+as test data.
+
+Startup hooks can perform network requests or other side effects. Load only the
+sources needed for a disposable smoke test. Obtain authorization for session
+operations and provider requests that the update request does not cover.
+
+** Activate and finish
+
+Reevaluate approved private configuration changes and verify live values. Reload
+Mentat code from the intended worktree when required. When reloading Emacs
+initialization, use =bob/compile-and-load-init-file= rather than editing generated
+configuration.
+
+Existing Pi processes retain loaded code and extension state. Reload only
+explicitly authorized idle conversations through the session-management skill.
+
+Before committing, wait for all requested reviews to finish and verify the
+staged scope. Commit only with explicit approval.
+
+Report installed versions, configuration changes, validation results, and
+activation state. State separately which conversations were reloaded.
+
+Complete the update only when the executable, profiles, Mentat dependencies,
+loaded configuration, and requested sessions are consistent.
