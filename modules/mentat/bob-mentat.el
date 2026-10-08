@@ -234,6 +234,13 @@ Mentat subagent properties."
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
+      :default-provider "openai-codex"
+      :default-model "gpt-6.1-sol"
+      :enabled-models ("openai-codex/gpt-6.1-sol"
+                       "openai-codex/gpt-6-astra")
+      :subagent-enabled-models ("openai-codex/gpt-6.1-sol"
+                                "openai-codex/gpt-6-astra"
+                                "openai-codex/gpt-6-luna")
       :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
       :tools ("emacs_eval_elisp"
               "emacs_eval_async"
