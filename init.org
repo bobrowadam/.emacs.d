@@ -2853,10 +2853,16 @@ LSP/DAP servers manager
 
     (add-to-list 'eglot-server-programs '((python-ts-mode) . ("pyright-langserver" "--stdio")))
 
-    ;; Pyright's watched-file registrations cause problems for python-ts-mode.
+    ;; Every directory Eglot watches holds an Emacs file descriptor on macOS,
+    ;; and Emacs fails once it has 1024 open.  Servers register their watchers
+    ;; separately, so a large project needs several times its directory count.
+    ;; The TypeScript server and Pyright watch files in their own processes
+    ;; when Eglot doesn't offer to, so stop Eglot from offering.
     (cl-defmethod eglot-client-capabilities :around ((server eglot-lsp-server))
       (let ((capabilities (cl-call-next-method)))
-        (when (memq 'python-ts-mode (eglot--major-modes server))
+        (when (seq-intersection '(js-mode js2-mode js-ts-mode typescript-ts-mode
+                                  tsx-ts-mode python-ts-mode)
+                                (eglot--major-modes server))
           (setf (plist-get (plist-get (plist-get capabilities :workspace)
                                       :didChangeWatchedFiles)
                            :dynamicRegistration)
