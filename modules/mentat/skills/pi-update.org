@@ -1,24 +1,33 @@
 #+TITLE: Update Pi
-#+DESCRIPTION: Review and update Pi and its extensions while keeping Node, Pi profiles, Mentat dependencies, live Emacs configuration, and running sessions consistent.
+#+DESCRIPTION: Update the Pi CLI and Mentat together, align Pi dependencies, and verify compatibility while preserving credentials, history, memory, and unrelated edits.
 
-Review and update Pi and its configured extensions while preserving credentials,
-session history, memory, and unrelated edits. This skill contains instructions
+Update Pi and Mentat as one task while preserving credentials, session history,
+memory, and unrelated edits. This skill contains instructions
 only. Reading it does not authorize an update or run any workflow.
 
 * Scope
 
-Treat these as separate operations:
-- Update Pi itself.
-- Update configured extension packages.
-- Upgrade Node.
-- Migrate provider or extension configuration.
-- Align Mentat's workspace dependencies.
-- Activate changes in live Emacs.
-- Reload running conversations.
-- Commit repository changes.
+A request to update Pi includes these steps as one task:
+- Update the installed Pi CLI using its existing installation method.
+- Align the Pi dependency versions and lockfiles in the Mentat worktrees that
+  supply live Emacs and its child sessions.
+- Make release-required Mentat source or configuration changes.
+- Run compatibility checks and activate changed Mentat Lisp when required.
 
-Perform only the requested operations. A compatibility review does not authorize
-an update, migration, reload, or commit.
+Do not stop after updating the CLI while Mentat still targets an older Pi release.
+Edit =mentat.el= or other Lisp only when compatibility requires it; dependency
+alignment alone normally changes the extension manifest and lockfile.
+
+These operations still need separate authorization:
+- Update unrelated configured extension packages.
+- Upgrade Node or unrelated Effect, TypeScript, or compiler dependencies.
+- Change the installation method.
+- Reload running conversations or interrupt their work.
+- Commit or push repository changes.
+
+Inspect Pi dependencies in selected private extension workspaces too. Report
+version drift and any compatibility work they need before extending the update
+to those repositories. A review-only request does not authorize changes.
 
 * Locate Mentat
 
@@ -26,8 +35,9 @@ Locate the Mentat repository from the current project context. If absent, check
 =/Users/bob/source/mentat=. Separately identify the worktree loaded by live Emacs;
 it may differ from the current checkout.
 
-Read the relevant repository instructions and discover required file, process,
-authentication, validation, and session-management tools before using them.
+Read the relevant repository instructions. Use directly exposed routine Emacs
+tools without discovery. For specialized work, read the applicable skill and
+use function discovery for exact registered-helper contracts.
 Resolve repository-relative references below against the identified worktree,
 not the conversation's working directory when those differ.
 
@@ -94,9 +104,11 @@ packages. Inspect:
 - =pi-extensions/pnpm-lock.yaml=
 - =pi-extensions/pnpm-workspace.yaml=
 
-Global Pi updates do not change workspace dependency pins. Preserve the declared
-Effect, TypeScript, and patched compiler versions unless their update is
-separately required and approved.
+Global Pi updates do not change workspace dependency pins. Update the declared
+Pi packages to the target CLI release, regenerate each affected lockfile with
+its existing package manager, and install the dependencies. Review release-age
+policy exceptions and limit any new exception to the target Pi release. Preserve
+Effect, TypeScript, and patched compiler versions unless separately approved.
 
 ** Extension selection and resolution
 
@@ -173,7 +185,9 @@ extension updates:
 Do not infer the installed version from command success alone. Verify it
 independently. Do not change installation methods merely to perform an update.
 
-Apply required configuration and workspace changes without modifying Pi core.
+Update Mentat's Pi dependencies and lockfiles as part of this task, even when
+the release needs no Lisp changes. Apply release-required source and configuration
+changes without modifying Pi core. Review dependency diffs for unrelated churn.
 Use credential-aware helpers for authenticated operations.
 
 ** Verify affected boundaries
@@ -209,8 +223,9 @@ explicitly authorized idle conversations through the session-management skill.
 Before committing, wait for all requested reviews to finish and verify the
 staged scope. Commit only with explicit approval.
 
-Report installed versions, configuration changes, validation results, and
-activation state. State separately which conversations were reloaded.
+Report the installed CLI version, Mentat's declared and installed Pi versions,
+source or configuration changes, validation results, and activation state. State
+separately which conversations were reloaded and which retain their old runtime.
 
 Complete the update only when the executable, profiles, Mentat dependencies,
 loaded configuration, and requested sessions are consistent.
