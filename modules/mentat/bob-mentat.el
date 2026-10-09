@@ -184,7 +184,7 @@ Mentat subagent properties."
   (mentat-pi-directory (expand-file-name "~/.pi/agent"))
   (mentat-diagnostic-capture-enabled t)
   (mentat-enabled-extensions
-   '(codex worktree-skills observational-memory))
+   '(codex worktree-skills observational-memory claude-bridge))
   (mentat-pi-disabled-tools nil)
   (mentat-emacs-tool-instructions
    (concat
@@ -197,7 +197,7 @@ Mentat subagent properties."
     "`require`."))
   (mentat-default-provider "azure")
   (mentat-default-model "gpt-6.1-sol")
-  (mentat-default-effort "high")
+  (mentat-default-effort "medium")
   (mentat-org-skill-global-directory
    (expand-file-name "modules/mentat/skills/" user-emacs-directory))
   (mentat-supervisor-instructions
@@ -237,7 +237,8 @@ Mentat subagent properties."
       :default-provider "openai-codex"
       :default-model "gpt-6.1-sol"
       :enabled-models ("openai-codex/gpt-6.1-sol"
-                       "openai-codex/gpt-6-astra")
+                       "openai-codex/gpt-6-astra"
+                       "claude-bridge/claude-opus-5-5")
       :subagent-enabled-models ("openai-codex/gpt-6.1-sol"
                                 "openai-codex/gpt-6-astra"
                                 "openai-codex/gpt-6-luna")
@@ -256,7 +257,7 @@ Mentat subagent properties."
       :arguments ("--no-context-files" "--no-skills"
                   "--extension" "builtin:codemode")
       :agent-features nil
-      :extensions (pi-update observational-memory codex)
+      :extensions (pi-update observational-memory codex claude-bridge)
       :tools ("read" "bash" "edit" "write" "grep" "recall" "codemode"))))
   (mentat-compaction-presentation-function
    #'bob/mentat-observational-memory-compaction-presentation)
@@ -265,7 +266,8 @@ Mentat subagent properties."
    '("azure/gpt-6.1-sol"
      "azure/gpt-6-astra"
      "openai-codex/gpt-6.1-sol"
-     "openai-codex/gpt-6-astra"))
+     "openai-codex/gpt-6-astra"
+     "claude-bridge/claude-opus-5-5"))
 
   (mentat-subagent-enabled-models
    '("azure/gpt-6.1-sol"
@@ -308,6 +310,8 @@ Mentat subagent properties."
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
     :source "npm:pi-observational-memory")
+  (mentat-define-extension claude-bridge
+    :source "npm:pi-claude-bridge@0.9.2")
   (mentat-define-extension web-search
     :source "/Users/bob/.pi/agent/extensions/src/web-search/index.ts"
     :tools (exa_search jina_reader))
