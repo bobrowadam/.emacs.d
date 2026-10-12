@@ -1,0 +1,80 @@
+{
+  "creation": {
+    "title": "Create and deliver",
+    "path": "services/users/src/users/app-users.service.ts",
+    "revision": "3eb61633b3a9d5d814c75d627ddc42b285f45fde",
+    "start": 795,
+    "end": 896,
+    "marks": [
+      [
+        863,
+        874
+      ],
+      [
+        877,
+        896
+      ]
+    ],
+    "code": "    const now = new Date();\n    const token = this.generateInvitationToken();\n    const expiresAt = this.invitationExpiresAt();\n    const organization = await this.dataSource.transaction(async (manager) => {\n      const organizationsRepository = manager.getRepository(OrganizationEntity);\n      const membershipsRepository = manager.getRepository(\n        OrganizationMembershipEntity,\n      );\n      const invitationsRepository = manager.getRepository(\n        OrganizationInvitationEntity,\n      );\n      const usersRepository = manager.getRepository(UserEntity);\n      const lockedOrganization = await organizationsRepository.findOne({\n        where: { id: organizationId },\n        lock: { mode: \"pessimistic_write\" },\n      });\n      if (!lockedOrganization) {\n        throw new NotFoundException(\"Organization not found\");\n      }\n\n      const existingUser = await usersRepository.findOneBy({ email });\n      const existingMember = existingUser\n        ? await membershipsRepository.findOneBy({\n            organizationId,\n            userId: existingUser.id,\n            status: OrganizationMembershipStatus.ACTIVE,\n          })\n        : null;\n      if (existingMember) {\n        throw new ConflictException(\"User is already an organization member\");\n      }\n\n      await this.expirePendingInvitations(\n        invitationsRepository,\n        organizationId,\n        now,\n      );\n      const activeMembershipCount = await membershipsRepository.countBy({\n        organizationId,\n        status: OrganizationMembershipStatus.ACTIVE,\n      });\n      const pendingInvitations = await invitationsRepository.find({\n        where: {\n          organizationId,\n          status: OrganizationInvitationStatus.PENDING,\n          expiresAt: MoreThan(now),\n        },\n      });\n      const existingPending = pendingInvitations.find(\n        (invitation) => invitation.email.toLowerCase() === email,\n      );\n      const reservedInvitationEmails = new Set(\n        pendingInvitations.map((invitation) => invitation.email.toLowerCase()),\n      );\n      if (\n        !existingPending &&\n        activeMembershipCount + reservedInvitationEmails.size >=\n          ORGANIZATION_SEAT_LIMIT\n      ) {\n        throw new ConflictException(\"Organization seat limit reached\");\n      }\n\n      if (existingPending) {\n        await invitationsRepository.update(existingPending.id, {\n          status: OrganizationInvitationStatus.REVOKED,\n          revokedAt: now,\n        });\n      }\n      await invitationsRepository.save({\n        organizationId,\n        email,\n        invitedByUserId: appUser.id,\n        status: OrganizationInvitationStatus.PENDING,\n        role: dto.role as OrganizationRole,\n        tokenHash: this.hashInvitationToken(token),\n        expiresAt,\n        acceptedAt: null,\n        revokedAt: null,\n      });\n      return lockedOrganization;\n    });\n\n    const inviteUrl = this.organizationInvitationUrl(token);\n    let deliveryFailed = false;\n    if (dto.sendEmail !== false) {\n      try {\n        await this.sendOrganizationInvitation({\n          appUser,\n          organization,\n          email,\n          token,\n          expiresAt,\n        });\n      } catch {\n        deliveryFailed = true;\n      }\n    }\n\n    return {\n      organization: await this.getBackofficeOrganization(organizationId),\n      failedInvitations: deliveryFailed ? [email] : [],\n      invitationLinks: [{ email, inviteUrl, expiresAt }],"
+  },
+  "acceptance": {
+    "title": "Validate acceptance",
+    "path": "services/users/src/users/app-users.service.ts",
+    "revision": "3eb61633b3a9d5d814c75d627ddc42b285f45fde",
+    "start": 1095,
+    "end": 1178,
+    "marks": [
+      [
+        1116,
+        1152
+      ]
+    ],
+    "code": "  async acceptOrganizationInvitation(\n    user: CognitoUser,\n    dto: AcceptOrganizationInvitationDto,\n  ): Promise<CurrentOrganizationDto> {\n    const token = dto.token.trim();\n    if (!token) {\n      throw new UnprocessableEntityException(\"Invitation token is required\");\n    }\n    const email = this.normalizeEmail(user.email);\n    if (!email) {\n      throw new UnprocessableEntityException(\n        \"Authenticated user is missing email\",\n      );\n    }\n    await this.validateInvitationForEmail(token, email);\n\n    const appUser = await this.syncFromCognitoClaimsInternal(user, {\n      requireAppAccess: false,\n      ensureDefaultOrganization: false,\n    });\n    const acceptedOrganizationId = await retryPostgresDeadlockOnce(() =>\n      this.dataSource.transaction(async (manager) => {\n        const invitationsRepository = manager.getRepository(\n          OrganizationInvitationEntity,\n        );\n        const membershipsRepository = manager.getRepository(\n          OrganizationMembershipEntity,\n        );\n        const organizationsRepository =\n          manager.getRepository(OrganizationEntity);\n        const invitation = await invitationsRepository.findOne({\n          where: {\n            tokenHash: this.hashInvitationToken(token),\n            status: OrganizationInvitationStatus.PENDING,\n          },\n          lock: { mode: \"pessimistic_write\" },\n        });\n        if (!invitation) {\n          throw new UnprocessableEntityException(\n            \"Invitation is invalid or has already been used\",\n          );\n        }\n\n        const now = new Date();\n        if (invitation.expiresAt <= now) {\n          await invitationsRepository.update(invitation.id, {\n            status: OrganizationInvitationStatus.EXPIRED,\n          });\n          throw new UnprocessableEntityException(\"Invitation has expired\");\n        }\n\n        if (invitation.email.toLowerCase() !== appUser.email.toLowerCase()) {\n          throw new ForbiddenException(\n            \"Invitation belongs to a different email address\",\n          );\n        }\n\n        const organization = await organizationsRepository.findOne({\n          where: { id: invitation.organizationId },\n          lock: { mode: \"pessimistic_write\" },\n        });\n        if (!organization) {\n          throw new UnprocessableEntityException(\n            \"Invitation organization is missing\",\n          );\n        }\n\n        const activeMembership = await membershipsRepository.findOne({\n          where: {\n            userId: appUser.id,\n            status: OrganizationMembershipStatus.ACTIVE,\n          },\n          lock: { mode: \"pessimistic_write\" },\n        });\n        if (\n          activeMembership &&\n          activeMembership.organizationId === invitation.organizationId\n        ) {\n          if (\n            invitation.role === OrganizationRole.OWNER &&\n            activeMembership.role !== OrganizationRole.OWNER\n          ) {\n            await membershipsRepository.update(activeMembership.id, {\n              role: OrganizationRole.OWNER,"
+  },
+  "customerio": {
+    "title": "Send through Customer.io",
+    "path": "services/users/src/users/app-users.service.ts",
+    "revision": "3eb61633b3a9d5d814c75d627ddc42b285f45fde",
+    "start": 2027,
+    "end": 2050,
+    "marks": [
+      [
+        2034,
+        2041
+      ]
+    ],
+    "code": "  private async sendOrganizationInvitation(params: {\n    appUser: CurrentUserDto;\n    organization: Pick<OrganizationEntity, \"id\" | \"name\">;\n    email: string;\n    token: string;\n    expiresAt: Date;\n  }): Promise<void> {\n    await this.customerio.sendOrganizationInvitation({\n      email: params.email,\n      organizationName: params.organization.name,\n      inviteUrl: this.organizationInvitationUrl(params.token),\n      invitedByEmail: params.appUser.email,\n      invitedByName: params.appUser.name,\n      expiresAt: params.expiresAt,\n    });\n    this.customerio.track(\n      params.appUser.id,\n      CustomerioEvent.OrganizationInvitationSent,\n      {\n        organization_id: params.organization.id,\n        invited_email: params.email,\n      },\n    );\n  }"
+  },
+  "default": {
+    "title": "Default-on email",
+    "path": "client/src/pages/BackofficePage/OrganizationsView.tsx",
+    "revision": "3eb61633b3a9d5d814c75d627ddc42b285f45fde",
+    "start": 438,
+    "end": 455,
+    "marks": [
+      [
+        448,
+        448
+      ]
+    ],
+    "code": "  onLinksChange,\n  organization,\n  onChange,\n  warning,\n  onWarning,\n  onSelectUser,\n  onBack,\n}: OrganizationDetailViewProps) {\n  const [email, setEmail] = useState(\"\");\n  const [role, setRole] = useState<OrganizationRole>(\"member\");\n  const [sendEmail, setSendEmail] = useState(true);\n  const [busy, setBusy] = useState(false);\n  const [error, setError] = useState<string | null>(null);\n\n  const act = async (\n    operation: () => Promise<OrganizationDetail | InvitationMutationResponse>,\n  ) => {\n    setBusy(true);"
+  },
+  "signin": {
+    "title": "Sign in and join",
+    "path": "client/src/pages/OrganizationInvitationAcceptPage/OrganizationInvitationAcceptPage.tsx",
+    "revision": "3eb61633b3a9d5d814c75d627ddc42b285f45fde",
+    "start": 24,
+    "end": 88,
+    "marks": [
+      [
+        37,
+        50
+      ],
+      [
+        54,
+        70
+      ]
+    ],
+    "code": "  useEffect(() => {\n    if (hasSubmittedRef.current) return;\n    hasSubmittedRef.current = true;\n\n    const token = searchParams.get(\"token\")?.trim();\n    if (!token) {\n      setState(\"error\");\n      setMessage(\"This invitation link is missing a token.\");\n      return;\n    }\n\n    const redirectToLogin = async () => {\n      const authMode =\n        await usersApiService.getOrganizationInvitationAuthMode(token);\n      persistPostAuthRedirect(\n        `${window.location.pathname}${window.location.search}`,\n      );\n      navigate(\n        authMode === \"signup\"\n          ? \"/login?resume=organization-invitation&intent=signup\"\n          : \"/login?resume=organization-invitation\",\n        { replace: true },\n      );\n    };\n\n    const acceptInvitation = async () => {\n      try {\n        const session = await fetchAuthSession();\n        if (!session.tokens?.idToken) {\n          await redirectToLogin();\n          return;\n        }\n\n        const organization =\n          await usersApiService.acceptOrganizationInvitation(token);\n        consumePostAuthRedirect();\n        await fetchAuthSession({ forceRefresh: true });\n        await loadUser();\n        setState(\"success\");\n        setMessage(`You've joined ${organization.name}.`);\n      } catch (error) {\n        if (\n          error instanceof Error &&\n          error.name === \"UserUnAuthenticatedException\"\n        ) {\n          await redirectToLogin();\n          return;\n        }\n        setState(\"error\");\n        setMessage(\n          error instanceof Error\n            ? error.message\n            : \"Failed to accept invitation.\",\n        );\n        captureClientError(\"organization_invitation.accept_failed\", error, {\n          endpoint: \"/api/users/organization/invitations/accept\",\n        });\n      }\n    };\n\n    void acceptInvitation();\n  }, [loadUser, navigate, searchParams]);\n\n  return (\n    <Center minH=\"100vh\" p=\"var(--size-xl)\" bg=\"primary.0\">"
+  }
+}
