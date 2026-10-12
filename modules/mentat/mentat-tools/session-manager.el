@@ -63,17 +63,23 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
                    :ready-handler
                    (lambda (ready-buffer state)
                      (setq buffer ready-buffer)
-                     (if (and handoff (not (string-blank-p handoff)))
-                         (with-current-buffer ready-buffer
-                           (if-let* ((request-id (mentat-submit handoff)))
-                               (succeed
-                                (mentat-session-manager--result
-                                 ready-buffer state root request-id))
-                             (fail
-                              "Mentat session started but the handoff could not be submitted")))
+                     (cond
+                      ;; A cancelled start must not submit its handoff.
+                      (settled (dispose))
+                      ((and handoff (not (string-blank-p handoff)))
+                       (condition-case err
+                           (with-current-buffer ready-buffer
+                             (if-let* ((request-id (mentat-submit handoff)))
+                                 (succeed
+                                  (mentat-session-manager--result
+                                   ready-buffer state root request-id))
+                               (fail
+                                "Mentat session started but the handoff could not be submitted")))
+                         (error (fail (error-message-string err)))))
+                      (t
                        (succeed
                         (mentat-session-manager--result
-                         ready-buffer state root nil))))
+                         ready-buffer state root nil)))))
                    :error-handler
                    (lambda (failed-buffer response)
                      (setq buffer failed-buffer)
@@ -83,7 +89,8 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
            (fail (error-message-string err))))))))
 
 (defun mentat-session-manager--reload-starter (buffer)
-  "Return a callback starter that reloads the Mentat session in BUFFER."
+  "Return a callback starter that reloads the Mentat session in BUFFER.
+Cancellation stops waiting but does not stop the reload."
   (lambda (resolve reject on-cancel)
     (let (settled)
       (cl-labels
@@ -130,11 +137,12 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
   (let* ((session-id (mentat--registry-entry-session-id entry))
          (view (mentat--open-live-view session-id))
          (buffer (and view (mentat--buffer-buffer view))))
-    (unless (mentat--registry-forget session-id)
-      (user-error "Mentat session is no longer registered: %s" session-id))
+    ;; Close the buffer first, so a refused close leaves the session registered.
     (when (buffer-live-p buffer)
       (unless (kill-buffer buffer)
-        (user-error "Session registration was removed but its buffer refused to close")))
+        (user-error "Session buffer refused to close")))
+    (unless (mentat--registry-forget session-id)
+      (user-error "Mentat session is no longer registered: %s" session-id))
     `((session-id . ,session-id) (status . "killed")
       (pi-transcript-preserved . t))))
 
@@ -167,12 +175,12 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
   "Return a callback starter searching ENTRIES for QUERY, bounded by LIMIT.
 UNAVAILABLE counts registered sessions without a readable transcript."
   (lambda (resolve reject on-cancel)
-    (let ((output "") (finished nil) process stderr)
+    (let ((output "") (errors "") (finished nil) process stderr)
       (cl-labels
           ((cleanup ()
-             (when (and process (process-live-p process))
-               (delete-process process))
-             (when (buffer-live-p stderr) (kill-buffer stderr)))
+             (dolist (child (list process stderr))
+               (when (and child (process-live-p child))
+                 (delete-process child))))
            (fail (reason)
              (unless finished
                (setq finished t)
@@ -211,12 +219,9 @@ UNAVAILABLE counts registered sessions without a readable transcript."
                (if (memq (process-exit-status proc) '(0 1))
                    (succeed)
                  (fail (format "Session search failed: %s"
-                               (if (buffer-live-p stderr)
-                                   (string-trim
-                                    (with-current-buffer stderr
-                                      (buffer-substring-no-properties
-                                       (point-min) (min (point-max) 1024))))
-                                 (process-exit-status proc))))))))
+                               (if (string-blank-p errors)
+                                   (process-exit-status proc)
+                                 (string-trim errors))))))))
         (funcall on-cancel
                  (lambda ()
                    (unless finished
@@ -225,15 +230,26 @@ UNAVAILABLE counts registered sessions without a readable transcript."
         (condition-case err
             (if (null entries)
                 (succeed)
-              (setq stderr (generate-new-buffer " *mentat-session-search-error*"))
+              (setq stderr
+                    (make-pipe-process
+                     :name "mentat-session-search-error" :buffer nil :noquery t
+                     :filter (lambda (_ chunk)
+                               (when (< (length errors) 1024)
+                                 (setq errors (substring (concat errors chunk)
+                                                         0 (min 1024 (+ (length errors)
+                                                                        (length chunk)))))))))
               (setq process
                     (make-process
                      :name "mentat-session-search" :buffer nil :stderr stderr
+                     ;; Transcripts are JSON, so quotes, backslashes, and
+                     ;; newlines in message text appear escaped.
                      :command (append
                                (list (or (executable-find "rg")
                                          (user-error "ripgrep is required"))
                                      "--files-with-matches" "--null" "--fixed-strings"
-                                     "--ignore-case" "--" query)
+                                     "--ignore-case" "-e" query
+                                     "-e" (substring (json-encode-string query) 1 -1)
+                                     "--")
                                (mapcar #'mentat--registry-entry-session-file entries))
                      :connection-type 'pipe :coding '(utf-8-unix . utf-8-unix)
                      :noquery t :filter #'filter-output :sentinel #'on-exit)))
@@ -294,7 +310,11 @@ UNAVAILABLE counts registered sessions without a readable transcript."
                      (mentat-pi-profiles (and profile (list profile))))
                 (mentat--open-entry-view
                  entry
-                 (lambda (view _state) (send view))
+                 (lambda (view _state)
+                   ;; A cancelled send closes the session it resumed.
+                   (if settled
+                       (kill-buffer (mentat--buffer-buffer view))
+                     (send view)))
                  (lambda (_view response)
                    (fail (or (alist-get 'error response)
                              "Mentat session resume failed"))))))

@@ -180,9 +180,41 @@ cleanup metadata or FAILURE with error text.  Return a cancellation function."
                (progn (funcall remove-function target) (removed))
              (run source (list "worktree" "remove" "--" target)
                   '(0) (lambda (_output _status) (removed)))))
+         (unpreserved ()
+           (fail (format (concat "Branch %s has commits that no remaining remote "
+                                 "branch contains and that origin's default branch "
+                                 "lacks; push or merge it first")
+                         branch)))
+         ;; Deleting the local branch must not lose its commits.  Accept a
+         ;; remote branch that keeps them, or a default branch that already
+         ;; has their changes, as after a squash merge.
+         (check-preserved ()
+           (if branch
+               (run source (list "for-each-ref" "--format=%(refname)" "--contains"
+                                 (concat "refs/heads/" branch) "refs/remotes/")
+                    '(0) #'remote-refs-listed)
+             (remove-worktree)))
+         (remote-refs-listed (output _status)
+           (if (seq-remove (lambda (ref)
+                             (and delete-remote
+                                  (equal ref (concat "refs/remotes/origin/" branch))))
+                           (split-string output "\n" t))
+               (remove-worktree)
+             (run source (list "merge-tree" "--write-tree" "refs/remotes/origin/HEAD"
+                               (concat "refs/heads/" branch))
+                  '(0 1) #'merged)))
+         (merged (output status)
+           (if (/= status 0)
+               (unpreserved)
+             (let ((tree (car (split-string output "\n" t))))
+               (run source '("rev-parse" "refs/remotes/origin/HEAD^{tree}") '(0)
+                    (lambda (default _status)
+                      (if (equal (string-trim default) tree)
+                          (remove-worktree)
+                        (unpreserved)))))))
          (apply-remote-policy ()
            (cond
-            ((not remote-exists) (remove-worktree))
+            ((not remote-exists) (check-preserved))
             ((eq remote-policy 'check)
              (succeed `((directory . ,target) (branch . ,branch)
                         (remote-branch-existed . t)
@@ -192,7 +224,7 @@ cleanup metadata or FAILURE with error text.  Return a cancellation function."
                    (if (memq remote-policy '(delete keep))
                        (eq remote-policy 'delete)
                      (funcall remote-policy branch)))
-             (remove-worktree))))
+             (check-preserved))))
          (remote-checked (_output status)
            (setq remote-exists (zerop status))
            (apply-remote-policy))

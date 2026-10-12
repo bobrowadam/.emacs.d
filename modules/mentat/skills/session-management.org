@@ -6,6 +6,20 @@
 
 Use these operations for native Mentat sessions that Bob asks you to create or control. Creating, reloading, or sending a prompt changes session state and can trigger further tool use. Ask Bob before the exact operation unless his request already authorizes it. Listing and searching sessions are read-only. Search matches literal text in persisted transcripts of registered sessions, including tool records. A failed or cancelled state-changing operation may have completed partially; inspect session state before retrying.
 
+* Create sessions without changing the active view
+
+Use =mentat-session-create= to create a session in the background. Supply the
+existing root directory, an optional name, and an optional initial handoff.
+Native startup creates an undisplayed conversation; no extra flag is needed.
+Return the session ID and buffer name so Bob can open it himself. When focus
+preservation matters, check whether the new buffer is displayed or selected
+after the handoff. If it is, report that result rather than claiming the active
+view was preserved. Do not restore or rearrange Bob's windows without approval.
+
+=mentat-session-send= also resumes closed sessions without displaying them.
+Do not follow either operation with a buffer-display or focus command unless
+Bob explicitly asks to see the session.
+
 * Read and search saved history
 
 =mentat-session-search= finds sessions containing literal text, as before.
@@ -60,7 +74,7 @@ NAME optionally labels the persisted Pi session.  HANDOFF, when nonblank, is
 submitted as the first prompt after Pi reports ready.  The new conversation
 buffer is created without displaying it.  Resolve with the session ID, buffer,
 root directory, and optional handoff request ID once startup succeeds."
-  (:execution async)
+  (:execution async :preview (handoff "handoff.md"))
   (unless (and (stringp directory) (file-directory-p directory))
     (user-error "Mentat session directory does not exist: %S" directory))
   (when (and name
@@ -76,7 +90,7 @@ root directory, and optional handoff request ID once startup succeeds."
 Restart the session's Pi process so changes to Pi extensions take effect, then
 resolve after Mentat restores the persisted conversation history.  BUFFER must
 name a live Mentat conversation other than a session currently executing a
-prompt."
+prompt.  Cancellation stops waiting but does not stop the reload."
   (:execution async)
   (unless (stringp buffer)
     (user-error "Mentat session buffer must be a string"))
@@ -188,7 +202,7 @@ Keep the underlying Pi transcript. Refuse displayed or busy sessions."
 Reuse a live session or resume a closed session without displaying it.  Reject
 busy sessions instead of steering or queueing.  Resolve after Pi accepts the
 prompt with the session ID, request ID, buffer name, and resume status."
-  (:execution async)
+  (:execution async :preview (prompt "prompt.md"))
   (unless (and (stringp session-id) (not (string-blank-p session-id)))
     (user-error "Mentat session ID must be a nonblank string"))
   (unless (and (stringp prompt) (not (string-blank-p prompt)))

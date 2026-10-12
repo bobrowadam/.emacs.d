@@ -37,9 +37,15 @@
         (error (funcall error (error-message-string err))))
     (kill-buffer (current-buffer))))
 
+(defvar mentat-linear--request-tracker nil
+  "Function called with each new Linear request buffer, or nil.
+`mentat-linear--starter' binds it, and each request passes it on to its
+callbacks, so cancellation also reaches requests made by a callback.")
+
 (defun mentat-linear--request (api-key query variables success error)
   "Run asynchronous Linear QUERY with VARIABLES and callbacks using API-KEY."
-  (let* ((url-request-method "POST")
+  (let* ((tracker mentat-linear--request-tracker)
+         (url-request-method "POST")
          (url-request-extra-headers
           `(("Authorization" . ,(encode-coding-string api-key 'utf-8))
             ("Content-Type" . "application/json")))
@@ -48,10 +54,15 @@
            (json-serialize `((query . ,query) (variables . ,variables)))
            'utf-8)))
     (condition-case err
-        (url-retrieve mentat-linear-endpoint
-                      (apply-partially #'mentat-linear--handle-response
-                                       success error)
-                      nil t t)
+        (let ((buffer
+               (url-retrieve mentat-linear-endpoint
+                             (lambda (status)
+                               (let ((mentat-linear--request-tracker tracker))
+                                 (mentat-linear--handle-response
+                                  success error status)))
+                             nil t t)))
+          (when tracker (funcall tracker buffer))
+          buffer)
       (error
        (funcall error
                 (replace-regexp-in-string
@@ -93,23 +104,25 @@
   "Return a callback starter that obtains credentials before invoking START."
   (lambda (resolve reject on-cancel)
     (let ((cancelled nil)
-          request
+          requests
           credential-cleanup)
       (setq credential-cleanup
             (mentat-auth-source-secret-async
              "Linear" (list mentat-linear-auth-host)
              (lambda (api-key)
                (unless cancelled
-                 (setq request (funcall start api-key resolve reject))
+                 (let ((mentat-linear--request-tracker
+                        (lambda (buffer) (push buffer requests))))
+                   (push (funcall start api-key resolve reject) requests))
                  (when cancelled
-                   (mentat-linear--cancel-request request))))
+                   (mapc #'mentat-linear--cancel-request requests))))
              reject
              :user mentat-linear-auth-user))
       (funcall on-cancel
                (lambda ()
                  (setq cancelled t)
                  (funcall credential-cleanup)
-                 (mentat-linear--cancel-request request))))))
+                 (mapc #'mentat-linear--cancel-request requests))))))
 
 (provide 'linear-api)
 ;;; linear-api.el ends here

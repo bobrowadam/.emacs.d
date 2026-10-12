@@ -79,6 +79,7 @@ EVENT is APPROVE, COMMENT or REQUEST_CHANGES.  BODY is required for the latter
 two.  Return review metadata and comment links.  Never automatically retry a
 failed or cancelled submission.  Use gh directly for simple GitHub actions."
   (:execution async
+   :preview (body "review.md")
    :arguments ((repository "GitHub repository as owner/repo")
                (pull-number "PR number")
                (reviewed-commit "Full SHA of the commit reviewed")

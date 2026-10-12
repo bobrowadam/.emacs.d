@@ -40,7 +40,7 @@ Results are JSON text delivered through Mentat's existing callback transport."
                                    user-emacs-directory))
            (mentat-org-skill-directories
             (cons (file-name-directory file) mentat-org-skill-directories)))
-      (mentat-org-skill-read file)))
+      (mentat-skill-read file)))
   (let* ((request (json-parse-string request-json :object-type 'alist
                                    :null-object nil :false-object :false))
          (operation (alist-get 'command request))

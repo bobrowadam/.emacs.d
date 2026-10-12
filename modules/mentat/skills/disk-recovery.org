@@ -50,12 +50,24 @@ A recovery call reports checks before and after its steps and stops on failure.
 Cancellation or a timeout may leave a partial cleanup; inspect again before
 retrying.
 
-If Docker Desktop is unavailable, the Minikube targets refuse to run. Use
-host-side cleanup first, then diagnose Docker's actual state. Restart Docker
-Desktop or Minikube only with specific evidence and approval; this skill does
-not automatically quit apps, kill processes, or restart the cluster. Report
-whether the live daemon has the intended GC budget rather than assuming a
-worktree change is installed.
+Docker Desktop must be running and unpaused for Minikube inspection and cleanup.
+Distinguish these cases before acting:
+
+- If the Docker CLI is missing from =PATH=, locate the installed executable and
+  correct command lookup. A missing CLI does not establish daemon failure.
+- If Docker Desktop reports that it is manually paused, ask Bob to resume it
+  through the Whale menu or Dashboard. Resuming Docker also resumes workloads;
+  do not unpause it automatically.
+- If the daemon is unhealthy, diagnose its actual state before restarting it.
+  When disk exhaustion prevents startup, recover host space first.
+
+Read stderr as well as exit status: =docker info= can return exit code zero
+while reporting that Docker Desktop is paused. Do not treat that result as
+proof of readiness or attempt Minikube cleanup until Docker responds normally.
+Restart Docker Desktop or Minikube only with specific evidence and approval;
+this skill does not automatically quit apps, kill processes, or restart the
+cluster. Report whether the live daemon has the intended GC budget rather than
+assuming a worktree change is installed.
 
 * Callable helpers
 
@@ -320,9 +332,14 @@ actions must precede this call.  Partial effects are possible on failure."
                       (docker (cdr (assoc "docker-info" (plist-get before :checks)))))
                  (unless (plist-get before :available-kib)
                    (user-error "Host free-space check failed; refusing cleanup"))
-                 (when (and needs-docker (not (and (eq (plist-get docker :status) 'exit)
-                                                   (eql (plist-get docker :exit-code) 0))))
-                   (user-error "Docker is unavailable; recover host space and Docker first"))
+                 ;; A paused Docker Desktop exits with status zero but prints
+                 ;; no server version and reports the pause on stderr.
+                 (when (and needs-docker
+                            (not (and (eq (plist-get docker :status) 'exit)
+                                      (eql (plist-get docker :exit-code) 0)
+                                      (not (string-blank-p (or (plist-get docker :stdout) "")))
+                                      (string-blank-p (or (plist-get docker :stderr) "")))))
+                   (user-error "Docker is paused or unavailable; resume or recover Docker first"))
                  (mentat-disk--series
                   (mentat-disk--recovery-steps targets model)
                   (lambda (steps failed)
