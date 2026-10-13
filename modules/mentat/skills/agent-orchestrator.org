@@ -91,9 +91,18 @@ A report is read-only. It does not authorize implementation, session prompts,
 issue mutations, comments, thread resolution, commits, pushes, merges, deploys,
 or cleanup. Follow the user's explicit authorization for each action.
 
-Before task startup, check existing sessions and checkouts. Before cleanup,
-inspect merge state, local changes, private notes, and session activity. Preserve
-uncommitted work and transcripts. Follow the project's cleanup guidance and
+Before task startup, check existing sessions and checkouts. For a new Bradwell
+issue session, read the Bradwell task-workflow skill at
+[[file:~/dotfiles/bradwell/skills/task-workflow.org][Bradwell task lifecycle]] and use
+=mentat-task-start=. It creates a separate worktree and a background session;
+do not bypass it with =mentat-session-create= in the main checkout. Reopen an
+existing task session in its existing checkout rather than creating a new one.
+Follow the task-workflow handoff and wait for further instructions unless the
+user has explicitly authorized additional work.
+
+Before cleanup, inspect merge state, local changes, private notes, and session
+activity. Preserve uncommitted work and transcripts. Follow the project's
+cleanup guidance and
 confirm remote deletion when required. Do not treat completed code work as
 permission to delete private notes or change task status.
 
