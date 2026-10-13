@@ -11,6 +11,8 @@
                                   (list (expand-file-name "~/.local/bin")
                                         (expand-file-name "~/.pyenv/shims")
                                         "/opt/homebrew/bin"
+                                        "/usr/local/bin"
+                                        "/opt/homebrew/opt/libpq/bin"
                                         (expand-file-name "~/.cargo/bin")))))
        (separator (if (characterp path-separator)
                       (char-to-string path-separator)
