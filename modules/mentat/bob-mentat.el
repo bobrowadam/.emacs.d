@@ -222,6 +222,7 @@ Mentat subagent properties."
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
+      :arguments ("--extension" "builtin:codemode")
       :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
       :tools ("emacs_read"
               "emacs_read_buffer"
@@ -238,10 +239,12 @@ Mentat subagent properties."
               "hindsight_remember"
               "hindsight_reflect"
               "subagent"
-              "recall")
+              "recall"
+              "codemode")
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
+      :arguments ("--extension" "builtin:codemode")
       :default-provider "openai-codex"
       :default-model "gpt-6.1-sol"
       :enabled-models ("openai-codex/gpt-6.1-sol"
@@ -266,7 +269,8 @@ Mentat subagent properties."
               "hindsight_remember"
               "hindsight_reflect"
               "subagent"
-              "recall")
+              "recall"
+              "codemode")
       :disabled-tools ("grep" "find" "ls"))
      ("basic"
       :directory "~/.pi/agent-basic"
