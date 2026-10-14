@@ -244,6 +244,7 @@ Mentat subagent properties."
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
+      :environment (("CLAUDE_CONFIG_DIR" . "/Users/bob/.claude-private"))
       :arguments ("--extension" "builtin:codemode")
       :default-provider "openai-codex"
       :default-model "gpt-6.1-sol"
