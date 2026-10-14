@@ -329,7 +329,7 @@ Mentat subagent properties."
   (mentat-define-extension worktree-skills
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
-    :source "npm:pi-observational-memory")
+    :source "git:github.com/bobrowadam/pi-observational-memory")
   (mentat-define-extension claude-bridge
     :source "npm:pi-claude-bridge@0.9.2")
   (mentat-define-extension web-search
