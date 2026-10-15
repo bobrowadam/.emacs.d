@@ -1,5 +1,5 @@
 #+TITLE: Manage Mentat sessions
-#+DESCRIPTION: Read and search full session history; create, list, close, kill, reload, and send prompts to Mentat sessions.
+#+DESCRIPTION: Read and search full session history; create, list, close, kill, reload, change working directories, and send prompts to Mentat sessions.
 #+PROPERTY: header-args:emacs-lisp :lexical yes :tangle yes
 
 * Manage sessions deliberately
@@ -19,6 +19,26 @@ view was preserved. Do not restore or rearrange Bob's windows without approval.
 =mentat-session-send= also resumes closed sessions without displaying them.
 Do not follow either operation with a buffer-display or focus command unless
 Bob explicitly asks to see the session.
+
+* Change a session's working directory
+
+Use =mentat-session-change-directory= with a stable session ID and an existing
+local directory. This operation requires Bob's authorization. It refuses busy
+sessions and queued work rather than interrupting them. Closed sessions resume
+with their recorded Pi profile, without displaying the conversation.
+
+Pi's CLI =--fork= copies the full persisted history, including other branches,
+into a new transcript whose working directory is the target. Mentat retains the
+same session ID, restores session selections, and updates the registry only
+after verifying Pi's runtime directory and replaying history. The old transcript
+remains a pre-move snapshot. The new transcript receives all future messages.
+The target project's context and resources load normally.
+
+This does not display buffers, select windows, or restore window layouts.
+Cancellation stops waiting but does not undo an operation already started.
+On failure, inspect the session before retrying. Pi can refuse a fork when the
+target already contains this session ID; never delete its transcript to retry.
+Use the returned =session-file= as the current transcript, not the old path.
 
 * Read and search saved history
 
@@ -101,6 +121,19 @@ prompt.  Cancellation stops waiting but does not stop the reload."
       (unless (derived-mode-p 'mentat-buffer-mode)
         (user-error "Buffer is not a Mentat conversation: %s" buffer)))
     (mentat-session-manager--reload-starter conversation)))
+
+(mentat-defun mentat-session-change-directory (session-id directory)
+  "Change idle SESSION-ID's working DIRECTORY without displaying it.
+Copy all saved history to a new Pi transcript with the same session ID and
+profile, then verify runtime cwd, restore session selections, and update the
+registry. Keep the old transcript. Refuse busy sessions and queued work.
+Resume closed sessions in the background. Cancellation stops waiting only."
+  (:execution async)
+  (unless (and (stringp directory) (not (file-remote-p directory))
+               (file-directory-p directory))
+    (user-error "Session directory must be an existing local directory"))
+  (mentat-session-manager--change-directory-starter
+   (mentat-session-manager--find-entry session-id) directory))
 
 (mentat-defun mentat-session-list (&optional directory)
   "List registered Mentat sessions, optionally restricted to DIRECTORY.

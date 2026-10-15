@@ -8,6 +8,7 @@
 (require 'subr-x)
 
 (require 'mentat-buffer)
+(require 'mentat-directory)
 
 (require 'mentat-prompt)
 
@@ -120,6 +121,52 @@ Cancellation stops waiting but does not stop the reload."
                  (fail reason))))
           (error
            (fail (error-message-string err))))))))
+
+(defun mentat-session-manager--change-directory-starter (entry directory)
+  "Return a starter moving registered ENTRY to DIRECTORY.
+Resume closed sessions using their recorded profile without displaying them.
+Cancellation stops waiting, not a directory change already in progress."
+  (lambda (resolve reject on-cancel)
+    (let (settled)
+      (cl-labels
+          ((fail (reason)
+             (unless settled
+               (setq settled t)
+               (funcall reject reason)))
+           (change (view)
+             (unless settled
+               (condition-case err
+                   (with-current-buffer (mentat--buffer-buffer view)
+                     (mentat-change-directory
+                      directory
+                      (lambda (buffer state)
+                        (unless settled
+                          (setq settled t)
+                          (funcall resolve
+                                   (append
+                                    (mentat-session-manager--result
+                                     buffer state
+                                     (buffer-local-value 'default-directory buffer) nil)
+                                    `((session-file . ,(alist-get 'sessionFile state))
+                                      (previous-session-file . ,(mentat--registry-entry-session-file entry)))))))
+                      (lambda (_buffer reason) (fail reason))))
+                 (error (fail (error-message-string err)))))))
+        (funcall on-cancel (lambda () (setq settled t)))
+        (condition-case err
+            (if-let* ((view (mentat--open-live-view
+                            (mentat--registry-entry-session-id entry))))
+                (change view)
+              (let* ((directory (or (mentat--registry-entry-pi-directory entry)
+                                    (mentat--profile-default-directory)))
+                     (profile (mentat--profile-for-directory directory))
+                     (mentat-pi-directory directory)
+                     (mentat-pi-profiles (and profile (list profile))))
+                (mentat--open-entry-view
+                 entry (lambda (view _state) (change view))
+                 (lambda (_view response)
+                   (fail (or (alist-get 'error response)
+                             "Mentat session resume failed"))))))
+          (error (fail (error-message-string err))))))))
 
 (defun mentat-session-manager--check-killable (entry)
   "Refuse to kill a displayed or busy registered session ENTRY."

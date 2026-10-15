@@ -377,5 +377,48 @@
               (should-not (buffer-live-p buffer))))
         (when (buffer-live-p buffer) (kill-buffer buffer))))))
 
+(ert-deftest mentat-session-change-directory-background-handoff ()
+  "Resume with the recorded profile, then resolve from the changed buffer."
+  (dolist (live '(t nil))
+    (with-temp-buffer
+      (let* ((buffer (current-buffer))
+             (entry (mentat--registry-entry-create
+                     :session-id "kept" :session-file "/original.jsonl"
+                     :pi-directory "/recorded/profile"))
+             (view (mentat--buffer-make :buffer buffer :status "idle"))
+             (target default-directory)
+             resume complete result failure)
+        (cl-letf (((symbol-function 'mentat--open-live-view)
+                   (lambda (_id) (and live view)))
+                  ((symbol-function 'mentat--open-entry-view)
+                   (lambda (_entry ready _error)
+                     (should (equal "/recorded/profile" mentat-pi-directory))
+                     (setq resume ready)))
+                  ((symbol-function 'mentat-change-directory)
+                   (lambda (directory ready _error)
+                     (should (eq buffer (current-buffer)))
+                     (should (equal target directory))
+                     (setq complete ready)))
+                  ((symbol-function 'mentat-session-manager--result)
+                   (lambda (changed _state root displayed)
+                     (should (eq changed buffer))
+                     (should (equal root target))
+                     (should-not displayed)
+                     '((session-id . "kept")))))
+          (funcall (mentat-session-manager--change-directory-starter entry target)
+                   (lambda (value) (setq result value))
+                   (lambda (reason) (setq failure reason)) #'ignore)
+          (unless live
+            (should-not complete)
+            (funcall resume view nil))
+          (should complete)
+          ;; Pi callbacks need not run with the conversation current.
+          (with-temp-buffer
+            (setq default-directory "/")
+            (funcall complete buffer '((sessionFile . "/fork.jsonl"))))
+          (should-not failure)
+          (should (equal "/fork.jsonl" (alist-get 'session-file result)))
+          (should (equal "/original.jsonl" (alist-get 'previous-session-file result))))))))
+
 (provide 'session-manager-tests)
 ;;; session-manager-tests.el ends here
