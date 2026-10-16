@@ -530,7 +530,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (global-set-key (kbd "C-פ") 'previous-line)
   (global-set-key (kbd "C-ש") 'beginning-of-line)
   (global-set-key (kbd "C-ק") 'end-of-line)
-  (global-set-key (kbd "C-c T") 'display-time-mode)
+  ;; C-c T is reserved for backward theme rotation below.
 
   ;; scroll pages conservatively
   (defun consertive-page-upδ ()
@@ -3570,8 +3570,7 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 ** Theme
 *** Doom Themes
 #+begin_src elisp
-  (use-package doom-themes
-    :bind ("C-c t" . bob/cycle-themes))
+  (use-package doom-themes)
 #+end_src
 *** Modus Themes
 #+begin_src elisp
@@ -3594,25 +3593,40 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
 #+begin_src elisp
   ;; This is just for fun. no really needed
   (defmacro bob/register-and-load-themes (&rest themes)
-    "Register THEMES, load the first, and define `bob/cycle-themes'
-  to cycle through them.  The theme list is private to this call site."
+    "Register THEMES, load the first, and define `bob/cycle-themes'.
+The theme list is private to this call site."
     `(let ((theme-ring (list ,@(mapcar (lambda (th) `',th) themes))))
        (mapc #'disable-theme custom-enabled-themes)
        (load-theme (car theme-ring) t)
        (defalias 'bob/cycle-themes
-         (lambda ()
+         (lambda (&optional backward)
            (interactive)
-           (setq theme-ring (append (cdr theme-ring)
-                                    (list (car theme-ring))))
+           (setq theme-ring
+                 (if backward
+                     (cons (car (last theme-ring)) (butlast theme-ring))
+                   (append (cdr theme-ring) (list (car theme-ring)))))
            (mapc #'disable-theme custom-enabled-themes)
            (let ((theme (car theme-ring)))
              (load-theme theme t)
              (message "Loaded %s" theme)))
-         "Cycle through registered themes.")))
+         "Cycle through registered themes, or reverse with BACKWARD.")))
+
+  (defun bob/cycle-themes-backward ()
+    "Cycle backward through registered themes."
+    (interactive)
+    (bob/cycle-themes t))
+
+  (defvar-keymap bob/theme-repeat-map
+    :repeat t
+    "t" #'bob/cycle-themes
+    "T" #'bob/cycle-themes-backward)
+
+  (keymap-global-set "C-c t" #'bob/cycle-themes)
+  (keymap-global-set "C-c T" #'bob/cycle-themes-backward)
 
   (add-to-list 'custom-theme-load-path (expand-file-name "~/source/mentat"))
   (with-eval-after-load 'modus-themes
-    (bob/register-and-load-themes modus-kanagawa-wave mentat-dark modus-kanagawa-lotus
+    (bob/register-and-load-themes modus-kanagawa-wave mentat-pi-dark modus-kanagawa-lotus
                                   modus-kanagawa-dragon modus-flexoki-light
                                   modus-flexoki-dark modus-nibelung-dark))
 #+end_src
