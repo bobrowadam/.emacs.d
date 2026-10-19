@@ -20,6 +20,14 @@ view was preserved. Do not restore or rearrange Bob's windows without approval.
 Do not follow either operation with a buffer-display or focus command unless
 Bob explicitly asks to see the session.
 
+* Queue follow-ups for busy sessions
+
+Use =mentat-session-follow-up= when a session may be busy. With the default
+=follow-up= delivery, Pi runs the prompt after the current run finishes;
+=steer= delivers it at the session's next turn boundary, mid-run. An idle
+session runs the prompt immediately, like =mentat-session-send=. The result's
+=delivery= reports which happened. Sending needs Bob's authorization, as above.
+
 * Change a session's working directory
 
 Use =mentat-session-change-directory= with a stable session ID and an existing
@@ -249,4 +257,18 @@ prompt with the session ID, request ID, buffer name, and resume status."
     (unless entry
       (user-error "No registered Mentat session: %s" session-id))
     (mentat-session-manager--send-starter entry prompt)))
+
+(mentat-defun mentat-session-follow-up (session-id prompt &key (delivery "follow-up"))
+  "Send PROMPT to registered SESSION-ID, queuing it when the session is busy.
+
+DELIVERY is \"follow-up\" (run after the current run) or \"steer\" (deliver at
+the next turn boundary).  Idle sessions run PROMPT immediately; closed sessions
+resume without being displayed.  Resolve after Pi accepts the prompt."
+  (:execution async :preview (prompt "prompt.md"))
+  (unless (and (stringp prompt) (not (string-blank-p prompt)))
+    (user-error "Mentat session prompt must be a nonblank string"))
+  (unless (member delivery '("follow-up" "steer"))
+    (user-error "DELIVERY must be \"follow-up\" or \"steer\""))
+  (mentat-session-manager--send-starter
+   (mentat-session-manager--find-entry session-id) prompt (intern delivery)))
 #+end_src

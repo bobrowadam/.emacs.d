@@ -302,8 +302,10 @@ UNAVAILABLE counts registered sessions without a readable transcript."
                      :noquery t :filter #'filter-output :sentinel #'on-exit)))
           (error (fail (error-message-string err))))))))
 
-(defun mentat-session-manager--send-starter (entry prompt)
-  "Return a callback starter that sends PROMPT to registered session ENTRY."
+(defun mentat-session-manager--send-starter (entry prompt &optional delivery)
+  "Return a callback starter that sends PROMPT to registered session ENTRY.
+DELIVERY, `follow-up' or `steer', queues PROMPT when the session is busy;
+without it a busy session is rejected.  Idle sessions always run PROMPT now."
   (lambda (resolve reject on-cancel)
     (let ((session-id (mentat--registry-entry-session-id entry))
           buffer
@@ -326,23 +328,30 @@ UNAVAILABLE counts registered sessions without a readable transcript."
                  (kill-buffer buffer))))
            (send (view)
              (setq buffer (mentat--buffer-buffer view))
-             (if (not (equal "idle" (mentat--buffer-status view)))
-                 (fail (format "Mentat session is not idle: %s" session-id))
-               (condition-case err
-                   (let ((request-id
-                          (mentat--buffer-submit
-                           view prompt nil
-                           (lambda (_session response)
-                             (succeed
-                              `((session-id . ,session-id)
-                                (request-id . ,(alist-get 'id response))
-                                (buffer . ,(buffer-name buffer))
-                                (resumed . ,resumed))))
-                           (lambda (_session response)
-                             (fail (or (alist-get 'error response)
-                                       "Mentat prompt was rejected"))))))
-                     (setq submitted (and request-id t)))
-                 (error (fail (error-message-string err)))))))
+             (let ((idle (equal "idle" (mentat--buffer-status view))))
+               (if (not (or idle delivery))
+                   (fail (format "Mentat session is not idle: %s" session-id))
+                 (condition-case err
+                     (let* ((accepted
+                             (lambda (_session response)
+                               (succeed
+                                `((session-id . ,session-id)
+                                  (request-id . ,(alist-get 'id response))
+                                  (buffer . ,(buffer-name buffer))
+                                  (resumed . ,resumed)
+                                  (delivery . ,(if idle "prompt" delivery))))))
+                            (rejected
+                             (lambda (_session response)
+                               (fail (or (alist-get 'error response)
+                                         "Mentat prompt was rejected"))))
+                            (request-id
+                             (if idle
+                                 (mentat--buffer-submit
+                                  view prompt nil accepted rejected)
+                               (mentat--buffer-queue
+                                view delivery prompt nil accepted rejected))))
+                       (setq submitted (and request-id t)))
+                   (error (fail (error-message-string err))))))))
         (funcall on-cancel #'cancel)
         (condition-case err
             (if-let* ((view (mentat--open-live-view session-id)))
