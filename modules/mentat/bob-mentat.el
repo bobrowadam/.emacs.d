@@ -230,7 +230,8 @@ Mentat subagent properties."
                                 "azure/gpt-6-luna"
                                 "openai-codex/gpt-6.1-sol"
                                 "openai-codex/gpt-6-astra"
-                                "openai-codex/gpt-6-luna")
+                                "openai-codex/gpt-6-luna"
+                                "claude-bridge/claude-opus-5-5")
       :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
       :tools ("emacs_read"
               "emacs_read_buffer"
