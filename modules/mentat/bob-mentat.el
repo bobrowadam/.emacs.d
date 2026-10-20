@@ -252,6 +252,7 @@ Mentat subagent properties."
               "hindsight_remember"
               "hindsight_reflect"
               "subagent"
+              "subagent_progress"
               "recall"
               "codemode")
       :disabled-tools ("grep" "find" "ls"))
@@ -283,6 +284,7 @@ Mentat subagent properties."
               "hindsight_remember"
               "hindsight_reflect"
               "subagent"
+              "subagent_progress"
               "recall"
               "codemode")
       :disabled-tools ("grep" "find" "ls"))
