@@ -2520,7 +2520,9 @@ A Magit extension that primes the magit cache in parallel before refresh, reduci
     (setq orderless-matching-styles
           '(orderless-literal orderless-prefixes orderless-flex))
     (setq completion-category-defaults nil
-          completion-category-overrides '((file (styles basic partial-completion))))
+          completion-category-overrides '((file (styles basic partial-completion))
+                                          ;; Filter Mentat's ranked words without reordering them.
+                                          (mentat-word (styles orderless basic))))
     (setq completion-styles '(hotfuzz orderless basic)))
 #+end_src
 ** Embark

@@ -73,6 +73,10 @@
   "Enable the atomic footer in a Mentat conversation buffer."
   (mentat-footer-mode 1))
 
+(defun bob/mentat-prompt-disable-corfu-auto ()
+  "Open Corfu in Mentat prompts only on request."
+  (setq-local corfu-auto nil))
+
 (defun bob/mentat-initialize-fnm ()
   "Load FNM and select the Node environment used by Mentat."
   (unless (featurep 'fnm)
@@ -324,6 +328,12 @@ Mentat subagent properties."
 
   :config
   (require 'mentat-footer)
+  ;; Mentat previews its top-ranked word inline; M-TAB shows alternatives.
+  (add-hook 'mentat-prompt-mode-hook #'bob/mentat-prompt-disable-corfu-auto)
+  ;; Themes color the preview like text; keep it a dim ghost in every theme.
+  (custom-set-faces
+   '(completion-preview ((t :inherit shadow :foreground unspecified)))
+   '(completion-preview-exact ((t :inherit completion-preview))))
   (add-hook 'after-make-frame-functions #'bob/mentat-enable-gpu-frame)
   (mapc #'bob/mentat-enable-gpu-frame (frame-list))
   (mentat-reset-extensions)
