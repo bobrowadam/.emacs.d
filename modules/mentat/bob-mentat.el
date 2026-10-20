@@ -225,6 +225,12 @@ Mentat subagent properties."
    '(("Work"
       :directory "~/.pi/agent"
       :arguments ("--extension" "builtin:codemode")
+      :subagent-enabled-models ("azure/gpt-6.1-sol"
+                                "azure/gpt-6-astra"
+                                "azure/gpt-6-luna"
+                                "openai-codex/gpt-6.1-sol"
+                                "openai-codex/gpt-6-astra"
+                                "openai-codex/gpt-6-luna")
       :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
       :tools ("emacs_read"
               "emacs_read_buffer"
@@ -254,8 +260,8 @@ Mentat subagent properties."
                        "openai-codex/gpt-6-astra"
                        "claude-bridge/claude-opus-5-5")
       :subagent-enabled-models ("openai-codex/gpt-6.1-sol"
-                                "openai-codex/gpt-6-astra"
-                                "openai-codex/gpt-6-luna")
+                                "openai-codex/gpt-6-luna"
+                                "claude-bridge/claude-opus-5-5")
       :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
       :tools ("emacs_read"
               "emacs_read_buffer"
@@ -298,7 +304,8 @@ Mentat subagent properties."
      "azure/gpt-6-luna"
      "openai-codex/gpt-6.1-sol"
      "openai-codex/gpt-6-astra"
-     "openai-codex/gpt-6-luna"))
+     "openai-codex/gpt-6-luna"
+     "claude-bridge/claude-opus-5-5"))
 
   (mentat-extension-menu-commands
    '(("C" "Codex controls" bob/mentat-codex-menu)))
@@ -352,17 +359,19 @@ Mentat subagent properties."
   (bob/mentat-define-subagent reviewer
       (bob/mentat-load-agent-and-common-instructions "reviewer")
     :description "Review one code change and optionally run read-only validation"
-    :model ("azure/gpt-6-astra" "openai-codex/gpt-6-astra")
+    :model ("claude-bridge/claude-opus-5-5"
+            "azure/gpt-6-astra" "openai-codex/gpt-6-astra")
     :thinking high
-    :extensions (mentat-emacs)
+    :extensions (mentat-emacs claude-bridge)
     :concurrency 8)
 
   (bob/mentat-define-subagent pr-reviewer
       (bob/mentat-load-agent-and-common-instructions "pr-reviewer")
     :description "Review one assigned PR slice using the parallel-review finding format"
-    :model ("azure/gpt-6-astra" "openai-codex/gpt-6-astra")
+    :model ("claude-bridge/claude-opus-5-5"
+            "azure/gpt-6-astra" "openai-codex/gpt-6-astra")
     :thinking high
-    :extensions (mentat-emacs)
+    :extensions (mentat-emacs claude-bridge)
     :concurrency 8)
 
   (bob/mentat-define-subagent ci-watcher
@@ -402,9 +411,10 @@ Mentat subagent properties."
   (bob/mentat-define-subagent ui-manual-qa
       (bob/mentat-load-agent-and-common-instructions "ui-manual-qa")
     :description "Test UI features in a web browser"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("claude-bridge/claude-opus-5-5"
+            "azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
     :thinking medium
-    :extensions (mentat-emacs))
+    :extensions (mentat-emacs claude-bridge))
 
   (remove-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines)
   (add-hook 'doom-modeline-mode-hook #'mentat-refresh-mode-lines t))
