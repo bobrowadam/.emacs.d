@@ -770,7 +770,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 
   (defvar bob/prose-word-completion-project-buffer-limit 24)
   (defvar bob/prose-word-completion-project-buffer-max-chars 60000)
-  (defvar bob/prose-word-completion-prefix-index-length 4)
+  (defvar bob/prose-word-completion-prefix-index-length 2)
   (defvar bob/prose-word-completion-candidate-limit 200)
   (defvar bob/mentat-prose-word-project-score 80)
   (defvar bob/mentat-prose-word-known-project-bonus 5)
@@ -778,6 +778,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (defvar bob/prose-word-completion--cache nil)
   (defvar bob/prose-word-completion--cache-file nil)
   (defvar-local bob/prose-word-completion--buffer-word-cache nil)
+  (defvar-local bob/prose-word-completion--project-membership-cache nil)
 
   (defun bob/prose-word-completion--bucket-key (word)
     (let ((word (downcase word)))
@@ -966,10 +967,18 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
                      (not (eq buffer (current-buffer))))
             (with-current-buffer buffer
               (when-let* ((file buffer-file-name))
-                (when (and (not (file-remote-p file))
-                           (file-in-directory-p (expand-file-name file) root))
-                  (setq count (1+ count))
-                  (push buffer buffers)))))))))
+                (unless (file-remote-p file)
+                  (let* ((key (list root file))
+                         (cache bob/prose-word-completion--project-membership-cache))
+                    (unless (equal key (car cache))
+                      (setq cache
+                            (cons key (file-in-directory-p
+                                       (expand-file-name file) root)))
+                      (setq bob/prose-word-completion--project-membership-cache
+                            cache))
+                    (when (cdr cache)
+                      (setq count (1+ count))
+                      (push buffer buffers)))))))))))
 
   (defun bob/prose-word-completion--add-project-buffers (table prefix score)
     (dolist (buffer (bob/prose-word-completion--project-file-buffers))
@@ -1014,16 +1023,17 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
             (dolist (word
                      (bob/prose-word-completion--bucket-words
                       (plist-get data :buckets) prefix))
-              (push (list :word word
-                          :score (+ 60
-                                    (bob/prose-word-completion--frequency-score
-                                     word))
-                          :source 'frequency
-                          :annotation " word")
-                    candidates)
-              (setq added (1+ added))
-              (when (>= added 200)
-                (throw 'done nil)))))
+              (when (string-prefix-p prefix word t)
+                (push (list :word word
+                            :score (+ 60
+                                      (bob/prose-word-completion--frequency-score
+                                       word))
+                            :source 'frequency
+                            :annotation " word")
+                      candidates)
+                (setq added (1+ added))
+                (when (>= added 200)
+                  (throw 'done nil))))))
         (when (and (not (string-suffix-p "s" prefix t))
                    (gethash (downcase prefix) frequencies))
           (push (list :word (concat prefix "s") :score 40 :source 'plural

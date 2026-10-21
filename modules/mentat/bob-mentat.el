@@ -321,6 +321,7 @@ Mentat subagent properties."
    '(bob/mentat-codex-usage))
 
   (mentat-prompt-extra-completion-at-point-functions nil)
+  (mentat-prompt-word-completion-min-prefix 2)
 
   (mentat-prompt-extra-word-candidate-functions
    '(bob/mentat-prose-word-candidates))
@@ -332,6 +333,9 @@ Mentat subagent properties."
   (require 'mentat-footer)
   ;; Mentat previews its top-ranked word inline; M-TAB shows alternatives.
   (add-hook 'mentat-prompt-mode-hook #'bob/mentat-prompt-disable-corfu-auto)
+  (add-hook 'mentat-prompt-mode-hook
+            (lambda ()
+              (setq-local completion-preview-minimum-symbol-length 2)))
   ;; Themes color the preview like text; keep it a dim ghost in every theme.
   (custom-set-faces
    '(completion-preview ((t :inherit shadow :foreground unspecified)))
