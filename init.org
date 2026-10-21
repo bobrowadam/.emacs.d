@@ -587,19 +587,34 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
             19))
          ;; Previously: (format "Aporetic Sans Mono-%d" calculated-font-size)
          (font-ring
-          (list (format "Menlo-%d" calculated-font-size)
+          (list (format "CommitMonoV143-%d" calculated-font-size)
+                (format "Menlo-%d" calculated-font-size)
                 (format "Aporetic Sans Mono-%d" calculated-font-size)
                 (format "Monaco-%d" calculated-font-size))))
     (set-frame-font (car font-ring) 'keep-size t)
     (defalias 'bob/cycle-fonts
-      (lambda ()
+      (lambda (&optional backward)
         (interactive)
-        (setq font-ring (append (cdr font-ring) (list (car font-ring))))
+        (setq font-ring
+              (if backward
+                  (append (last font-ring) (butlast font-ring))
+                (append (cdr font-ring) (list (car font-ring)))))
         (set-frame-font (car font-ring) 'keep-size t)
         (message "Loaded %s" (car font-ring)))
-      "Cycle through favorite fonts."))
+      "Cycle through favorite fonts, or reverse with BACKWARD."))
 
-  (global-set-key (kbd "C-c f") #'bob/cycle-fonts)
+  (defun bob/cycle-fonts-backward ()
+    "Cycle backward through favorite fonts."
+    (interactive)
+    (bob/cycle-fonts t))
+
+  (defvar-keymap bob/font-repeat-map
+    :repeat t
+    "f" #'bob/cycle-fonts
+    "F" #'bob/cycle-fonts-backward)
+
+  (keymap-global-set "C-c f" #'bob/cycle-fonts)
+  (keymap-global-set "C-c F" #'bob/cycle-fonts-backward)
   (setq kill-buffer-query-functions nil)
 
   ;; Trust the ~/source/ file so flymake byte compile will work.
