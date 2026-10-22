@@ -45,12 +45,21 @@ not the conversation's working directory when those differ.
 
 ** Runtime installation
 
-Mentat resolves =mentat-pi-program= through Emacs's executable search path. A
-terminal and live Emacs can therefore select different installations.
+Mentat starts the program selected by the live value of =mentat-pi-program=.
+It can be a command name resolved through Emacs's executable search path or an
+absolute path to a separate installation, including a local diagnostic build.
+Checking the shell's =pi --version= or Emacs's resolution of =pi= alone does not
+verify the runtime Mentat will launch.
 
 Inspect:
+- The live default and any buffer-local values of =mentat-pi-program=, plus saved
+  configuration. A temporary live override may not appear in configuration files.
 - Live Emacs resolution of =node=, =pi=, and =corepack=.
-- Pi's installation method and installed version.
+- The resolved path and canonical target of the selected =mentat-pi-program=.
+  Run that exact executable with =--version= in Emacs's process environment.
+- Actual executable paths of existing Mentat Pi processes, separately from the
+  program selected for future sessions. Do not print full process environments.
+- Pi's installation method and installed version for each selected installation.
 - Node requirements for Pi and relevant extension packages.
 - =fnm= installations and default version.
 - Executable resolution and child environment construction in =mentat-rpc.el=.
@@ -58,6 +67,13 @@ Inspect:
 Changing the =fnm= default does not update live Emacs's environment. Node
 installations have separate global packages. Preserve existing tools and
 Corepack's =pnpm= shim when changing runtimes.
+
+If Mentat selects a local or instrumented Pi build, read its activation notes and
+establish why it was selected before changing it. Updating the normal CLI does
+not update that build. Report the mismatch and resolve whether the diagnostic
+selection must remain before switching away from it. Do not silently discard
+instrumentation, rebuild or patch Pi core, or delete a runtime still used by a
+running process.
 
 ** Pi profiles
 
@@ -183,7 +199,14 @@ extension updates:
 - =pi update --all=
 
 Do not infer the installed version from command success alone. Verify it
-independently. Do not change installation methods merely to perform an update.
+independently using the exact executable Mentat selects, not just the normal CLI.
+Do not change installation methods merely to perform an update.
+
+When an update notice persists, compare its reported installed version with the
+selected executable and the conversation's actual process command. An old
+process or a diagnostic override can still run the previous release even when
+the normal CLI and workspace dependencies are current. Trace the notice's source
+before treating it as a dependency-pin problem or suppressing it.
 
 Update Mentat's Pi dependencies and lockfiles as part of this task, even when
 the release needs no Lisp changes. Apply release-required source and configuration
@@ -223,9 +246,13 @@ explicitly authorized idle conversations through the session-management skill.
 Before committing, wait for all requested reviews to finish and verify the
 staged scope. Commit only with explicit approval.
 
-Report the installed CLI version, Mentat's declared and installed Pi versions,
-source or configuration changes, validation results, and activation state. State
-separately which conversations were reloaded and which retain their old runtime.
+Report the normal CLI version, the exact executable and version selected by live
+=mentat-pi-program= for future sessions, Mentat's declared and installed Pi
+versions, source or configuration changes, validation results, and activation
+state. State separately which conversations were reloaded and which retain their
+old runtime. A current dependency manifest is not evidence of a current running
+CLI. Do not report full activation while a selected override still points to the
+old release; report any deliberately retained diagnostic runtime explicitly.
 
 Complete the update only when the executable, profiles, Mentat dependencies,
 loaded configuration, and requested sessions are consistent.
