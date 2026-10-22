@@ -182,6 +182,7 @@ Mentat subagent properties."
   :hook ((mentat-buffer-mode . bob/mentat-enable-footer)
          (mentat-buffer-mode . bob/mentat-enable-gpu-cards))
   :custom
+  (mentat-usage-display 'disabled)
   (mentat-show-injected-reminders nil)
   (mentat-tool-default-display-state 'summary)
   (mentat-streaming-tool-display-state 'expanded)
