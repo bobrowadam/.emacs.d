@@ -152,5 +152,65 @@
                      (content . "unexpected") (display . t) (details (version . 2)))))
     (should (string-match-p "\\[om\\.reflections\\.retrieved\\]" (bob/om-retrieval-view-test--text view)))))
 
+(defun bob/om-retrieval-view-test--audit (id parent-id kind)
+  "Build a saved retrieval audit with ID, PARENT-ID and KIND."
+  `((type . "custom") (id . ,id) (parentId . ,parent-id)
+    (customType . "om.reflections.retrieved")
+    (data (version . 1) (kind . ,kind) (requestEntryId . "request")
+          (compactionEntryId . "compaction")
+          (reflections . [((id . "aaaaaaaaaaaa")
+                           (content . "Never patch Claude Bridge for OM."))])
+          (details . ,bob/om-retrieval-view-test--details-v2))))
+
+(ert-deftest bob/om-retrieval-view-audit-live-and-replay-match ()
+  (let ((selection (bob/om-retrieval-view-test--audit "selection" nil "selection"))
+        (reuse (bob/om-retrieval-view-test--audit "reuse" "selection" "reuse"))
+        live replay)
+    (bob/om-retrieval-view-test--with-view view
+      (mentat--buffer-handle-event view `((type . "entry_appended") (entry . ,selection)))
+      (setq live (bob/om-retrieval-view-test--text view))
+      (mentat--buffer-handle-event view `((type . "entry_appended") (entry . ,reuse)))
+      (should (equal live (bob/om-retrieval-view-test--text view)))
+      (should (= 1 (length (mentat--buffer-entries view)))))
+    (bob/om-retrieval-view-test--with-view view
+      (mentat--buffer-handle-entries
+       view `((success . t) (command . "get_entries")
+              (data (entries . [,selection ,reuse]) (leafId . "reuse"))))
+      (setq replay (bob/om-retrieval-view-test--text view))
+      ;; A late live delivery after replay must not create a second card.
+      (mentat--buffer-handle-event view `((type . "entry_appended") (entry . ,selection)))
+      (should (equal replay (bob/om-retrieval-view-test--text view)))
+      (should (= 1 (length (mentat--buffer-entries view)))))
+    (should (string-match-p "Retrieved 1 reflection" live))
+    (should (equal live replay))))
+
+(ert-deftest bob/om-retrieval-view-audit-duplicate-live-card-is-ignored ()
+  (bob/om-retrieval-view-test--with-view view
+    (let ((event `((type . "entry_appended")
+                   (entry . ,(bob/om-retrieval-view-test--audit "selection" nil "selection")))))
+      (mentat--buffer-handle-event view event)
+      (let ((text (bob/om-retrieval-view-test--text view)))
+        (mentat--buffer-handle-event view event)
+        (should (equal text (bob/om-retrieval-view-test--text view)))
+        (should (= 1 (length (mentat--buffer-entries view))))))))
+
+(ert-deftest bob/om-retrieval-view-audit-failure-remains-inspectable ()
+  (bob/om-retrieval-view-test--with-view view
+    (let* ((entry (bob/om-retrieval-view-test--audit "failed" nil "selection"))
+           (data (alist-get 'data entry))
+           (details (copy-tree bob/om-retrieval-view-test--details-v2)))
+      (setf (alist-get 'selected details) []
+            (alist-get 'tokens details) 0
+            (alist-get 'error details) "Jev timed out"
+            (alist-get 'reflections data) []
+            (alist-get 'details data) details)
+      (mentat--buffer-handle-event view `((type . "entry_appended") (entry . ,entry))))
+    (with-current-buffer (mentat--buffer-buffer view)
+      (goto-char (point-min))
+      (search-forward "Retrieved 0 reflections")
+      (button-activate (button-at (1- (point)))))
+    (should (string-match-p "Retrieval failed: Jev timed out"
+                            (bob/om-retrieval-view-test--text view)))))
+
 (provide 'om-retrieval-view-tests)
 ;;; om-retrieval-view-tests.el ends here

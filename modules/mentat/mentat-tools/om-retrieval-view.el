@@ -2,9 +2,9 @@
 ;;; pi-load-after-edit: t
 
 ;;; Commentary:
-;; Render the experimental OM `om.reflections.retrieved' custom message as a
-;; collapsed card: how many reflections this prompt added and how many
-;; retrieved reflections the model currently sees.  RET expands the list.
+;; Render OM selection audit entries and legacy retrieval messages as collapsed
+;; cards.  Reuse audit entries stay saved without creating additional cards.
+;; RET expands the selected reflections and rejected near misses.
 
 ;;; Code:
 
@@ -15,7 +15,7 @@
 (require 'mentat-buffer)
 
 (defconst bob/om-retrieval-view-type "om.reflections.retrieved"
-  "OM custom-message type for retrieved reflections.")
+  "OM retrieval message and audit-entry type.")
 
 (defun bob/om-retrieval-view--details-p (details)
   "Return non-nil when DETAILS is a supported retrieval payload."
@@ -149,9 +149,12 @@ its independently expandable near misses."
   (mentat--buffer-update-response-card view t)
   (let* ((header (bob/om-retrieval-view-header details))
          (body (mentat--buffer-pi-update-body
-                (if (seq-empty-p (alist-get 'selected details))
-                    "No reflections passed the cutoff."
-                  (bob/om-retrieval-view-body text details))
+                (cond
+                 ((alist-get 'error details)
+                  (format "Retrieval failed: %s" (alist-get 'error details)))
+                 ((seq-empty-p (alist-get 'selected details))
+                  "No reflections passed the cutoff.")
+                 (t (bob/om-retrieval-view-body text details)))
                 (mentat--buffer-markdown-context view)))
          (near-count (length (alist-get 'nearMisses details)))
          (near-body (when (> near-count 0)
@@ -177,7 +180,58 @@ VIEW, CUSTOM-TYPE, TEXT, CONTENT, DETAILS and ENTRY-ID are as for ORIG."
       (bob/om-retrieval-view--render view text content details entry-id)
     (funcall orig view custom-type text content details entry-id)))
 
+(defun bob/om-retrieval-view--audit-p (entry)
+  "Return non-nil when ENTRY contains a supported retrieval audit."
+  (and (listp entry)
+       (let ((data (alist-get 'data entry)))
+         (and (equal "custom" (alist-get 'type entry))
+              (equal bob/om-retrieval-view-type (alist-get 'customType entry))
+              (listp data)
+              (equal 1 (alist-get 'version data))
+              (member (alist-get 'kind data) '("selection" "reuse"))))))
+
+(defun bob/om-retrieval-view--project-entry (orig entry)
+  "Project selection ENTRY as a card and ignore reuse; delegate others to ORIG."
+  (if (not (bob/om-retrieval-view--audit-p entry))
+      (funcall orig entry)
+    (let* ((data (alist-get 'data entry))
+           (details (alist-get 'details data)))
+      (if (and (equal "selection" (alist-get 'kind data))
+               (bob/om-retrieval-view--details-p details)
+               (sequencep (alist-get 'reflections data)))
+          (let ((text
+                 (string-join
+                  (mapcar (lambda (reflection)
+                            (format "[%s] %s" (alist-get 'id reflection)
+                                    (alist-get 'content reflection)))
+                          (append (alist-get 'reflections data) nil))
+                  "\n")))
+            (list (mentat--event-custom-message-event
+                   `((role . "custom")
+                     (customType . ,bob/om-retrieval-view-type)
+                     (content . ,text) (display . t) (details . ,details))
+                   (alist-get 'id entry))))
+        (list '(:kind ignored))))))
+
+(defun bob/om-retrieval-view--duplicate-p (orig view raw-event)
+  "Detect repeated retrieval audit RAW-EVENT in VIEW before calling ORIG."
+  (or (and (listp raw-event)
+           (equal "entry_appended" (alist-get 'type raw-event))
+           (let* ((entry (alist-get 'entry raw-event))
+                  (id (alist-get 'id entry))
+                  (identity (mentat--buffer-durable-history-identity view))
+                  (ids (plist-get identity :ids)))
+             (and (bob/om-retrieval-view--audit-p entry)
+                  (stringp id)
+                  (or (and ids (gethash id ids))
+                      (seq-some (lambda (rendered)
+                                  (equal id (plist-get rendered :entry-id)))
+                                (mentat--buffer-entries view))))))
+      (funcall orig view raw-event)))
+
 (advice-add 'mentat--buffer-render-custom-message :around #'bob/om-retrieval-view--around)
+(advice-add 'mentat--event-project-durable-entry :around #'bob/om-retrieval-view--project-entry)
+(advice-add 'mentat--buffer-durable-observer-event-duplicate-p :around #'bob/om-retrieval-view--duplicate-p)
 
 (provide 'om-retrieval-view)
 ;;; om-retrieval-view.el ends here
