@@ -259,7 +259,14 @@ Mentat subagent properties."
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
-      :environment (("CLAUDE_CONFIG_DIR" . "/Users/bob/.claude-private"))
+      ;; Trial of OM reflection retrieval: summaries omit reflections and Jev
+      ;; retrieves relevant ones per prompt.  Revert by restoring the default
+      ;; extensions and dropping the OM variables and om_reflection_search.
+      :environment (("CLAUDE_CONFIG_DIR" . "/Users/bob/.claude-private")
+                    ("PI_OBSERVATIONAL_MEMORY_REFLECTION_RETRIEVAL" . "1")
+                    ("PI_OBSERVATIONAL_MEMORY_TYPESAFE_ENV_FILE"
+                     . "/Users/bob/source/mentat/pi-extensions/.env"))
+      :extensions (codex worktree-skills observational-memory-retrieval claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :default-provider "openai-codex"
       :default-model "gpt-6.1-sol"
@@ -287,6 +294,7 @@ Mentat subagent properties."
               "subagent"
               "subagent_progress"
               "recall"
+              "om_reflection_search"
               "codemode")
       :disabled-tools ("grep" "find" "ls"))
      ("basic"
@@ -360,6 +368,12 @@ Mentat subagent properties."
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
     :source "git:github.com/bobrowadam/pi-observational-memory")
+  ;; Experimental branch build; keep that checkout on bob/reflection-retrieval.
+  (mentat-define-extension observational-memory-retrieval
+    :source "/Users/bob/source/pi-observational-memory/dist/index.ts"
+    :tools (om_reflection_search))
+  (with-eval-after-load 'mentat-buffer
+    (load "/Users/bob/.emacs.d/modules/mentat/mentat-tools/om-retrieval-view" nil t))
   (mentat-define-extension claude-bridge
     :source "npm:pi-claude-bridge@0.9.2")
   (mentat-define-extension web-search
