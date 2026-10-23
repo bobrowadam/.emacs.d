@@ -348,7 +348,9 @@ Mentat subagent properties."
   ;; internally, so it must not be included in `mentat-enabled-extensions'.
   (mentat-define-extension mentat-emacs
     :source "/Users/bob/source/mentat/pi-extensions/src/mentat-emacs.ts"
-    :tools (emacs_eval_elisp emacs_eval_async emacs_elisp_call))
+    :tools (emacs_read emacs_read_buffer emacs_edit emacs_write
+            emacs_grep emacs_find emacs_ls emacs_run_process
+            emacs_eval_elisp emacs_eval_async emacs_elisp_call))
   ;; Opt basic into notices only; ordinary profiles already load this internally.
   (mentat-define-extension pi-update
     :source mentat--pi-update-file)
