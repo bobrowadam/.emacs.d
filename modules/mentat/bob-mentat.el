@@ -324,7 +324,10 @@ Mentat subagent properties."
      "claude-bridge/claude-opus-5-5"))
 
   (mentat-extension-menu-commands
-   '(("C" "Codex controls" bob/mentat-codex-menu)))
+   '(("C" "Codex controls" bob/mentat-codex-menu)
+     ("s" "OM status" "/om:status")
+     ("v" "OM visible memory" "/om:view")
+     ("f" "OM full memory" "/om:view full")))
 
   (mentat-mode-line-extra-functions
    '(bob/mentat-codex-usage))
