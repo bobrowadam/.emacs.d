@@ -229,6 +229,10 @@ Mentat subagent properties."
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
+      :environment (("PI_OBSERVATIONAL_MEMORY_REFLECTION_RETRIEVAL" . "1")
+                    ("PI_OBSERVATIONAL_MEMORY_TYPESAFE_ENV_FILE"
+                     . "/Users/bob/source/mentat/pi-extensions/.env"))
+      :extensions (codex worktree-skills observational-memory-retrieval claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :subagent-enabled-models ("azure/gpt-6.1-sol"
                                 "azure/gpt-6-astra"
@@ -255,13 +259,11 @@ Mentat subagent properties."
               "subagent"
               "subagent_progress"
               "recall"
+              "om_reflection_search"
               "codemode")
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
-      ;; Trial of OM reflection retrieval: summaries omit reflections and Jev
-      ;; retrieves relevant ones per prompt.  Revert by restoring the default
-      ;; extensions and dropping the OM variables and om_reflection_search.
       :environment (("CLAUDE_CONFIG_DIR" . "/Users/bob/.claude-private")
                     ("PI_OBSERVATIONAL_MEMORY_REFLECTION_RETRIEVAL" . "1")
                     ("PI_OBSERVATIONAL_MEMORY_TYPESAFE_ENV_FILE"
@@ -371,7 +373,7 @@ Mentat subagent properties."
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (mentat-define-extension observational-memory
     :source "git:github.com/bobrowadam/pi-observational-memory")
-  ;; Experimental branch build; keep that checkout on bob/reflection-retrieval.
+  ;; Local master build shared by Work and Private for reflection retrieval.
   (mentat-define-extension observational-memory-retrieval
     :source "/Users/bob/source/pi-observational-memory/dist/index.ts"
     :tools (om_reflection_search))
