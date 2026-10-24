@@ -10,6 +10,22 @@
 (defconst bob/gpu-snapshot-directory "/tmp/gpu-glitch/"
   "Parent directory for timestamped snapshots.")
 
+(defconst bob/gpu-snapshot-readme
+  "Bmacs GPU glitch snapshot, saved by `bob/gpu-snapshot' (key C in Mentat).
+
+frame-N-screen.png     What macOS showed in frame N's screen area when the key
+                       was pressed, captured first.  Windows or overlays on top
+                       of the frame appear too.  Compare the others with this.
+frame-N-metal.png      Bmacs's Metal texture readback: text and cursor, without
+                       Core Animation decoration layers.
+frame-N-composite.png  Metal readback with decorations redrawn on top.  It is
+                       freshly rendered, so a stale on-screen glitch may be gone.
+state.eld              Elisp plist: frame geometry and scale, windows, cursors,
+                       child frames, and tracked plus untracked native
+                       decorations (:untracked lists native IDs that Lisp lost).
+"
+  "README written into each snapshot directory.")
+
 (defun bob/gpu-snapshot--window (window)
   "Describe WINDOW's geometry, point, and cursor."
   (let* ((buffer (window-buffer window))
@@ -73,7 +89,8 @@ SCREEN is the on-screen capture already taken for FRAME."
 ;;;###autoload
 (defun bob/gpu-snapshot ()
   "Silently save screen pixels, GPU readbacks and display state for a glitch.
-The screen captures come first, before readbacks can trigger a redraw."
+The screen captures come first, before readbacks can trigger a redraw.
+Put the snapshot directory on the kill ring, to paste into a prompt."
   (interactive)
   (let* ((directory (file-name-as-directory
                      (expand-file-name (format-time-string "%Y%m%d-%H%M%S")
@@ -110,7 +127,10 @@ The screen captures come first, before readbacks can trigger a redraw."
                                                frame directory index screen)))))
     ;; A non-string VISIT keeps `write-region' from echoing "Wrote ...".
     (write-region (pp-to-string state) nil
-                  (expand-file-name "state.eld" directory) nil 'silent)))
+                  (expand-file-name "state.eld" directory) nil 'silent)
+    (write-region bob/gpu-snapshot-readme nil
+                  (expand-file-name "README.txt" directory) nil 'silent)
+    (kill-new directory)))
 
 (provide 'bob-gpu-snapshot)
 ;;; bob-gpu-snapshot.el ends here
