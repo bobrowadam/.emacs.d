@@ -43,8 +43,19 @@
                                     (gpu--decoration-state id frame))
                    when state collect (cons id state)))))
 
-(defun bob/gpu-snapshot--frame (frame directory index)
-  "Capture FRAME into DIRECTORY using INDEX, and return its state."
+(defun bob/gpu-snapshot--screen (frame file)
+  "Save the on-screen pixels of FRAME to FILE and return FILE, or nil.
+Capture by region, because Bmacs's `window-id' is not a macOS window
+number; overlapping windows and overlays appear as they do on screen."
+  (pcase-let ((`(,left ,top ,right ,bottom) (frame-edges frame 'outer-edges)))
+    (and (eq 0 (call-process "/usr/sbin/screencapture" nil nil nil "-x" "-R"
+                             (format "%d,%d,%d,%d" left top (- right left) (- bottom top))
+                             file))
+         file)))
+
+(defun bob/gpu-snapshot--frame (frame directory index screen)
+  "Capture FRAME into DIRECTORY using INDEX, and return its state.
+SCREEN is the on-screen capture already taken for FRAME."
   (let ((metal (expand-file-name (format "frame-%d-metal.png" index) directory))
         (composite (expand-file-name (format "frame-%d-composite.png" index) directory)))
     (list :frame (format "%s" frame)
@@ -52,6 +63,7 @@
           :position (frame-position frame)
           :scale (frame-scale-factor frame)
           :monitor (assq-delete-all 'frames (frame-monitor-attributes frame))
+          :screen screen
           :metal (and (ignore-errors (gpu-capture-frame metal frame)) metal)
           :composite (and (ignore-errors (gpu-capture-frame composite frame t)) composite)
           :transition (ignore-errors (gpu-transition-active-p frame))
@@ -60,8 +72,8 @@
 
 ;;;###autoload
 (defun bob/gpu-snapshot ()
-  "Silently save GPU readbacks and display state for a visible glitch.
-Take a macOS window screenshot first; this only reads Emacs state."
+  "Silently save screen pixels, GPU readbacks and display state for a glitch.
+The screen captures come first, before readbacks can trigger a redraw."
   (interactive)
   (let* ((directory (file-name-as-directory
                      (expand-file-name (format-time-string "%Y%m%d-%H%M%S")
@@ -84,10 +96,18 @@ Take a macOS window screenshot first; this only reads Emacs state."
                                                          (frame-pixel-height frame))))
                       :frames nil)))
     (make-directory directory t)
-    (setq state (plist-put state :frames
-                           (cl-loop for frame in frames
-                                    for index from 1
-                                    collect (bob/gpu-snapshot--frame frame directory index))))
+    (let ((screens (cl-loop for frame in frames
+                            for index from 1
+                            collect (bob/gpu-snapshot--screen
+                                     frame (expand-file-name
+                                            (format "frame-%d-screen.png" index)
+                                            directory)))))
+      (setq state (plist-put state :frames
+                             (cl-loop for frame in frames
+                                      for screen in screens
+                                      for index from 1
+                                      collect (bob/gpu-snapshot--frame
+                                               frame directory index screen)))))
     ;; A non-string VISIT keeps `write-region' from echoing "Wrote ...".
     (write-region (pp-to-string state) nil
                   (expand-file-name "state.eld" directory) nil 'silent)))
