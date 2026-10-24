@@ -378,7 +378,9 @@ Mentat subagent properties."
     :source "/Users/bob/source/pi-observational-memory/dist/index.ts"
     :tools (om_reflection_search))
   (with-eval-after-load 'mentat-buffer
-    (load "/Users/bob/.emacs.d/modules/mentat/mentat-tools/om-retrieval-view" nil t))
+    (load "/Users/bob/.emacs.d/modules/mentat/mentat-tools/om-retrieval-view" nil t)
+    (autoload 'bob/gpu-snapshot "bob-gpu-snapshot" nil t)
+    (keymap-set mentat-buffer-mode-map "C" #'bob/gpu-snapshot))
   (mentat-define-extension claude-bridge
     :source "npm:pi-claude-bridge@0.9.2")
   (mentat-define-extension web-search
