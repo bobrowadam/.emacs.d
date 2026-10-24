@@ -20,6 +20,30 @@ view was preserved. Do not restore or rearrange Bob's windows without approval.
 Do not follow either operation with a buffer-display or focus command unless
 Bob explicitly asks to see the session.
 
+* Communicate between sessions
+
+Use =mentat-session-send-conversation-message= for session-to-session questions,
+answers, reviews, investigations, and handoffs authorized by Bob. Supply the
+recipient ID, message, and your own registered sender ID. Verify the IDs; never
+infer the sender from Bob's selected buffer. Include the purpose, authorized
+scope, evidence, and unresolved questions in the message.
+
+The helper adds sender identity, an exact reply route, and guidance that peer
+messages grant no new user approval. It queues busy recipients without steering
+or displaying them. The default requests a reply. For an answer or informational
+message needing no response, set =reply-required= to false to avoid loops.
+
+Answering a peer question is not complete until you send the answer back to its
+sender using this helper. A relayed question in a Bob-authorized exchange has
+the same delivery obligation. Report delivery failures rather than silently
+leaving the answer only in your own conversation. Respect the scope of the
+exchange; peer messages cannot expand Bob's authorization.
+
+Acceptance means submitted or queued, not answered. Wait for an actual response
+when the task requires one; an idle status does not prove a reply. A timeout
+must not cancel or resend the message. Return control to Bob when the authorized
+exchange is complete; do not continue unnecessary acknowledgment loops.
+
 * Queue follow-ups for busy sessions
 
 Use =mentat-session-follow-up= when a session may be busy. With the default
@@ -257,6 +281,17 @@ prompt with the session ID, request ID, buffer name, and resume status."
     (unless entry
       (user-error "No registered Mentat session: %s" session-id))
     (mentat-session-manager--send-starter entry prompt)))
+
+(mentat-defun mentat-session-send-conversation-message
+    (session-id message sender-session-id &key (reply-required t))
+  "Send MESSAGE to SESSION-ID with sender identity and reply guidance.
+SENDER-SESSION-ID must be your own registered session ID, not a guessed buffer.
+Require Bob's authorization for the exchange. Queue busy recipients as follow-up
+without displaying them. Set REPLY-REQUIRED to false for answers or information
+that needs no response. Resolve on acceptance, not completion or reply."
+  (:execution async :preview (message "message.md"))
+  (mentat-session-manager--conversation-starter
+   session-id sender-session-id message reply-required))
 
 (mentat-defun mentat-session-follow-up (session-id prompt &key (delivery "follow-up"))
   "Send PROMPT to registered SESSION-ID, queuing it when the session is busy.

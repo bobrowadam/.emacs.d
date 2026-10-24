@@ -13,6 +13,50 @@
                         (file-name-directory (or load-file-name buffer-file-name)))
       nil t t)
 
+(ert-deftest mentat-session-conversation-routes-replies-to-the-sender ()
+  (let* ((sender (mentat--registry-entry-create
+                  :session-id "sender" :root "/sender/"))
+         (recipient (mentat--registry-entry-create :session-id "recipient"))
+         captured)
+    (cl-letf (((symbol-function 'mentat--registry-list)
+               (lambda (&rest _) (list sender recipient)))
+              ((symbol-function 'mentat-session-manager--send-starter)
+               (lambda (entry prompt delivery)
+                 (setq captured (list entry prompt delivery))
+                 'mock-starter)))
+      (should (eq 'mock-starter
+                  (mentat-session-manager--conversation-starter
+                   "recipient" "sender" "What was agreed?" t)))
+      (should (eq recipient (car captured)))
+      (should (eq 'follow-up (nth 2 captured)))
+      (let ((prompt (nth 1 captured)))
+        (should (string-match-p "Sender session ID: sender" prompt))
+        (should (string-match-p "Sender project: /sender/" prompt))
+        (should (string-match-p
+                 (regexp-quote "[\"sender\",\"ANSWER\",\"recipient\"]") prompt))
+        (should (string-match-p
+                 (regexp-quote "{\"reply-required\": false}") prompt))
+        (should (string-suffix-p "Message:\nWhat was agreed?" prompt)))
+      (mentat-session-manager--conversation-starter
+       "sender" "recipient" "The agreed scope was read-only." :false)
+      (should (eq sender (car captured)))
+      (should (string-match-p "No reply or acknowledgment" (nth 1 captured)))
+      (should-not (string-match-p "Replace ANSWER" (nth 1 captured))))))
+
+(ert-deftest mentat-session-conversation-rejects-invalid-routing-before-send ()
+  (let ((entry (mentat--registry-entry-create :session-id "sender")))
+    (cl-letf (((symbol-function 'mentat--registry-list)
+               (lambda (&rest _) (list entry)))
+              ((symbol-function 'mentat-session-manager--send-starter)
+               (lambda (&rest _) (ert-fail "Invalid message must not send"))))
+      (dolist (args '(("missing" "sender" "question" t)
+                      ("sender" "missing" "question" t)
+                      ("sender" "sender" "question" t)
+                      ("sender" "sender" " " t)
+                      ("sender" "sender" "question" "false")))
+        (should-error (apply #'mentat-session-manager--conversation-starter args)
+                      :type 'user-error)))))
+
 (ert-deftest mentat-session-send-waits-for-acknowledgment ()
   (dolist (live '(t nil))
     (ert-info ((format "Initially live: %S" live))
