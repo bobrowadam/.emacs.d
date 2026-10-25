@@ -74,7 +74,13 @@ Use the returned =session-file= as the current transcript, not the old path.
 
 * Read and search saved history
 
-=mentat-session-search= finds sessions containing literal text, as before.
+=mentat-session-search= finds registered sessions containing literal text.
+When that search misses, set =include-unregistered= to also scan transcripts
+in each Pi profile's sessions directory that no registered session owns, such
+as killed sessions. These appear under =unregistered-sessions= with file paths.
+=mentat-session-read= and =mentat-session-search-history= still require registered
+IDs; read unregistered transcripts with file tools instead.
+
 Use =mentat-session-read= to page through one session's saved transcript and
 =mentat-session-search-history= to get matching excerpts within that session.
 Neither operation opens or resumes a session, and both work for closed sessions.
@@ -182,13 +188,16 @@ time, and live buffer names.  DIRECTORY must name an existing project root."
     (mapcar #'mentat-session-manager--entry-result
             (seq-take entries mentat-session-manager--list-limit))))
 
-(mentat-defun mentat-session-search (query &key directory (max-results 30))
+(mentat-defun mentat-session-search
+    (query &key directory (max-results 30) include-unregistered)
   "Find registered Mentat sessions whose persisted transcripts contain QUERY.
 
 Match case-insensitively and literally, including messages and tool records.
 DIRECTORY optionally restricts the search to an existing project root.
 Return up to MAX-RESULTS matching sessions in registry order, their transcript
-paths, the number searched, and the number with unavailable transcripts."
+paths, the number searched, and the number with unavailable transcripts.
+INCLUDE-UNREGISTERED also searches unowned Pi profile transcripts, returning
+up to MAX-RESULTS under unregistered-sessions, newest first, as file paths."
   (:execution async)
   (unless (and (stringp query) (not (string-blank-p query)))
     (user-error "QUERY must be a nonblank string"))
@@ -198,6 +207,8 @@ paths, the number searched, and the number with unavailable transcripts."
     (user-error "Mentat session directory does not exist: %S" directory))
   (unless (and (integerp max-results) (> max-results 0))
     (user-error "MAX-RESULTS must be a positive integer"))
+  (unless (memq include-unregistered '(nil t :false))
+    (user-error "INCLUDE-UNREGISTERED must be a boolean"))
   (let* ((root (and directory
                     (file-name-as-directory (file-truename directory))))
          (registered (mentat--registry-list root))
@@ -207,7 +218,8 @@ paths, the number searched, and the number with unavailable transcripts."
                        (and (file-regular-p file) (file-readable-p file))))
                    registered)))
     (mentat-session-manager--search-starter
-     entries query (min 100 max-results) (- (length registered) (length entries)))))
+     entries query (min 100 max-results) (- (length registered) (length entries))
+     (eq include-unregistered t) root)))
 
 (mentat-defun mentat-session-read
     (session-id &key (start-line 1) (start-column 0) (max-records 20) (max-chars 20000))

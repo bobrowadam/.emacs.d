@@ -157,6 +157,64 @@
              ,@body))
        (delete-file file))))
 
+(ert-deftest mentat-session-search-splits-unregistered-transcripts-by-id ()
+  (skip-unless (executable-find "rg"))
+  (let* ((agent (make-temp-file "mentat-search-test-" t))
+         (sessions (expand-file-name "sessions/nested" agent))
+         (registered-file (expand-file-name "2026-01-01_registered.jsonl" agent))
+         (snapshot (expand-file-name "2025-01-01_registered.jsonl" sessions))
+         (older (expand-file-name "2026-01-02_older.jsonl" sessions))
+         (newer (expand-file-name "2026-01-03_newer.jsonl" sessions))
+         (entry (mentat--registry-entry-create
+                 :session-id "registered" :session-file registered-file))
+         (root (file-name-as-directory agent)))
+    (unwind-protect
+        (progn
+          (make-directory sessions t)
+          (dolist (spec `((,registered-file "registered" ,agent "2026-01-01T00:00:00Z")
+                          (,snapshot "registered" ,agent "2025-01-01T00:00:00Z")
+                          (,older "older" ,agent "2026-01-02T00:00:00Z")
+                          (,newer "newer" "/elsewhere" "2026-01-03T00:00:00Z")))
+            (with-temp-file (car spec)
+              (insert (json-encode
+                       `((type . "session") (id . ,(nth 1 spec))
+                         (cwd . ,(nth 2 spec)) (timestamp . ,(nth 3 spec)))) "\n")
+              (insert "{\"type\":\"message\",\"text\":\"NEEDLE "
+                      (make-string 70000 ?x) "\"}\n")
+              (dotimes (_ 17) (insert "{\"type\":\"model_change\"}\n"))
+              (insert "{\"type\":\"session_info\",\"name\":\"First name שלום\"}\n"
+                      "{\"type\":\"session_info\",\"name\":\"Later name\"}\n")))
+          (cl-letf (((symbol-function 'mentat-session-manager--session-directories)
+                     (lambda () (list (expand-file-name "sessions/" agent))))
+                    ((symbol-function 'mentat--registry-list)
+                     (lambda (&rest _) (list entry)))
+                    ((symbol-function 'mentat-session-manager--entry-result)
+                     (lambda (_) '((session-id . "registered")))))
+            (let ((page (mentat-session-test--await
+                         (mentat-session-manager--search-starter
+                          (list entry) "needle" 30 0))))
+              (should (equal (mapcar #'car page)
+                             '(searched unavailable truncated sessions)))
+              (should (= (length (alist-get 'sessions page)) 1)))
+            (let* ((page (mentat-session-test--await
+                          (mentat-session-manager--search-starter
+                           (list entry) "needle" 1 0 t)))
+                   (hits (alist-get 'unregistered-sessions page)))
+              (should (= (length (alist-get 'sessions page)) 1))
+              (should (alist-get 'truncated page))
+              (should (equal (mapcar (lambda (hit) (alist-get 'session-id hit)) hits)
+                             '("newer"))))
+            (let* ((page (mentat-session-test--await
+                          (mentat-session-manager--search-starter
+                           (list entry) "needle" 30 0 t root)))
+                   (hits (alist-get 'unregistered-sessions page)))
+              (should-not (alist-get 'truncated page))
+              (should (equal hits
+                             `(((session-id . "older") (directory . ,agent)
+                                (started . "2026-01-02T00:00:00Z")
+                                (name . "First name שלום") (session-file . ,older))))))))
+      (delete-directory agent t))))
+
 (ert-deftest mentat-session-history-reads-before-compaction-and-other-branches ()
   (mentat-session-test--with-transcript
       (concat

@@ -218,11 +218,78 @@ Cancellation stops waiting, not a directory change already in progress."
       ,@(when (buffer-live-p buffer)
           `((buffer . ,(buffer-name buffer)))))))
 
-(defun mentat-session-manager--search-starter (entries query limit unavailable)
+(defun mentat-session-manager--session-directories ()
+  "Return existing, distinct Pi profile session directories."
+  (delete-dups
+   (delq nil
+         (mapcar
+          (lambda (directory)
+            (when directory
+              (let ((sessions (expand-file-name "sessions" directory)))
+                (when (file-directory-p sessions)
+                  (file-name-as-directory (file-truename sessions))))))
+          (cons "~/.pi/agent" (mapcar #'mentat--profile-directory
+                                      mentat-pi-profiles))))))
+
+(defun mentat-session-manager--transcript-result (file)
+  "Return session metadata from only the first 20 lines of FILE.
+Read in small chunks so large transcripts are never loaded in full."
+  (with-temp-buffer
+    (set-buffer-multibyte nil)
+    (let ((size (file-attribute-size (file-attributes file)))
+          (offset 0) (line 0) header info)
+      (while (and (< line 20) (< offset size))
+        (let ((position (point))
+              (end (min size (+ offset 4096))))
+          (goto-char (point-max))
+          (insert-file-contents-literally file nil offset end)
+          (setq offset end)
+          (goto-char position))
+        (while (and (< line 20)
+                    (or (search-forward "\n" nil t)
+                        (and (= offset size) (< (point-min) (point-max))
+                             (goto-char (point-max)))))
+          (let ((text (decode-coding-string
+                       (buffer-substring-no-properties (point-min) (point)) 'utf-8)))
+            (when (or (= line 0)
+                      (and (not info)
+                           (string-match-p
+                            "\"type\"[[:space:]]*:[[:space:]]*\"session_info\"" text)))
+              (let ((record (json-parse-string text :object-type 'alist)))
+                (cond
+                 ((= line 0) (setq header record))
+                 ((equal (alist-get 'type record) "session_info")
+                  (setq info record))))))
+          (cl-incf line)
+          (delete-region (point-min) (point)))
+        (goto-char (point-min)))
+      `((session-id . ,(alist-get 'id header))
+        (directory . ,(alist-get 'cwd header))
+        (started . ,(alist-get 'timestamp header))
+        (name . ,(alist-get 'name info))
+        (session-file . ,file)))))
+
+(defun mentat-session-manager--search-starter
+    (entries query limit unavailable &optional include-unregistered root)
   "Return a callback starter searching ENTRIES for QUERY, bounded by LIMIT.
-UNAVAILABLE counts registered sessions without a readable transcript."
+UNAVAILABLE counts registered sessions without a readable transcript.
+INCLUDE-UNREGISTERED also scans profile transcripts, restricted to ROOT."
   (lambda (resolve reject on-cancel)
-    (let ((output "") (errors "") (finished nil) process stderr)
+    (let* ((directories (and include-unregistered
+                             (mentat-session-manager--session-directories)))
+           (paths (append
+                   directories
+                   (seq-remove
+                    (lambda (file)
+                      (seq-some (lambda (directory)
+                                  (file-in-directory-p file directory))
+                                directories))
+                    (mapcar #'mentat--registry-entry-session-file entries))))
+           (registered-ids (make-hash-table :test #'equal))
+           (output "") (errors "") (finished nil) process stderr)
+      (when include-unregistered
+        (dolist (entry (mentat--registry-list))
+          (puthash (mentat--registry-entry-session-id entry) t registered-ids)))
       (cl-labels
           ((cleanup ()
              (dolist (child (list process stderr))
@@ -235,11 +302,26 @@ UNAVAILABLE counts registered sessions without a readable transcript."
                (funcall reject reason)))
            (succeed ()
              (unless finished
-               (setq finished t)
-               (let* ((files (split-string output "\0" t))
+               (let* ((files (delete-dups (split-string output "\0" t)))
                       (hits (make-hash-table :test #'equal))
-                      matches)
-                 (dolist (file files) (puthash file t hits))
+                      matches unregistered)
+                 (dolist (file files)
+                   (puthash file t hits)
+                   (when (and include-unregistered
+                              (string-match "_\\(.+\\)\\.jsonl\\'"
+                                            (file-name-nondirectory file))
+                              (not (gethash (match-string 1 (file-name-nondirectory file))
+                                            registered-ids)))
+                     (let* ((metadata (mentat-session-manager--transcript-result file))
+                            (cwd (alist-get 'directory metadata)))
+                       (when (or (not root)
+                                 (and cwd (file-in-directory-p cwd root)))
+                         (push metadata unregistered)))))
+                 (setq unregistered
+                       (sort unregistered
+                             (lambda (a b)
+                               (string> (alist-get 'started a)
+                                        (alist-get 'started b)))))
                  (dolist (entry entries)
                    (when (gethash (mentat--registry-entry-session-file entry) hits)
                      (push entry matches)))
@@ -247,24 +329,30 @@ UNAVAILABLE counts registered sessions without a readable transcript."
                  (let ((result
                         `((searched . ,(length entries))
                           (unavailable . ,unavailable)
-                          (truncated . ,(> (length matches) limit))
+                          (truncated . ,(or (> (length matches) limit)
+                                            (> (length unregistered) limit)))
                           (sessions . ,(mapcar
                                         (lambda (entry)
                                           (append
                                            (mentat-session-manager--entry-result entry)
                                            `((session-file . ,(mentat--registry-entry-session-file entry)))))
-                                        (seq-take matches limit))))))
+                                        (seq-take matches limit)))
+                          ,@(when include-unregistered
+                              `((unregistered-sessions . ,(seq-take unregistered limit)))))))
+                   (setq finished t)
                    (cleanup)
                    (funcall resolve result)))))
            (filter-output (_ chunk)
              (unless finished
                (setq output (concat output chunk))
-               (when (> (length output) 131072)
-                 (fail "Session search output exceeded 128 KiB"))))
+               (when (> (string-bytes output) 1048576)
+                 (fail "Session search output exceeded 1 MiB"))))
            (on-exit (proc _event)
              (unless finished
                (if (memq (process-exit-status proc) '(0 1))
-                   (succeed)
+                   (condition-case err
+                       (succeed)
+                     (error (fail (error-message-string err))))
                  (fail (format "Session search failed: %s"
                                (if (string-blank-p errors)
                                    (process-exit-status proc)
@@ -275,7 +363,7 @@ UNAVAILABLE counts registered sessions without a readable transcript."
                      (setq finished t)
                      (cleanup))))
         (condition-case err
-            (if (null entries)
+            (if (null paths)
                 (succeed)
               (setq stderr
                     (make-pipe-process
@@ -294,10 +382,12 @@ UNAVAILABLE counts registered sessions without a readable transcript."
                                (list (or (executable-find "rg")
                                          (user-error "ripgrep is required"))
                                      "--files-with-matches" "--null" "--fixed-strings"
-                                     "--ignore-case" "-e" query
+                                     "--ignore-case")
+                               (when include-unregistered (list "--glob" "*.jsonl"))
+                               (list "-e" query
                                      "-e" (substring (json-encode-string query) 1 -1)
                                      "--")
-                               (mapcar #'mentat--registry-entry-session-file entries))
+                               paths)
                      :connection-type 'pipe :coding '(utf-8-unix . utf-8-unix)
                      :noquery t :filter #'filter-output :sentinel #'on-exit)))
           (error (fail (error-message-string err))))))))
