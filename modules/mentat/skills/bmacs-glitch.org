@@ -1,0 +1,98 @@
+#+TITLE: Investigate Bmacs rendering glitches
+#+DESCRIPTION: Analyze a reported Bmacs or Mentat visual glitch, including GPU snapshot directories under /tmp/gpu-glitch/.
+
+Read this when Bob reports a visual glitch in Emacs, sends a screenshot of one,
+or pastes a =/tmp/gpu-glitch/<timestamp>/= path. This skill contains
+instructions only.
+
+* Background
+
+Bmacs is Bob's macOS Emacs build with a Metal renderer. Its source is
+=/Users/bob/source/emacs=, with feature worktrees under =.worktrees/=; the
+installed app is =~/Applications/Bmacs.app=. Metal draws text, faces and the
+cursor. Decorations from the =gpu-decoration-*= API (=lisp/gpu.el=,
+=src/mtlfns.m=, =src/mtlterm.m=) are Core Animation layers above the Metal
+layer, unless =BMACS_CA_DECORATIONS=0= selects the older Metal-only path.
+Mentat draws response and tool cards, dividers, check marks, spinners and code
+blocks with decorations, in =mentat-gpu-cards.el=, =mentat-gpu-marks.el=,
+=mentat-gpu-code.el= and =mentat-animation.el= of =/Users/bob/source/mentat=.
+
+* Read a snapshot
+
+Pressing =C= in a Mentat buffer runs =bob/gpu-snapshot=
+(=/Users/bob/.emacs.d/modules/bob-gpu-snapshot.el=). It silently writes one
+directory per press, named by local time, and copies its path to the kill
+ring. Each directory has a =README.txt= describing its files. Read =state.eld=
+and view =frame-N-screen.png= first.
+
+- =frame-N-screen.png= :: The on-screen pixels of frame N, captured before
+  anything else. It includes the title bar and any window or overlay on top
+  of the frame. This is the evidence of what Bob saw.
+- =frame-N-metal.png= :: The Metal texture readback: text, faces and cursor,
+  without Core Animation decorations.
+- =frame-N-composite.png= :: Despite the README, currently identical to the
+  Metal readback on Core Animation frames; it does not show decorations.
+- =state.eld= :: A plist with the time, =last-command=, child frames, and per
+  frame its geometry, scale, windows (edges, start, end, point, cursor) and
+  decorations. =:tracked= lists Lisp decorations with their owner buffer,
+  requested =:properties= and sampled =:native= state;
+  =:untracked= lists native decorations that Lisp lost track of.
+
+Coordinates in =state.eld= are logical frame pixels from the top-left of the
+frame's content. Multiply by =:scale= for image pixels. The Metal image starts
+at the content origin; the screen image starts at the outer frame, so its
+content is offset by the title bar height (the difference in image heights).
+
+* Locate the glitch
+
+Compare the screen image with the Metal image:
+
+- Present in both :: Metal output. Look at faces, display properties, window
+  layout and the Metal renderer.
+- Only on screen, and matching a =:tracked= rect :: A decoration. Compare its
+  =:properties= with what the screen shows, then find its constructor through
+  the owner and shape (for example, =rounded-rectangle= outlines are Mentat
+  cards).
+- Only on screen, matching nothing :: Check =:untracked=, visible child frames
+  such as Corfu, and other macOS windows or overlays.
+
+=gpu--decoration-state= reports rect, opacity, and whether geometry and
+opacity tracks are active. It does not report keyframe progress, such as
+=:stroke-end= outline tracing. One snapshot cannot distinguish an animation
+caught mid-flight from a stuck one. Ask Bob for two presses about a second
+apart; an unchanged partial decoration in both is stuck. Remember that new
+running Mentat cards trace their outline for 0.5 s, and a card scrolled back
+into view is recreated.
+
+* Check live state
+
+A snapshot is the past. Before drawing conclusions from live state, check
+whether the owner buffer is still displayed: Mentat removes a buffer's
+decorations when no window shows it, so a glitch in an undisplayed session is
+gone. Read-only probes of =gpu--decorations=, window geometry and buffer
+properties are fine. Ask before capturing or visually inspecting Bob's active
+Emacs. Never switch or scroll his buffers, select windows, or bring Emacs
+forward.
+
+To reproduce, use an isolated Bmacs process: a staged build under
+=~/Library/Application Support/bmacs-updates/= (prepared by
+=admin/bmacs/manage.py=), started with =-Q --fg-daemon= on a private socket,
+with a non-focusing frame (=no-accept-focus=, =no-focus-on-map=,
+=z-group below=). Capture it with =screencapture -x -R x,y,w,h=, using frame
+=outer-edges=; =screencapture -l= does not work with Bmacs's =window-id=,
+which is not a macOS window number. Never install, replace or restart Bob's
+Bmacs without approval.
+
+* Known open issues
+
+Check these before treating a report as new:
+
+- An intermittent thin cream outline near the bottom of the frame, source
+  unidentified; it did not appear in Metal readbacks.
+- A Mentat response card outline seen only partly drawn, matching an
+  interrupted =:stroke-end= trace; not yet confirmed stuck.
+- Filled decorations can cover the animated cursor, contrary to the
+  documented cursor-above-decorations contract, because the cursor is drawn in
+  Metal below the Core Animation layer.
+- =gpu-decoration-animate= with =:rect= and ='spring= fails with "Property
+  cannot animate with keyframes".
