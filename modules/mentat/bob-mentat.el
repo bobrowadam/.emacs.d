@@ -303,6 +303,9 @@ Mentat subagent properties."
 
   :config
   (require 'mentat-footer)
+  (require 'worktree-session
+           (expand-file-name "modules/mentat/mentat-tools/worktree-session"
+                             user-emacs-directory))
   ;; Mentat previews its top-ranked word inline; M-TAB shows alternatives.
   (add-hook 'mentat-prompt-mode-hook #'bob/mentat-prompt-disable-corfu-auto)
   (add-hook 'mentat-prompt-mode-hook

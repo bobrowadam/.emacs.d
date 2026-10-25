@@ -108,7 +108,7 @@ stops Git but does not undo a branch or worktree already created."
         (when (process-live-p process) (delete-process process))))))
 
 (defun bob/clean-worktree (directory remote-policy success failure
-                                     &optional remove-function)
+                                     &optional remove-function check-function)
   "Remove worktree DIRECTORY and its associated branches.
 REMOTE-POLICY is `check', `delete', `keep', or a function called with the
 branch name when that branch exists on origin.  `check' calls SUCCESS with a
@@ -117,8 +117,10 @@ exists.  DELETE removes it; KEEP preserves it.  A policy function should return
 non-nil to delete it.
 
 Use REMOVE-FUNCTION, when non-nil, instead of `git worktree remove'.  This lets
-interactive callers retain their own confirmation behavior.  Call SUCCESS with
-cleanup metadata or FAILURE with error text.  Return a cancellation function."
+interactive callers retain their own confirmation behavior.  Call CHECK-FUNCTION
+with the target directory immediately before removal, when non-nil.  It may
+signal an error to stop cleanup.  Call SUCCESS with cleanup metadata or FAILURE
+with error text.  Return a cancellation function."
   (unless (and (stringp directory) (file-directory-p directory)
                (not (file-remote-p directory)))
     (user-error "Worktree must be an existing local directory"))
@@ -176,6 +178,7 @@ cleanup metadata or FAILURE with error text.  Return a cancellation function."
                     '(0) #'delete-local-branch)
              (finish)))
          (remove-worktree ()
+           (when check-function (funcall check-function target))
            (if remove-function
                (progn (funcall remove-function target) (removed))
              (run source (list "worktree" "remove" "--" target)
