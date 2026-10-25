@@ -1,7 +1,7 @@
 ;;; bob-gpu-snapshot.el --- Silent GPU glitch snapshots -*- lexical-binding: t; -*-
 
-;; Record what Bmacs has rendered, plus decoration and window state, without
-;; messages or redisplay-triggering UI, so a transient glitch survives capture.
+;; Record what Bmacs has rendered, plus decoration and window state, before any
+;; message or redisplay-triggering UI, so a transient glitch survives capture.
 (require 'cl-lib)
 (require 'gpu)
 (require 'pp)
@@ -17,9 +17,8 @@ frame-N-screen.png     What macOS showed in frame N's screen area when the key
                        was pressed, captured first.  Windows or overlays on top
                        of the frame appear too.  Compare the others with this.
 frame-N-metal.png      Bmacs's Metal texture readback: text and cursor, without
-                       Core Animation decoration layers.
-frame-N-composite.png  Metal readback with decorations redrawn on top.  It is
-                       freshly rendered, so a stale on-screen glitch may be gone.
+                       Core Animation decoration layers.  Only the screen
+                       image shows decorations; state.eld records them.
 state.eld              Elisp plist: frame geometry and scale, windows, cursors,
                        child frames, and tracked plus untracked native
                        decorations (:untracked lists native IDs that Lisp lost).
@@ -72,8 +71,7 @@ number; overlapping windows and overlays appear as they do on screen."
 (defun bob/gpu-snapshot--frame (frame directory index screen)
   "Capture FRAME into DIRECTORY using INDEX, and return its state.
 SCREEN is the on-screen capture already taken for FRAME."
-  (let ((metal (expand-file-name (format "frame-%d-metal.png" index) directory))
-        (composite (expand-file-name (format "frame-%d-composite.png" index) directory)))
+  (let ((metal (expand-file-name (format "frame-%d-metal.png" index) directory)))
     (list :frame (format "%s" frame)
           :pixel-size (list (frame-pixel-width frame) (frame-pixel-height frame))
           :position (frame-position frame)
@@ -81,16 +79,16 @@ SCREEN is the on-screen capture already taken for FRAME."
           :monitor (assq-delete-all 'frames (frame-monitor-attributes frame))
           :screen screen
           :metal (and (ignore-errors (gpu-capture-frame metal frame)) metal)
-          :composite (and (ignore-errors (gpu-capture-frame composite frame t)) composite)
           :transition (ignore-errors (gpu-transition-active-p frame))
           :windows (mapcar #'bob/gpu-snapshot--window (window-list frame t))
           :decorations (bob/gpu-snapshot--decorations frame))))
 
 ;;;###autoload
 (defun bob/gpu-snapshot ()
-  "Silently save screen pixels, GPU readbacks and display state for a glitch.
+  "Save screen pixels, a Metal readback and display state for a glitch.
 The screen captures come first, before readbacks can trigger a redraw.
-Put the snapshot directory on the kill ring, to paste into a prompt."
+Put the snapshot directory on the kill ring, to paste into a prompt, and
+report it once everything is saved."
   (interactive)
   (let* ((directory (file-name-as-directory
                      (expand-file-name (format-time-string "%Y%m%d-%H%M%S")
@@ -130,7 +128,8 @@ Put the snapshot directory on the kill ring, to paste into a prompt."
                   (expand-file-name "state.eld" directory) nil 'silent)
     (write-region bob/gpu-snapshot-readme nil
                   (expand-file-name "README.txt" directory) nil 'silent)
-    (kill-new directory)))
+    (kill-new directory)
+    (message "GPU snapshot saved to %s (path copied)" directory)))
 
 (provide 'bob-gpu-snapshot)
 ;;; bob-gpu-snapshot.el ends here

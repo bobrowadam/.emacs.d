@@ -22,7 +22,8 @@ blocks with decorations, in =mentat-gpu-cards.el=, =mentat-gpu-marks.el=,
 Pressing =C= in a Mentat buffer runs =bob/gpu-snapshot=
 (=/Users/bob/.emacs.d/modules/bob-gpu-snapshot.el=). It silently writes one
 directory per press, named by local time, and copies its path to the kill
-ring. Each directory has a =README.txt= describing its files. Read =state.eld=
+ring, then reports the path in the echo area. Each directory has a
+=README.txt= describing its files. Read =state.eld=
 and view =frame-N-screen.png= first.
 
 - =frame-N-screen.png= :: The on-screen pixels of frame N, captured before
@@ -30,8 +31,6 @@ and view =frame-N-screen.png= first.
   of the frame. This is the evidence of what Bob saw.
 - =frame-N-metal.png= :: The Metal texture readback: text, faces and cursor,
   without Core Animation decorations.
-- =frame-N-composite.png= :: Despite the README, currently identical to the
-  Metal readback on Core Animation frames; it does not show decorations.
 - =state.eld= :: A plist with the time, =last-command=, child frames, and per
   frame its geometry, scale, windows (edges, start, end, point, cursor) and
   decorations. =:tracked= lists Lisp decorations with their owner buffer,
