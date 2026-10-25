@@ -134,36 +134,6 @@ Mentat subagent properties."
           (propertize "Codex usage unavailable" 'face 'shadow
                       'help-echo plain))))))
 
-(defun bob/mentat-observational-memory-compaction-presentation (result)
-  "Describe Observational Memory metadata in compaction RESULT."
-  (let ((details (alist-get 'details result)))
-    (when (equal "om.folded" (alist-get 'type details))
-      (let ((observations (length (alist-get 'observations details)))
-            (reflections (length (alist-get 'reflections details)))
-            (full-fold (eq t (alist-get 'fullFold details))))
-        (list
-         :label "Observational memory compacted"
-         :heading "Observational memory compaction"
-         :inline-details
-         (delq nil
-               (list (and (> observations 0)
-                          (format "%d observation%s"
-                                  observations
-                                  (if (= observations 1) "" "s")))
-                     (and (> reflections 0)
-                          (format "%d reflection%s"
-                                  reflections
-                                  (if (= reflections 1) "" "s")))
-                     (and full-fold "full fold")))
-         :inspection-details
-         (delq nil
-               (list (cons "Observations" (number-to-string observations))
-                     (cons "Reflections" (number-to-string reflections))
-                     (cons "Full fold" (if full-fold "yes" "no"))
-                     (and (eq t (alist-get 'retainedBeyondRequestedCut details))
-                          (cons "Unobserved history retained beyond requested cut"
-                                "yes")))))))))
-
 (transient-define-prefix bob/mentat-codex-menu ()
   "Open Codex controls."
   ["Codex"
@@ -189,7 +159,7 @@ Mentat subagent properties."
   (mentat-pi-directory (expand-file-name "~/.pi/agent"))
   (mentat-diagnostic-capture-enabled t)
   (mentat-enabled-extensions
-   '(codex worktree-skills observational-memory claude-bridge))
+   '(codex worktree-skills claude-bridge))
   (mentat-pi-disabled-tools nil)
   (mentat-emacs-tool-instructions
    (concat
@@ -229,10 +199,7 @@ Mentat subagent properties."
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
-      :environment (("PI_OBSERVATIONAL_MEMORY_REFLECTION_RETRIEVAL" . "1")
-                    ("PI_OBSERVATIONAL_MEMORY_TYPESAFE_ENV_FILE"
-                     . "/Users/bob/source/mentat/pi-extensions/.env"))
-      :extensions (codex worktree-skills observational-memory-retrieval claude-bridge)
+      :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :subagent-enabled-models ("azure/gpt-6.1-sol"
                                 "azure/gpt-6-astra"
@@ -258,17 +225,14 @@ Mentat subagent properties."
               "hindsight_reflect"
               "subagent"
               "subagent_progress"
-              "recall"
-              "om_reflection_search"
+              "ledger_recall"
+              "ledger_search"
               "codemode")
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
-      :environment (("CLAUDE_CONFIG_DIR" . "/Users/bob/.claude-private")
-                    ("PI_OBSERVATIONAL_MEMORY_REFLECTION_RETRIEVAL" . "1")
-                    ("PI_OBSERVATIONAL_MEMORY_TYPESAFE_ENV_FILE"
-                     . "/Users/bob/source/mentat/pi-extensions/.env"))
-      :extensions (codex worktree-skills observational-memory-retrieval claude-bridge)
+      :environment (("CLAUDE_CONFIG_DIR" . "/Users/bob/.claude-private"))
+      :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :default-provider "openai-codex"
       :default-model "gpt-6.1-sol"
@@ -295,8 +259,8 @@ Mentat subagent properties."
               "hindsight_reflect"
               "subagent"
               "subagent_progress"
-              "recall"
-              "om_reflection_search"
+              "ledger_recall"
+              "ledger_search"
               "codemode")
       :disabled-tools ("grep" "find" "ls"))
      ("basic"
@@ -304,10 +268,8 @@ Mentat subagent properties."
       :arguments ("--no-context-files" "--no-skills"
                   "--extension" "builtin:codemode")
       :agent-features nil
-      :extensions (pi-update observational-memory codex claude-bridge)
-      :tools ("read" "bash" "edit" "write" "grep" "recall" "codemode"))))
-  (mentat-compaction-presentation-function
-   #'bob/mentat-observational-memory-compaction-presentation)
+      :extensions (pi-update codex claude-bridge)
+      :tools ("read" "bash" "edit" "write" "grep" "ledger_recall" "ledger_search" "codemode"))))
 
   (mentat-enabled-models
    '("azure/gpt-6.1-sol"
@@ -326,10 +288,7 @@ Mentat subagent properties."
      "claude-bridge/claude-opus-5-5"))
 
   (mentat-extension-menu-commands
-   '(("C" "Codex controls" bob/mentat-codex-menu)
-     ("s" "OM status" "/om:status")
-     ("v" "OM visible memory" "/om:view")
-     ("f" "OM full memory" "/om:view full")))
+   '(("C" "Codex controls" bob/mentat-codex-menu)))
 
   (mentat-mode-line-extra-functions
    '(bob/mentat-codex-usage))
@@ -371,14 +330,7 @@ Mentat subagent properties."
     :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
   (mentat-define-extension worktree-skills
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
-  (mentat-define-extension observational-memory
-    :source "git:github.com/bobrowadam/pi-observational-memory")
-  ;; Local master build shared by Work and Private for reflection retrieval.
-  (mentat-define-extension observational-memory-retrieval
-    :source "/Users/bob/source/pi-observational-memory/dist/index.ts"
-    :tools (om_reflection_search))
   (with-eval-after-load 'mentat-buffer
-    (load "/Users/bob/.emacs.d/modules/mentat/mentat-tools/om-retrieval-view" nil t)
     (autoload 'bob/gpu-snapshot "bob-gpu-snapshot" nil t)
     (keymap-set mentat-buffer-mode-map "C" #'bob/gpu-snapshot))
   (mentat-define-extension claude-bridge

@@ -147,9 +147,8 @@ bundled sources normally live under the supplying worktree's =pi-extensions/src/
 Confirm paths before reading them.
 
 Audit selected extensions for affected Pi APIs and lifecycle behavior, especially
-observational memory, private provider integrations, and Mentat's bundled
-extensions. Use the installed Pi package's documentation and declarations as the
-API reference.
+private provider integrations and Mentat's bundled extensions. Use the installed
+Pi package's documentation and declarations as the API reference.
 
 ** Transport and persistence
 
@@ -161,9 +160,8 @@ Classify transport failures separately from upgrade incompatibilities. Do not
 restart Emacs or retry potentially state-changing evaluations without evidence
 that supports doing so.
 
-Observational memory and Hindsight are separate systems. Check their
-configuration, authentication requirements, persistence, and lifecycle
-independently when a release affects them.
+Hindsight is a separate system. Check its configuration, authentication
+requirements, persistence, and lifecycle independently when a release affects it.
 
 * Procedure
 
