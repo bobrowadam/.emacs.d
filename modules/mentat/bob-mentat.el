@@ -6,6 +6,7 @@
 ;;; Code:
 
 (require 'ansi-color)
+(require 'seq)
 (require 'subr-x)
 (require 'transient)
 
@@ -76,6 +77,23 @@
 (defun bob/mentat-prompt-disable-corfu-auto ()
   "Open Corfu in Mentat prompts only on request."
   (setq-local corfu-auto nil))
+
+(defvar jinx--dicts)
+(declare-function jinx--load-module "jinx" ())
+(declare-function jinx--load-dicts "jinx" ())
+(declare-function jinx--mod-suggest "jinx" (dict word))
+(declare-function jinx--word-valid-p "jinx" (word))
+
+(defun bob/mentat-word-corrections (word _context)
+  "Return Jinx corrections for misspelled WORD in suggestion order."
+  (require 'jinx)
+  (jinx--load-module)
+  (jinx--load-dicts)
+  (unless (jinx--word-valid-p word)
+    (seq-take
+     (apply #'append
+            (mapcar (lambda (dict) (jinx--mod-suggest dict word)) jinx--dicts))
+     10)))
 
 (defun bob/mentat-initialize-fnm ()
   "Load FNM and select the Node environment used by Mentat."
@@ -297,6 +315,9 @@ Mentat subagent properties."
 
   (mentat-prompt-extra-word-candidate-functions
    '(bob/mentat-prose-word-candidates))
+
+  (mentat-prompt-word-correction-functions
+   '(bob/mentat-word-corrections))
 
   (mentat-prompt-word-candidate-score-function
    #'bob/mentat-prose-word-candidate-score)
