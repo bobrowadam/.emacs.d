@@ -22,11 +22,68 @@ frame-N-metal.png      Bmacs's Metal texture readback: text and cursor, without
 state.eld              Elisp plist: frame geometry and scale, windows, cursors,
                        child frames, and tracked plus untracked native
                        decorations (:untracked lists native IDs that Lisp lost).
+                       Each window's :text-decorations places text decorations
+                       on the buffer text they repeat: :row-y is where Emacs
+                       laid that text out, :region-rect what
+                       `gpu-decoration-region' measures now, and :sent-rect
+                       what was last sent.  :context lists the text properties
+                       and overlays of the three lines above it.
 "
   "README written into each snapshot directory.")
 
+(defun bob/gpu-snapshot--context (start end)
+  "Describe the text properties and overlays from START to END."
+  (list :properties
+        (cl-loop for position = start then (next-char-property-change position end)
+                 while (< position end)
+                 collect (cons position (text-properties-at position)))
+        :overlays
+        (mapcar (lambda (overlay)
+                  (list (overlay-start overlay) (overlay-end overlay)
+                        (overlay-properties overlay)))
+                (overlays-in start end))))
+
+(defun bob/gpu-snapshot--text-decorations (window)
+  "Place WINDOW's buffer text decorations on the buffer text they repeat.
+A text decoration, such as a shimmering label, must cover the text it
+repeats.  Record where Emacs laid out each visible occurrence of that
+text, what `gpu-decoration-region' measures for it now, and the layout
+around it, so a misplaced decoration shows whether its geometry is
+stale or measured wrongly."
+  (let ((buffer (window-buffer window))
+        (top (nth 1 (window-inside-pixel-edges window))))
+    (with-current-buffer buffer
+      (cl-loop
+       for decoration in gpu--decorations
+       for properties = (gpu--decoration-properties decoration)
+       for text = (plist-get properties :text)
+       when (and (eq (gpu--decoration-frame decoration) (window-frame window))
+                 (eq (gpu--decoration-owner decoration) buffer)
+                 (eq (plist-get properties :shape) 'text)
+                 (stringp text) (not (string-empty-p text)))
+       append
+       (save-excursion
+         (goto-char (window-start window))
+         (cl-loop
+          while (search-forward text (window-end window t) t)
+          collect
+          (let* ((start (match-beginning 0))
+                 (end (match-end 0))
+                 (posn (posn-at-point start window)))
+            (list :id (gpu--decoration-id decoration) :start start :end end
+                  :sent-rect (plist-get properties :rect)
+                  :row-y (and posn (+ top (cdr (posn-x-y posn))))
+                  :row-height (and posn (cdr (posn-object-width-height posn)))
+                  :region-rect (car (ignore-errors
+                                      (gpu-decoration-region window start end)))
+                  :context (bob/gpu-snapshot--context
+                            (save-excursion (goto-char start)
+                                            (forward-line -3)
+                                            (point))
+                            end)))))))))
+
 (defun bob/gpu-snapshot--window (window)
-  "Describe WINDOW's geometry, point, and cursor."
+  "Describe WINDOW's geometry, point, cursor, and text decorations."
   (let* ((buffer (window-buffer window))
          (point (window-point window))
          (posn (and (pos-visible-in-window-p point window)
@@ -37,7 +94,8 @@ state.eld              Elisp plist: frame geometry and scale, windows, cursors,
           :start (window-start window) :end (window-end window)
           :vscroll (window-vscroll window t) :point point
           :cursor-type (buffer-local-value 'cursor-type buffer)
-          :cursor (and posn (list (posn-x-y posn) (posn-object-width-height posn))))))
+          :cursor (and posn (list (posn-x-y posn) (posn-object-width-height posn)))
+          :text-decorations (bob/gpu-snapshot--text-decorations window))))
 
 (defun bob/gpu-snapshot--decorations (frame)
   "Describe tracked decorations on FRAME and any untracked native ones."

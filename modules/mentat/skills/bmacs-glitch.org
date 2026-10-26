@@ -36,6 +36,13 @@ and view =frame-N-screen.png= first.
   decorations. =:tracked= lists Lisp decorations with their owner buffer,
   requested =:properties= and sampled =:native= state;
   =:untracked= lists native decorations that Lisp lost track of.
+  Each window's =:text-decorations= places text decorations, such as
+  Mentat's shimmering activity label, on the buffer text they repeat:
+  =:row-y= is where Emacs laid that text out, =:region-rect= what
+  =gpu-decoration-region= measures at snapshot time, and =:sent-rect= the
+  rect last sent. A =:sent-rect= that differs from a matching =:row-y= and
+  =:region-rect= is stale; a =:region-rect= that differs from =:row-y= is
+  mismeasured, and =:context= holds the layout properties to replay.
 
 Coordinates in =state.eld= are logical frame pixels from the top-left of the
 frame's content. Multiply by =:scale= for image pixels. The Metal image starts
