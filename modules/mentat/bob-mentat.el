@@ -216,6 +216,15 @@ Mentat subagent properties."
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
+      :environment (("MENTAT_LEDGER_BACKEND" . "decisions")
+                    ("MENTAT_LEDGER_DECISIONS_ENDPOINT"
+                     . "https://credits-eu-resource.services.ai.azure.com/openai/v1")
+                    ("MENTAT_LEDGER_DECISIONS_DEPLOYMENT" . "gpt-6-luna")
+                    ("AZURE_DECISIONS_KEY"
+                     . (lambda ()
+                         (auth-source-pick-first-password
+                          :host "credits-eu-resource.services.ai.azure.com"
+                          :user "apikey"))))
       :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :subagent-enabled-models ("azure/gpt-6.1-sol"
