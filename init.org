@@ -121,7 +121,7 @@
   (use-package vui
     :ensure (:repo "bobrowadam/vui.el"
              :fetcher github
-             :branch "mentat-stream-open-row"
+             :branch "mentat-upstream-sync"
              :files ("*.el")))
   (use-package websocket
     :disabled t
