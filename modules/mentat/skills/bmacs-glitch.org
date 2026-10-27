@@ -100,5 +100,12 @@ Check these before treating a report as new:
 - Filled decorations can cover the animated cursor, contrary to the
   documented cursor-above-decorations contract, because the cursor is drawn in
   Metal below the Core Animation layer.
+- Mentat's response-bottom =line-spacing= can stretch a region highlight and
+  the newline cursor into the spacing below the last text row.  Snapshot
+  =/tmp/gpu-glitch/20261027-152855/= shows the artifact in both captures and
+  records a 72-pixel cursor with 24-pixel text rows.  Emacs includes the extra
+  spacing in the newline glyph's height, including in upstream redisplay.
+  Treat this as an unresolved Mentat layout artifact, not evidence of a
+  GPU-only defect.  No layout fix has been validated.
 - =gpu-decoration-animate= with =:rect= and ='spring= fails with "Property
   cannot animate with keyframes".
