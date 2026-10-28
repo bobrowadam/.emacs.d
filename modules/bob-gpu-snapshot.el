@@ -182,8 +182,10 @@ report it once everything is saved."
                                       collect (bob/gpu-snapshot--frame
                                                frame directory index screen)))))
     ;; A non-string VISIT keeps `write-region' from echoing "Wrote ...".
-    (write-region (pp-to-string state) nil
-                  (expand-file-name "state.eld" directory) nil 'silent)
+    ;; Text and overlay properties can refer back to their containing objects.
+    (let ((print-circle t))
+      (write-region (pp-to-string state) nil
+                    (expand-file-name "state.eld" directory) nil 'silent))
     (write-region bob/gpu-snapshot-readme nil
                   (expand-file-name "README.txt" directory) nil 'silent)
     (kill-new directory)
