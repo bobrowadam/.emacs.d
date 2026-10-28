@@ -115,43 +115,6 @@ Mentat subagent properties."
 
 (bob/mentat-initialize-fnm)
 
-(defun bob/mentat-codex-window-usage (plain labels label)
-  "Format allowance remaining in PLAIN for LABELS under visible LABEL."
-  (let ((window (regexp-opt labels t))
-        remaining)
-    (cond
-     ((or (and (string-match
-                (concat "\\([0-9]+\\(?:\\.[0-9]+\\)?\\)% " window "\\b") plain)
-               (setq remaining (round (string-to-number (match-string 1 plain)))))
-          (and (string-match
-                (concat "^" window "[^\n]*?\\([0-9]+\\(?:\\.[0-9]+\\)?\\)% used")
-                plain)
-               (setq remaining
-                     (round (- 100 (string-to-number (match-string 2 plain)))))))
-      (let* ((remaining (max 0 (min 100 remaining)))
-             (face (cond ((<= remaining 10) 'error)
-                         ((<= remaining 30) 'warning)
-                         (t 'success))))
-        (propertize (format "%s %d%%%% left" label remaining)
-                    'face face 'help-echo plain)))
-     ((string-match (concat "blocked " window " until [^|\n]+") plain)
-      (propertize (string-trim (match-string 0 plain))
-                  'face 'error 'help-echo plain)))))
-
-(defun bob/mentat-codex-usage ()
-  "Return Codex five-hour and weekly allowances for the footer and mode line."
-  (when (equal mentat--buffer-model-provider "openai-codex")
-    (when-let* ((status (mentat-extension-status "codex"))
-                (plain (ansi-color-filter-apply status)))
-      (let ((windows (delq nil
-                           (list (bob/mentat-codex-window-usage plain '("5h") "5h")
-                                 (bob/mentat-codex-window-usage
-                                  plain '("7d" "1w" "wk") "wk")))))
-        (if windows
-            (concat "Codex " (string-join windows " · "))
-          (propertize "Codex usage unavailable" 'face 'shadow
-                      'help-echo plain))))))
-
 (transient-define-prefix bob/mentat-codex-menu ()
   "Open Codex controls."
   ["Codex"
@@ -310,8 +273,7 @@ Mentat subagent properties."
   (mentat-extension-menu-commands
    '(("C" "Codex controls" bob/mentat-codex-menu)))
 
-  (mentat-mode-line-extra-functions
-   '(bob/mentat-codex-usage))
+  (mentat-mode-line-extra-functions nil)
 
   (mentat-prompt-extra-completion-at-point-functions nil)
   (mentat-prompt-word-completion-min-prefix 2)
@@ -353,7 +315,7 @@ Mentat subagent properties."
   (mentat-define-extension pi-update
     :source mentat--pi-update-file)
   (mentat-define-extension codex
-    :source "/Users/bob/.pi/agent/extensions/src/codex/index.ts")
+    :source "/Users/bob/.pi/agent/extensions/src/codex/controls.ts")
   (mentat-define-extension worktree-skills
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (with-eval-after-load 'mentat-buffer
