@@ -26,21 +26,66 @@ state.eld              Elisp plist: frame geometry and scale, windows, cursors,
                        on the buffer text they repeat: :row-y is where Emacs
                        laid that text out, :region-rect what
                        `gpu-decoration-region' measures now, and :sent-rect
-                       what was last sent.  :context lists the text properties
-                       and overlays of the three lines above it.
+                       what was last sent.  :context lists the layout properties
+                       and overlays of the three lines above it.  UI callbacks
+                       and application state are excluded; nested values and
+                       display strings are bounded.
 "
   "README written into each snapshot directory.")
 
+(defconst bob/gpu-snapshot--layout-properties
+  '(face font-lock-face mouse-face display invisible line-spacing line-height
+    composition before-string after-string line-prefix wrap-prefix priority window)
+  "Properties relevant to the layout of a captured text region.")
+
+(defun bob/gpu-snapshot--layout-value (value depth)
+  "Copy diagnostic VALUE without following runtime objects beyond DEPTH.
+Display strings retain layout properties for at most 2000 characters,
+but not UI callbacks.  Nesting stops after 12 levels; runtime objects
+are represented by their type instead of traversed."
+  (cond
+   ((> depth 12) :truncated)
+   ((stringp value)
+    (let* ((end (min (length value) 2000))
+           (copy (substring-no-properties value 0 end))
+           (position 0))
+      (while (< position end)
+        (let ((next (next-property-change position value end)))
+          (set-text-properties
+           position next
+           (bob/gpu-snapshot--layout-properties
+            (text-properties-at position value) (1+ depth))
+           copy)
+          (setq position next)))
+      copy))
+   ((or (null value) (symbolp value) (numberp value)) value)
+   ((functionp value) :function)
+   ((consp value)
+    (cons (bob/gpu-snapshot--layout-value (car value) (1+ depth))
+          (bob/gpu-snapshot--layout-value (cdr value) (1+ depth))))
+   (t (list :object (type-of value)))))
+
+(defun bob/gpu-snapshot--layout-properties (properties &optional depth)
+  "Copy only layout PROPERTIES, excluding callbacks and application state.
+DEPTH bounds nested property values, including self-referencing strings."
+  (cl-loop for (property value) on properties by #'cddr
+           when (memq property bob/gpu-snapshot--layout-properties)
+           append (list property
+                        (bob/gpu-snapshot--layout-value value (or depth 0)))))
+
 (defun bob/gpu-snapshot--context (start end)
-  "Describe the text properties and overlays from START to END."
+  "Describe layout properties and overlays from START to END."
   (list :properties
         (cl-loop for position = start then (next-char-property-change position end)
                  while (< position end)
-                 collect (cons position (text-properties-at position)))
+                 collect (cons position
+                               (bob/gpu-snapshot--layout-properties
+                                (text-properties-at position))))
         :overlays
         (mapcar (lambda (overlay)
                   (list (overlay-start overlay) (overlay-end overlay)
-                        (overlay-properties overlay)))
+                        (bob/gpu-snapshot--layout-properties
+                         (overlay-properties overlay))))
                 (overlays-in start end))))
 
 (defun bob/gpu-snapshot--text-decorations (window)
