@@ -284,5 +284,69 @@ report it once everything is saved."
     (kill-new directory)
     (message "GPU snapshot saved to %s (path copied)" directory)))
 
+(defvar bob/gpu-record-seconds 10
+  "Default length of a `bob/gpu-record' recording, in seconds.")
+
+(defvar bob/gpu-record--process nil
+  "The running screen recording process, if any.")
+
+;;;###autoload
+(defun bob/gpu-record (&optional seconds)
+  "Record SECONDS of the selected frame's screen to a video file with ffmpeg.
+SECONDS defaults to `bob/gpu-record-seconds'; a numeric prefix argument
+sets it.  Recording runs in the background.  Return the file, and report
+it and put it on the kill ring once the recording is saved.  If a
+recording is already running, stop it early instead; it is still saved."
+  (interactive (list (and current-prefix-arg
+                          (prefix-numeric-value current-prefix-arg))))
+  (if (process-live-p bob/gpu-record--process)
+      (progn (interrupt-process bob/gpu-record--process)
+             (message "Stopping the screen recording...")
+             nil)
+    (bob/gpu-record--start seconds)))
+
+(defun bob/gpu-record--screen ()
+  "Return the ffmpeg screen index of the monitor showing the selected frame.
+Assume ffmpeg numbers screens in the order Emacs lists monitors; both
+start with the main display.  The order of other displays is untested."
+  (or (cl-position-if (lambda (monitor)
+                        (memq (selected-frame) (alist-get 'frames monitor)))
+                      (display-monitor-attributes-list))
+      0))
+
+(defun bob/gpu-record--start (seconds)
+  "Start recording SECONDS of the selected frame's screen and return the file.
+Use ffmpeg rather than screencapture, because ffmpeg saves the video
+when interrupted, while screencapture discards it."
+  (let* ((seconds (or seconds bob/gpu-record-seconds))
+         (directory (file-name-as-directory
+                     (expand-file-name (format-time-string "%Y%m%d-%H%M%S")
+                                       bob/gpu-snapshot-directory)))
+         (file (expand-file-name "recording.mp4" directory)))
+    (make-directory directory t)
+    (setq bob/gpu-record--process
+          (make-process
+           :name "bob-gpu-record"
+           ;; Select the screen by name; device numbers shift with cameras.
+           :command (list "ffmpeg" "-y" "-hide_banner" "-loglevel" "error"
+                          "-f" "avfoundation" "-framerate" "30"
+                          "-capture_cursor" "1"
+                          "-i" (format "Capture screen %d:none"
+                                       (bob/gpu-record--screen))
+                          "-t" (number-to-string seconds)
+                          "-pix_fmt" "yuv420p" file)
+           :noquery t
+           :sentinel (lambda (process _event)
+                       (unless (process-live-p process)
+                         (if (file-exists-p file)
+                             (progn (kill-new file)
+                                    (message "Screen recording saved to %s (path copied)"
+                                             file))
+                           (message "Screen recording failed: %s exited with %d"
+                                    (process-name process)
+                                    (process-exit-status process)))))))
+    (message "Recording the screen for %d seconds..." seconds)
+    file))
+
 (provide 'bob-gpu-snapshot)
 ;;; bob-gpu-snapshot.el ends here

@@ -324,7 +324,9 @@ Mentat subagent properties."
     :source "/Users/bob/.pi/agent/extensions/src/worktree-skills.ts")
   (with-eval-after-load 'mentat-buffer
     (autoload 'bob/gpu-snapshot "bob-gpu-snapshot" nil t)
-    (keymap-set mentat-buffer-mode-map "C" #'bob/gpu-snapshot))
+    (autoload 'bob/gpu-record "bob-gpu-snapshot" nil t)
+    (keymap-set mentat-buffer-mode-map "C" #'bob/gpu-snapshot)
+    (keymap-set mentat-buffer-mode-map "V" #'bob/gpu-record))
   (mentat-define-extension claude-bridge
     :source "npm:pi-claude-bridge@0.9.2")
   (mentat-define-extension web-search
