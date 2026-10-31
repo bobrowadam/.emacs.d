@@ -53,5 +53,29 @@
     (should (equal (get-text-property 0 'display (plist-get properties 'after-string))
                    '(:eval :function)))))
 
+(ert-deftest bob/gpu-snapshot-rows-stop-at-limit ()
+  (let ((buffer (generate-new-buffer " *snapshot-rows*"))
+        (window (selected-window))
+        (old (window-buffer (selected-window))))
+    (unwind-protect
+        (progn
+          (with-current-buffer buffer
+            (dotimes (i 50) (insert (format "line %d\n" i))))
+          (set-window-buffer window buffer)
+          (set-window-start window 1)
+          (let* ((bob/gpu-snapshot-row-limit 3)
+                 (result (bob/gpu-snapshot--rows window))
+                 (rows (plist-get result :rows)))
+            (should (= (length rows) 3))
+            (should-not (plist-get result :rows-complete))
+            (should (equal (mapcar #'car rows) '(1 8 15)))
+            ;; Batch Emacs lays out nothing, so positions can be nil.
+            (should (cl-every (lambda (row)
+                                (cl-every (lambda (value) (or (null value) (integerp value)))
+                                          row))
+                              rows))))
+      (set-window-buffer window old)
+      (kill-buffer buffer))))
+
 (provide 'bob-gpu-snapshot-tests)
 ;;; bob-gpu-snapshot-tests.el ends here
