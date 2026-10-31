@@ -136,6 +136,7 @@ Mentat subagent properties."
   (mentat-show-injected-reminders nil)
   (mentat-tool-default-display-state 'summary)
   (mentat-streaming-tool-display-state 'expanded)
+  (mentat-voice-transcript 'minimal)
   (mentat-pi-directory (expand-file-name "~/.pi/agent"))
   (mentat-diagnostic-capture-enabled t)
   (mentat-enabled-extensions
