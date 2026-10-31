@@ -211,7 +211,8 @@ Mentat subagent properties."
               "subagent_progress"
               "ledger_recall"
               "ledger_search"
-              "codemode")
+              "codemode"
+              "voice_report_audio_issue")
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
@@ -245,7 +246,8 @@ Mentat subagent properties."
               "subagent_progress"
               "ledger_recall"
               "ledger_search"
-              "codemode")
+              "codemode"
+              "voice_report_audio_issue")
       :disabled-tools ("grep" "find" "ls"))
      ("basic"
       :directory "~/.pi/agent-basic"
