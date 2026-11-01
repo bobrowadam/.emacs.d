@@ -136,6 +136,11 @@
 
 * My elisp utils
 #+begin_src elisp
+  (defun bob/create-bmacs ()
+    "Launch a new Bmacs instance."
+    (interactive)
+    (start-process "bmacs" nil "open" "-n" "-a" "Bmacs"))
+
   (defun assocdr (prop cons-cell)
     "Get the cdr of an association with key PROP in CONS-CELL.
   This is a shorthand for (cdr (assoc prop cons-cell))."
@@ -3653,7 +3658,7 @@ The theme list is private to this call site."
 
   (add-to-list 'custom-theme-load-path (expand-file-name "~/source/mentat"))
   (with-eval-after-load 'modus-themes
-    (bob/register-and-load-themes modus-kanagawa-wave mentat-pi-dark modus-kanagawa-lotus
+    (bob/register-and-load-themes mentat-pi-dark modus-kanagawa-wave modus-kanagawa-lotus
                                   modus-kanagawa-dragon modus-flexoki-light
                                   modus-flexoki-dark modus-nibelung-dark))
 #+end_src
