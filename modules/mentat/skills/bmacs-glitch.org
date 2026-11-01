@@ -43,6 +43,11 @@ and view =frame-N-screen.png= first.
   rect last sent. A =:sent-rect= that differs from a matching =:row-y= and
   =:region-rect= is stale; a =:region-rect= that differs from =:row-y= is
   mismeasured, and =:context= holds the layout properties to replay.
+  Each window's =:rows= lists visible rows as =(START Y MEASURED-Y)=: where
+  Emacs lays each row out and where =gpu-decoration-region= measures it.
+  Use them for outlines and rails, which have no text to match.  A
+  decoration's =:rect= that is off from =Y= while =Y= equals =MEASURED-Y= is
+  stale; a row whose =MEASURED-Y= differs from =Y= is mismeasured.
 
 Coordinates in =state.eld= are logical frame pixels from the top-left of the
 frame's content. Multiply by =:scale= for image pixels. The Metal image starts
@@ -107,5 +112,12 @@ Check these before treating a report as new:
   spacing in the newline glyph's height, including in upstream redisplay.
   Treat this as an unresolved Mentat layout artifact, not evidence of a
   GPU-only defect.  No layout fix has been validated.
+- A response card's bottom edge crossing into the next prompt.  Two causes
+  are fixed: Mentat measured through hidden usage rows (Mentat =3d06304=),
+  and =gpu-decoration-region= put a region end above =window-start= at the
+  window top (Bmacs =6ae4a85389d=, not in builds before it).  On an older
+  build, an edge at the window top when the card ended above it is the
+  Bmacs cause.  Compare the requested and drawn =:rect= before blaming
+  either side.
 - =gpu-decoration-animate= with =:rect= and ='spring= fails with "Property
   cannot animate with keyframes".
