@@ -30,16 +30,16 @@ state.eld              Elisp plist: frame geometry and scale, windows, cursors,
                        and overlays of the three lines above it.  UI callbacks
                        and application state are excluded; nested values and
                        display strings are bounded.
-                       :rows lists each visible row as (START Y MEASURED-Y):
-                       its first buffer position, its top as Emacs lays it
-                       out now, and its top as `gpu-decoration-region'
-                       measures it now, all in frame pixels.  Compare a
-                       decoration's :rect with these to tell stale geometry
-                       from a wrong measurement.  :rows-complete is nil when
-                       the scan stopped at its row or time limit.
-                       :drawn-rows lists the bottom of each row in the last
-                       drawn glyph matrix, relative to the text area; it is
-                       nil when that matrix was out of date.
+                       :drawn-rows lists the top of each row in the last
+                       drawn glyph matrix, in frame pixels; it is nil when
+                       that matrix was out of date.  :rows lists each
+                       visible row as (START MEASURED-Y): its first buffer
+                       position and its top as `gpu-decoration-region'
+                       measures it now.  A correct MEASURED-Y is one of the
+                       :drawn-rows.  Compare a decoration's :rect with these
+                       to tell stale geometry from a wrong measurement.
+                       :rows-complete is nil when the scan stopped at its
+                       row or time limit.
 "
   "README written into each snapshot directory.")
 
@@ -144,13 +144,12 @@ stale or measured wrongly."
   "Maximum time spent recording one window's rows.")
 
 (defun bob/gpu-snapshot--rows (window)
-  "Record where WINDOW's visible rows are laid out and measured now.
+  "Record where `gpu-decoration-region' measures WINDOW's visible rows now.
 Return (:rows ROWS :rows-complete COMPLETE), where each row is
-(START Y MEASURED-Y) in frame pixels.  Keep only numbers, and stop at
+(START MEASURED-Y) in frame pixels.  Keep only numbers, and stop at
 `bob/gpu-snapshot-row-limit' rows or `bob/gpu-snapshot-row-seconds',
 so a large window cannot stall the capture."
-  (let ((top (nth 1 (window-inside-pixel-edges window)))
-        (deadline (+ (float-time) bob/gpu-snapshot-row-seconds))
+  (let ((deadline (+ (float-time) bob/gpu-snapshot-row-seconds))
         (count 0)
         rows)
     (with-current-buffer (window-buffer window)
@@ -160,10 +159,10 @@ so a large window cannot stall the capture."
           (while (and (< (point) end)
                       (< count bob/gpu-snapshot-row-limit)
                       (< (float-time) deadline))
-            (let* ((start (point))
-                   (posn (posn-at-point start window)))
+            ;; `posn-at-point' ignores a tall first row, so record only the
+            ;; measurement and compare it with the drawn rows.
+            (let ((start (point)))
               (push (list start
-                          (and posn (+ top (cdr (posn-x-y posn))))
                           (nth 1 (car (ignore-errors
                                         (gpu-decoration-region window start start)))))
                     rows)
@@ -171,6 +170,15 @@ so a large window cannot stall the capture."
               (unless (= (vertical-motion 1 window) 1)
                 (goto-char end))))
           (list :rows (nreverse rows) :rows-complete (>= (point) end)))))))
+
+(defun bob/gpu-snapshot--drawn-rows (window)
+  "Return the frame-pixel tops of WINDOW's rows in its last drawn matrix.
+Include a partly visible last row.  Return nil when that matrix is out
+of date."
+  (pcase-let ((`(,_ ,top ,_ ,bottom) (window-inside-pixel-edges window)))
+    (when-let* ((bottoms (mapcar #'cdr (window-lines-pixel-dimensions window nil nil t))))
+      (seq-filter (lambda (y) (< y bottom))
+                  (mapcar (lambda (y) (+ top y)) (cons 0 bottoms))))))
 
 (defun bob/gpu-snapshot--window (window)
   "Describe WINDOW's geometry, point, cursor, and text decorations."
@@ -186,7 +194,7 @@ so a large window cannot stall the capture."
            :vscroll (window-vscroll window t) :point point
            :cursor-type (buffer-local-value 'cursor-type buffer)
            :cursor (and posn (list (posn-x-y posn) (posn-object-width-height posn)))
-           :drawn-rows (mapcar #'cdr (window-lines-pixel-dimensions window nil nil t))
+           :drawn-rows (bob/gpu-snapshot--drawn-rows window)
            :text-decorations (bob/gpu-snapshot--text-decorations window))
      (bob/gpu-snapshot--rows window))))
 

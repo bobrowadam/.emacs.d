@@ -43,11 +43,13 @@ and view =frame-N-screen.png= first.
   rect last sent. A =:sent-rect= that differs from a matching =:row-y= and
   =:region-rect= is stale; a =:region-rect= that differs from =:row-y= is
   mismeasured, and =:context= holds the layout properties to replay.
-  Each window's =:rows= lists visible rows as =(START Y MEASURED-Y)=: where
-  Emacs lays each row out and where =gpu-decoration-region= measures it.
-  Use them for outlines and rails, which have no text to match.  A
-  decoration's =:rect= that is off from =Y= while =Y= equals =MEASURED-Y= is
-  stale; a row whose =MEASURED-Y= differs from =Y= is mismeasured.
+  Each window's =:drawn-rows= lists the row tops Emacs last drew, and
+  =:rows= lists visible rows as =(START MEASURED-Y)=, where
+  =gpu-decoration-region= measures each row now.  Use them for outlines and
+  rails, which have no text to match.  A =MEASURED-Y= that is not in
+  =:drawn-rows= is mismeasured; a decoration's =:rect= that disagrees with
+  correct =MEASURED-Y= values is stale.  =:drawn-rows= is nil when Emacs was
+  busy; then check against the screen image.
 
 Coordinates in =state.eld= are logical frame pixels from the top-left of the
 frame's content. Multiply by =:scale= for image pixels. The Metal image starts
