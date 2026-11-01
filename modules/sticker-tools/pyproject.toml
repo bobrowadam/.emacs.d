@@ -1,0 +1,8 @@
+[project]
+name = "personal-sticker-tools"
+version = "0.1.0"
+requires-python = ">=3.11,<3.14"
+dependencies = ["rembg[cpu]", "pillow", "python-bidi"]
+
+[tool.uv]
+package = false

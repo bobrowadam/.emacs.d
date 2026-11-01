@@ -1,0 +1,155 @@
+#+TITLE: Create personal WhatsApp stickers
+#+DESCRIPTION: Prepare local photo cutouts and Hebrew captions for personal WhatsApp stickers, with mandatory visual quality checks.
+
+* Current status
+
+This workflow is incomplete. Caption composition and static WebP export have
+been exercised, but the current SAM segmentation backend failed on the Barak
+Cohen group-photo example. Point and box prompts alternately omitted clothing,
+face, or hands. A combined prompt still left holes in the right hand and sleeve.
+Apple Vision was also tested: foreground subject lifting merged the group into
+one instance, and person-instance segmentation assigned the raised hands to
+other cutouts and retained background fragments. Native extraction is not a
+verified replacement on this photo.
+Do not describe this workflow as reliable or ready for unattended use. Do not
+present existing example exports as finished stickers. Resolve the segmentation
+backend before resuming production work. Do not mask this failure with manually
+traced polygons, invented anatomy, or unapproved cloud uploads.
+
+* Scope and privacy
+
+The deliverable is a static sticker file, not installation into WhatsApp.
+Use local processing for reference photos. Cloud generation or editing sends
+images outside the machine and requires authorization for that operation.
+Do not send messages, publish packs, or automate WhatsApp import as part of
+this skill. Public photos still require source and license checks.
+
+Once segmentation is reliable, a request with an unambiguous person or reference,
+pose, and caption should run to completion without intermediate approvals.
+Select reasonable visual details within that scope. Ask only for missing identity
+or scope, external disclosure authorization, or a blocker. A request to put an
+exclamation mark on the right applies to that sticker, not all Hebrew captions.
+
+* Private implementation
+
+The standalone Python project is at:
+=/Users/bob/.emacs.d/modules/sticker-tools/=
+
+It has no Mentat dependency. =sticker.py= provides =cutout= and =render= commands.
+=pyproject.toml= and =uv.lock= define an isolated environment. Run external
+commands through =emacs_run_process=, with an explicit directory and separate
+argument strings. Use =uv sync --locked= to restore dependencies, not a global
+pip install. Read =sticker.py --help= and each subcommand's =--help= for contracts.
+No registration or persistent Elisp wrapper is necessary.
+
+=vision-cutout.swift= is a standalone diagnostic CLI for macOS 14 or later.
+It uses =VNGeneratePersonInstanceMaskRequest=, honors source orientation, and
+exports each detected instance at source resolution with transparency, plus
+=instances.json=. Run =swift vision-cutout.swift INPUT NEW_OUTPUT_DIRECTORY=.
+It refuses an existing output directory. Instance IDs are not stable identities;
+the agent must inspect candidates. Soft alpha and nonempty bounds alone do not
+establish a usable person cutout. It has failed the example's visual gate.
+
+* Intended agent workflow
+
+1. Resolve the requested subject using an explicit reference or sourced public
+   pages. Read the web-research skill before searching or reading public pages.
+   Verify the exact photo license. Preserve source URL, author, and license.
+2. Save the original in a durable job directory, not only a temporary directory.
+   Inspect the actual image with =emacs_read=. Do not infer image content solely
+   from a caption. Orient coordinates according to EXIF before picking points.
+3. Select the requested subject with whole-person bounds, foreground points on
+   both clothing and skin, and background points on other people. These are
+   inputs chosen by the agent, not questions for the user. Use an optional crop
+   only after segmentation, so source coordinates remain stable.
+4. Inspect a cutout on light and dark backgrounds. Require the face, requested
+   limbs, and clothing to remain intact, with no other people or background
+   fragments. The current backend has not passed this gate. Stop on failure.
+5. Render the exact caption using =python-bidi= and a verified font supporting
+   its characters. The local Arial Bold font is currently available at
+   =/System/Library/Fonts/Supplemental/Arial Bold.ttf=.
+   Preserve punctuation placement explicitly with =--punctuation-side= when
+   requested; otherwise use =auto=. Caption rendering is single-line.
+6. Inspect the rendered preview. Verify glyphs, spelling, punctuation, retained
+   anatomy, outline, margins, and readability. Check the exported WebP itself
+   has transparency, a 512 by 512 canvas, and size below 100,000 bytes.
+7. Return clickable links to PNG, WebP, preview, and attribution manifest.
+   Report visual-check failures, not just encoding success. Never call a file
+   WhatsApp-tested unless it was actually imported and checked in WhatsApp.
+
+* Commands
+
+Invoke =uv= with the project directory as the process working directory.
+These examples describe the CLI, not an automatically approved source upload.
+
+#+begin_example
+uv run --locked python sticker.py cutout \
+  --input /absolute/path/source.jpg \
+  --output /absolute/path/job/cutout.png \
+  --box LEFT,TOP,RIGHT,BOTTOM \
+  --positive X,Y --positive X,Y --negative X,Y \
+  --crop LEFT,TOP,RIGHT,BOTTOM
+
+uv run --locked python sticker.py render \
+  --input /absolute/path/job/cutout.png \
+  --output-dir /absolute/path/job/export \
+  --caption 'שורמטת!' --punctuation-side right \
+  --font '/System/Library/Fonts/Supplemental/Arial Bold.ttf' \
+  --source-url SOURCE_PAGE --credit AUTHOR --license-url LICENSE_URL
+#+end_example
+
+The renderer produces =sticker.png=, =sticker.webp=, =preview.png=, and
+=manifest.json=. It refuses to overwrite existing output files. Use a new
+attempt directory to retain review evidence. It adds an eight-pixel white
+outline and a white caption with black text outline. Export checks do not
+replace visual inspection. The PNG is an editable artwork export; only the
+WebP is required by this tool to meet the 100 KB size budget.
+
+* Barak Cohen example and blocker evidence
+
+Job directory: =/Users/bob/Pictures/WhatsApp-Stickers/barak-cohen/=
+
+Source: https://commons.wikimedia.org/wiki/File:הנאשמים_בפעילות_נגד_ראשי_המערכת_הבנקאית.jpg
+Author: Eranvered. License: https://creativecommons.org/licenses/by-sa/4.0/
+Any distributed adaptation must retain attribution and the compatible license.
+
+The request is the foreground lawyer with both hands raised, upper body only,
+caption =שורמטת!= with the exclamation mark visually on the right.
+
+=final/preview.png= shows the first failed skin-only selection.
+=whole-person/preview.png= shows the failed clothing-only selection.
+=cutout-combined-preview.png= shows the best attempt, still with missing hand
+and sleeve pixels. These are rejected diagnostic drafts, not final assets.
+The isolated dependency environment fixes the original missing-Pillow error.
+The remaining blocker is reliable whole-person segmentation in this group photo.
+
+Further investigation compared full-precision Rembg SAM, Meta's official SAM
+predictor, crop-scale masks with additional foreground/background points, and
+TorchVision Mask R-CNN person-instance segmentation. Full precision did not
+restore the raised right hand. Crop-scale SAM retained the requested foreground
+points but also retained background people; another candidate excluded people
+but left holes in hands, shirt, and clothing. Point coverage alone is not a
+sufficient quality check. Mask R-CNN assigned the raised right hand to the
+person behind the selected foreground subject. No upstream root cause was
+established. Do not claim a confirmed Rembg coordinate or quantization bug.
+
+The official SAM and TorchVision experiments were diagnostic only. Their
+project dependencies were removed, and the original Rembg/Pillow/bidi project
+environment was restored. Downloaded model weights remain in the local cache.
+The original renderer and cutout CLI remain available, with the same quality
+blocker.
+
+Apple Vision was then tested using the source photograph without a GUI:
+- =apple-vision/instance-1.png=: the foreground API merged all people.
+- =apple-person/instances.json=: the person API returned four instances.
+- =apple-person/contact-sheet.png=: visual comparison of those four cutouts.
+  The foreground lawyer's cutout retained the person behind his head and lost
+  the raised hands; other cutouts contained those hands. Soft background leakage
+  also remained. These outputs are rejected diagnostics, not sticker assets.
+
+Research changed the recommended next experiment from generative image editing
+to a dedicated cutout service, such as remove.bg, before considering redrawing.
+Its region-of-interest option does not guarantee separation of overlapping
+people. No cloud service has been tested on this source. Sending this public
+reference to a provider requires explicit authorization. Do not enable an
+automatic cloud fallback without that authorization.
