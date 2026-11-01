@@ -139,7 +139,7 @@ Mentat subagent properties."
   (mentat-voice-transcript 'minimal)
   (mentat-voice-name 'arbor)
   (mentat-pi-directory (expand-file-name "~/.pi/agent"))
-  (mentat-diagnostic-capture-enabled t)
+  (mentat-diagnostic-capture-enabled nil)
   (mentat-enabled-extensions
    '(codex worktree-skills claude-bridge))
   (mentat-pi-disabled-tools nil)
@@ -157,6 +157,8 @@ Mentat subagent properties."
   (mentat-default-effort "medium")
   (mentat-org-skill-global-directory
    (expand-file-name "modules/mentat/skills/" user-emacs-directory))
+  (mentat-prompt-template-directory
+   (expand-file-name "modules/mentat/prompts/" user-emacs-directory))
   (mentat-supervisor-instructions
    (concat
     "Do not use subagents unless the user explicitly tells you to.\n"
@@ -213,6 +215,7 @@ Mentat subagent properties."
               "ledger_recall"
               "ledger_search"
               "codemode"
+              "voice_stop"
               "voice_report_audio_issue")
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
@@ -222,7 +225,8 @@ Mentat subagent properties."
       :arguments ("--extension" "builtin:codemode")
       :default-provider "openai-codex"
       :default-model "gpt-6.1-sol"
-      :enabled-models ("openai-codex/gpt-6.1-sol"
+      :enabled-models ("openai-codex/gpt-6.1-terra"
+                       "openai-codex/gpt-6.1-sol"
                        "openai-codex/gpt-6-astra"
                        "claude-bridge/claude-opus-5-5")
       :subagent-enabled-models ("openai-codex/gpt-6.1-sol"
@@ -248,6 +252,7 @@ Mentat subagent properties."
               "ledger_recall"
               "ledger_search"
               "codemode"
+              "voice_stop"
               "voice_report_audio_issue")
       :disabled-tools ("grep" "find" "ls"))
      ("basic"
@@ -261,6 +266,7 @@ Mentat subagent properties."
   (mentat-enabled-models
    '("azure/gpt-6.1-sol"
      "azure/gpt-6-astra"
+     "openai-codex/gpt-6.1-terra"
      "openai-codex/gpt-6.1-sol"
      "openai-codex/gpt-6-astra"
      "claude-bridge/claude-opus-5-5"))
@@ -328,7 +334,7 @@ Mentat subagent properties."
     (keymap-set mentat-buffer-mode-map "C" #'bob/gpu-snapshot)
     (keymap-set mentat-buffer-mode-map "V" #'bob/gpu-record))
   (mentat-define-extension claude-bridge
-    :source "npm:pi-claude-bridge@0.9.2")
+    :source "npm:pi-claude-bridge@0.9.3")
   (mentat-define-extension web-search
     :source "/Users/bob/.pi/agent/extensions/src/web-search/index.ts"
     :tools (exa_search jina_reader))
