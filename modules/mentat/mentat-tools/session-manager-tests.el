@@ -351,6 +351,29 @@
         (when (buffer-live-p buffer) (kill-buffer buffer))
         (when (process-live-p process) (delete-process process))))))
 
+(ert-deftest mentat-session-reload-of-busy-session-resolves-queued ()
+  "A session reloading itself must not wait on its own run."
+  (with-temp-buffer
+    (let ((view (mentat--buffer-make :buffer (current-buffer) :status "running"))
+          (calls 0))
+      (setq-local mentat--buffer-view view)
+      (cl-letf (((symbol-function 'mentat-reload)
+                 (lambda (&rest _) (cl-incf calls) 'queued)))
+        (should (equal "queued"
+                       (alist-get 'status
+                                  (mentat-session-test--await
+                                   (mentat-session-manager--reload-starter
+                                    (current-buffer))))))
+        ;; Repeating the request keeps the pending reload instead of
+        ;; cancelling it, as a second `mentat-reload' would.
+        (mentat--buffer-set-pending-reload view '(:kind full))
+        (should (equal "queued"
+                       (alist-get 'status
+                                  (mentat-session-test--await
+                                   (mentat-session-manager--reload-starter
+                                    (current-buffer))))))
+        (should (= 1 calls))))))
+
 (ert-deftest mentat-session-close-refuses-busy-and-displayed-sessions ()
   (dolist (state '("running" "starting" "idle"))
     (with-temp-buffer

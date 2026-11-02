@@ -91,7 +91,10 @@ NAME optionally names the session.  HANDOFF is submitted once Pi is ready."
 
 (defun mentat-session-manager--reload-starter (buffer)
   "Return a callback starter that reloads the Mentat session in BUFFER.
-Cancellation stops waiting but does not stop the reload."
+A busy session reloads once its work finishes; resolve right away then,
+so a session reloading itself does not wait on its own run.  Never cancel
+a reload that is already pending.  Cancellation stops waiting but does not
+stop the reload."
   (lambda (resolve reject on-cancel)
     (let (settled)
       (cl-labels
@@ -104,21 +107,30 @@ Cancellation stops waiting but does not stop the reload."
                (setq settled t)
                (funcall reject reason)))
            (cancel ()
-             (setq settled t)))
+             (setq settled t))
+           (queued ()
+             (succeed
+              `((buffer . ,(buffer-name buffer))
+                (status . "queued")
+                (detail . "Pi restarts when this session's run and background subagents finish"))))
+           (reloaded (ready-buffer state)
+             (succeed
+              (mentat-session-manager--result
+               ready-buffer state
+               (file-name-as-directory
+                (file-truename
+                 (buffer-local-value 'default-directory ready-buffer)))
+               nil))))
         (funcall on-cancel #'cancel)
         (condition-case err
             (with-current-buffer buffer
-              (mentat-reload
-               (lambda (ready-buffer state)
-                 (succeed
-                  (mentat-session-manager--result
-                   ready-buffer state
-                   (file-name-as-directory
-                    (file-truename
-                     (buffer-local-value 'default-directory ready-buffer)))
-                   nil)))
-               (lambda (_failed-buffer reason)
-                 (fail reason))))
+              (when (or (mentat--buffer-pending-reload mentat--buffer-view)
+                        (eq 'queued
+                            (mentat-reload
+                             #'reloaded
+                             (lambda (_failed-buffer reason)
+                               (fail reason)))))
+                (queued)))
           (error
            (fail (error-message-string err))))))))
 

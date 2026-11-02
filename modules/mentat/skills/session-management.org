@@ -143,12 +143,13 @@ root directory, and optional handoff request ID once startup succeeds."
   (mentat-session-manager--starter directory name handoff))
 
 (mentat-defun mentat-session-reload (buffer)
-  "Reload the idle Mentat session in BUFFER.
+  "Reload the Mentat session in BUFFER.
 
 Restart the session's Pi process so changes to Pi extensions take effect, then
-resolve after Mentat restores the persisted conversation history.  BUFFER must
-name a live Mentat conversation other than a session currently executing a
-prompt.  Cancellation stops waiting but does not stop the reload."
+resolve after Mentat restores the persisted conversation history.  When the
+session is busy, including the calling session itself, resolve at once with
+status `queued'; Pi restarts after its run and background subagents finish.
+Cancellation stops waiting but does not stop the reload."
   (:execution async)
   (unless (stringp buffer)
     (user-error "Mentat session buffer must be a string"))
