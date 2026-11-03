@@ -125,14 +125,21 @@ Mentat subagent properties."
                         (interactive)
                         (mentat-run-extension-command "/codex reset")))])
 
+(defun bob/mentat-capture-audio (&optional seconds)
+  "Capture voice audio diagnostics, collecting SECONDS after the report.
+SECONDS defaults to the extension's window; a numeric prefix argument
+sets it."
+  (interactive (list (and current-prefix-arg
+                          (prefix-numeric-value current-prefix-arg))))
+  (mentat-run-extension-command
+   (string-trim (format "/mentat-voice diagnose %s" (or seconds "")))))
+
 (transient-define-prefix bob/mentat-capture-menu ()
   "Capture diagnostics from the current Mentat session."
   ["Capture"
    ("s" "Snapshot" bob/gpu-snapshot)
    ("v" "Video" bob/gpu-record)
-   ("a" "Audio" (lambda ()
-                  (interactive)
-                  (mentat-run-extension-command "/mentat-voice diagnose")))])
+   ("a" "Audio" bob/mentat-capture-audio)])
 
 (use-package mentat
   :demand t
