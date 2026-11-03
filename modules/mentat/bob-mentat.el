@@ -125,6 +125,15 @@ Mentat subagent properties."
                         (interactive)
                         (mentat-run-extension-command "/codex reset")))])
 
+(transient-define-prefix bob/mentat-capture-menu ()
+  "Capture diagnostics from the current Mentat session."
+  ["Capture"
+   ("s" "Snapshot" bob/gpu-snapshot)
+   ("v" "Video" bob/gpu-record)
+   ("a" "Audio" (lambda ()
+                  (interactive)
+                  (mentat-run-extension-command "/mentat-voice diagnose")))])
+
 (use-package mentat
   :demand t
   :ensure nil
@@ -331,7 +340,7 @@ Mentat subagent properties."
   (with-eval-after-load 'mentat-buffer
     (autoload 'bob/gpu-snapshot "bob-gpu-snapshot" nil t)
     (autoload 'bob/gpu-record "bob-gpu-snapshot" nil t)
-    (keymap-set mentat-buffer-mode-map "C" #'bob/gpu-snapshot)
+    (keymap-set mentat-buffer-mode-map "C" #'bob/mentat-capture-menu)
     (keymap-set mentat-buffer-mode-map "V" #'bob/gpu-record))
   (mentat-define-extension claude-bridge
     :source "npm:pi-claude-bridge@0.9.3")
