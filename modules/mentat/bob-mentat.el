@@ -153,7 +153,7 @@ sets it."
   (mentat-tool-default-display-state 'summary)
   (mentat-streaming-tool-display-state 'expanded)
   (mentat-voice-transcript 'minimal)
-  (mentat-voice-name 'arbor)
+  (mentat-voice-name 'cove)
   (mentat-pi-directory (expand-file-name "~/.pi/agent"))
   (mentat-diagnostic-capture-enabled nil)
   (mentat-enabled-extensions
