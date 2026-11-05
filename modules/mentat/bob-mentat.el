@@ -193,15 +193,7 @@ sets it."
   (mentat-pi-profiles
    '(("Work"
       :directory "~/.pi/agent"
-      :environment (("MENTAT_LEDGER_BACKEND" . "decisions")
-                    ("MENTAT_LEDGER_DECISIONS_ENDPOINT"
-                     . "https://credits-eu-resource.services.ai.azure.com/openai/v1")
-                    ("MENTAT_LEDGER_DECISIONS_DEPLOYMENT" . "gpt-6-luna")
-                    ("AZURE_DECISIONS_KEY"
-                     . (lambda ()
-                         (auth-source-pick-first-password
-                          :host "credits-eu-resource.services.ai.azure.com"
-                          :user "apikey"))))
+      :environment (("MENTAT_LEDGER_ACTIVE" . "true"))
       :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :subagent-enabled-models ("azure/gpt-6.1-sol"
@@ -230,13 +222,15 @@ sets it."
               "subagent_progress"
               "ledger_recall"
               "ledger_search"
+              "ledger_retrieve"
               "codemode"
               "voice_stop"
               "voice_report_audio_issue")
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
-      :environment (("CLAUDE_CONFIG_DIR" . "/Users/bob/.claude-private"))
+      :environment (("CLAUDE_CONFIG_DIR" . "/Users/bob/.claude-private")
+                    ("MENTAT_LEDGER_ACTIVE" . "false"))
       :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :default-provider "openai-codex"
@@ -267,6 +261,7 @@ sets it."
               "subagent_progress"
               "ledger_recall"
               "ledger_search"
+              "ledger_retrieve"
               "codemode"
               "voice_stop"
               "voice_report_audio_issue")
@@ -277,7 +272,7 @@ sets it."
                   "--extension" "builtin:codemode")
       :agent-features nil
       :extensions (pi-update codex claude-bridge)
-      :tools ("read" "bash" "edit" "write" "grep" "ledger_recall" "ledger_search" "codemode"))))
+      :tools ("read" "bash" "edit" "write" "grep" "ledger_recall" "ledger_search" "ledger_retrieve" "codemode"))))
 
   (mentat-enabled-models
    '("azure/gpt-6.1-sol"
