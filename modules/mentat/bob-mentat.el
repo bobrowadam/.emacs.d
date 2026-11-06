@@ -224,8 +224,7 @@ sets it."
               "ledger_search"
               "ledger_retrieve"
               "codemode"
-              "voice_stop"
-              "voice_report_audio_issue")
+              "voice_stop")
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
@@ -263,8 +262,7 @@ sets it."
               "ledger_search"
               "ledger_retrieve"
               "codemode"
-              "voice_stop"
-              "voice_report_audio_issue")
+              "voice_stop")
       :disabled-tools ("grep" "find" "ls"))
      ("basic"
       :directory "~/.pi/agent-basic"
