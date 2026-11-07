@@ -1452,7 +1452,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
       (interactive)
       (let ((pos (point)))
         (cond
-         ((derived-mode-p 'markdown-view-mode 'gfm-view-mode)
+         ((derived-mode-p 'markdown-ts-view-mode 'markdown-view-mode 'gfm-view-mode)
           (let ((mode (or bob/markdown-view-return-mode
                           (if (fboundp 'markdown-ts-mode)
                               'markdown-ts-mode
@@ -1461,9 +1461,10 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
             (funcall mode)
             (goto-char (min pos (point-max)))))
          ((derived-mode-p 'markdown-ts-mode 'markdown-mode 'gfm-mode)
-          (let ((mode (if (derived-mode-p 'gfm-mode)
-                          'gfm-view-mode
-                        'markdown-view-mode)))
+          (let ((mode (cond ((derived-mode-p 'markdown-ts-mode)
+                              'markdown-ts-view-mode)
+                             ((derived-mode-p 'gfm-mode) 'gfm-view-mode)
+                             (t 'markdown-view-mode))))
             (setq-local bob/markdown-view-return-mode major-mode)
             (unless (fboundp mode)
               (require 'markdown-mode))
@@ -1517,6 +1518,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 #+begin_src elisp
   (use-package markdown-ts-mode
     :ensure nil
+    :mode ("\\.\\(?:md\\|markdown\\|mkd\\|mdown\\|mkdn\\|mdwn\\|mdx\\)\\'" . markdown-ts-view-mode)
     :defer t
     :config
     (defun bob/markdown-ts-update-strikethrough-face (&rest _)
@@ -1531,7 +1533,8 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
               #'bob/markdown-ts-update-strikethrough-face)
     (add-hook 'disable-theme-functions
               #'bob/markdown-ts-update-strikethrough-face)
-    (define-key markdown-ts-mode-map (kbd "C-c C-v") #'bob/toggle-markdown-view-mode))
+    (define-key markdown-ts-mode-map (kbd "C-c C-v") #'bob/toggle-markdown-view-mode)
+    (define-key markdown-ts-view-mode-map (kbd "C-c C-v") #'bob/toggle-markdown-view-mode))
 #+end_src
 ** edit-indirect (a markdown mode dependency for editing code blocks)
 #+begin_src elisp
