@@ -1192,6 +1192,9 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :ensure nil
     :mode ("\\.\\(?:md\\|markdown\\|mkd\\|mdown\\|mkdn\\|mdwn\\|mdx\\)\\'" . markdown-ts-view-mode)
     :defer t
+    :custom
+    (markdown-ts-unordered-list-marker
+     '(("- " . "- ") ("◦ " . "- ") ("▪ " . "- ") ("• " . "- ")))
     :config
     (defun bob/markdown-ts-update-strikethrough-face (&rest _)
       "Set strikethrough colors from the active theme."
