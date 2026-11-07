@@ -38,7 +38,8 @@ PACKAGES is a list of package name strings, or nil for all built packages.
 Run after `elpaca-merge-all' has finished processing.
 Select sources with up-to-date bytecode.  Remove native output older
 than its bytecode so Emacs does not skip required recompilation.
-Do not load the compiled packages into the current session."
+Do not load the compiled packages into the current session.
+Return the list of source files submitted for compilation."
   (interactive)
   (unless (native-comp-available-p)
     (user-error "This Emacs does not support native compilation"))
@@ -79,7 +80,8 @@ Do not load the compiled packages into the current session."
           (native-compile-async (reverse files))
           (message "Native compilation requested for %d files; removed %d stale outputs"
                    (length files) (length removed)))
-      (message "Elpaca native compilation is current"))))
+      (message "Elpaca native compilation is current"))
+    files))
 
 (provide 'bob-elpaca)
 ;;; bob-elpaca.el ends here
