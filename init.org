@@ -3248,7 +3248,8 @@ Mode for better syntax highlighting in `emacs-lisp-mode`
       (add-to-list 'treesit-language-source-alist recipe t))
 
     (setq major-mode-remap-alist
-          '((c-mode          . c-ts-mode)
+          '((markdown-mode   . markdown-ts-view-mode)
+            (c-mode          . c-ts-mode)
             (c++-mode        . c++-ts-mode)
             (c-or-c++-mode   . c-or-c++-ts-mode)
             (cmake-mode      . cmake-ts-mode)
