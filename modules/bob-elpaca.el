@@ -1,5 +1,6 @@
 ;;; bob-elpaca.el --- Elpaca maintenance commands -*- lexical-binding: t; -*-
 
+(require 'comp-common)
 (require 'elpaca)
 (require 'elpaca-ui)
 (require 'seq)
@@ -31,8 +32,9 @@ Leave existing merge marks set and count each package once."
     (message "Marked %d packages for merge." count)))
 
 ;;;###autoload
-(defun bob/elpaca-native-compile ()
-  "Native-compile built Elpaca packages asynchronously.
+(defun bob/elpaca-native-compile (&optional packages)
+  "Native-compile built Elpaca PACKAGES asynchronously.
+PACKAGES is a list of package name strings, or nil for all built packages.
 Run after `elpaca-merge-all' has finished processing.
 Select sources with up-to-date bytecode.  Remove native output older
 than its bytecode so Emacs does not skip required recompilation.
@@ -47,23 +49,34 @@ Do not load the compiled packages into the current session."
                      (directory-files elpaca-builds-directory t
                                       directory-files-no-dot-files-regexp)))
         files removed)
-    (setq native-comp-async-env-modifier-form
-          `(setq load-path (append ',build-dirs load-path)))
-    (dolist (file (directory-files-recursively
-                   elpaca-builds-directory "\\.el\\'"))
-      (let ((bytecode (concat file "c")))
-        (when (and (file-exists-p bytecode)
-                   (not (file-newer-than-file-p file bytecode)))
-          (let ((native (comp-el-to-eln-filename file)))
-            (when (or (not (file-exists-p native))
-                      (file-newer-than-file-p bytecode native))
-              (when (file-exists-p native)
-                (delete-file native)
-                (push native removed))
-              (push file files))))))
+    (let ((targets
+           (if packages
+               (mapcar
+                (lambda (package)
+                  (or (seq-find
+                       (lambda (directory)
+                         (equal package (file-name-nondirectory directory)))
+                       build-dirs)
+                      (user-error "Unknown built Elpaca package: %s" package)))
+                packages)
+             build-dirs)))
+      (setq native-comp-async-env-modifier-form
+            `(setq load-path (append ',build-dirs load-path)))
+      (dolist (directory targets)
+        (dolist (file (directory-files-recursively directory "\\.el\\'"))
+          (let ((bytecode (concat file "c")))
+            (when (and (file-exists-p bytecode)
+                       (not (file-newer-than-file-p file bytecode)))
+              (let ((native (comp-el-to-eln-filename file)))
+                (when (or (not (file-exists-p native))
+                          (file-newer-than-file-p bytecode native))
+                  (when (file-exists-p native)
+                    (delete-file native)
+                    (push native removed))
+                  (push file files))))))))
     (if files
         (progn
-          (native-compile-async (nreverse files))
+          (native-compile-async (reverse files))
           (message "Native compilation requested for %d files; removed %d stale outputs"
                    (length files) (length removed)))
       (message "Elpaca native compilation is current"))))
