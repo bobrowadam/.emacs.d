@@ -772,7 +772,11 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :load-path "modules"
     :demand t
     :hook ((text-mode . bob/prose-word-completion-setup)
-           (prog-mode . bob/prose-word-completion-prog-setup)))
+           (prog-mode . bob/prose-word-completion-prog-setup))
+    :config
+    ;; Break server ranking ties by usage in the file, in the inline preview only.
+    (advice-add 'eglot-completion-at-point :filter-return
+                #'bob/prose-word-completion-add-eglot-context-sort))
 #+end_src
 ** PI
 #+begin_src elisp

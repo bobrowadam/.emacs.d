@@ -7,6 +7,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'project)
 (require 'seq)
 (require 'subr-x)
@@ -26,6 +27,7 @@
 (defvar bob/prose-word-completion--cache-file nil)
 (defvar-local bob/prose-word-completion--buffer-word-cache nil)
 (defvar-local bob/prose-word-completion--project-membership-cache nil)
+(defvar-local bob/prose-word-completion--symbol-count-cache nil)
 
 (defun bob/prose-word-completion--bucket-key (word)
   (let ((word (downcase word)))
@@ -185,6 +187,46 @@ start of a sentence."
   (bob/prose-word-completion--words-in-buffer max-chars)
   (bob/prose-word-completion--bucket-words
    (nth 3 bob/prose-word-completion--buffer-word-cache) prefix))
+
+(defun bob/prose-word-completion--symbol-counts ()
+  "Return a cached table of symbol occurrence counts in the current buffer."
+  (let ((tick (buffer-chars-modified-tick)))
+    (unless (equal (car bob/prose-word-completion--symbol-count-cache) tick)
+      (let ((counts (make-hash-table :test #'equal)))
+        (save-excursion
+          (save-restriction
+            (widen)
+            (goto-char (point-min))
+            (while (re-search-forward "\\(?:\\sw\\|\\s_\\)+" nil t)
+              (let ((symbol (match-string-no-properties 0)))
+                (puthash symbol (1+ (gethash symbol counts 0)) counts)))))
+        (setq bob/prose-word-completion--symbol-count-cache (cons tick counts))))
+    (cdr bob/prose-word-completion--symbol-count-cache)))
+
+(defun bob/prose-word-completion--eglot-context-sort (completions)
+  "Sort Eglot COMPLETIONS by server rank, then by count in the buffer."
+  (let ((counts (bob/prose-word-completion--symbol-counts)))
+    (cl-flet ((rank (completion)
+                (or (plist-get (get-text-property 0 'eglot--lsp-item completion)
+                               :sortText)
+                    "")))
+      (sort completions
+            (lambda (a b)
+              (let ((rank-a (rank a))
+                    (rank-b (rank b)))
+                (or (string< rank-a rank-b)
+                    (and (string= rank-a rank-b)
+                         (> (gethash (substring-no-properties a) counts 0)
+                            (gethash (substring-no-properties b) counts 0))))))))))
+
+(defun bob/prose-word-completion-add-eglot-context-sort (result)
+  "Add buffer-context ordering to Eglot completion RESULT.
+Only the inline preview and cycling read `cycle-sort-function'; Corfu's
+popup keeps Eglot's `display-sort-function'."
+  (and result
+       (append result
+               (list :cycle-sort-function
+                     #'bob/prose-word-completion--eglot-context-sort))))
 
 (defun bob/prose-word-completion--add-words (table words prefix score)
   (dolist (word words)
