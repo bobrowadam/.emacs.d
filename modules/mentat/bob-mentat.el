@@ -316,10 +316,6 @@ sets it."
   (add-hook 'mentat-prompt-mode-hook
             (lambda ()
               (setq-local completion-preview-minimum-symbol-length 2)))
-  ;; Themes color the preview like text; keep it a dim ghost in every theme.
-  (custom-set-faces
-   '(completion-preview ((t :inherit shadow :foreground unspecified)))
-   '(completion-preview-exact ((t :inherit completion-preview))))
   (add-hook 'after-make-frame-functions #'bob/mentat-enable-gpu-frame)
   (mapc #'bob/mentat-enable-gpu-frame (frame-list))
   (mentat-reset-extensions)
