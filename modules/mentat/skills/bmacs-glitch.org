@@ -19,8 +19,11 @@ blocks with decorations, in =mentat-gpu-cards.el=, =mentat-gpu-marks.el=,
 
 * Read a snapshot
 
-Pressing =C= in a Mentat buffer runs =bob/gpu-snapshot=
-(=/Users/bob/.emacs.d/modules/bob-gpu-snapshot.el=). It silently writes one
+Pressing =C= in a Mentat buffer opens =bob/mentat-capture-menu=
+(=/Users/bob/.emacs.d/modules/mentat/bob-mentat.el=). Its =s= key runs
+=bob/gpu-snapshot= (=/Users/bob/.emacs.d/modules/bob-gpu-snapshot.el=), =v=
+records the screen for the next 10 seconds, and the RPC recording column
+controls diagnostic captures (see below). A snapshot silently writes one
 directory per press, named by local time, and copies its path to the kill
 ring, then reports the path in the echo area. Each directory has a
 =README.txt= describing its files. Read =state.eld=
@@ -55,6 +58,32 @@ Coordinates in =state.eld= are logical frame pixels from the top-left of the
 frame's content. Multiply by =:scale= for image pixels. The Metal image starts
 at the content origin; the screen image starts at the outer frame, so its
 content is offset by the title bar height (the difference in image heights).
+
+* Late snapshots and RPC captures
+
+A snapshot taken after the glitch corrected itself shows only the correct
+state.  A bad response card outline lasted about 0.5 s in one recording, so a
+snapshot one second late can miss it.  Ask Bob whether the glitch was still on
+screen when he pressed =C s=.  If it was not, use the snapshot's time to find
+the moment in the session's RPC capture.
+
+A session records only after Bob turns recording on with =C r=
+(=mentat-diagnostic-toggle-session-capture=).  The toggle reloads the session,
+because Pi must start with the recorder; a plain reload keeps the session's
+choice.  The footer shows =● diagnostics= while it records and =○ N
+diagnostics= for saved captures.  =C o= opens the current capture.  =C x=
+deletes the session's finished captures and =C X= deletes all finished
+captures.  Captures are JSONL files in =mentat-diagnostic-capture-directory=
+(=~/.emacs.d/mentat/diagnostics/=), and a session warns when they exceed
+=mentat-diagnostic-capture-warning-size= (3 GB).
+
+Each record has an =elapsed= offset from capture start, and the file name
+holds the start time, so a snapshot's local time maps to an offset.  Replay a
+capture without Pi with =mentat-diagnostic-replay-capture= (=relative= timing
+keeps recorded gaps), or step through it with
+=mentat-diagnostic-inspect-capture=.  Replay it in an isolated Bmacs, as in
+"Check live state", and log decoration rects on each redisplay around the
+snapshot's offset.
 
 * Locate the glitch
 
@@ -104,6 +133,11 @@ Check these before treating a report as new:
   unidentified; it did not appear in Metal readbacks.
 - A Mentat response card outline seen only partly drawn, matching an
   interrupted =:stroke-end= trace; not yet confirmed stuck.
+- A response card outline briefly extending past its card while a response
+  with tool calls streams.  A proposed Bmacs change to anchor commits was not
+  supported by an isolated reproduction on 2026-11-08 and was not made.  The
+  investigation waits for a snapshot or RPC capture from a session recording
+  when it happens, such as Gist Orchestrator in =bradwell-monorepo=.
 - Filled decorations can cover the animated cursor, contrary to the
   documented cursor-above-decorations contract, because the cursor is drawn in
   Metal below the Core Animation layer.
