@@ -136,10 +136,23 @@ sets it."
 
 (transient-define-prefix bob/mentat-capture-menu ()
   "Capture diagnostics from the current Mentat session."
-  ["Capture"
-   ("s" "Snapshot" bob/gpu-snapshot)
-   ("v" "Video" bob/gpu-record)
-   ("a" "Audio" bob/mentat-capture-audio)])
+  [["Capture"
+    ("s" "Snapshot" bob/gpu-snapshot)
+    ("v" "Video" bob/gpu-record)
+    ("a" "Audio" bob/mentat-capture-audio)]
+   ["RPC recording"
+    ("r" (lambda ()
+           (if (mentat--diagnostic-capture-wanted-p (current-buffer))
+               "Stop (reload)"
+             "Record (reload)"))
+     mentat-diagnostic-toggle-session-capture)
+    ("o" "Open capture" mentat-diagnostic-open-current-capture)
+    ("x" (lambda ()
+           (format "Delete saved (%d)"
+                   (length (remove (mentat--diagnostic-capture-file t)
+                                   (mentat--diagnostic-current-session-captures)))))
+     mentat-diagnostic-delete-session-captures)
+    ("X" "Delete all saved" mentat-diagnostic-delete-all-captures)]])
 
 (use-package mentat
   :demand t
@@ -155,7 +168,6 @@ sets it."
   (mentat-voice-transcript 'minimal)
   (mentat-voice-name 'cove)
   (mentat-pi-directory (expand-file-name "~/.pi/agent"))
-  (mentat-diagnostic-capture-enabled nil)
   (mentat-enabled-extensions
    '(codex worktree-skills claude-bridge))
   (mentat-pi-disabled-tools nil)
