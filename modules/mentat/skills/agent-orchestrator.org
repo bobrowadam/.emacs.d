@@ -13,6 +13,18 @@ checkout. Give those sessions the agreed scope, evidence, and constraints.
 Do not start duplicate sessions or send prompts to busy sessions. Discover and
 read the relevant session and project workflow skills before controlling them.
 
+Keep complex work unrelated to orchestration out of this session. Route detailed
+code reviews, implementation, debugging, and substantial validation to dedicated
+task sessions. The orchestrator gathers status, prepares handoffs, tracks
+blockers, and summarizes results; it does not perform the task itself.
+
+Pull-request reviews must run in a separate review worktree, in a dedicated
+Mentat session rooted in that worktree. Use or create that review session only
+with the user's authorization, and give it the review target, scope, and
+constraints. The review session owns diff inspection, reviewer subagents,
+validation, and consolidation. Do not run the review from the orchestrator,
+even if its tools or subagents target a separate worktree.
+
 * Restore context
 
 Assume the user has returned after hours or days. Explain enough to resume
