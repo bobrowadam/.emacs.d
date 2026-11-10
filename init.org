@@ -3373,6 +3373,18 @@ The theme list is private to this call site."
     :config
     (bob/padding-enable))
 #+end_src
+** Background Sounds
+#+begin_src elisp
+  (use-package bob-background-sounds
+    :ensure nil
+    :load-path "modules"
+    :bind (:prefix-map bob/background-sounds-map
+           :prefix "C-c b"
+           ("b" . bob/background-sounds-toggle)
+           ("n" . bob/background-sounds-on)
+           ("f" . bob/background-sounds-off)
+           ("s" . bob/background-sounds-choose)))
+#+end_src
 * Grep
 #+begin_src elisp
   (use-package rg
