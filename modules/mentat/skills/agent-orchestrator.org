@@ -25,6 +25,19 @@ constraints. The review session owns diff inspection, reviewer subagents,
 validation, and consolidation. Do not run the review from the orchestrator,
 even if its tools or subagents target a separate worktree.
 
+* Preserve task identity
+
+Before handing off implementation, confirm the existing issue for each part of
+the work. If none exists, follow the project's issue-drafting and approval
+workflow before starting implementation. Do not silently create issues.
+
+Apply this check to new sessions, continued sessions, and added scope. Include
+all applicable issue IDs and URLs in the handoff; reuse existing issues rather
+than creating duplicates. For Bradwell work, follow the task-workflow skill's
+PR-link requirements and verify the Require Linear Issue check before reporting
+a PR ready. Issue IDs in a branch, title, or body alone do not pass that check.
+These requirements do not authorize PR creation or external comments.
+
 * Restore context
 
 Assume the user has returned after hours or days. Explain enough to resume
