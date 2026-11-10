@@ -388,7 +388,7 @@ sets it."
       (bob/mentat-load-agent-and-common-instructions "ci-watcher")
     :description "Run and monitor project validation without changing files"
     :model ("azure/gpt-6-luna" "openai-codex/gpt-6-luna")
-    :thinking low
+    :thinking high
     :extensions (mentat-emacs))
 
   (bob/mentat-define-subagent worker
