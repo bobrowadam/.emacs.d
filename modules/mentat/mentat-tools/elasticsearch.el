@@ -138,6 +138,95 @@
                  :user mentat-elastic-mcp-auth-user))
           (when done (cleanup)))))))
 
+(defconst mentat-elastic-search-base-url
+  "https://bradwell-6e35cb.es.us-east-1.aws.found.io"
+  "Bradwell Elasticsearch URL for field-filtered document reads.")
+
+(defun mentat-elastic--document-request (api-key index body success reject)
+  "Read INDEX with BODY using API-KEY and call SUCCESS or REJECT."
+  (request
+   (concat mentat-elastic-search-base-url "/" (url-hexify-string index)
+           "/_search?filter_path=hits.hits._source,hits.total,"
+           "timed_out,_shards.failed,error,status")
+   :type "POST"
+   :data (let ((json-false :false) (json-null :null))
+           (encode-coding-string (json-encode body) 'utf-8))
+   :headers `(("Authorization" . ,(mentat-elastic-mcp--authorization api-key))
+              ("Accept" . "application/json")
+              ("Content-Type" . "application/json"))
+   :timeout 30
+   :parser (lambda ()
+             (json-parse-buffer :object-type 'hash-table :array-type 'array
+                                :null-object :json-null :false-object :json-false))
+   :success (cl-function
+             (lambda (&key data &allow-other-keys)
+               (condition-case err
+                   (funcall success (mentat-kibana--json-string data))
+                 (error (funcall reject (error-message-string err))))))
+   :error (cl-function
+           (lambda (&key response &allow-other-keys)
+             (funcall reject
+                      (format "Elasticsearch document read failed (HTTP %s)"
+                              (request-response-status-code response)))))))
+
+(defun mentat-elastic--read-documents-starter (index query source-fields limit)
+  "Return a field-filtered read starter for INDEX and QUERY.
+SOURCE-FIELDS must name explicit source fields.  LIMIT must be 1 through 100.
+Validate inputs before retrieving credentials.  QUERY is a Query DSL object."
+  (unless (and (stringp index)
+               (string-match-p "\\`[-[:alnum:]_.*,]+\\'" index))
+    (error "INDEX must be an index name or pattern, not a URL or path"))
+  (unless (or (and (hash-table-p query) (> (hash-table-count query) 0))
+              (and (consp query) (proper-list-p query)
+                   (seq-every-p #'consp query)))
+    (error "QUERY must be a non-empty Query DSL object"))
+  (unless (and (consp source-fields) (proper-list-p source-fields)
+               (seq-every-p
+                (lambda (field)
+                  (and (stringp field) (not (string-empty-p field))
+                       (not (string-match-p "[*?]" field))))
+                source-fields))
+    (error "SOURCE-FIELDS must be a non-empty list of names without wildcards"))
+  (unless (and (integerp limit) (<= 1 limit 100))
+    (error "LIMIT must be an integer from 1 through 100"))
+  (let ((body `((query . ,query) (_source . ,(vconcat source-fields))
+                (size . ,limit) (track_total_hits . t) (timeout . "30s"))))
+    (lambda (resolve reject on-cancel)
+      (let (done response credential-cleanup timer)
+        (cl-labels
+            ((cleanup ()
+               (when timer (cancel-timer timer) (setq timer nil))
+               (when credential-cleanup (funcall credential-cleanup))
+               (mentat-kibana--cancel-request response))
+             (finish (callback value)
+               (unless done
+                 (setq done t)
+                 (cleanup)
+                 (funcall callback value)))
+             (fail (reason) (finish reject reason))
+             (start (api-key)
+               (unless done
+                 (condition-case err
+                     (progn
+                       (setq timer
+                             (run-at-time
+                              30 nil
+                              (lambda ()
+                                (fail "Elasticsearch document read timed out after 30s"))))
+                       (setq response
+                             (mentat-elastic--document-request
+                              api-key index body
+                              (lambda (value) (finish resolve value)) #'fail)))
+                   (error (fail (error-message-string err))))
+                 (when done (cleanup)))))
+          (funcall on-cancel (lambda () (setq done t) (cleanup)))
+          (unless done
+            (setq credential-cleanup
+                  (mentat-auth-source-secret-async
+                   "Elasticsearch document read" (list mentat-elastic-mcp-auth-host)
+                   #'start #'fail :user mentat-elastic-mcp-auth-user))
+            (when done (cleanup))))))))
+
 (defconst mentat-kibana-base-url
   "https://bradwell-6e35cb.kb.us-east-1.aws.found.io"
   "Bradwell Kibana base URL.")
