@@ -16,6 +16,17 @@ submitting a review decision without inline comments. Do not create wrappers
 for individual commands unless they add useful checks or coordination.
 Use gh's existing authentication; never print or pass token values.
 
+## PR descriptions
+
+Write one short paragraph explaining the intended outcome and the problem it
+solves. Include the issue link and any essential scope boundary. Do not enumerate
+changed files, implementation details, test commands, or checklists. The code
+diff documents the implementation for LLM reviewers.
+
+This rule applies to PR descriptions, not review reports or summaries of completed
+changes. Follow it instead of the general summary-writing guidance when creating
+a PR.
+
 ## Submit an inline review
 
 Use `mentat-github-submit-inline-review` to submit line comments together with
