@@ -99,6 +99,14 @@ at a page boundary can lead to an empty final page. An =incomplete-tail= result
 means the last record is still incomplete; retry its cursor after writing ends.
 Records over 16 MiB are rejected rather than silently skipped.
 
+These tools match literal text. To find what a session decided about a topic
+when you do not know its wording, pass the transcript path from
+=mentat-session-search= as =session= to Pi's =ledger_retrieve=, then read
+retrieved records with =ledger_recall= and the same path. Both cover the active
+branch only, including history before compaction, and also work for
+unregistered transcripts. Use the current =session-file= after a directory
+change, not the old path.
+
 * Close without deleting history
 
 =mentat-session-close= closes by stable session ID. It uses normal Mentat

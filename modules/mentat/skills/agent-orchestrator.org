@@ -71,6 +71,9 @@ explain the current state. Never present the orchestrator itself as task progres
 Read bounded latest session updates without displaying buffers or moving the
 user's point. Follow continuations when they contain the conclusion. Use saved
 history when a live buffer is unavailable or earlier decisions matter.
+To recover a session's earlier decisions, blockers, or constraints, pass its
+transcript path as =session= to =ledger_retrieve= with a focused query, as the
+session-search skill describes. Prefer this to paging whole transcripts.
 
 Compare current issues within the agreed focus with current sessions, including
 closed sessions. For Linear work, fetch current Linear issues rather than relying
