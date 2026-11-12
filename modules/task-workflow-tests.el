@@ -5,9 +5,11 @@
 (require 'json)
 (require 'mentat)
 
+(add-to-list 'load-path (expand-file-name "modules" user-emacs-directory))
+
 (let ((default-directory
        (expand-file-name "~/source/gist/bradwell-monorepo/")))
-  (mentat-org-skill-activate
+  (mentat-skill-read
    (expand-file-name ".mentat/skills/task-workflow.org")))
 
 (defconst mentat-task-test--issue
@@ -34,7 +36,7 @@
                  (should (equal issue-id "BRA-1484"))
                  (funcall success mentat-task-test--issue)))
               ((symbol-function 'mentat-linear--create-issue)
-               (lambda (_key new-title new-description team new-project
+               (lambda (_key new-title new-description team new-project _labels
                         success _failure)
                  (setq created-input
                        (list new-title new-description team new-project))
@@ -56,15 +58,15 @@
                             (setup-processes . ("npm"))
                             (setup-buffers . ("*npm*"))))
                  (lambda () (setq cancelled t))))
-              ((symbol-function 'mentat-session-manager--starter)
+              ((symbol-function 'mentat--sessions-create-starter)
                (lambda (directory name prompt)
                  (should (equal directory "/tmp/worktree/"))
                  (should (string-prefix-p "BRA-1484 " name))
                  (setq handoff prompt)
                  (lambda (resolve _reject on-cancel)
                    (funcall on-cancel (lambda () (setq cancelled t)))
-                   (funcall resolve '((session-id . "session-id")))))))
-      (funcall (mentat-task--start identifier title description project)
+                   (funcall resolve '((session_id . "session-id")))))))
+      (funcall (mentat-task--start identifier title description project nil)
                (lambda (value) (setq result value))
                (lambda (reason) (setq failure reason))
                (lambda (_cancel)))
@@ -95,7 +97,7 @@
                (lambda (_key query input _success _failure)
                  (setq request query variables input))))
       (mentat-linear--create-issue-with-context
-       "api-key" "Title" "Description" "BRA" "Assistant"
+       "api-key" "Title" "Description" "BRA" "Assistant" nil
        #'ignore (lambda (reason) (setq failure reason)) context))
     (should-not failure)
     (should (string-match-p "issueCreate" request))
@@ -112,7 +114,7 @@
     (cl-letf (((symbol-function 'mentat-linear--request)
                (lambda (&rest _args) (setq requested t))))
       (mentat-linear--create-issue-with-context
-       "api-key" "Title" "Description" "BRA" "Assistant"
+       "api-key" "Title" "Description" "BRA" "Assistant" nil
        #'ignore (lambda (reason) (setq failure reason)) context))
     (should-not requested)
     (should (string-match-p "found 2" failure))))

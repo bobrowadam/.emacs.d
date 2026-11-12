@@ -123,7 +123,7 @@ Before task startup, check existing sessions and checkouts. For a new Bradwell
 issue session, read the Bradwell task-workflow skill at
 [[file:~/dotfiles/bradwell/skills/task-workflow.org][Bradwell task lifecycle]] and use
 =mentat-task-start=. It creates a separate worktree and a background session;
-do not bypass it with =mentat-session-create= in the main checkout. Reopen an
+do not bypass it with =session_create= in the main checkout. Reopen an
 existing task session in its existing checkout rather than creating a new one.
 Follow the task-workflow handoff and wait for further instructions unless the
 user has explicitly authorized additional work.

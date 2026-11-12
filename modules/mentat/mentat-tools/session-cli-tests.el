@@ -15,7 +15,7 @@
                         (file-name-directory (or load-file-name buffer-file-name)))
       nil t t)
 (bob/mentat-session-cli-starter
- "{\"command\":\"list\",\"arguments\":[],\"keywords\":{}}")
+ "{\"operation\":\"list\"}")
 
 (defconst bob/session-cli-test-program
   (expand-file-name "~/dotfiles/mentat-session/mentat-session.py"))
@@ -90,8 +90,8 @@
                            "create" default-directory "--name" name "--handoff" handoff))
                          (result (json-parse-string output :object-type 'alist)))
               (should (= exit 0))
-              (should (equal (alist-get 'session-id result) "created-id"))
-              (should (equal (alist-get 'handoff-request-id result) "handoff-request"))
+              (should (equal (alist-get 'session_id result) "created-id"))
+              (should (equal (alist-get 'handoff_request_id result) "handoff-request"))
               (should (equal created-profile (directory-file-name default-directory)))
               (should (equal created-name name))
               (should (equal sent-prompt handoff))
@@ -156,7 +156,7 @@
             (pcase-let* ((`(,exit ,output) (bob/session-cli-test-run "send" "closed" "hello"))
                          (result (json-parse-string output :object-type 'alist)))
               (should (= exit 0))
-              (should (equal (alist-get 'request-id result) "accepted-request"))
+              (should (equal (alist-get 'request_id result) "accepted-request"))
               (should (eq t (alist-get 'resumed result)))
               (should (equal sent-prompt "hello"))
               (should (equal (plist-get start-options :pi-directory) "/pi/basic"))
@@ -168,7 +168,7 @@
   (bob/session-cli-test-with-server
     (let ((mentat-pi-profiles `(("basic" :directory ,default-directory)))
           starts cancelled)
-      (cl-letf (((symbol-function 'mentat-session-manager--starter)
+      (cl-letf (((symbol-function 'mentat--sessions-create-starter)
                  (lambda (&rest _)
                    (lambda (_resolve _reject on-cancel)
                      (setq starts (1+ (or starts 0)))
@@ -193,11 +193,11 @@
     (cl-letf (((symbol-function 'mentat--registry-list) (lambda (&rest _) (list entry)))
               ((symbol-function 'mentat--open-live-view) (lambda (_) view))
               ((symbol-function 'get-buffer-window) (lambda (&rest _) t))
-              ((symbol-function 'mentat-session-reload)
+              ((symbol-function 'mentat--sessions-reload-starter)
                (lambda (&rest _) (ert-fail "Must not reload a displayed session"))))
       (should-error
        (bob/mentat-session-cli-starter
-        "{\"command\":\"reload\",\"arguments\":[\"displayed\"],\"keywords\":{}}")
+        "{\"operation\":\"reload\",\"session_id\":\"displayed\"}")
        :type 'user-error))))
 
 (provide 'session-cli-tests)

@@ -239,7 +239,7 @@ initialization, use =bob/compile-and-load-init-file= rather than editing generat
 configuration.
 
 Existing Pi processes retain loaded code and extension state. Reload only
-explicitly authorized idle conversations through the session-management skill.
+explicitly authorized idle conversations with the native =session_reload= tool.
 
 Before committing, wait for all requested reviews to finish and verify the
 staged scope. Commit only with explicit approval.
