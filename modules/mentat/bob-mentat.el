@@ -331,14 +331,7 @@ the login under the Keychain account that the bridge reads."
               "session_kill"
               "codemode"
               "voice_stop")
-      :disabled-tools ("grep" "find" "ls"))
-     ("basic"
-      :directory "~/.pi/agent-basic"
-      :arguments ("--no-context-files" "--no-skills"
-                  "--extension" "builtin:codemode")
-      :agent-features nil
-      :extensions (pi-update codex claude-bridge)
-      :tools ("read" "bash" "edit" "write" "grep" "ledger_recall" "ledger_search" "ledger_retrieve" "codemode"))))
+      :disabled-tools ("grep" "find" "ls"))))
 
   (mentat-enabled-models
    '("azure/gpt-6.1-sol"

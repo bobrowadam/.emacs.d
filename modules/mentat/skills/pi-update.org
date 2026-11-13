@@ -80,7 +80,8 @@ running process.
 Known profile locations are:
 - Work: =~/.pi/agent/=
 - Private: =~/.pi/agent-private/=
-- Basic: =~/.pi/agent-basic/=
+- Gist Orchestrator: =~/.pi/agent-gist-orchestrator/= (symlinks to Work's
+  configuration)
 
 Inspect each affected profile's =auth.json=, =settings.json=, and =models.json=.
 Check project-local =.pi/settings.json= for overrides. Determine the profile
