@@ -173,6 +173,41 @@ the login under the Keychain account that the bridge reads."
      mentat-diagnostic-delete-session-captures)
     ("X" "Delete all saved" mentat-diagnostic-delete-all-captures)]])
 
+(defconst bob/mentat-profile-tools
+  '("emacs_read"
+    "emacs_read_buffer"
+    "emacs_edit"
+    "emacs_write"
+    "emacs_grep"
+    "emacs_find"
+    "emacs_ls"
+    "emacs_run_process"
+    "emacs_eval_elisp"
+    "emacs_eval_async"
+    "emacs_elisp_call"
+    "hindsight_recall"
+    "hindsight_remember"
+    "hindsight_reflect"
+    "subagent"
+    "subagent_progress"
+    "ledger_recall"
+    "ledger_search"
+    "ledger_retrieve"
+    "session_list"
+    "session_search"
+    "session_read"
+    "session_search_history"
+    "session_create"
+    "session_send"
+    "session_message"
+    "session_reload"
+    "session_change_directory"
+    "session_close"
+    "session_kill"
+    "codemode"
+    "voice_stop")
+  "Active Pi tools shared by the Work and Gist Orchestrator profiles.")
+
 (use-package mentat
   :demand t
   :ensure nil
@@ -222,7 +257,7 @@ the login under the Keychain account that the bridge reads."
     "the handoff against concrete evidence."))
 
   (mentat-pi-profiles
-   '(("Work"
+   `(("Work"
       :directory "~/.pi/agent"
       :environment (("MENTAT_LEDGER_ACTIVE" . "true"))
       :extensions (codex worktree-skills claude-bridge)
@@ -235,38 +270,18 @@ the login under the Keychain account that the bridge reads."
                                 "openai-codex/gpt-6-luna"
                                 "claude-bridge/claude-opus-5-5")
       :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
-      :tools ("emacs_read"
-              "emacs_read_buffer"
-              "emacs_edit"
-              "emacs_write"
-              "emacs_grep"
-              "emacs_find"
-              "emacs_ls"
-              "emacs_run_process"
-              "emacs_eval_elisp"
-              "emacs_eval_async"
-              "emacs_elisp_call"
-              "hindsight_recall"
-              "hindsight_remember"
-              "hindsight_reflect"
-              "subagent"
-              "subagent_progress"
-              "ledger_recall"
-              "ledger_search"
-              "ledger_retrieve"
-              "session_list"
-              "session_search"
-              "session_read"
-              "session_search_history"
-              "session_create"
-              "session_send"
-              "session_message"
-              "session_reload"
-              "session_change_directory"
-              "session_close"
-              "session_kill"
-              "codemode"
-              "voice_stop")
+      :tools ,bob/mentat-profile-tools
+      :disabled-tools ("grep" "find" "ls"))
+     ("Gist Orchestrator"
+      :directory "~/.pi/agent-gist-orchestrator"
+      :environment (("MENTAT_LEDGER_ACTIVE" . "true"))
+      :extensions (codex worktree-skills claude-bridge)
+      :arguments ("--extension" "builtin:codemode"
+                  "--append-system-prompt"
+                  "/Users/bob/dotfiles/bradwell/gist-orchestrator.md")
+      :subagents nil
+      :tools ,(seq-difference bob/mentat-profile-tools
+                              '("subagent" "subagent_progress"))
       :disabled-tools ("grep" "find" "ls"))
      ("Private"
       :directory "~/.pi/agent-private"
