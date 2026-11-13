@@ -134,6 +134,25 @@ sets it."
   (mentat-run-extension-command
    (string-trim (format "/mentat-voice diagnose %s" (or seconds "")))))
 
+(defun bob/mentat-claude-bridge-login ()
+  "Sign in to Claude for Claude Bridge in a chosen Mentat profile.
+Use the profile's environment and set USER explicitly, so Claude stores
+the login under the Keychain account that the bridge reads."
+  (interactive)
+  (require 'term)
+  (let* ((directory (mentat--profile-read-directory))
+         (process-environment
+          (mentat-process--environment
+           (cons (cons "USER" (user-real-login-name))
+                 (mentat--profile-option directory :environment nil))))
+         (buffer (make-term (format "claude-login %s"
+                                    (mentat--profile-name-for-directory directory))
+                            "claude" nil "auth" "login" "--claudeai")))
+    (with-current-buffer buffer
+      (term-mode)
+      (term-char-mode))
+    (pop-to-buffer buffer)))
+
 (transient-define-prefix bob/mentat-capture-menu ()
   "Capture diagnostics from the current Mentat session."
   [["Capture"
