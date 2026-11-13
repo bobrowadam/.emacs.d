@@ -20,7 +20,8 @@ SCRIPT = ''.join(json.loads(match.group()) for match in
 
 
 class HelperTests(unittest.TestCase):
-    def run_helper(self, failure='', query_failure='', cancel=False, stubborn=False):
+    def run_helper(self, failure='', query_failure='', cancel=False, stubborn=False,
+                   explain=False):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             tools = root / 'bin'
@@ -54,28 +55,42 @@ test "$PGCONNECT_TIMEOUT" = 10
 if test -n "$QUERY_FAILURE"; then echo "$QUERY_FAILURE PRIVATE_SENTINEL" >&2; exit 1; fi
 grep -q 'BEGIN TRANSACTION READ ONLY;' "${16}"
 grep -q 'SET LOCAL statement_timeout = 15000;' "${16}"
-printf '%s\n' '{"rows":[{"ok":true}],"truncated":false}'
+grep -q 'SET LOCAL lock_timeout = 5000;' "${16}"
+if test "$EXPLAIN_ONLY" = 1; then
+    grep -q '^EXPLAIN (FORMAT JSON)$' "${16}"
+    ! grep -qi 'ANALYZE' "${16}"
+    ! grep -q 'WITH limited' "${16}"
+    printf '%s\n' '[{"Plan":{"Node Type":"Result"}}]'
+else
+    ! grep -qi 'EXPLAIN' "${16}"
+    grep -q 'WITH limited' "${16}"
+    printf '%s\n' '{"rows":[{"ok":true}],"truncated":false}'
+fi
 ''')
             env = dict(os.environ, PATH=str(tools) + ':' + os.environ['PATH'],
                        PGPASSWORD='TEST_PASSWORD_SENTINEL', FAILURE=failure,
                        QUERY_FAILURE=query_failure, PID_FILE=str(root / 'pid'),
-                       STUBBORN='1' if stubborn else '0')
+                       STUBBORN='1' if stubborn else '0',
+                       EXPLAIN_ONLY='1' if explain else '0')
             command = ['/bin/sh', '-c', SCRIPT, '--', str(query_dir), str(root),
-                       'prod', '20', '21', '15000', '5000', 'postgres']
+                       'prod', '20', '21', '15000', '5000', 'postgres',
+                       'explain' if explain else 'select']
             if cancel:
                 child = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE, text=True, env=env)
                 child.stdin.write('SELECT true AS ok')
                 child.stdin.close()
                 child.stdin = None
-                for _ in range(100):
-                    if (root / 'pid').exists():
-                        break
+                deadline = time.monotonic() + 10
+                while (not (root / 'pid').exists() and child.poll() is None
+                       and time.monotonic() < deadline):
                     time.sleep(0.01)
-                self.assertTrue((root / 'pid').exists(), 'mock tunnel never started')
-                child.terminate()
+                started = (root / 'pid').exists()
+                if child.poll() is None:
+                    child.terminate()
                 stdout, stderr = child.communicate(timeout=20)
                 result = subprocess.CompletedProcess(command, child.returncode, stdout, stderr)
+                self.assertTrue(started, 'mock tunnel never started')
             else:
                 result = subprocess.run(command, input='SELECT true AS ok', text=True,
                                         capture_output=True, env=env, timeout=20)
@@ -98,6 +113,12 @@ printf '%s\n' '{"rows":[{"ok":true}],"truncated":false}'
         result = self.run_helper()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout), {'rows': [{'ok': True}], 'truncated': False})
+
+    def test_explain_returns_plan_without_executing_query(self):
+        result = self.run_helper(explain=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout),
+                         [{'Plan': {'Node Type': 'Result'}}])
 
     def test_cancellation_cleans_tunnel(self):
         self.assertEqual(self.run_helper(cancel=True).returncode, 143)
