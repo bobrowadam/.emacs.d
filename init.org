@@ -2775,6 +2775,73 @@ LSP/DAP servers manager
     :hook (prog-mode . highlight-indent-guides-mode))
 #+end_src
 ** Specific Languages Support
+*** Bend
+#+begin_src elisp
+  (use-package bend-mode
+    :ensure (:host github :repo "davidawad/bend-mode.el"
+                   :files (:defaults "src/*.el"))
+    :demand t
+    :bind
+    (:map bend-mode-map
+          ("C-c C-r" . bob/bend-run)
+          ("C-c C-b" . bob/bend-build))
+    :hook
+    (bend-mode . eglot-ensure)
+    (bend-mode . (lambda ()
+                   (add-hook 'before-save-hook #'eglot-format-buffer nil t)))
+    :config
+    (require 'bend-ts-mode)
+    (add-to-list 'eglot-server-programs
+                 '((bend-mode (bend-ts-mode :language-id "bend"))
+                   . ("fnm" "exec" "--using" "v26.13.1"
+                      "bend2-lsp" "--stdio"))))
+
+  (defvar-local bob/bend-compilation-source nil
+    "Bend file whose output the current compilation buffer shows.")
+  ;; Keep the source across `recompile', which resets the major mode.
+  (put 'bob/bend-compilation-source 'permanent-local t)
+
+  (define-derived-mode bob/bend-compilation-mode compilation-mode "Bend"
+    "Show Bend output with colors, followed output and linked errors."
+    ;; Bend errors mark the failing line as "5>|" but omit the file name.
+    (setq-local compilation-error-regexp-alist
+                `((,(rx line-start (group (1+ digit)) ">|")
+                   ,(lambda () (list bob/bend-compilation-source))
+                   1)))
+    (setq-local compilation-scroll-output t)
+    (add-hook 'compilation-filter-hook #'ansi-color-compilation-filter nil t))
+
+  (defun bob/bend--source ()
+    "Return the current Bend file, saving it first."
+    (unless buffer-file-name
+      (user-error "Buffer is not visiting a Bend file"))
+    (save-buffer)
+    buffer-file-name)
+
+  (defun bob/bend--compile (source action &rest args)
+    "Run bend on SOURCE with ARGS in a buffer named after ACTION."
+    (let* ((file (file-name-nondirectory source))
+           (default-directory (file-name-directory source))
+           (command (mapconcat #'shell-quote-argument
+                               (append (list bend-mode-command file) args)
+                               " "))
+           (buffer (compilation-start
+                    command #'bob/bend-compilation-mode
+                    (lambda (_) (format "*bend %s: %s*" action file)))))
+      (with-current-buffer buffer
+        (setq bob/bend-compilation-source source))))
+
+  (defun bob/bend-run ()
+    "Check the current Bend file, then run its `main'."
+    (interactive)
+    (bob/bend--compile (bob/bend--source) "run"))
+
+  (defun bob/bend-build ()
+    "Compile the current Bend file to a native executable beside it."
+    (interactive)
+    (let ((source (bob/bend--source)))
+      (bob/bend--compile source "build" "-o" (file-name-base source))))
+#+end_src
 *** Typescript
 **** General Settings
 #+begin_src elisp
