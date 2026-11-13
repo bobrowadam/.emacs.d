@@ -58,8 +58,14 @@ unless the worktree has already been removed."
            (session-id (mentat--session-session-id (mentat--buffer-session view))))
       (bob/mentat--check-worktree-session view directory)
       (when (yes-or-no-p
-             (format "Remove worktree %s and its local branch, and close this session? Saved prompt collection items (%d) will be deleted; Pi history will remain. "
-                     directory (mentat--collection-count session-id)))
+             (let ((collected (mentat--collection-count session-id)))
+               (concat
+                (format "Remove worktree %s and its local branch, and close this session? "
+                        directory)
+                (when (> collected 0)
+                  (format "Saved prompt collection items (%d) will be deleted. "
+                          collected))
+                "Pi history will remain. ")))
         (cl-labels
             ((close-session ()
                (condition-case err
