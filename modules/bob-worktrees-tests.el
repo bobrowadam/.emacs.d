@@ -201,5 +201,92 @@
                         "origin" "refs/heads/published-delete")
                        2))))))))
 
+(defun bob/worktree-test-squash-with-later-edit (branch)
+  "Create BRANCH, squash it into main, then change the same file on main."
+  (with-temp-file "example.txt" (insert "base\n"))
+  (bob/worktree-test-git "add" "example.txt")
+  (bob/worktree-test-git "-c" "user.name=Worktree Test"
+                         "-c" "user.email=test@example.invalid"
+                         "-c" "commit.gpgsign=false"
+                         "-c" "core.hooksPath=/dev/null"
+                         "commit" "-m" "Base file")
+  (bob/worktree-test-git "init" "--bare" "remote.git")
+  (bob/worktree-test-git "remote" "add" "origin"
+                         (expand-file-name "remote.git"))
+  (bob/worktree-test-git "push" "origin" "main")
+  (bob/worktree-test-git "remote" "set-head" "origin" "main")
+  (let* ((created (bob/worktree-test-create default-directory branch "main"))
+         (path (alist-get 'directory (cdr created))))
+    (let ((default-directory (file-name-as-directory path)))
+      (with-temp-file "example.txt" (insert "feature\n"))
+      (bob/worktree-test-git "add" "example.txt")
+      (bob/worktree-test-git "-c" "user.name=Worktree Test"
+                             "-c" "user.email=test@example.invalid"
+                             "-c" "commit.gpgsign=false"
+                             "-c" "core.hooksPath=/dev/null"
+                             "commit" "-m" "First change")
+      ;; Exercise a patch larger than the cleanup runner's output limit.
+      (with-temp-file "large.txt" (insert (make-string 20000 ?x) "\n"))
+      (bob/worktree-test-git "add" "large.txt")
+      (bob/worktree-test-git "-c" "user.name=Worktree Test"
+                             "-c" "user.email=test@example.invalid"
+                             "-c" "commit.gpgsign=false"
+                             "-c" "core.hooksPath=/dev/null"
+                             "commit" "-m" "Second change")
+      (bob/worktree-test-git "push" "origin" branch))
+    (bob/worktree-test-git "merge" "--squash" branch)
+    (bob/worktree-test-git "-c" "user.name=Worktree Test"
+                           "-c" "user.email=test@example.invalid"
+                           "-c" "commit.gpgsign=false"
+                           "-c" "core.hooksPath=/dev/null"
+                           "commit" "-m" "Squash feature")
+    (with-temp-file "example.txt" (insert "later change\n"))
+    (bob/worktree-test-git "add" "example.txt")
+    (bob/worktree-test-git "-c" "user.name=Worktree Test"
+                           "-c" "user.email=test@example.invalid"
+                           "-c" "commit.gpgsign=false"
+                           "-c" "core.hooksPath=/dev/null"
+                           "commit" "-m" "Later edit")
+    (bob/worktree-test-git "push" "origin" "main")
+    path))
+
+(ert-deftest bob/worktree-clean-recognizes-squash-before-conflicting-edit ()
+  (bob/with-worktree-test-repo
+    (let ((path (bob/worktree-test-squash-with-later-edit "squashed")))
+      (with-temp-buffer
+        (should (= (process-file "git" nil t nil "merge-tree" "--write-tree"
+                                 "origin/main" "squashed")
+                   1)))
+      (let ((result (bob/worktree-test-clean path 'delete)))
+        (should (eq (car result) 'ok))
+        (should (alist-get 'remote-branch-deleted (cdr result)))
+        (should-not (file-exists-p path))
+        (with-temp-buffer
+          (should (= (process-file "git" nil t nil "show-ref" "--verify" "--quiet"
+                                   "refs/heads/squashed")
+                     1))
+          (should (= (process-file "git" nil t nil "ls-remote" "--exit-code"
+                                   "--heads" "origin" "refs/heads/squashed")
+                     2)))))))
+
+(ert-deftest bob/worktree-clean-preserves-extra-work-after-squash ()
+  (bob/with-worktree-test-repo
+    (let ((path (bob/worktree-test-squash-with-later-edit "unfinished")))
+      (let ((default-directory (file-name-as-directory path)))
+        (with-temp-file "unmerged.txt" (insert "must keep\n"))
+        (bob/worktree-test-git "add" "unmerged.txt")
+        (bob/worktree-test-git "-c" "user.name=Worktree Test"
+                               "-c" "user.email=test@example.invalid"
+                               "-c" "commit.gpgsign=false"
+                               "-c" "core.hooksPath=/dev/null"
+                               "commit" "-m" "Unmerged work")
+        (bob/worktree-test-git "push" "origin" "unfinished"))
+      (let ((result (bob/worktree-test-clean path 'delete)))
+        (should (eq (car result) 'error))
+        (should (file-exists-p (expand-file-name "unmerged.txt" path)))
+        (should (bob/worktree-test-git "rev-parse" "refs/heads/unfinished"))
+        (should (bob/worktree-test-git "ls-remote" "--exit-code" "--heads"
+                                      "origin" "refs/heads/unfinished"))))))
+
 (provide 'bob-worktrees-tests)
 ;;; bob-worktrees-tests.el ends here

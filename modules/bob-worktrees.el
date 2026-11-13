@@ -138,13 +138,13 @@ with error text.  Return a cancellation function."
            (unless settled
              (setq settled t)
              (funcall success value)))
-         (run (working-directory args accepted next)
+         (run (working-directory args accepted next &optional program)
            (let ((output "")
                  (default-directory working-directory))
              (setq process
                    (make-process
                     :name "worktree-clean" :connection-type 'pipe :noquery t
-                    :command (cons "git" args)
+                    :command (cons (or program "git") args)
                     :filter (lambda (_child chunk)
                               (setq output (truncate-string-to-width
                                             (concat output chunk) 16000)))
@@ -206,15 +206,47 @@ with error text.  Return a cancellation function."
              (run source (list "merge-tree" "--write-tree" "refs/remotes/origin/HEAD"
                                (concat "refs/heads/" branch))
                   '(0 1) #'merged)))
+         (check-squash-merge ()
+           ;; Later edits can make a simulated merge conflict even when the
+           ;; complete branch patch was already squash-merged into the default.
+           (run source (list "merge-base" "refs/remotes/origin/HEAD"
+                             (concat "refs/heads/" branch))
+                '(0)
+                (lambda (base _status)
+                  (setq base (string-trim base))
+                  (run source
+                       (list "-o" "pipefail" "-c"
+                             "git diff \"$1\" \"$2\" | git patch-id --stable"
+                             "worktree-patch-id" base
+                             (concat "refs/heads/" branch))
+                       '(0)
+                       (lambda (output _status)
+                         (if-let* ((patch (car (split-string output))))
+                             (run source
+                                  (list "-o" "pipefail" "-c"
+                                        (concat "git log --no-merges --pretty=medium -p "
+                                                "\"$1..$2\" | git patch-id --stable | "
+                                                "awk -v patch=\"$3\" "
+                                                "'$1 == patch { print $2 }'")
+                                        "worktree-squash-match" base
+                                        "refs/remotes/origin/HEAD" patch)
+                                  '(0)
+                                  (lambda (matches _status)
+                                    (if (string-blank-p matches)
+                                        (unpreserved)
+                                      (remove-worktree)))
+                                  "bash")
+                           (unpreserved)))
+                       "bash"))))
          (merged (output status)
            (if (/= status 0)
-               (unpreserved)
+               (check-squash-merge)
              (let ((tree (car (split-string output "\n" t))))
                (run source '("rev-parse" "refs/remotes/origin/HEAD^{tree}") '(0)
                     (lambda (default _status)
                       (if (equal (string-trim default) tree)
                           (remove-worktree)
-                        (unpreserved)))))))
+                        (check-squash-merge)))))))
          (apply-remote-policy ()
            (cond
             ((not remote-exists) (check-preserved))
