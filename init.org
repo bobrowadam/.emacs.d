@@ -970,29 +970,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
 
 * CSV
 #+begin_src elisp
-  ;; Keep CSV support installed independently of Casual.
   (use-package csv-mode)
-#+end_src
-
-* Casual packages
-#+begin_src elisp
-  (use-package casual)
-#+end_src
-** Re builder
-#+begin_src elisp
-  (use-package re-builder
-    :ensure nil
-    :bind
-    (:map reb-mode-map ("M-i" . casual-re-builder-tmenu))
-    (:map reb-lisp-mode-map ("M-i" . casual-re-builder-tmenu)))
-#+end_src
-
-** Calc
-#+begin_src elisp
-  (use-package calc
-    :ensure nil
-    :bind
-    (:map calc-mode-map ("M-i" . casual-calc-tmenu)))
 #+end_src
 
 * Dired
@@ -1010,9 +988,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     (setq insert-directory-program
           (s-replace "\n" "" (s-replace "//" "/" (shell-command-to-string "which gls"))))
     :hook
-    (dired-mode . (lambda () (dired-hide-details-mode 1)))
-    :bind
-    (:map dired-mode-map ("M-i" . casual-dired-tmenu)))
+    (dired-mode . (lambda () (dired-hide-details-mode 1))))
 
   (use-package dired-sidebar
     :commands (dired-sidebar-toggle-sidebar dired-sidebar-toggle-with-current-directory)
