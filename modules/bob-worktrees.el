@@ -108,7 +108,7 @@ stops Git but does not undo a branch or worktree already created."
         (when (process-live-p process) (delete-process process))))))
 
 (defun bob/clean-worktree (directory remote-policy success failure
-                                     &optional remove-function check-function)
+                                     &optional remove-function check-function force)
   "Remove worktree DIRECTORY and its associated branches.
 REMOTE-POLICY is `check', `delete', `keep', or a function called with the
 branch name when that branch exists on origin.  `check' calls SUCCESS with a
@@ -116,8 +116,11 @@ confirmation-required result without changing anything when the remote branch
 exists.  DELETE removes it; KEEP preserves it.  A policy function should return
 non-nil to delete it.
 
-Use REMOVE-FUNCTION, when non-nil, instead of `git worktree remove'.  This lets
-interactive callers retain their own confirmation behavior.  Call CHECK-FUNCTION
+When FORCE is non-nil, pass --force to `git worktree remove' to discard
+uncommitted and untracked changes.  Commit-preservation checks still apply.
+Use REMOVE-FUNCTION, when non-nil, instead of `git worktree remove'; that
+function is responsible for applying FORCE.  This lets interactive callers
+retain their own confirmation behavior.  Call CHECK-FUNCTION
 with the target directory immediately before removal, when non-nil.  It may
 signal an error to stop cleanup.  Call SUCCESS with cleanup metadata or FAILURE
 with error text.  Return a cancellation function."
@@ -181,7 +184,9 @@ with error text.  Return a cancellation function."
            (when check-function (funcall check-function target))
            (if remove-function
                (progn (funcall remove-function target) (removed))
-             (run source (list "worktree" "remove" "--" target)
+             (run source (append '("worktree" "remove")
+                                 (when force '("--force"))
+                                 (list "--" target))
                   '(0) (lambda (_output _status) (removed)))))
          (unpreserved ()
            (fail (format (concat "Branch %s has commits that no remaining remote "

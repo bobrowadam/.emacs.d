@@ -43,14 +43,17 @@
         (user-error "Worktree has an unsaved buffer: %s" (buffer-name))))))
 
 ;;;###autoload
-(defun bob/mentat-kill-session-and-worktree ()
-  "Remove the current session's clean linked worktree, then close the session.
-Preserve the Pi transcript.  Confirm removal of the worktree and local branch,
-and ask separately before deleting a branch that still exists on origin.
+(defun bob/mentat-kill-session-and-worktree (&optional force)
+  "Remove the current session's linked worktree, then close the session.
+With prefix argument FORCE, confirm discarding uncommitted and untracked
+changes, listing dirty files.  Commit-preservation checks still apply.
+Without FORCE, refuse dirty worktrees.  Preserve the Pi transcript.
+Confirm removal of the worktree and local branch, and ask separately before
+deleting a branch that still exists on origin.
 Refuse busy sessions, other sessions sharing the worktree, unsaved buffers,
 and the primary checkout.  Git cleanup failures leave the conversation open
 unless the worktree has already been removed."
-  (interactive)
+  (interactive "P")
   (mentat--with-live-conversation
     (let* ((view mentat--buffer-view)
            (buffer (mentat--buffer-buffer view))
@@ -60,6 +63,14 @@ unless the worktree has already been removed."
       (when (yes-or-no-p
              (let ((collected (mentat--collection-count session-id)))
                (concat
+                (when force
+                  (with-temp-buffer
+                    (let ((default-directory directory))
+                      (unless (zerop (process-file "git" nil t nil "status"
+                                                   "--porcelain" "--untracked-files=all"))
+                        (user-error "Git status failed: %s" (buffer-string)))
+                      (concat "FORCE removal will discard uncommitted and untracked changes.\n"
+                              (buffer-string) "\n"))))
                 (format "Remove worktree %s and its local branch, and close this session? "
                         directory)
                 (when (> collected 0)
@@ -94,7 +105,8 @@ unless the worktree has already been removed."
            #'failed nil
            (lambda (target)
              (bob/mentat--check-worktree-session view target)
-             (mentat--buffer-set-status view "cleaning worktree"))))))))
+             (mentat--buffer-set-status view "cleaning worktree"))
+           force))))))
 
 (provide 'worktree-session)
 ;;; worktree-session.el ends here
