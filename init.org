@@ -709,6 +709,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
     :hook (ibuffer-mode . ibuffer-auto-mode))
 
   (use-package ibuffer-project
+    :custom (ibuffer-project-use-cache t)
     :hook (ibuffer-mode . (lambda ()
                             (print "Here")
                             (setq ibuffer-filter-groups (ibuffer-project-generate-filter-groups))
