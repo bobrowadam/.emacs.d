@@ -235,7 +235,7 @@ the login under the Keychain account that the bridge reads."
     "Inspect package documentation before use and declare dependencies with "
     "`require`."))
   (mentat-default-provider "azure")
-  (mentat-default-model "gpt-6.1-sol")
+  (mentat-default-model "gpt-6.2-sol")
   (mentat-default-effort "medium")
   (mentat-org-skill-global-directory
    (expand-file-name "modules/mentat/skills/" user-emacs-directory))
@@ -262,7 +262,7 @@ the login under the Keychain account that the bridge reads."
       :environment (("MENTAT_LEDGER_ACTIVE" . "true"))
       :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode")
-      :subagent-enabled-models ("azure/gpt-6.1-sol"
+      :subagent-enabled-models ("azure/gpt-6.2-sol"
                                 "azure/gpt-6-astra"
                                 "azure/gpt-6-luna"
                                 "openai-codex/gpt-6.2-sol"
@@ -334,7 +334,7 @@ the login under the Keychain account that the bridge reads."
       :disabled-tools ("grep" "find" "ls"))))
 
   (mentat-enabled-models
-   '("azure/gpt-6.1-sol"
+   '("azure/gpt-6.2-sol"
      "azure/gpt-6-astra"
      "openai-codex/gpt-6.1-terra"
      "openai-codex/gpt-6.2-sol"
@@ -342,7 +342,7 @@ the login under the Keychain account that the bridge reads."
      "claude-bridge/claude-opus-5-5"))
 
   (mentat-subagent-enabled-models
-   '("azure/gpt-6.1-sol"
+   '("azure/gpt-6.2-sol"
      "azure/gpt-6-astra"
      "azure/gpt-6-luna"
      "openai-codex/gpt-6.2-sol"
@@ -410,7 +410,7 @@ the login under the Keychain account that the bridge reads."
   (bob/mentat-define-subagent explorer
       (bob/mentat-load-agent-and-common-instructions "explorer")
     :description "Read-only project investigation"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
+    :model ("azure/gpt-6.2-sol" "openai-codex/gpt-6.2-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 4)
@@ -443,7 +443,7 @@ the login under the Keychain account that the bridge reads."
   (bob/mentat-define-subagent worker
       (bob/mentat-load-agent-and-common-instructions "worker")
     :description "Implement one bounded, well-understood delegated change"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
+    :model ("azure/gpt-6.2-sol" "openai-codex/gpt-6.2-sol")
     :thinking high
     :extensions (mentat-emacs))
 
@@ -451,7 +451,7 @@ the login under the Keychain account that the bridge reads."
       (bob/mentat-load-agent-and-common-instructions
        "effect-ts-backend-expert")
     :description "Handle one bounded Effect TypeScript task requiring specialist expertise"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
+    :model ("azure/gpt-6.2-sol" "openai-codex/gpt-6.2-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -461,7 +461,7 @@ the login under the Keychain account that the bridge reads."
       (bob/mentat-load-agent-and-common-instructions
        "frontend-react-expert")
     :description "Handle one bounded React frontend task requiring specialist expertise"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
+    :model ("azure/gpt-6.2-sol" "openai-codex/gpt-6.2-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -471,7 +471,7 @@ the login under the Keychain account that the bridge reads."
       (bob/mentat-load-agent-and-common-instructions "ui-manual-qa")
     :description "Test UI features in a web browser"
     :model ("claude-bridge/claude-opus-5-5"
-            "azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
+            "azure/gpt-6.2-sol" "openai-codex/gpt-6.2-sol")
     :thinking medium
     :extensions (mentat-emacs claude-bridge))
 
