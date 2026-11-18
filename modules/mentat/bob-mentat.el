@@ -265,7 +265,7 @@ the login under the Keychain account that the bridge reads."
       :subagent-enabled-models ("azure/gpt-6.1-sol"
                                 "azure/gpt-6-astra"
                                 "azure/gpt-6-luna"
-                                "openai-codex/gpt-6.1-sol"
+                                "openai-codex/gpt-6.2-sol"
                                 "openai-codex/gpt-6-astra"
                                 "openai-codex/gpt-6-luna"
                                 "claude-bridge/claude-opus-5-5")
@@ -290,12 +290,12 @@ the login under the Keychain account that the bridge reads."
       :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :default-provider "openai-codex"
-      :default-model "gpt-6.1-sol"
+      :default-model "gpt-6.2-sol"
       :enabled-models ("openai-codex/gpt-6.1-terra"
-                       "openai-codex/gpt-6.1-sol"
+                       "openai-codex/gpt-6.2-sol"
                        "openai-codex/gpt-6-astra"
                        "claude-bridge/claude-opus-5-5")
-      :subagent-enabled-models ("openai-codex/gpt-6.1-sol"
+      :subagent-enabled-models ("openai-codex/gpt-6.2-sol"
                                 "openai-codex/gpt-6-luna"
                                 "claude-bridge/claude-opus-5-5")
       :subagents (explorer pr-reviewer reviewer worker ci-watcher ui-manual-qa)
@@ -337,7 +337,7 @@ the login under the Keychain account that the bridge reads."
    '("azure/gpt-6.1-sol"
      "azure/gpt-6-astra"
      "openai-codex/gpt-6.1-terra"
-     "openai-codex/gpt-6.1-sol"
+     "openai-codex/gpt-6.2-sol"
      "openai-codex/gpt-6-astra"
      "claude-bridge/claude-opus-5-5"))
 
@@ -345,7 +345,7 @@ the login under the Keychain account that the bridge reads."
    '("azure/gpt-6.1-sol"
      "azure/gpt-6-astra"
      "azure/gpt-6-luna"
-     "openai-codex/gpt-6.1-sol"
+     "openai-codex/gpt-6.2-sol"
      "openai-codex/gpt-6-astra"
      "openai-codex/gpt-6-luna"
      "claude-bridge/claude-opus-5-5"))
@@ -410,7 +410,7 @@ the login under the Keychain account that the bridge reads."
   (bob/mentat-define-subagent explorer
       (bob/mentat-load-agent-and-common-instructions "explorer")
     :description "Read-only project investigation"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 4)
@@ -443,7 +443,7 @@ the login under the Keychain account that the bridge reads."
   (bob/mentat-define-subagent worker
       (bob/mentat-load-agent-and-common-instructions "worker")
     :description "Implement one bounded, well-understood delegated change"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
     :thinking high
     :extensions (mentat-emacs))
 
@@ -451,7 +451,7 @@ the login under the Keychain account that the bridge reads."
       (bob/mentat-load-agent-and-common-instructions
        "effect-ts-backend-expert")
     :description "Handle one bounded Effect TypeScript task requiring specialist expertise"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -461,7 +461,7 @@ the login under the Keychain account that the bridge reads."
       (bob/mentat-load-agent-and-common-instructions
        "frontend-react-expert")
     :description "Handle one bounded React frontend task requiring specialist expertise"
-    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+    :model ("azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
     :thinking high
     :extensions (mentat-emacs)
     :concurrency 1
@@ -471,7 +471,7 @@ the login under the Keychain account that the bridge reads."
       (bob/mentat-load-agent-and-common-instructions "ui-manual-qa")
     :description "Test UI features in a web browser"
     :model ("claude-bridge/claude-opus-5-5"
-            "azure/gpt-6.1-sol" "openai-codex/gpt-6.1-sol")
+            "azure/gpt-6.1-sol" "openai-codex/gpt-6.2-sol")
     :thinking medium
     :extensions (mentat-emacs claude-bridge))
 
