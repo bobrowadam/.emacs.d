@@ -6,9 +6,18 @@
 ;;; Code:
 
 (require 'ansi-color)
+(require 'auth-source)
 (require 'seq)
 (require 'subr-x)
 (require 'transient)
+
+(defun bob/mentat--azure-eu-api-key ()
+  "Read the Azure EU API key from auth-source."
+  (let* ((entry (car (auth-source-search
+                     :host "credits-eu-resource.services.ai.azure.com"
+                     :require '(:secret) :max 1)))
+         (secret (plist-get entry :secret)))
+    (if (functionp secret) (funcall secret) secret)))
 
 (defun bob/mentat--read-agent-instructions-file (file)
   "Read and trim Mentat agent instructions FILE."
@@ -259,7 +268,9 @@ the login under the Keychain account that the bridge reads."
   (mentat-pi-profiles
    `(("Work"
       :directory "~/.pi/agent"
-      :environment (("MENTAT_LEDGER_ACTIVE" . "true"))
+      :environment (("MENTAT_LEDGER_ACTIVE" . "true")
+                    ("AZURE_OPENAI_BASE_URL" . "https://credits-eu-resource.services.ai.azure.com/openai/v1")
+                    ("AZURE_OPENAI_API_KEY" . ,#'bob/mentat--azure-eu-api-key))
       :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode")
       :subagent-enabled-models ("azure/gpt-6.2-sol"
@@ -274,7 +285,9 @@ the login under the Keychain account that the bridge reads."
       :disabled-tools ("grep" "find" "ls"))
      ("Gist Orchestrator"
       :directory "~/.pi/agent-gist-orchestrator"
-      :environment (("MENTAT_LEDGER_ACTIVE" . "true"))
+      :environment (("MENTAT_LEDGER_ACTIVE" . "true")
+                    ("AZURE_OPENAI_BASE_URL" . "https://credits-eu-resource.services.ai.azure.com/openai/v1")
+                    ("AZURE_OPENAI_API_KEY" . ,#'bob/mentat--azure-eu-api-key))
       :extensions (codex worktree-skills claude-bridge)
       :arguments ("--extension" "builtin:codemode"
                   "--append-system-prompt"
