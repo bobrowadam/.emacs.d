@@ -82,6 +82,9 @@ For another operation, check its current official documentation before acting.
 (mentat-defun mentat-github-submit-inline-review
     (repository pull-number reviewed-commit event comments &key body directory)
   "Submit an authorized GitHub review with inline comments.
+COMMENTS must contain at least one inline comment.  To approve without
+inline comments, use gh pr review NUMBER --repo OWNER/REPO --approve
+instead of this helper.
 Read the github package guide first.  Refuse a changed PR head and pin the
 review to REVIEWED-COMMIT.  COMMENTS is an array of objects with path, line,
 body and optional side (LEFT or RIGHT, default RIGHT).  Use new-file line
