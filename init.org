@@ -475,7 +475,7 @@ Runs asynchronously so save isn't blocked. Output goes to *authinfo-backup*."
   (global-auto-revert-mode 1)
   (auto-compression-mode t)
   (auto-image-file-mode 1)
-  (global-word-wrap-whitespace-mode t)
+  (global-word-wrap-whitespace-mode -1)
   (menu-bar-mode -1)
 
   ;; delete char and delte word with "C-h" "C-M-h"
